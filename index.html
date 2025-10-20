@@ -1,0 +1,4777 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Grant Exchange v1.6.38</title>
+<!-- ===================== CSS (v1.5.5) ===================== -->
+<style>
+:root{
+  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
+  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
+  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
+  --teal: #00ffff;
+}
+* {box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a;
+  color:var(--ink);
+  font-family:Segoe UI,Inter,system-ui,Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+/* Layout */
+.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px);
+      display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+.header{grid-column:1 / -1;display:grid;
+        grid-template-columns:1fr auto auto;gap:12px;align-items:center}
+/* Branding */
+h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
+.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;
+       padding:2px 8px;color:var(--muted);background:#20190e}
+.small{font-size:12px;color:var(--muted)}
+.status-error{color:#ffb4b4}
+/* Cards */
+.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+      border:1px solid var(--edge);border-radius:16px;padding:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.left{display:flex;flex-direction:column}
+.hr{border:none;border-top:1px solid var(--edge);margin:10px 0}
+/* Main grid: image / search / stats */
+.grid{display:grid;grid-template-columns:240px 1fr 260px;
+      gap:14px;align-items:center}
+.imgbox{
+  width:240px;height:240px;border:1px solid var(--edge);
+  border-radius:14px;background:#22180b;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)
+}
+.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+/* Search */
+.label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
+.sbar{display:flex;gap:10px;margin-top:2px;position:relative}
+.sbar input{
+  flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink);
+  border-radius:14px;padding:16px;font-size:20px;outline:none;
+  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s
+}
+.sbar input:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.sbar button{
+  background:#2b2212;border:1px solid var(--edge);color:var(--gold);
+  border-radius:12px;padding:12px 16px;cursor:pointer;font-size:15px;
+  text-transform:uppercase;letter-spacing:.5px;transition:box-shadow .18s,border-color .18s
+}
+.sbar button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px;
+         max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
+.suggest::-webkit-scrollbar {width:8px; background:var(--panel);}
+.suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
+.suggest div{display:flex;align-items:center;gap:6px;
+             padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
+.suggest div:hover{background:#2d220f}
+.suggest img{width:20px;height:20px;image-rendering:pixelated}
+/* Stats */
+.title{font-size:15px;letter-spacing:.3px;
+       text-transform:uppercase;margin-bottom:4px}
+.title.low{color:var(--low-color)}
+.title.high{color:var(--high-color)}
+.big-buy{font-size:36px;font-weight:900;color:var(--low-color)}
+.big-sell{font-size:36px;font-weight:900;color:var(--high-color)}
+.kv{display:flex;justify-content:space-between;margin:5px 0}
+.kv strong.spread{font-size:24px;animation: rainbow 5s linear infinite;}
+.kv .price-adjust{display:flex;align-items:center;gap:5px;border:1px solid var(--edge);padding:8px;border-radius:8px;background:#2b2212}
+.kv .price-adjust button{padding:0 5px;font-size:24px;font-weight:bold;color:var(--gold);background:transparent;border:none;cursor:pointer;}
+.kv .price-adjust.low button{color:var(--low-color)}
+.kv .price-adjust.high button{color:var(--high-color)}
+.kv .price-adjust span{font-size:24px;font-weight:bold}
+.kv .price-adjust.low span{color:var(--low-color)}
+.kv .price-adjust.high span{color:var(--high-color)}
+.kv .price-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
+.kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
+/* Tabs + Tools */
+.viewtabs, .mode-pill {display:flex;gap:6px;}
+.viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge);
+                 color:var(--ink);border-radius:10px;padding:6px 10px;
+                 cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+.viewtabs button.active, .mode-pill button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
+.viewtabs button:focus, .mode-pill button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.tools{display:flex;gap:6px;align-items:center;margin-top:6px}
+.tools button{background:#2b2212;border:1px solid var(--edge);
+              color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
+              text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+.tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
+.tools button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+/* Chart */
+.chartWrap{position:relative}
+.chart{
+  width:100%;height:500px;
+  background:repeating-linear-gradient(to bottom,
+             rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
+             transparent 1px,transparent 24px),#181208;
+  border:1px solid var(--edge);border-radius:12px
+}
+.chart-tip{
+  position:absolute;display:none;background:rgba(0,0,0,.85);
+  color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;
+  pointer-events:none;white-space:nowrap;border:1px solid #000
+}
+.legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
+.legend .sell::before{content:"";display:inline-block;width:14px;height:3px;
+                      background:var(--low-color);margin-right:6px;border-radius:2px}
+.legend .buy::before{content:"";display:inline-block;width:14px;height:3px;
+                     background:var(--high-color);margin-right:6px;border-radius:2px}
+/* Refresh button glow */
+.refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
+.btn-refresh{
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
+  text-transform:uppercase;letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease
+}
+.btn-refresh:hover{filter:brightness(1.05);
+                   transform:translateY(-1px);
+                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-refresh:active{transform:translateY(0);
+                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-refresh.loading {
+  animation: pulse-rs 1.5s infinite;
+}
+@keyframes pulse-rs {
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+}
+/* Sidebar (tighter columns + name header per slot) */
+.side{display:flex;flex-direction:column;gap:12px}
+.side .card{display:flex;flex-direction:column}
+.side h3{margin:0 0 10px 0;font-size:18px;font-weight:900;color:var(--orange)}
+.filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.switch{position:relative;display:inline-block;width:46px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+        background:#5a4630;border:1px solid var(--edge);
+        transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;
+               left:3px;top:2px;background:white;border-radius:50%;
+               transition:.2s}
+.switch input:checked + .slider{background:#275a30}
+.switch input:checked + .slider:before{transform:translateX(21px)}
+.head{
+  display:grid;grid-template-columns:22px 1fr 80px 80px;
+  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px;
+  border-bottom:1px solid var(--edge)
+}
+.sort-arrow { font-size: 10px; margin-left: 4px; }
+.tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
+.tb::-webkit-scrollbar {width:8px; background:var(--panel);}
+.tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
+.row{
+  display:grid;grid-template-columns:22px 1fr 80px 80px;
+  gap:6px;align-items:center;background:#231b0d;
+  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px
+}
+.row.long-price{min-height:70px}
+.row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
+.sym{font-weight:700;font-size:15px;white-space:nowrap;
+     overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
+.last{color:var(--gold)}
+.delta{color:var(--low-color)}
+.vol{color:var(--high-color)}
+.up{color:var(--buy)} .down{color:var(--sell)}
+.btn-add{display:inline-flex;align-items:center;justify-content:center;
+         width:26px;height:26px;border-radius:8px;
+         border:1px solid #1c4022;background:#1f4d28;
+         color:#c8f0cf;font-weight:900;cursor:pointer}
+.btn-add::before{content:"+";font-size:16px;line-height:1}
+/* Mode pill */
+.mode-pill{display:flex;gap:6px;}
+.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted);
+             padding:6px 10px;cursor:pointer;font-weight:700;
+             text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
+/* Help */
+.help{line-height:1.45;color:#dacda9}
+.help ul{margin:6px 0 0 18px;padding:0}
+/* Watchlist button */
+.btn-watch{
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
+  text-transform:uppercase;letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease;
+}
+.btn-watch:hover{filter:brightness(1.05);
+                   transform:translateY(-1px);
+                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:active{transform:translateY(0);
+                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
+/* Rainbow spread */
+@keyframes rainbow {
+  0% {border-color: #ff0000;}
+  14% {border-color: #ff7f00;}
+  28% {border-color: #ffff00;}
+  42% {border-color: #00ff00;}
+  57% {border-color: #00ffff;}
+  71% {border-color: #0000ff;}
+  85% {border-color: #8b00ff;}
+  100% {border-color: #ff0000;}
+}
+/* Suggestion box */
+.suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
+.suggest-box img{width:100px;height:100px;image-rendering:pixelated}
+.suggest-box .details{flex:1}
+.suggest-box .name{font-weight:700;color:var(--orange)}
+.suggest-box .prices{display:flex;gap:20px}
+.suggest-box .price label{color:var(--muted);font-size:12px}
+.suggest-box .price strong{display:block;font-size:16px}
+.suggest-box .buy strong{color:var(--low-color)}
+.suggest-box .sell strong{color:var(--high-color)}
+.suggest-box .margin strong{color:var(--gold)}
+.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
+                        border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
+                        text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
+.suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
+.suggest-box .kv span{margin-right:5px}
+/* Category select */
+select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-radius:14px;padding:8px;font-size:16px;outline:none;width:100%;margin-bottom:8px;transition:box-shadow .18s,border-color .18s}
+select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+/* Loading animation */
+.loading { animation: pulse-rs 1.5s infinite; }
+@keyframes pulse-rs {
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+}
+/* Small chart */
+.small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
+/* Card-like for small chart */
+.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+      border:1px solid var(--edge);border-radius:16px;padding:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
+/* Loader overlay */
+#loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+  color: var(--ink);
+  font-size: 18px;
+}
+.loader-wheel {
+  border: 8px solid var(--edge);
+  border-top: 8px solid var(--orange);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<body>
+<div id="loader-overlay" style="display:none;">
+  <div class="loader-wheel"></div>
+  Fetching the most recent market data please wait..
+</div>
+<div class="wrap">
+  <div class="header">
+    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.6.38</span></div>
+    <div id="status" class="small">Ready</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="mode-pill" id="modePill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
+      </div>
+    </div>
+  </div>
+  <!-- Main panel -->
+  <div class="card left">
+    <div class="grid">
+      <!-- Large item image -->
+      <div class="imgbox"><img id="itemImg" alt="Item"/></div>
+      <!-- Search column -->
+      <div>
+        <div class="label">What item?</div>
+        <div class="sbar">
+          <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
+        </div>
+        <div id="suggestBox" class="suggest" style="display:none"></div>
+        <div class="kv" style="margin-top:4px"><span id="flipProfitLabel">Expected Flip Profit</span><strong id="flipProfit" style="color:var(--gold);font-size:20px">—</strong></div>
+        <div class="kv" style="margin-top:12px"><span>Capital Required</span><strong id="capitalRequired" style="color:var(--gold);font-size:20px">—</strong></div>
+        <div class="small" id="buyLimitInfo"></div>
+        <div id="spreadMargin" class="spread-margin">1h Spread: —</div>
+      </div>
+      <!-- Smart prices -->
+      <div>
+        <div class="title low">Smart Low Buy (Offer)</div>
+        <div class="kv price-adjust low"><button onclick="adjustPrice('buy', -1)">↓</button><input id="smartBuyInput" class="price-input" type="text" value="—" onchange="updateSmartBuyFromInput()" /><button onclick="adjustPrice('buy', 1)">↑</button></div>
+        <div class="title high" style="margin-top:10px">Smart High Sell (List)</div>
+        <div class="kv price-adjust high"><button onclick="adjustPrice('sell', -1)">↓</button><input id="smartSellInput" class="price-input" type="text" value="—" onchange="updateSmartSellFromInput()" /><button onclick="adjustPrice('sell', 1)">↑</button></div>
+        <div class="title" style="margin-top:10px">Buy Limit</div>
+        <div class="kv price-adjust"><button onclick="adjustBuyLimit(-1)">↓</button><input id="buyLimitDisplay" class="buy-limit-input" type="text" value="—" onchange="updateBuyLimitFromInput()" /><button onclick="adjustBuyLimit(1)">↑</button></div>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="refreshRow">
+      <div class="viewtabs">
+        <button data-view="day" class="active">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="month">Month</button>
+      </div>
+      <div class="tools">
+        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
+        <span class="small" style="margin-left:10px">Mode:</span>
+        <button id="lineMode" class="active">Line</button>
+        <button id="dotMode">Scatter</button>
+        <span class="small" style="margin-left:10px">View:</span>
+        <button id="popoutBtn">Popout</button>
+      </div>
+    </div>
+    <div class="chartWrap">
+      <canvas id="chart" class="chart" width="980" height="500"></canvas>
+      <div id="tip" class="chart-tip"></div>
+    </div>
+    <div class="legend"><span class="sell">Smart Low Buy</span><span class="buy">Smart High Sell</span></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label>Low: <input type="color" id="lowColorPicker" value="#fb6a6a"></label>
+        <label>High: <input type="color" id="highColorPicker" value="#5cc76a"></label>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button id="refreshBtn" class="btn-refresh">Refresh All Data</button>
+        <button id="addWatchBtn" class="btn-watch">Add to Watch</button>
+      </div>
+    </div>
+    <div id="itemDesc" class="help" style="margin-top:20px"></div>
+  </div> <!-- end .card.left -->
+  <!-- Sidebar -->
+  <div class="side">
+    <div class="card suggest-box">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">Smart Flip Suggestion</h3>
+      <div id="smartSuggest" class="item">
+        <!-- Filled by JS -->
+      </div>
+      <div id="suggestProfit" class="kv" style="margin-top:10px"><span>Expected Profit</span><strong style="color:var(--gold);font-size:18px">—</strong></div>
+      <button id="nextSuggest" class="next-btn">Next Suggestion</button>
+    </div>
+    <div class="card card-like">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">1 Year Price Data</h3>
+      <canvas id="historicalChart" width="360" height="144"></canvas>
+    </div>
+    <div class="card">
+      <h3>Watchlist</h3>
+      <select id="categorySelect">
+        <option value="custom">Custom Watchlist</option>
+        <option value="gilded">Gilded Items</option>
+        <option value="runes">Runes</option>
+        <option value="herbs">Herbs</option>
+        <option value="food">Food</option>
+        <option value="armour">Armour</option>
+        <option value="weapons">Weapons</option>
+        <option value="gems">Gems</option>
+        <option value="ores-and-bars">Ores & Bars</option>
+        <option value="charging-items">Charging Items</option>
+        <option value="3rd-age-items">3rd Age Items</option>
+        <option value="potions">Potions</option>
+        <option value="range-armour">Range Armour</option>
+        <option value="melee-armour">Melee Armour</option>
+        <option value="mage-armour">Mage Armour</option>
+        <option value="range-weapons">Range Weapons</option>
+        <option value="melee-weapons">Melee Weapons</option>
+        <option value="mage-weapons">Mage Weapons</option>
+        <option value="ammo">Ammo</option>
+      </select>
+      <!-- Column headers (tighter) -->
+      <div class="head">
+        <div></div>
+        <div id="sortSymbol">Symbol <span class="sort-arrow">▼</span></div>
+        <div class="delta" id="sortBuy">Buy gp <span class="sort-arrow">▼</span></div>
+        <div class="vol" id="sortSell">Sell gp <span class="sort-arrow">▼</span></div>
+      </div>
+      <div id="watch" class="tb"></div>
+    </div>
+  </div>
+  <div class="card left" style="grid-column:1 / -1">
+    <div class="help" style="margin-top:20px">
+      <h3>About Grant Exchange</h3>
+      <p>Grant Exchange is the ultimate RuneScape Grand Exchange flipping tool designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor!</p>
+    </div>
+  </div>
+</div> <!-- .wrap -->
+<!-- ===================== SCRIPT ===================== -->
+<script>
+/* ========== Constants & API ========== */
+const $ = s => document.querySelector(s);
+const API = "https://prices.runescape.wiki/api/v1/osrs";
+let mapping=[], latest=null, volumes=null, selected=null;
+let currentSeries=null, view="day", zoom=1.5, offset=0, drawMode="line";
+let membersOn=false; // F2P by default (false)
+let watchlist = [];
+let customWatchlist = [];
+let dismissed = [];
+let flipSuggestions = [];
+let suggestIndex = 0;
+let adjustedBuy = null;
+let adjustedSell = null;
+let buyLimit = 0;
+const buyLimits = {
+  "3rd age amulet": 8,
+  "3rd age axe": 40,
+  "3rd age bow": 8,
+  "3rd age cloak": 8,
+  "3rd age druidic cloak": 8,
+  "3rd age druidic robe bottoms": 4,
+  "3rd age druidic robe top": 4,
+  "3rd age druidic staff": 8,
+  "3rd age full helmet": 8,
+  "3rd age kiteshield": 8,
+  "3rd age longsword": 8,
+  "3rd age mage hat": 8,
+  "3rd age pickaxe": 40,
+  "3rd age platebody": 8,
+  "3rd age platelegs": 8,
+  "3rd age plateskirt": 8,
+  "3rd age range coif": 8,
+  "3rd age range legs": 8,
+  "3rd age range top": 8,
+  "3rd age robe": 8,
+  "3rd age robe top": 8,
+  "3rd age vambraces": 8,
+  "3rd age wand": 8,
+  "a powdered wig": 4,
+  "abyssal ashes": 7500,
+  "abyssal bludgeon": 8,
+  "abyssal bracelet(5)": 10000,
+  "abyssal dagger": 8,
+  "abyssal dagger (p)": 8,
+  "abyssal dagger (p+)": 8,
+  "abyssal dagger (p++)": 8,
+  "abyssal whip": 70,
+  "accursed sceptre (au)": 8,
+  "achey tree logs": 13000,
+  "acorn": 200,
+  "adamant 2h sword": 125,
+  "adamant arrow": 11000,
+  "adamant arrow(p)": 11000,
+  "adamant arrow(p+)": 11000,
+  "adamant arrow(p++)": 11000,
+  "adamant arrowtips": 10000,
+  "adamant axe": 40,
+  "adamant battleaxe": 125,
+  "adamant bolts": 11000,
+  "adamant bolts (p)": 11000,
+  "adamant bolts (p+)": 11000,
+  "adamant bolts (p++)": 11000,
+  "adamant bolts(unf)": 13000,
+  "adamant boots": 125,
+  "adamant brutal": 11000,
+  "adamant cane": 4,
+  "adamant chainbody": 125,
+  "adamant claws": 125,
+  "adamant crossbow": 70,
+  "adamant crossbow (u)": 10000,
+  "adamant dagger": 125,
+  "adamant dagger(p)": 125,
+  "adamant dagger(p+)": 125,
+  "adamant dagger(p++)": 125,
+  "adamant dart": 11000,
+  "adamant dart tip": 20000,
+  "adamant dart(p)": 11000,
+  "adamant dart(p+)": 11000,
+  "adamant dart(p++)": 11000,
+  "adamant dragon mask": 4,
+  "adamant full helm": 125,
+  "adamant full helm (g)": 8,
+  "adamant full helm (t)": 8,
+  "adamant gold-trimmed set (lg)": 8,
+  "adamant gold-trimmed set (sk)": 8,
+  "adamant halberd": 125,
+  "adamant hasta": 125,
+  "adamant hasta(p)": 125,
+  "adamant hasta(p+)": 125,
+  "adamant hasta(p++)": 125,
+  "adamant helm (h1)": 70,
+  "adamant helm (h2)": 70,
+  "adamant helm (h3)": 70,
+  "adamant helm (h4)": 70,
+  "adamant helm (h5)": 70,
+  "adamant javelin": 11000,
+  "adamant javelin heads": 10000,
+  "adamant javelin(p)": 11000,
+  "adamant javelin(p+)": 11000,
+  "adamant javelin(p++)": 11000,
+  "adamant kiteshield": 125,
+  "adamant kiteshield (g)": 8,
+  "adamant kiteshield (t)": 8,
+  "adamant knife": 11000,
+  "adamant knife(p)": 7000,
+  "adamant knife(p+)": 7000,
+  "adamant knife(p++)": 7000,
+  "adamant longsword": 125,
+  "adamant mace": 125,
+  "adamant med helm": 125,
+  "adamant pickaxe": 40,
+  "adamant platebody": 125,
+  "adamant platebody (g)": 8,
+  "adamant platebody (h1)": 8,
+  "adamant platebody (h2)": 8,
+  "adamant platebody (h3)": 8,
+  "adamant platebody (h4)": 8,
+  "adamant platebody (h5)": 8,
+  "adamant platebody (t)": 8,
+  "adamant platelegs": 125,
+  "adamant platelegs (g)": 8,
+  "adamant platelegs (t)": 8,
+  "adamant plateskirt": 125,
+  "adamant plateskirt (g)": 8,
+  "adamant plateskirt (t)": 8,
+  "adamant scimitar": 125,
+  "adamant seeds": 18000,
+  "adamant set (lg)": 8,
+  "adamant set (sk)": 8,
+  "adamant shield (h1)": 70,
+  "adamant shield (h2)": 70,
+  "adamant shield (h3)": 70,
+  "adamant shield (h4)": 70,
+  "adamant shield (h5)": 70,
+  "adamant spear": 125,
+  "adamant spear(p)": 125,
+  "adamant spear(p+)": 125,
+  "adamant spear(p++)": 125,
+  "adamant sq shield": 125,
+  "adamant sword": 125,
+  "adamant thrownaxe": 11000,
+  "adamant trimmed set (lg)": 8,
+  "adamant trimmed set (sk)": 8,
+  "adamant warhammer": 125,
+  "adamantite bar": 10000,
+  "adamantite limbs": 10000,
+  "adamantite nails": 13000,
+  "adamantite ore": 4500,
+  "admiral pie": 10000,
+  "aether catalyst": 25000,
+  "aether rune": 25000,
+  "afro": 4,
+  "agility mix(1)": 2000,
+  "agility mix(2)": 2000,
+  "agility potion(1)": 2000,
+  "agility potion(2)": 2000,
+  "agility potion(3)": 2000,
+  "agility potion(4)": 2000,
+  "ahrim's armour set": 8,
+  "ahrim's hood": 15,
+  "ahrim's hood 0": 15,
+  "ahrim's robeskirt": 15,
+  "ahrim's robeskirt 0": 15,
+  "ahrim's robetop": 15,
+  "ahrim's robetop 0": 15,
+  "ahrim's staff": 15,
+  "ahrim's staff 0": 15,
+  "air battlestaff": 18000,
+  "air orb": 11000,
+  "air rune": 50000,
+  "air talisman": 11000,
+  "air tiara": 40,
+  "airtight pot": 15,
+  "ale of the gods": 4,
+  "ale yeast": 11000,
+  "amethyst": 13000,
+  "amethyst arrow": 11000,
+  "amethyst arrow(p)": 11000,
+  "amethyst arrow(p+)": 11000,
+  "amethyst arrow(p++)": 11000,
+  "amethyst arrowtips": 10000,
+  "amethyst bolt tips": 11000,
+  "amethyst broad bolts": 11000,
+  "amethyst dart": 11000,
+  "amethyst dart tip": 11000,
+  "amethyst dart(p)": 11000,
+  "amethyst dart(p+)": 11000,
+  "amethyst dart(p++)": 11000,
+  "amethyst javelin": 11000,
+  "amethyst javelin heads": 10000,
+  "amethyst javelin(p)": 7000,
+  "amethyst javelin(p+)": 7000,
+  "amethyst javelin(p++)": 7000,
+  "amulet mould": 40,
+  "amulet of accuracy": 5,
+  "amulet of avarice": 8,
+  "amulet of bounty": 10000,
+  "amulet of chemistry": 15000,
+  "amulet of defence": 125,
+  "amulet of defence (t)": 4,
+  "amulet of eternal glory": 5,
+  "amulet of fury": 8,
+  "amulet of glory": 10000,
+  "amulet of glory (t)": 5,
+  "amulet of glory (t4)": 5,
+  "amulet of glory (t6)": 5,
+  "amulet of glory(4)": 10000,
+  "amulet of glory(6)": 10000,
+  "amulet of magic": 125,
+  "amulet of magic (t)": 5,
+  "amulet of power": 125,
+  "amulet of power (t)": 5,
+  "amulet of rancour": 8,
+  "amulet of strength": 125,
+  "amulet of the damned (full)": 8,
+  "amulet of torture": 8,
+  "amylase crystal": 11000,
+  "ancestral hat": 8,
+  "ancestral robe bottom": 8,
+  "ancestral robe top": 8,
+  "ancestral robes set": 5,
+  "anchovies": 15000,
+  "anchovy pizza": 10000,
+  "ancient blessing": 5,
+  "ancient bracers": 8,
+  "ancient brew(1)": 2000,
+  "ancient brew(2)": 2000,
+  "ancient brew(3)": 2000,
+  "ancient brew(4)": 2000,
+  "ancient ceremonial boots": 8,
+  "ancient ceremonial gloves": 8,
+  "ancient ceremonial legs": 8,
+  "ancient ceremonial mask": 8,
+  "ancient ceremonial top": 8,
+  "ancient chaps": 8,
+  "ancient cloak": 8,
+  "ancient coif": 8,
+  "ancient crozier": 8,
+  "ancient crystal": 250,
+  "ancient d'hide body": 8,
+  "ancient d'hide boots": 8,
+  "ancient d'hide shield": 8,
+  "ancient dragonhide set": 8,
+  "ancient effigy": 250,
+  "ancient emblem": 250,
+  "ancient essence": 300000,
+  "ancient full helm": 8,
+  "ancient godsword": 8,
+  "ancient kiteshield": 8,
+  "ancient mace": 8,
+  "ancient medallion": 250,
+  "ancient mitre": 8,
+  "ancient page 1": 5,
+  "ancient page 2": 5,
+  "ancient page 3": 5,
+  "ancient page 4": 5,
+  "ancient platebody": 8,
+  "ancient platelegs": 8,
+  "ancient plateskirt": 8,
+  "ancient relic": 250,
+  "ancient robe legs": 8,
+  "ancient robe top": 8,
+  "ancient rune armour set (lg)": 8,
+  "ancient rune armour set (sk)": 8,
+  "ancient staff": 70,
+  "ancient statuette": 250,
+  "ancient stole": 8,
+  "ancient totem": 250,
+  "ancient wyvern shield": 8,
+  "anglerfish": 10000,
+  "anguish ornament kit": 4,
+  "ankou gloves": 4,
+  "ankou mask": 4,
+  "ankou socks": 4,
+  "ankou top": 4,
+  "ankou's leggings": 4,
+  "annakarl teleport (tablet)": 10000,
+  "anti-dragon shield": 125,
+  "anti-poison supermix(1)": 2000,
+  "anti-poison supermix(2)": 2000,
+  "anti-venom(1)": 2000,
+  "anti-venom(2)": 2000,
+  "anti-venom(3)": 2000,
+  "anti-venom(4)": 2000,
+  "anti-venom+(1)": 2000,
+  "anti-venom+(2)": 2000,
+  "anti-venom+(3)": 2000,
+  "anti-venom+(4)": 2000,
+  "antidote+ mix(1)": 2000,
+  "antidote+ mix(2)": 2000,
+  "antidote+(1)": 4000,
+  "antidote+(2)": 4000,
+  "antidote+(3)": 4000,
+  "antidote+(4)": 4000,
+  "antidote++(1)": 4000,
+  "antidote++(2)": 4000,
+  "antidote++(3)": 4000,
+  "antidote++(4)": 4000,
+  "antifire mix(1)": 2000,
+  "antifire mix(2)": 2000,
+  "antifire potion(1)": 2000,
+  "antifire potion(2)": 2000,
+  "antifire potion(3)": 2000,
+  "antifire potion(4)": 2000,
+  "antipoison mix(1)": 2000,
+  "antipoison mix(2)": 2000,
+  "antipoison(1)": 2000,
+  "antipoison(2)": 2000,
+  "antipoison(3)": 2000,
+  "antipoison(4)": 2000,
+  "ape atoll teleport (tablet)": 10000,
+  "apprentice wand": 125,
+  "aranea boots": 8,
+  "araxyte venom sack": 11000,
+  "arcane prayer scroll": 5,
+  "arcane sigil": 5,
+  "arcane spirit shield": 8,
+  "arceuus banner": 4,
+  "arceuus hood": 4,
+  "arceuus library teleport (tablet)": 10000,
+  "arceuus scarf": 4,
+  "archer helm": 70,
+  "archers ring": 8,
+  "archery ticket": 18000,
+  "arctic pine logs": 11000,
+  "arctic pyre logs": 11000,
+  "ardougne teleport (tablet)": 10000,
+  "arena book": 15,
+  "armadyl bracers": 8,
+  "armadyl chainskirt": 8,
+  "armadyl chaps": 8,
+  "armadyl chestplate": 8,
+  "armadyl cloak": 8,
+  "armadyl coif": 8,
+  "armadyl crossbow": 8,
+  "armadyl crozier": 8,
+  "armadyl d'hide body": 8,
+  "armadyl d'hide boots": 8,
+  "armadyl d'hide shield": 8,
+  "armadyl dragonhide set": 8,
+  "armadyl full helm": 8,
+  "armadyl godsword": 8,
+  "armadyl godsword ornament kit": 4,
+  "armadyl helmet": 8,
+  "armadyl hilt": 10000,
+  "armadyl kiteshield": 8,
+  "armadyl mitre": 8,
+  "armadyl page 1": 5,
+  "armadyl page 2": 5,
+  "armadyl page 3": 5,
+  "armadyl page 4": 5,
+  "armadyl platebody": 8,
+  "armadyl platelegs": 8,
+  "armadyl plateskirt": 8,
+  "armadyl robe legs": 8,
+  "armadyl robe top": 8,
+  "armadyl rune armour set (lg)": 8,
+  "armadyl rune armour set (sk)": 8,
+  "armadyl stole": 8,
+  "armageddon cape fabric": 6,
+  "arrow shaft": 7000,
+  "asgarnian ale": 2000,
+  "asgarnian ale (flatpack)": 500,
+  "asgarnian ale(4)": 2000,
+  "asgarnian ale(m)": 2000,
+  "asgarnian ale(m4)": 2000,
+  "asgarnian hops": 11000,
+  "asgarnian seed": 2000,
+  "ashes": 13000,
+  "assorted flowers": 150,
+  "astral rune": 25000,
+  "asyn remains": 7500,
+  "atlatl dart": 11000,
+  "attack mix(1)": 2000,
+  "attack mix(2)": 2000,
+  "attack potion(1)": 2000,
+  "attack potion(2)": 2000,
+  "attack potion(3)": 2000,
+  "attack potion(4)": 2000,
+  "avantoe": 13000,
+  "avantoe potion (unf)": 10000,
+  "avantoe seed": 200,
+  "avernic defender hilt": 8,
+  "avernic treads": 8,
+  "awakener's orb": 50,
+  "axeman's folly": 2000,
+  "axeman's folly(4)": 2000,
+  "axeman's folly(m)": 2000,
+  "axeman's folly(m4)": 2000,
+  "baby impling jar": 18000,
+  "babydragon bones": 3000,
+  "bag of salt": 8000,
+  "bagged bluebells": 10000,
+  "bagged daffodils": 10000,
+  "bagged dead tree": 10000,
+  "bagged flower": 10000,
+  "bagged magic tree": 10000,
+  "bagged maple tree": 10000,
+  "bagged marigolds": 10000,
+  "bagged nice tree": 10000,
+  "bagged oak tree": 10000,
+  "bagged plant 1": 10000,
+  "bagged plant 2": 10000,
+  "bagged plant 3": 10000,
+  "bagged roses": 10000,
+  "bagged sunflower": 10000,
+  "bagged willow tree": 10000,
+  "bagged yew tree": 10000,
+  "baked potato": 13000,
+  "ball of wool": 13000,
+  "ballista limbs": 8,
+  "ballista spring": 8,
+  "banana": 13000,
+  "banana sapling": 200,
+  "banana stew": 6000,
+  "banana tree seed": 200,
+  "bananas(5)": 600,
+  "bandit's brew": 2000,
+  "bandos boots": 8,
+  "bandos bracers": 8,
+  "bandos chaps": 8,
+  "bandos chestplate": 8,
+  "bandos cloak": 8,
+  "bandos coif": 8,
+  "bandos crozier": 8,
+  "bandos d'hide body": 8,
+  "bandos d'hide boots": 8,
+  "bandos d'hide shield": 8,
+  "bandos dragonhide set": 8,
+  "bandos full helm": 8,
+  "bandos godsword": 8,
+  "bandos godsword ornament kit": 4,
+  "bandos hilt": 10000,
+  "bandos kiteshield": 8,
+  "bandos mitre": 8,
+  "bandos page 1": 5,
+  "bandos page 2": 5,
+  "bandos page 3": 5,
+  "bandos page 4": 5,
+  "bandos platebody": 8,
+  "bandos platelegs": 8,
+  "bandos plateskirt": 8,
+  "bandos robe legs": 8,
+  "bandos robe top": 8,
+  "bandos rune armour set (lg)": 8,
+  "bandos rune armour set (sk)": 8,
+  "bandos stole": 8,
+  "bandos tassets": 8,
+  "barb bolttips": 11000,
+  "barb-tail harpoon": 40,
+  "barbarian teleport (tablet)": 10000,
+  "barbed bolts": 7000,
+  "bark": 13000,
+  "barley": 11000,
+  "barley malt": 11000,
+  "barley seed": 2000,
+  "barrel": 15,
+  "barrows teleport (tablet)": 10000,
+  "basalt": 10000,
+  "bass": 6000,
+  "bastion potion(1)": 2000,
+  "bastion potion(2)": 2000,
+  "bastion potion(3)": 2000,
+  "bastion potion(4)": 2000,
+  "bat bones": 3000,
+  "batta tin": 40,
+  "battlefront teleport (tablet)": 10000,
+  "battlemage potion(1)": 2000,
+  "battlemage potion(2)": 2000,
+  "battlemage potion(3)": 2000,
+  "battlemage potion(4)": 2000,
+  "battlestaff": 11000,
+  "beanie": 4,
+  "bear feet": 4,
+  "bear fur": 18000,
+  "beer": 2000,
+  "beer barrel (flatpack)": 500,
+  "beer glass": 10000,
+  "beer tankard": 2000,
+  "beginner wand": 125,
+  "belladonna seed": 200,
+  "berserker helm": 70,
+  "berserker necklace": 70,
+  "berserker necklace ornament kit": 4,
+  "berserker ring": 8,
+  "big bones": 3000,
+  "big fishing net": 40,
+  "big pirate hat": 4,
+  "binding necklace": 10000,
+  "bird house": 250,
+  "bird nest (empty)": 11000,
+  "bird snare": 250,
+  "black 2h sword": 125,
+  "black axe": 40,
+  "black battleaxe": 125,
+  "black bead": 11000,
+  "black beret": 4,
+  "black boater": 4,
+  "black boots": 125,
+  "black brutal": 11000,
+  "black cane": 4,
+  "black cape": 150,
+  "black cavalier": 4,
+  "black chainbody": 125,
+  "black chinchompa": 11000,
+  "black claws": 125,
+  "black d'hide body": 70,
+  "black d'hide body (g)": 8,
+  "black d'hide body (t)": 8,
+  "black d'hide chaps": 70,
+  "black d'hide chaps (g)": 8,
+  "black d'hide chaps (t)": 8,
+  "black d'hide shield": 125,
+  "black d'hide vambraces": 70,
+  "black dagger": 125,
+  "black dagger(p)": 125,
+  "black dagger(p+)": 125,
+  "black dagger(p++)": 125,
+  "black dart": 7000,
+  "black dart(p)": 7000,
+  "black dart(p+)": 7000,
+  "black dart(p++)": 7000,
+  "black demon mask": 4,
+  "black desert robe": 15,
+  "black desert shirt": 15,
+  "black dragon leather": 11000,
+  "black dragon mask": 4,
+  "black dragonhide": 11000,
+  "black dragonhide set": 70,
+  "black elegant legs": 4,
+  "black elegant shirt": 4,
+  "black flowers": 150,
+  "black full helm": 125,
+  "black full helm (g)": 8,
+  "black full helm (t)": 8,
+  "black gold-trimmed set (lg)": 8,
+  "black gold-trimmed set (sk)": 8,
+  "black halberd": 125,
+  "black headband": 4,
+  "black helm (h1)": 70,
+  "black helm (h2)": 70,
+  "black helm (h3)": 70,
+  "black helm (h4)": 70,
+  "black helm (h5)": 70,
+  "black kiteshield": 125,
+  "black kiteshield (g)": 8,
+  "black kiteshield (t)": 8,
+  "black knife": 7000,
+  "black knife(p)": 7000,
+  "black knife(p+)": 7000,
+  "black knife(p++)": 7000,
+  "black leprechaun hat": 4,
+  "black locks": 8,
+  "black longsword": 125,
+  "black mace": 125,
+  "black mask": 70,
+  "black mask (10)": 70,
+  "black med helm": 125,
+  "black nails": 13000,
+  "black pickaxe": 4,
+  "black platebody": 125,
+  "black platebody (g)": 8,
+  "black platebody (h1)": 8,
+  "black platebody (h2)": 8,
+  "black platebody (h3)": 8,
+  "black platebody (h4)": 8,
+  "black platebody (h5)": 8,
+  "black platebody (t)": 8,
+  "black platelegs": 125,
+  "black platelegs (g)": 8,
+  "black platelegs (t)": 8,
+  "black plateskirt": 125,
+  "black plateskirt (g)": 8,
+  "black plateskirt (t)": 8,
+  "black robe": 125,
+  "black salamander": 125,
+  "black scimitar": 125,
+  "black set (lg)": 8,
+  "black set (sk)": 8,
+  "black shield (h1)": 70,
+  "black shield (h2)": 70,
+  "black shield (h3)": 70,
+  "black shield (h4)": 70,
+  "black shield (h5)": 70,
+  "black skirt": 150,
+  "black skirt (g)": 4,
+  "black skirt (t)": 4,
+  "black spear": 8,
+  "black spear(p)": 8,
+  "black spear(p+)": 8,
+  "black spear(p++)": 8,
+  "black spiky vambraces": 125,
+  "black sq shield": 125,
+  "black sword": 125,
+  "black tourmaline core": 5,
+  "black toy horsey": 150,
+  "black trimmed set (lg)": 8,
+  "black trimmed set (sk)": 8,
+  "black unicorn mask": 4,
+  "black warhammer": 125,
+  "black warlock (item)": 125,
+  "black wizard hat (g)": 4,
+  "black wizard hat (t)": 4,
+  "black wizard robe (g)": 4,
+  "black wizard robe (t)": 4,
+  "blacksmith's helm": 125,
+  "blade of saeldor (inactive)": 8,
+  "blamish bark shell": 13000,
+  "blamish blue shell (pointed)": 13000,
+  "blamish blue shell (round)": 13000,
+  "blamish myre shell (pointed)": 13000,
+  "blamish myre shell (round)": 13000,
+  "blamish ochre shell (pointed)": 13000,
+  "blamish ochre shell (round)": 13000,
+  "blamish red shell (pointed)": 13000,
+  "blamish red shell (round)": 13000,
+  "blessed spirit shield": 8,
+  "blighted ancient ice sack": 15000,
+  "blighted anglerfish": 10000,
+  "blighted bind sack": 10000,
+  "blighted entangle sack": 15000,
+  "blighted karambwan": 10000,
+  "blighted manta ray": 10000,
+  "blighted snare sack": 10000,
+  "blighted super restore(4)": 2000,
+  "blighted teleport spell sack": 10000,
+  "blighted vengeance sack": 10000,
+  "blood moon chestplate": 15,
+  "blood moon chestplate (broken)": 15,
+  "blood moon helm": 15,
+  "blood moon helm (broken)": 15,
+  "blood moon tassets": 15,
+  "blood moon tassets (broken)": 15,
+  "blood pint": 2000,
+  "blood rune": 25000,
+  "blood shard": 8,
+  "blood'n'tar snelm": 150,
+  "bloodbark body": 70,
+  "bloodbark gauntlets": 70,
+  "bloodbark legs": 70,
+  "bloody bracer": 2000,
+  "blue beret": 4,
+  "blue boater": 4,
+  "blue boots": 150,
+  "blue cape": 150,
+  "blue d'hide body": 125,
+  "blue d'hide body (g)": 8,
+  "blue d'hide body (t)": 8,
+  "blue d'hide chaps": 125,
+  "blue d'hide chaps (g)": 8,
+  "blue d'hide chaps (t)": 8,
+  "blue d'hide shield": 125,
+  "blue d'hide vambraces": 125,
+  "blue dark bow paint": 4,
+  "blue dragon leather": 13000,
+  "blue dragon mask": 4,
+  "blue dragon scale": 13000,
+  "blue dragonhide": 13000,
+  "blue dragonhide set": 125,
+  "blue dye": 150,
+  "blue elegant blouse": 4,
+  "blue elegant legs": 4,
+  "blue elegant shirt": 4,
+  "blue elegant skirt": 4,
+  "blue feather": 8000,
+  "blue firelighter": 250,
+  "blue flowers": 150,
+  "blue halloween mask": 5,
+  "blue hat": 150,
+  "blue headband": 4,
+  "blue moon chestplate": 15,
+  "blue moon chestplate (broken)": 15,
+  "blue moon helm": 15,
+  "blue moon helm (broken)": 15,
+  "blue moon spear": 15,
+  "blue moon tassets": 15,
+  "blue moon tassets (broken)": 15,
+  "blue partyhat": 5,
+  "blue robe bottoms": 150,
+  "blue robe top": 150,
+  "blue skirt": 150,
+  "blue skirt (g)": 4,
+  "blue skirt (t)": 4,
+  "blue spiky vambraces": 125,
+  "blue wizard hat": 125,
+  "blue wizard hat (g)": 4,
+  "blue wizard hat (t)": 4,
+  "blue wizard robe": 125,
+  "blue wizard robe (g)": 4,
+  "blue wizard robe (t)": 4,
+  "blueberry": 13000,
+  "bluegill": 13000,
+  "blurbberry special": 2000,
+  "bob's black shirt": 4,
+  "bob's blue shirt": 4,
+  "bob's green shirt": 4,
+  "bob's purple shirt": 4,
+  "bob's red shirt": 4,
+  "body rune": 18000,
+  "body talisman": 11000,
+  "body tiara": 40,
+  "bolt mould": 40,
+  "bolt of cloth": 13000,
+  "bolt rack": 11000,
+  "bone bolts": 11000,
+  "bone club": 4,
+  "bone dagger": 70,
+  "bone dagger (p)": 70,
+  "bone dagger (p+)": 70,
+  "bone dagger (p++)": 70,
+  "bone fragments": 500,
+  "bone spear": 4,
+  "bones": 3000,
+  "bones to bananas (tablet)": 10000,
+  "bones to peaches (tablet)": 10000,
+  "book of balance page set": 5,
+  "book of darkness page set": 5,
+  "book of law page set": 5,
+  "book of war page set": 5,
+  "bookcase (flatpack)": 500,
+  "boots of brimstone": 70,
+  "boots of darkness": 70,
+  "boots of stone": 125,
+  "botanical pie": 10000,
+  "bottle of wine": 10000,
+  "bottled dragonbreath": 50,
+  "bottled dragonbreath (unpowered)": 50,
+  "bottomless compost bucket": 5,
+  "bounty supply crate (anglerfish)": 100,
+  "bounty supply crate (manta ray)": 100,
+  "bow string": 13000,
+  "bowl": 13000,
+  "bowl of hot water": 13000,
+  "bowl of water": 13000,
+  "bowl wig": 4,
+  "box trap": 250,
+  "bracelet mould": 40,
+  "bracelet of clay": 10000,
+  "bracelet of ethereum (uncharged)": 10000,
+  "bracelet of slaughter": 10000,
+  "brandy": 13000,
+  "brass key": 15,
+  "brass necklace": 150,
+  "bread": 6000,
+  "bread dough": 13000,
+  "briefcase": 4,
+  "brimstone ring": 8,
+  "brine sabre": 8,
+  "broad arrowheads": 7000,
+  "broad bolts": 7000,
+  "bronze 2h sword": 125,
+  "bronze arrow": 7000,
+  "bronze arrow(p)": 7000,
+  "bronze arrow(p+)": 7000,
+  "bronze arrow(p++)": 7000,
+  "bronze arrowtips": 10000,
+  "bronze axe": 40,
+  "bronze bar": 10000,
+  "bronze battleaxe": 125,
+  "bronze bolts": 7000,
+  "bronze bolts (p)": 11000,
+  "bronze bolts (p+)": 11000,
+  "bronze bolts (p++)": 11000,
+  "bronze bolts (unf)": 13000,
+  "bronze boots": 125,
+  "bronze brutal": 11000,
+  "bronze chainbody": 125,
+  "bronze claws": 125,
+  "bronze crossbow": 125,
+  "bronze crossbow (u)": 10000,
+  "bronze dagger": 125,
+  "bronze dagger(p)": 125,
+  "bronze dagger(p+)": 125,
+  "bronze dagger(p++)": 125,
+  "bronze dart": 7000,
+  "bronze dart tip": 13000,
+  "bronze dart(p)": 7000,
+  "bronze dart(p+)": 7000,
+  "bronze dart(p++)": 7000,
+  "bronze dragon mask": 4,
+  "bronze full helm": 125,
+  "bronze full helm (g)": 4,
+  "bronze full helm (t)": 4,
+  "bronze gold-trimmed set (lg)": 8,
+  "bronze gold-trimmed set (sk)": 8,
+  "bronze halberd": 125,
+  "bronze hasta": 125,
+  "bronze hasta(p)": 125,
+  "bronze hasta(p+)": 125,
+  "bronze hasta(p++)": 125,
+  "bronze javelin": 7000,
+  "bronze javelin heads": 10000,
+  "bronze javelin(p)": 7000,
+  "bronze javelin(p+)": 7000,
+  "bronze javelin(p++)": 7000,
+  "bronze kiteshield": 125,
+  "bronze kiteshield (g)": 4,
+  "bronze kiteshield (t)": 4,
+  "bronze knife": 7000,
+  "bronze knife(p)": 7000,
+  "bronze knife(p+)": 7000,
+  "bronze knife(p++)": 7000,
+  "bronze limbs": 10000,
+  "bronze locks": 8,
+  "bronze longsword": 125,
+  "bronze mace": 125,
+  "bronze med helm": 125,
+  "bronze nails": 13000,
+  "bronze pickaxe": 40,
+  "bronze platebody": 125,
+  "bronze platebody (g)": 4,
+  "bronze platebody (t)": 4,
+  "bronze platelegs": 125,
+  "bronze platelegs (g)": 4,
+  "bronze platelegs (t)": 4,
+  "bronze plateskirt": 125,
+  "bronze plateskirt (g)": 4,
+  "bronze plateskirt (t)": 4,
+  "bronze scimitar": 125,
+  "bronze set (lg)": 8,
+  "bronze set (sk)": 8,
+  "bronze spear": 125,
+  "bronze spear(p)": 125,
+  "bronze spear(p+)": 125,
+  "bronze spear(p++)": 125,
+  "bronze sq shield": 125,
+  "bronze sword": 125,
+  "bronze thrownaxe": 7000,
+  "bronze trimmed set (lg)": 8,
+  "bronze trimmed set (sk)": 8,
+  "bronze warhammer": 125,
+  "bronze wire": 15,
+  "brown apron": 40,
+  "brown headband": 4,
+  "brown toy horsey": 150,
+  "bruise blue snelm": 150,
+  "brutal black dragon": 7500,
+  "brutal blue dragon": 7500,
+  "brutal green dragon": 7500,
+  "brutal red dragon": 7500,
+  "bryophyta's essence": 100,
+  "bryophyta's staff (uncharged)": 8,
+  "bucket": 13000,
+  "bucket helm": 4,
+  "bucket helm (g)": 4,
+  "bucket of milk": 13000,
+  "bucket of sand": 13000,
+  "bucket of sap": 15,
+  "bucket of water": 13000,
+  "bucket of wax": 15,
+  "bullseye lantern": 10000,
+  "bullseye lantern (empty)": 10000,
+  "bullseye lantern (unf)": 10000,
+  "burning amulet(5)": 10000,
+  "burning claw": 8,
+  "burning claws": 8,
+  "burnt bones": 3000,
+  "burnt page": 11000,
+  "butterfly jar": 40,
+  "butterfly net": 125,
+  "cabbage": 6000,
+  "cabbage round shield": 125,
+  "cabbage seed": 600,
+  "cabbages(10)": 600,
+  "cactus seed": 200,
+  "cactus spine": 11000,
+  "cadantine": 11000,
+  "cadantine blood potion (unf)": 10000,
+  "cadantine potion (unf)": 10000,
+  "cadantine seed": 200,
+  "cadava berries": 600,
+  "cadavaberry seed": 600,
+  "cake": 6000,
+  "cake tin": 40,
+  "calcified moth": 100,
+  "calcite": 13000,
+  "calquat fruit": 11000,
+  "calquat keg": 10000,
+  "calquat sapling": 200,
+  "calquat tree seed": 200,
+  "camelot teleport (tablet)": 10000,
+  "candle": 40,
+  "candle lantern (black)": 40,
+  "candle lantern (white)": 40,
+  "cannon barrels": 70,
+  "cannon base": 70,
+  "cannon furnace": 70,
+  "cannon stand": 70,
+  "cannonball": 11000,
+  "cape of skulls": 8,
+  "carrallanger teleport (tablet)": 10000,
+  "carved oak bench (flatpack)": 500,
+  "carved oak magic wardrobe (flatpack)": 500,
+  "carved oak table (flatpack)": 500,
+  "carved teak bench (flatpack)": 500,
+  "carved teak magic wardrobe (flatpack)": 500,
+  "carved teak table (flatpack)": 500,
+  "casket": 50,
+  "castle wars bracelet(3)": 10000,
+  "cat mask": 4,
+  "catalytic talisman": 40,
+  "catalytic tiara": 40,
+  "catherby teleport (tablet)": 10000,
+  "cavalier mask": 150,
+  "cave eel": 10000,
+  "cave goblin wire": 11000,
+  "caviar": 13000,
+  "celastrus bark": 12000,
+  "celastrus sapling": 100,
+  "celastrus seed": 200,
+  "cemetery teleport (tablet)": 10000,
+  "chaos rune": 18000,
+  "chaos talisman": 11000,
+  "chaos tiara": 40,
+  "charcoal": 13000,
+  "charge dragonstone jewellery scroll": 10000,
+  "cheese": 13000,
+  "cheese+tom batta": 6000,
+  "chef's delight": 2000,
+  "chef's delight (flatpack)": 500,
+  "chef's delight(4)": 2000,
+  "chef's delight(m)": 2000,
+  "chef's delight(m4)": 2000,
+  "chef's hat": 150,
+  "chilli con carne": 13000,
+  "chilli potato": 13000,
+  "chinchompa": 7000,
+  "chisel": 40,
+  "choc saturday": 2000,
+  "choc-ice": 6000,
+  "chocchip crunchies": 6000,
+  "chocolate bar": 13000,
+  "chocolate bomb": 6000,
+  "chocolate cake": 6000,
+  "chocolate dust": 13000,
+  "christmas cracker": 4,
+  "chromium ingot": 8,
+  "chugging barrel (disassembled)": 5,
+  "cider": 2000,
+  "cider barrel (flatpack)": 500,
+  "cider(4)": 2000,
+  "circular hide": 11000,
+  "citizen shoes": 150,
+  "citizen top": 150,
+  "citizen trousers": 150,
+  "clay": 13000,
+  "cleaning cloth": 40,
+  "cleaver": 50,
+  "climbing boots": 200,
+  "climbing boots (g)": 4,
+  "clockwork": 11000,
+  "coal": 13000,
+  "cocktail glass": 13000,
+  "cocktail guide": 15,
+  "cocktail shaker": 40,
+  "coconut": 11000,
+  "coconut milk": 11000,
+  "cod": 6000,
+  "coif": 125,
+  "combat bracelet": 10000,
+  "combat bracelet(4)": 10000,
+  "combat bracelet(6)": 10000,
+  "combat mix(1)": 2000,
+  "combat mix(2)": 2000,
+  "combat potion set": 2000,
+  "combat potion(1)": 2000,
+  "combat potion(2)": 2000,
+  "combat potion(3)": 2000,
+  "combat potion(4)": 2000,
+  "common kebbit fur": 10000,
+  "common tench": 13000,
+  "comp ogre bow": 70,
+  "compost": 2000,
+  "compost potion(1)": 50,
+  "compost potion(2)": 50,
+  "compost potion(3)": 50,
+  "compost potion(4)": 50,
+  "contract of bloodied blows": 50,
+  "contract of catalyst acquisition": 50,
+  "contract of divine severance": 50,
+  "contract of familiar acquisition": 50,
+  "contract of forfeit breath": 50,
+  "contract of glyphic attenuation": 50,
+  "contract of harmony acquisition": 50,
+  "contract of oathplate acquisition": 50,
+  "contract of sensory clouding": 50,
+  "contract of shard acquisition": 50,
+  "contract of worm acquisition": 50,
+  "cooked barb-tailed kebbit": 10000,
+  "cooked chicken": 6000,
+  "cooked chompy": 6000,
+  "cooked chompy (roasted)": 100,
+  "cooked crab meat": 6000,
+  "cooked dashing kebbit": 6000,
+  "cooked graahk": 10000,
+  "cooked jubbly": 10000,
+  "cooked karambwan": 10000,
+  "cooked kyatt": 10000,
+  "cooked larupia": 10000,
+  "cooked meat": 6000,
+  "cooked moonlight antelope": 6000,
+  "cooked oomlie wrap": 15,
+  "cooked pyre fox": 10000,
+  "cooked rabbit": 6000,
+  "cooked slimy eel": 6000,
+  "cooked sunlight antelope": 10000,
+  "cooked sweetcorn": 11000,
+  "cooked wild kebbit": 10000,
+  "cooking apple": 13000,
+  "copper ore": 13000,
+  "cornflour": 15,
+  "cosmic rune": 18000,
+  "cosmic talisman": 11000,
+  "cosmic tiara": 40,
+  "cowhide": 13000,
+  "craw's bow (u)": 8,
+  "cream boots": 150,
+  "cream hat": 150,
+  "cream robe bottoms": 150,
+  "cream robe top": 150,
+  "crier bell": 4,
+  "crier coat": 4,
+  "crier hat": 4,
+  "crossbow": 125,
+  "crossbow string": 11000,
+  "crude chair (flatpack)": 500,
+  "crunchy tray": 40,
+  "crushed infernal shale": 25000,
+  "crushed nest": 11000,
+  "crushed superior dragon bones": 11000,
+  "crystal armour seed": 100,
+  "crystal ball (flatpack)": 500,
+  "crystal key": 11000,
+  "crystal of power (flatpack)": 500,
+  "crystal tool seed": 100,
+  "crystal weapon seed": 70,
+  "cup of hot water": 13000,
+  "cup of tea": 2000,
+  "cup of water": 13000,
+  "cyclops head": 4,
+  "dagannoth bones": 7500,
+  "dagannoth hide": 11000,
+  "dareeyak teleport (tablet)": 10000,
+  "dark bow": 8,
+  "dark bow tie": 4,
+  "dark cavalier": 4,
+  "dark crab": 10000,
+  "dark fishing bait": 8000,
+  "dark infinity colour kit": 4,
+  "dark kebbit fur": 10000,
+  "dark trousers": 4,
+  "dark tuxedo cuffs": 4,
+  "dark tuxedo jacket": 4,
+  "dark tuxedo shoes": 4,
+  "darkbearer": 8,
+  "dashing kebbit fur": 10000,
+  "death rune": 25000,
+  "death talisman": 11000,
+  "death tiara": 40,
+  "deerstalker": 4,
+  "defence mix(1)": 2000,
+  "defence mix(2)": 2000,
+  "defence potion(1)": 2000,
+  "defence potion(2)": 2000,
+  "defence potion(3)": 2000,
+  "defence potion(4)": 2000,
+  "demon feet": 4,
+  "demon tear": 13000,
+  "demonic tallow": 11000,
+  "desert boots": 150,
+  "desert devil fur": 10000,
+  "desert goat horn": 13000,
+  "desert legs": 150,
+  "desert robe": 150,
+  "desert robes": 150,
+  "desert shirt": 150,
+  "desert top": 150,
+  "desert top (overcoat)": 150,
+  "dharok's armour set": 8,
+  "dharok's greataxe": 15,
+  "dharok's greataxe 0": 15,
+  "dharok's helm": 15,
+  "dharok's helm 0": 15,
+  "dharok's platebody": 15,
+  "dharok's platebody 0": 15,
+  "dharok's platelegs": 15,
+  "dharok's platelegs 0": 15,
+  "diabolic worms": 8000,
+  "diamond": 11000,
+  "diamond amulet": 10000,
+  "diamond amulet (u)": 10000,
+  "diamond bolt tips": 11000,
+  "diamond bolts": 11000,
+  "diamond bolts (e)": 11000,
+  "diamond bracelet": 10000,
+  "diamond dragon bolts": 11000,
+  "diamond dragon bolts (e)": 11000,
+  "diamond necklace": 18000,
+  "diamond ring": 10000,
+  "digsite teleport": 10000,
+  "dinh's bulwark": 8,
+  "disk of returning": 50,
+  "divine bastion potion(1)": 2000,
+  "divine bastion potion(2)": 2000,
+  "divine bastion potion(3)": 2000,
+  "divine bastion potion(4)": 2000,
+  "divine battlemage potion(1)": 2000,
+  "divine battlemage potion(2)": 2000,
+  "divine battlemage potion(3)": 2000,
+  "divine battlemage potion(4)": 2000,
+  "divine magic potion(1)": 2000,
+  "divine magic potion(2)": 2000,
+  "divine magic potion(3)": 2000,
+  "divine magic potion(4)": 2000,
+  "divine ranging potion(1)": 2000,
+  "divine ranging potion(2)": 2000,
+  "divine ranging potion(3)": 2000,
+  "divine ranging potion(4)": 2000,
+  "divine super attack potion(1)": 2000,
+  "divine super attack potion(2)": 2000,
+  "divine super attack potion(3)": 2000,
+  "divine super attack potion(4)": 2000,
+  "divine super combat potion(1)": 2000,
+  "divine super combat potion(2)": 2000,
+  "divine super combat potion(3)": 2000,
+  "divine super combat potion(4)": 2000,
+  "divine super defence potion(1)": 2000,
+  "divine super defence potion(2)": 2000,
+  "divine super defence potion(3)": 2000,
+  "divine super defence potion(4)": 2000,
+  "divine super strength potion(1)": 2000,
+  "divine super strength potion(2)": 2000,
+  "divine super strength potion(3)": 2000,
+  "divine super strength potion(4)": 2000,
+  "dodgy necklace": 10000,
+  "doogle leaves": 0,
+  "dorgeshuun crossbow": 70,
+  "double eye patch": 4,
+  "draconic visage": 5,
+  "dragon 2h sword": 8,
+  "dragon armour set (lg)": 8,
+  "dragon armour set (sk)": 8,
+  "dragon arrow": 11000,
+  "dragon arrow(p)": 11000,
+  "dragon arrow(p+)": 11000,
+  "dragon arrow(p++)": 11000,
+  "dragon arrowtips": 10000,
+  "dragon axe": 40,
+  "dragon battleaxe": 70,
+  "dragon bitter": 2000,
+  "dragon bitter (flatpack)": 500,
+  "dragon bitter(4)": 2000,
+  "dragon bitter(m)": 2000,
+  "dragon bitter(m4)": 2000,
+  "dragon bolts": 11000,
+  "dragon bolts (p)": 11000,
+  "dragon bolts (p+)": 11000,
+  "dragon bolts (p++)": 11000,
+  "dragon bolts (unf)": 13000,
+  "dragon bones": 7500,
+  "dragon boots": 70,
+  "dragon boots ornament kit": 4,
+  "dragon cane": 4,
+  "dragon chainbody": 70,
+  "dragon chainbody ornament kit": 4,
+  "dragon claws": 8,
+  "dragon crossbow": 70,
+  "dragon crossbow (u)": 10000,
+  "dragon dagger": 70,
+  "dragon dagger(p)": 70,
+  "dragon dagger(p+)": 70,
+  "dragon dagger(p++)": 70,
+  "dragon dart": 11000,
+  "dragon dart tip": 11000,
+  "dragon dart(p)": 11000,
+  "dragon dart(p+)": 11000,
+  "dragon dart(p++)": 11000,
+  "dragon defender ornament kit": 4,
+  "dragon full helm": 8,
+  "dragon full helm ornament kit": 4,
+  "dragon halberd": 70,
+  "dragon harpoon": 5,
+  "dragon hasta": 70,
+  "dragon hasta(p)": 70,
+  "dragon hasta(p+)": 70,
+  "dragon hasta(p++)": 70,
+  "dragon hunter crossbow": 8,
+  "dragon hunter lance": 8,
+  "dragon hunter wand": 8,
+  "dragon impling jar": 18000,
+  "dragon javelin": 11000,
+  "dragon javelin heads": 10000,
+  "dragon javelin(p)": 11000,
+  "dragon javelin(p+)": 11000,
+  "dragon javelin(p++)": 11000,
+  "dragon knife": 11000,
+  "dragon knife(p)": 7000,
+  "dragon knife(p+)": 7000,
+  "dragon knife(p++)": 7000,
+  "dragon legs/skirt ornament kit": 4,
+  "dragon limbs": 10000,
+  "dragon longsword": 70,
+  "dragon mace": 70,
+  "dragon med helm": 8,
+  "dragon metal lump": 50,
+  "dragon metal shard": 50,
+  "dragon metal slice": 50,
+  "dragon necklace": 10000,
+  "dragon pickaxe": 40,
+  "dragon pickaxe upgrade kit": 50,
+  "dragon platebody": 70,
+  "dragon platebody ornament kit": 4,
+  "dragon platelegs": 70,
+  "dragon plateskirt": 70,
+  "dragon scale dust": 13000,
+  "dragon scimitar": 70,
+  "dragon scimitar ornament kit": 4,
+  "dragon spear": 70,
+  "dragon spear(p)": 70,
+  "dragon spear(p+)": 70,
+  "dragon spear(p++)": 70,
+  "dragon sq shield": 70,
+  "dragon sq shield ornament kit": 4,
+  "dragon sword": 70,
+  "dragon thrownaxe": 11000,
+  "dragon warhammer": 8,
+  "dragonbone necklace": 8,
+  "dragonfire shield": 8,
+  "dragonfire ward": 8,
+  "dragonfruit": 11000,
+  "dragonfruit pie": 10000,
+  "dragonfruit sapling": 200,
+  "dragonfruit tree seed": 200,
+  "dragonstone": 11000,
+  "dragonstone amulet": 10000,
+  "dragonstone amulet (u)": 10000,
+  "dragonstone bolt tips": 11000,
+  "dragonstone bolts": 11000,
+  "dragonstone bolts (e)": 11000,
+  "dragonstone bracelet": 10000,
+  "dragonstone dragon bolts": 11000,
+  "dragonstone dragon bolts (e)": 11000,
+  "dragonstone ring": 10000,
+  "draynor manor teleport (tablet)": 10000,
+  "drift net": 600,
+  "druid's robe": 125,
+  "druid's robe top": 125,
+  "drunk dragon": 2000,
+  "dual macuahuitl": 15,
+  "dual sai": 8,
+  "dust": 250,
+  "dust battlestaff": 8,
+  "dust rune": 18000,
+  "dwarf cannon set": 40,
+  "dwarf weed": 11000,
+  "dwarf weed potion (unf)": 10000,
+  "dwarf weed seed": 200,
+  "dwarven helmet": 50,
+  "dwarven stout": 2000,
+  "dwarven stout(4)": 2000,
+  "dwarven stout(m)": 2000,
+  "dwarven stout(m4)": 2000,
+  "dwellberries": 13000,
+  "dwellberry seed": 600,
+  "dynamite": 13000,
+  "earmuffs": 70,
+  "earth battlestaff": 18000,
+  "earth impling jar": 18000,
+  "earth orb": 11000,
+  "earth rune": 50000,
+  "earth talisman": 11000,
+  "earth tiara": 40,
+  "easter egg": 50,
+  "echo crystal": 8,
+  "eclectic impling jar": 18000,
+  "eclipse atlatl": 15,
+  "eclipse moon chestplate": 15,
+  "eclipse moon chestplate (broken)": 15,
+  "eclipse moon helm": 15,
+  "eclipse moon helm (broken)": 15,
+  "eclipse moon tassets": 15,
+  "eclipse moon tassets (broken)": 15,
+  "edible seaweed": 13000,
+  "efaritay's aid": 10000,
+  "efh salt": 10000,
+  "egg": 13000,
+  "egg and tomato": 13000,
+  "egg potato": 13000,
+  "egg whisk": 50,
+  "elder chaos hood": 8,
+  "elder chaos robe": 8,
+  "elder chaos top": 8,
+  "elder maul": 8,
+  "eldritch orb": 8,
+  "elemental helmet": 70,
+  "elemental shield": 70,
+  "elemental sphere (flatpack)": 500,
+  "elemental talisman": 40,
+  "elven boots": 125,
+  "elven signet": 5,
+  "elysian sigil": 5,
+  "elysian spirit shield": 8,
+  "emerald": 13000,
+  "emerald amulet": 10000,
+  "emerald amulet (u)": 10000,
+  "emerald bolt tips": 11000,
+  "emerald bolts": 11000,
+  "emerald bolts (e)": 11000,
+  "emerald bracelet": 10000,
+  "emerald dragon bolts": 11000,
+  "emerald dragon bolts (e)": 11000,
+  "emerald necklace": 18000,
+  "emerald ring": 10000,
+  "enchant diamond": 10000,
+  "enchant dragonstone": 10000,
+  "enchant emerald or jade": 10000,
+  "enchant onyx": 10000,
+  "enchant ruby or topaz": 10000,
+  "enchant sapphire or opal": 10000,
+  "enchanted hat": 8,
+  "enchanted robe": 8,
+  "enchanted top": 8,
+  "energy mix(1)": 2000,
+  "energy mix(2)": 2000,
+  "energy potion(1)": 2000,
+  "energy potion(2)": 2000,
+  "energy potion(3)": 2000,
+  "energy potion(4)": 2000,
+  "enhanced crystal teleport seed": 100,
+  "enhanced crystal weapon seed": 70,
+  "ensouled abyssal head": 3000,
+  "ensouled aviansie head": 7500,
+  "ensouled bear head": 3000,
+  "ensouled bloodveld head": 3000,
+  "ensouled chaos druid head": 3000,
+  "ensouled dagannoth head": 7500,
+  "ensouled demon head": 7500,
+  "ensouled dog head": 3000,
+  "ensouled dragon head": 7500,
+  "ensouled elf head": 7500,
+  "ensouled giant head": 3000,
+  "ensouled goblin head": 3000,
+  "ensouled horror head": 7500,
+  "ensouled imp head": 3000,
+  "ensouled kalphite head": 7500,
+  "ensouled minotaur head": 3000,
+  "ensouled monkey head": 3000,
+  "ensouled ogre head": 3000,
+  "ensouled scorpion head": 3000,
+  "ensouled troll head": 7500,
+  "ensouled tzhaar head": 3000,
+  "ensouled unicorn head": 3000,
+  "eternal boots": 15,
+  "eternal crystal": 15,
+  "eternal gem": 8,
+  "evil chicken feet": 4,
+  "evil chicken head": 4,
+  "evil chicken legs": 4,
+  "evil chicken wings": 4,
+  "expeditious bracelet": 15000,
+  "explorer backpack": 4,
+  "extended anti-venom+(1)": 2000,
+  "extended anti-venom+(2)": 2000,
+  "extended anti-venom+(3)": 2000,
+  "extended anti-venom+(4)": 2000,
+  "extended antifire mix(1)": 2000,
+  "extended antifire mix(2)": 2000,
+  "extended antifire(1)": 2000,
+  "extended antifire(2)": 2000,
+  "extended antifire(3)": 2000,
+  "extended antifire(4)": 2000,
+  "extended super antifire mix(1)": 2000,
+  "extended super antifire mix(2)": 2000,
+  "extended super antifire(1)": 2000,
+  "extended super antifire(2)": 2000,
+  "extended super antifire(3)": 2000,
+  "extended super antifire(4)": 2000,
+  "eye of ayak (uncharged)": 8,
+  "eye of newt": 13000,
+  "facemask": 70,
+  "fake beard": 15,
+  "falador teleport (tablet)": 10000,
+  "fancy hedge (bagged)": 10000,
+  "fancy teak dresser (flatpack)": 500,
+  "fancy tiara": 4,
+  "fangs of venenatis": 8,
+  "farseer helm": 70,
+  "fat snail": 13000,
+  "fat snail meat": 6000,
+  "fayrg bones": 7500,
+  "feather": 30000,
+  "fedora": 4,
+  "feldip hills teleport": 10000,
+  "feldip weasel fur": 10000,
+  "fenkenstrain's castle teleport (tablet)": 10000,
+  "fez": 150,
+  "fibula piece": 11000,
+  "filled plant pot": 2000,
+  "fine cloth": 11000,
+  "fire battlestaff": 18000,
+  "fire element staff crown": 8,
+  "fire orb": 11000,
+  "fire rune": 50000,
+  "fire talisman": 11000,
+  "fire tiara": 40,
+  "fish chunks": 13000,
+  "fish food": 15,
+  "fish offcuts": 8000,
+  "fish pie": 10000,
+  "fishing bait": 8000,
+  "fishing guild teleport (tablet)": 10000,
+  "fishing mix(1)": 2000,
+  "fishing mix(2)": 2000,
+  "fishing potion(1)": 2000,
+  "fishing potion(2)": 2000,
+  "fishing potion(3)": 2000,
+  "fishing potion(4)": 2000,
+  "fishing rod": 40,
+  "fiyr remains": 7500,
+  "flamtaer bracelet": 10000,
+  "flamtaer hammer": 40,
+  "flared trousers": 4,
+  "flattened hide": 11000,
+  "flax": 13000,
+  "flighted ogre arrow": 7000,
+  "fly fishing rod": 40,
+  "forester's ration": 6000,
+  "forgotten brew(4)": 2000,
+  "four-poster bed (flatpack)": 500,
+  "fremennik beige shirt": 150,
+  "fremennik black cloak": 150,
+  "fremennik blue cloak": 150,
+  "fremennik blue shirt": 150,
+  "fremennik boots": 150,
+  "fremennik brown cloak": 150,
+  "fremennik brown shirt": 150,
+  "fremennik cyan cloak": 150,
+  "fremennik gloves": 150,
+  "fremennik green cloak": 150,
+  "fremennik grey cloak": 150,
+  "fremennik grey shirt": 150,
+  "fremennik hat": 150,
+  "fremennik kilt": 8,
+  "fremennik pink cloak": 150,
+  "fremennik purple cloak": 150,
+  "fremennik red cloak": 150,
+  "fremennik red shirt": 150,
+  "fremennik robe": 150,
+  "fremennik skirt": 150,
+  "fremennik teal cloak": 150,
+  "fremennik yellow cloak": 150,
+  "fried mushrooms": 13000,
+  "fried onions": 13000,
+  "frog slippers": 4,
+  "frog-leather body": 70,
+  "frog-leather boots": 70,
+  "frog-leather chaps": 70,
+  "frozen tear": 13000,
+  "frozen whip mix": 4,
+  "fruit batta": 6000,
+  "fruit blast": 2000,
+  "frying pan": 50,
+  "fur": 18000,
+  "fury ornament kit": 4,
+  "gadderhammer": 8,
+  "games necklace(8)": 10000,
+  "garden pie": 10000,
+  "gardening boots": 150,
+  "gardening trowel": 40,
+  "garlic": 11000,
+  "garlic powder": 0,
+  "ghorrock teleport (tablet)": 10000,
+  "ghrazi rapier": 8,
+  "gianne dough": 13000,
+  "gianne's cook book": 15,
+  "giant boot": 4,
+  "giant egg sac(full)": 100,
+  "giant frog legs": 6000,
+  "giant seaweed": 11000,
+  "gilded 2h sword": 70,
+  "gilded armour set (lg)": 8,
+  "gilded armour set (sk)": 8,
+  "gilded axe": 4,
+  "gilded bench (flatpack)": 500,
+  "gilded boots": 8,
+  "gilded cape rack (flatpack)": 500,
+  "gilded chainbody": 70,
+  "gilded clock (flatpack)": 500,
+  "gilded coif": 8,
+  "gilded d'hide body": 8,
+  "gilded d'hide chaps": 8,
+  "gilded d'hide vambraces": 8,
+  "gilded dragonhide set": 8,
+  "gilded dresser (flatpack)": 500,
+  "gilded four-poster (flatpack)": 500,
+  "gilded full helm": 8,
+  "gilded hasta": 70,
+  "gilded kiteshield": 8,
+  "gilded magic wardrobe (flatpack)": 500,
+  "gilded med helm": 70,
+  "gilded pickaxe": 4,
+  "gilded platebody": 8,
+  "gilded platelegs": 8,
+  "gilded plateskirt": 8,
+  "gilded scimitar": 8,
+  "gilded spade": 4,
+  "gilded spear": 70,
+  "gilded sq shield": 70,
+  "gilded wardrobe (flatpack)": 500,
+  "gin": 13000,
+  "glacial temotli": 15,
+  "glassblowing pipe": 40,
+  "gloves of darkness": 70,
+  "gloves of silence": 8000,
+  "gnome goggles": 4,
+  "gnome scarf": 4,
+  "gnome spice": 13000,
+  "gnomeball": 150,
+  "gnomebowl mould": 40,
+  "gnomish firelighter": 40,
+  "goading potion(4)": 2000,
+  "goat horn dust": 13000,
+  "goblin book": 15,
+  "goblin mail": 15,
+  "goblin mask": 4,
+  "godsword blade": 10000,
+  "godsword shard 1": 11000,
+  "godsword shard 2": 11000,
+  "godsword shard 3": 11000,
+  "gold amulet": 18000,
+  "gold amulet (u)": 18000,
+  "gold bar": 10000,
+  "gold bracelet": 18000,
+  "gold elegant blouse": 4,
+  "gold elegant legs": 4,
+  "gold elegant shirt": 4,
+  "gold elegant skirt": 4,
+  "gold headband": 4,
+  "gold leaf": 11000,
+  "gold locks": 8,
+  "gold necklace": 18000,
+  "gold ore": 30000,
+  "gold ring": 18000,
+  "gold seal": 13000,
+  "gold tiara": 10000,
+  "golden apron": 4,
+  "golden chef's hat": 4,
+  "golden scarab": 13000,
+  "golden statuette": 13000,
+  "golovanova fruit top": 100,
+  "gourmet impling jar": 18000,
+  "gout tuber": 5,
+  "graahk fur": 10000,
+  "graahk headdress": 150,
+  "graahk legs": 150,
+  "graahk top": 150,
+  "grain": 13000,
+  "grand seed pod": 15,
+  "granite (10kg)": 100,
+  "granite (2kg)": 100,
+  "granite (500g)": 100,
+  "granite (5kg)": 100,
+  "granite body": 70,
+  "granite boots": 70,
+  "granite clamp": 50,
+  "granite gloves": 8,
+  "granite hammer": 8,
+  "granite helm": 70,
+  "granite legs": 70,
+  "granite longsword": 70,
+  "granite maul": 70,
+  "granite ring": 70,
+  "granite shield": 70,
+  "grape seed": 200,
+  "grapes": 20000,
+  "greater demon mask": 4,
+  "greater siren": 13000,
+  "green boater": 4,
+  "green boots": 150,
+  "green cape": 150,
+  "green d'hide body": 125,
+  "green d'hide body (g)": 8,
+  "green d'hide body (t)": 8,
+  "green d'hide chaps": 125,
+  "green d'hide chaps (g)": 8,
+  "green d'hide chaps (t)": 8,
+  "green d'hide shield": 125,
+  "green d'hide vambraces": 125,
+  "green dark bow paint": 4,
+  "green dragon leather": 13000,
+  "green dragon mask": 4,
+  "green dragonhide": 13000,
+  "green dragonhide set": 125,
+  "green dye": 150,
+  "green elegant blouse": 4,
+  "green elegant legs": 4,
+  "green elegant shirt": 4,
+  "green elegant skirt": 4,
+  "green firelighter": 250,
+  "green halloween mask": 5,
+  "green hat": 150,
+  "green headband": 4,
+  "green partyhat": 5,
+  "green robe bottoms": 150,
+  "green robe top": 150,
+  "green spiky vambraces": 125,
+  "greenman mask": 4,
+  "greenman's ale": 2000,
+  "greenman's ale (flatpack)": 500,
+  "greenman's ale(m)": 2000,
+  "greenmans ale(4)": 2000,
+  "greenmans ale(m4)": 2000,
+  "grey boots": 150,
+  "grey gloves": 150,
+  "grey hat": 150,
+  "grey robe bottoms": 150,
+  "grey robe top": 150,
+  "grey toy horsey": 150,
+  "grey wolf fur": 18000,
+  "grimy avantoe": 13000,
+  "grimy cadantine": 11000,
+  "grimy dwarf weed": 11000,
+  "grimy guam leaf": 13000,
+  "grimy harralander": 13000,
+  "grimy irit leaf": 13000,
+  "grimy kwuarm": 13000,
+  "grimy lantadyme": 11000,
+  "grimy marrentill": 13000,
+  "grimy ranarr weed": 11000,
+  "grimy snapdragon": 11000,
+  "grimy tarromin": 13000,
+  "grimy toadflax": 13000,
+  "grimy torstol": 11000,
+  "grog": 2000,
+  "ground guam": 100,
+  "grubby key": 11000,
+  "guam leaf": 13000,
+  "guam potion (unf)": 10000,
+  "guam seed": 600,
+  "guam tar": 7000,
+  "guardian boots": 8,
+  "guthan's armour set": 8,
+  "guthan's chainskirt": 15,
+  "guthan's chainskirt 0": 15,
+  "guthan's helm": 15,
+  "guthan's helm 0": 15,
+  "guthan's platebody": 15,
+  "guthan's platebody 0": 15,
+  "guthan's warspear": 15,
+  "guthan's warspear 0": 15,
+  "guthix armour set (lg)": 8,
+  "guthix armour set (sk)": 8,
+  "guthix balance(1)": 2000,
+  "guthix balance(2)": 2000,
+  "guthix balance(3)": 2000,
+  "guthix balance(4)": 2000,
+  "guthix bracers": 8,
+  "guthix chaps": 8,
+  "guthix cloak": 8,
+  "guthix coif": 8,
+  "guthix crozier": 8,
+  "guthix d'hide body": 8,
+  "guthix d'hide boots": 8,
+  "guthix d'hide shield": 8,
+  "guthix dragonhide set": 8,
+  "guthix full helm": 8,
+  "guthix kiteshield": 8,
+  "guthix mitre": 8,
+  "guthix mjolnir": 8,
+  "guthix page 1": 5,
+  "guthix page 2": 5,
+  "guthix page 3": 5,
+  "guthix page 4": 5,
+  "guthix platebody": 8,
+  "guthix platelegs": 8,
+  "guthix plateskirt": 8,
+  "guthix rest(1)": 2000,
+  "guthix rest(2)": 2000,
+  "guthix rest(3)": 2000,
+  "guthix rest(4)": 2000,
+  "guthix robe legs": 8,
+  "guthix robe top": 8,
+  "guthix stole": 8,
+  "hair": 13000,
+  "half full wine jug": 50,
+  "half moon spectacles": 4,
+  "halloween mask set": 5,
+  "ham boots": 15,
+  "ham cloak": 15,
+  "ham gloves": 15,
+  "ham hood": 15,
+  "ham joint": 100,
+  "ham logo": 15,
+  "ham robe": 15,
+  "ham shirt": 15,
+  "hammer": 40,
+  "hammerstone hops": 11000,
+  "hammerstone seed": 2000,
+  "hard leather": 13000,
+  "hard leather shield": 125,
+  "hardleather body": 125,
+  "harmonised orb": 8,
+  "harmony island teleport (tablet)": 10000,
+  "harpoon": 40,
+  "harralander": 13000,
+  "harralander potion (unf)": 10000,
+  "harralander seed": 600,
+  "harralander tar": 11000,
+  "hat eyepatch": 150,
+  "hat of the eye (uncharged)": 8,
+  "headless arrow": 11000,
+  "heavy ballista": 8,
+  "heavy frame": 8,
+  "helm of neitiznot": 70,
+  "herring": 15000,
+  "highwayman mask": 4,
+  "hill giant club": 125,
+  "holy blessing": 5,
+  "holy book page set": 5,
+  "holy elixir": 5,
+  "holy mould": 40,
+  "holy sandals": 4,
+  "holy symbol": 125,
+  "holy wraps": 4,
+  "honourable blessing": 5,
+  "hood of darkness": 70,
+  "hosidius banner": 4,
+  "hosidius hood": 4,
+  "hosidius scarf": 4,
+  "huasca potion (unf)": 10000,
+  "huasca seed": 200,
+  "hunter potion(1)": 2000,
+  "hunter potion(2)": 2000,
+  "hunter potion(3)": 2000,
+  "hunter potion(4)": 2000,
+  "hunter spear tips": 10000,
+  "hunters' crossbow": 70,
+  "hunters' sunlight crossbow": 70,
+  "hunting mix(1)": 2000,
+  "hunting mix(2)": 2000,
+  "hydra bones": 7500,
+  "hydra leather": 15,
+  "hydra tail": 15,
+  "hydra's claw": 15,
+  "ice element staff crown": 8,
+  "ice plateau teleport (tablet)": 10000,
+  "icy basalt": 10000,
+  "imbued heart": 8,
+  "imp mask": 4,
+  "impling jar": 13000,
+  "incomplete heavy ballista": 8,
+  "incomplete light ballista": 8,
+  "infernal ashes": 7500,
+  "infinity boots": 125,
+  "infinity bottoms": 125,
+  "infinity gloves": 125,
+  "infinity hat": 125,
+  "infinity top": 125,
+  "initiate cuisse": 125,
+  "initiate harness m": 70,
+  "initiate hauberk": 125,
+  "initiate sallet": 125,
+  "inoculation bracelet": 10000,
+  "inquisitor's great helm": 8,
+  "inquisitor's hauberk": 8,
+  "inquisitor's mace": 8,
+  "inquisitor's plateskirt": 8,
+  "insect repellent": 15,
+  "insulated boots": 70,
+  "iorwerth camp teleport": 10000,
+  "irit leaf": 13000,
+  "irit potion (unf)": 10000,
+  "irit seed": 600,
+  "irit tar": 11000,
+  "iron 2h sword": 125,
+  "iron arrow": 7000,
+  "iron arrow(p)": 7000,
+  "iron arrow(p+)": 7000,
+  "iron arrow(p++)": 7000,
+  "iron arrowtips": 10000,
+  "iron axe": 40,
+  "iron bar": 10000,
+  "iron battleaxe": 125,
+  "iron bolts": 7000,
+  "iron bolts (p)": 11000,
+  "iron bolts (p+)": 11000,
+  "iron bolts (p++)": 11000,
+  "iron bolts (unf)": 13000,
+  "iron boots": 125,
+  "iron brutal": 11000,
+  "iron chainbody": 125,
+  "iron claws": 125,
+  "iron crossbow": 125,
+  "iron crossbow (u)": 10000,
+  "iron dagger": 125,
+  "iron dagger(p)": 125,
+  "iron dagger(p+)": 125,
+  "iron dagger(p++)": 125,
+  "iron dart": 7000,
+  "iron dart (p)": 7000,
+  "iron dart tip": 13000,
+  "iron dart(p+)": 7000,
+  "iron dart(p++)": 7000,
+  "iron dragon mask": 4,
+  "iron full helm": 125,
+  "iron full helm (g)": 4,
+  "iron full helm (t)": 4,
+  "iron gold-trimmed set (lg)": 8,
+  "iron gold-trimmed set (sk)": 8,
+  "iron halberd": 125,
+  "iron hasta": 125,
+  "iron hasta(p)": 125,
+  "iron hasta(p+)": 125,
+  "iron hasta(p++)": 125,
+  "iron javelin": 7000,
+  "iron javelin heads": 10000,
+  "iron javelin(p)": 7000,
+  "iron javelin(p+)": 7000,
+  "iron javelin(p++)": 7000,
+  "iron kiteshield": 125,
+  "iron kiteshield (g)": 4,
+  "iron kiteshield (t)": 4,
+  "iron knife": 7000,
+  "iron knife(p)": 7000,
+  "iron knife(p+)": 7000,
+  "iron knife(p++)": 7000,
+  "iron limbs": 10000,
+  "iron longsword": 125,
+  "iron mace": 125,
+  "iron med helm": 125,
+  "iron nails": 13000,
+  "iron ore": 13000,
+  "iron pickaxe": 40,
+  "iron platebody": 125,
+  "iron platebody (g)": 4,
+  "iron platebody (t)": 4,
+  "iron platelegs": 125,
+  "iron platelegs (g)": 4,
+  "iron platelegs (t)": 4,
+  "iron plateskirt": 125,
+  "iron plateskirt (g)": 4,
+  "iron plateskirt (t)": 4,
+  "iron scimitar": 125,
+  "iron set (lg)": 8,
+  "iron set (sk)": 8,
+  "iron spear": 125,
+  "iron spear(p)": 125,
+  "iron spear(p+)": 125,
+  "iron spear(p++)": 125,
+  "iron spit": 11000,
+  "iron sq shield": 125,
+  "iron sword": 125,
+  "iron thrownaxe": 7000,
+  "iron trimmed set (lg)": 8,
+  "iron trimmed set (sk)": 8,
+  "iron warhammer": 125,
+  "ivory comb": 13000,
+  "jade": 13000,
+  "jade amulet": 10000,
+  "jade amulet (u)": 10000,
+  "jade bolt tips": 11000,
+  "jade bolts": 11000,
+  "jade bracelet": 10000,
+  "jade dragon bolts": 11000,
+  "jade dragon bolts (e)": 11000,
+  "jade machete": 15,
+  "jade necklace": 10000,
+  "jade ring": 10000,
+  "jangerberries": 13000,
+  "jangerberry seed": 200,
+  "jar of chemicals": 4,
+  "jar of darkness": 4,
+  "jar of decay": 4,
+  "jar of dirt": 4,
+  "jar of dreams": 4,
+  "jar of eyes": 4,
+  "jar of miasma": 4,
+  "jar of sand": 5,
+  "jar of smoke": 4,
+  "jar of souls": 4,
+  "jar of spirits": 4,
+  "jar of stone": 4,
+  "jar of swamp": 4,
+  "jerboa tail": 18000,
+  "jester cape": 4,
+  "jogre bones": 3000,
+  "jug": 13000,
+  "jug of water": 13000,
+  "jug of wine": 6000,
+  "jungle demon mask": 4,
+  "jungle potion": 1000,
+  "justiciar armour set": 5,
+  "justiciar chestguard": 8,
+  "justiciar faceguard": 8,
+  "justiciar legguards": 8,
+  "kabob": 6000,
+  "karambwan vessel": 15,
+  "karambwan vessel (baited)": 15,
+  "karidian disguise": 15,
+  "karil's armour set": 8,
+  "karil's coif": 15,
+  "karil's coif 0": 15,
+  "karil's crossbow": 15,
+  "karil's crossbow 0": 15,
+  "karil's leatherskirt": 15,
+  "karil's leatherskirt 0": 15,
+  "karil's leathertop": 15,
+  "karil's leathertop 0": 15,
+  "katana": 8,
+  "kebab": 6000,
+  "kebab mix": 11000,
+  "kebbit bolts": 11000,
+  "kebbit claws": 10000,
+  "kebbit spike": 10000,
+  "kebbit teeth": 10000,
+  "kebbit teeth dust": 10000,
+  "keg of beer": 2000,
+  "kharidian headpiece": 15,
+  "kharyrll teleport (tablet)": 10000,
+  "khazard teleport (tablet)": 10000,
+  "king worm": 13000,
+  "kitchen knife": 50,
+  "kitchen table (flatpack)": 500,
+  "knife": 40,
+  "kodai insignia": 8,
+  "kodai wand": 8,
+  "kraken tentacle": 70,
+  "krandorian hops": 11000,
+  "krandorian seed": 2000,
+  "kwuarm": 13000,
+  "kwuarm potion (unf)": 10000,
+  "kwuarm seed": 200,
+  "lantadyme": 11000,
+  "lantadyme potion (unf)": 10000,
+  "lantadyme seed": 200,
+  "lantern lens": 10000,
+  "large oak bed (flatpack)": 500,
+  "large teak bed (flatpack)": 500,
+  "larran's key": 250,
+  "larupia fur": 10000,
+  "larupia hat": 150,
+  "larupia legs": 150,
+  "larupia top": 150,
+  "lassar teleport (tablet)": 10000,
+  "lava battlestaff": 8,
+  "lava dragon bones": 7500,
+  "lava dragon mask": 4,
+  "lava rune": 18000,
+  "lava scale": 11000,
+  "lava scale shard": 11000,
+  "lava staff upgrade kit": 50,
+  "law rune": 18000,
+  "leaf-bladed battleaxe": 70,
+  "leaf-bladed sword": 70,
+  "lean snail": 13000,
+  "lean snail meat": 6000,
+  "leaping salmon": 13000,
+  "leaping sturgeon": 13000,
+  "leaping trout": 13000,
+  "leather": 13000,
+  "leather body": 125,
+  "leather body (g)": 8,
+  "leather boots": 125,
+  "leather chaps": 125,
+  "leather chaps (g)": 8,
+  "leather cowl": 125,
+  "leather gloves": 125,
+  "leather vambraces": 125,
+  "leaves": 13000,
+  "left eye patch": 4,
+  "lemon": 13000,
+  "lemon chunks": 13000,
+  "lemon slices": 13000,
+  "leprechaun hat": 4,
+  "lesser demon mask": 4,
+  "light ballista": 8,
+  "light frame": 8,
+  "light infinity colour kit": 4,
+  "light orb": 10000,
+  "light trousers": 4,
+  "light tuxedo cuffs": 4,
+  "light tuxedo jacket": 4,
+  "light tuxedo shoes": 4,
+  "lightbearer": 8,
+  "lily of the sands": 13000,
+  "lime": 13000,
+  "lime chunks": 13000,
+  "lime slices": 13000,
+  "limestone": 13000,
+  "limestone brick": 10000,
+  "limpwurt root": 13000,
+  "limpwurt seed": 600,
+  "linen": 15,
+  "lizardman fang": 13000,
+  "loar remains": 7500,
+  "lobster": 6000,
+  "lobster pot": 40,
+  "lockpick": 250,
+  "locust meat": 6000,
+  "log brace": 40,
+  "logs": 15000,
+  "long kebbit bolts": 11000,
+  "long kebbit spike": 10000,
+  "longbow": 18000,
+  "longbow (u)": 10000,
+  "loop half of key": 11000,
+  "lovakengj banner": 4,
+  "lovakengj hood": 4,
+  "lovakengj scarf": 4,
+  "lumberyard teleport": 15000,
+  "lumbridge teleport (tablet)": 10000,
+  "lunar isle teleport": 10000,
+  "m. treasure chest (flatpack)": 500,
+  "machete": 15,
+  "mackerel": 6000,
+  "mage's book": 15,
+  "magic bird house": 250,
+  "magic box": 250,
+  "magic cape rack (flatpack)": 500,
+  "magic comp bow": 8,
+  "magic essence mix(1)": 2000,
+  "magic essence mix(2)": 2000,
+  "magic fang": 5,
+  "magic logs": 12000,
+  "magic longbow": 18000,
+  "magic longbow (u)": 10000,
+  "magic mix(1)": 2000,
+  "magic mix(2)": 2000,
+  "magic potion(1)": 2000,
+  "magic potion(2)": 2000,
+  "magic potion(3)": 2000,
+  "magic potion(4)": 2000,
+  "magic pyre logs": 11000,
+  "magic roots": 11000,
+  "magic sapling": 200,
+  "magic seed": 200,
+  "magic shield": 18000,
+  "magic shortbow": 18000,
+  "magic shortbow (u)": 10000,
+  "magic shortbow scroll": 10000,
+  "magic staff": 125,
+  "magic stock": 10000,
+  "magic stone": 11000,
+  "magic string": 11000,
+  "magpie impling jar": 18000,
+  "mahogany armchair (flatpack)": 500,
+  "mahogany armour case (flatpack)": 500,
+  "mahogany bench (flatpack)": 500,
+  "mahogany bird house": 250,
+  "mahogany bookcase (flatpack)": 500,
+  "mahogany cape rack (flatpack)": 500,
+  "mahogany dresser (flatpack)": 500,
+  "mahogany fancy dress box (flatpack)": 500,
+  "mahogany logs": 11000,
+  "mahogany magic wardrobe (flatpack)": 500,
+  "mahogany plank": 13000,
+  "mahogany pyre logs": 11000,
+  "mahogany sapling": 200,
+  "mahogany seed": 200,
+  "mahogany stock": 10000,
+  "mahogany table (flatpack)": 500,
+  "mahogany toy box (flatpack)": 500,
+  "mahogany wardrobe (flatpack)": 500,
+  "malediction shard 1": 10000,
+  "malediction shard 2": 10000,
+  "malediction shard 3": 10000,
+  "malediction ward": 8,
+  "manta ray": 10000,
+  "maple bird house": 250,
+  "maple blackjack": 125,
+  "maple blackjack(d)": 125,
+  "maple blackjack(o)": 125,
+  "maple logs": 15000,
+  "maple longbow": 18000,
+  "maple longbow (u)": 10000,
+  "maple pyre logs": 11000,
+  "maple roots": 11000,
+  "maple sapling": 200,
+  "maple seed": 200,
+  "maple shield": 18000,
+  "maple shortbow": 18000,
+  "maple shortbow (u)": 10000,
+  "maple stock": 10000,
+  "marble block": 11000,
+  "marble cape rack (flatpack)": 500,
+  "marble magic wardrobe (flatpack)": 500,
+  "marentill potion unf": 10000,
+  "marentill seed": 600,
+  "marentill tar": 7000,
+  "marigold seed": 600,
+  "marigolds": 600,
+  "marrentill": 13000,
+  "marrentill potion (unf)": 10000,
+  "marrentill seed": 600,
+  "marrentill tar": 7000,
+  "mask of ranul": 70,
+  "master scroll book (empty)": 100,
+  "master wand": 70,
+  "mature cider": 2000,
+  "mature wmb": 2000,
+  "meat pie": 10000,
+  "meat pizza": 10000,
+  "meat tenderiser": 50,
+  "menaphite purple hat": 150,
+  "menaphite purple kilt": 150,
+  "menaphite purple robe": 150,
+  "menaphite purple top": 150,
+  "menaphite red hat": 150,
+  "menaphite red kilt": 150,
+  "menaphite red robe": 150,
+  "menaphite red top": 150,
+  "menaphite remedy(4)": 2000,
+  "mind altar teleport (tablet)": 10000,
+  "mind bomb(4)": 2000,
+  "mind bomb(m4)": 2000,
+  "mind helmet": 70,
+  "mind rune": 18000,
+  "mind shield": 70,
+  "mind talisman": 11000,
+  "mind tiara": 40,
+  "mining helmet": 4,
+  "mint cake": 10000,
+  "mirror shield": 40,
+  "mist battlestaff": 8,
+  "mist rune": 18000,
+  "mith grapple": 11000,
+  "mith grapple (unf)": 11000,
+  "mith grapple tip": 11000,
+  "mithril 2h sword": 125,
+  "mithril arrow": 7000,
+  "mithril arrow(p)": 7000,
+  "mithril arrow(p+)": 7000,
+  "mithril arrow(p++)": 7000,
+  "mithril arrowtips": 10000,
+  "mithril axe": 40,
+  "mithril bar": 10000,
+  "mithril battleaxe": 125,
+  "mithril bolts": 7000,
+  "mithril bolts (p)": 11000,
+  "mithril bolts (p+)": 11000,
+  "mithril bolts (p++)": 11000,
+  "mithril bolts (unf)": 13000,
+  "mithril boots": 125,
+  "mithril brutal": 11000,
+  "mithril chainbody": 125,
+  "mithril claws": 125,
+  "mithril crossbow": 125,
+  "mithril crossbow (u)": 10000,
+  "mithril dagger": 125,
+  "mithril dagger(p)": 125,
+  "mithril dagger(p+)": 125,
+  "mithril dagger(p++)": 125,
+  "mithril dart": 7000,
+  "mithril dart tip": 20000,
+  "mithril dart(p)": 7000,
+  "mithril dart(p+)": 7000,
+  "mithril dart(p++)": 7000,
+  "mithril dragon mask": 4,
+  "mithril full helm": 125,
+  "mithril full helm (g)": 8,
+  "mithril full helm (t)": 8,
+  "mithril gold-trimmed set (lg)": 8,
+  "mithril gold-trimmed set (sk)": 8,
+  "mithril halberd": 125,
+  "mithril hasta": 125,
+  "mithril hasta(p)": 125,
+  "mithril hasta(p+)": 125,
+  "mithril hasta(p++)": 125,
+  "mithril javelin": 7000,
+  "mithril javelin heads": 10000,
+  "mithril javelin(p)": 7000,
+  "mithril javelin(p+)": 7000,
+  "mithril javelin(p++)": 7000,
+  "mithril kiteshield": 125,
+  "mithril kiteshield (g)": 8,
+  "mithril kiteshield (t)": 8,
+  "mithril knife": 7000,
+  "mithril knife(p)": 7000,
+  "mithril knife(p+)": 7000,
+  "mithril knife(p++)": 7000,
+  "mithril limbs": 10000,
+  "mithril longsword": 125,
+  "mithril mace": 125,
+  "mithril med helm": 125,
+  "mithril nails": 13000,
+  "mithril ore": 13000,
+  "mithril pickaxe": 40,
+  "mithril platebody": 125,
+  "mithril platebody (g)": 8,
+  "mithril platebody (t)": 8,
+  "mithril platelegs": 125,
+  "mithril platelegs (g)": 8,
+  "mithril platelegs (t)": 8,
+  "mithril plateskirt": 125,
+  "mithril plateskirt (g)": 8,
+  "mithril plateskirt (t)": 8,
+  "mithril scimitar": 125,
+  "mithril seeds": 18000,
+  "mithril set (lg)": 8,
+  "mithril set (sk)": 8,
+  "mithril spear": 125,
+  "mithril spear(p)": 125,
+  "mithril spear(p+)": 125,
+  "mithril spear(p++)": 125,
+  "mithril sq shield": 125,
+  "mithril sword": 125,
+  "mithril thrownaxe": 7000,
+  "mithril trimmed set (lg)": 8,
+  "mithril trimmed set (sk)": 8,
+  "mithril warhammer": 125,
+  "mixed flowers": 150,
+  "mixed hide cape": 100,
+  "mixed hide legs": 100,
+  "mixed hide top": 100,
+  "mokhaiotl waystone": 100,
+  "mole claw": 50,
+  "mole skin": 50,
+  "mole slippers": 4,
+  "molten glass": 13000,
+  "monk's robe": 125,
+  "monk's robe (g)": 4,
+  "monk's robe (t)": 4,
+  "monk's robe top": 125,
+  "monk's robe top (g)": 4,
+  "monk's robe top (t)": 4,
+  "monkey bar": 6000,
+  "monkey bones": 3000,
+  "monkey nuts": 6000,
+  "monkey tail": 8,
+  "monkfish": 13000,
+  "monocle": 4,
+  "moonclan teleport (tablet)": 10000,
+  "moonlight antelope antler": 18000,
+  "moonlight antelope fur": 18000,
+  "moonlight antler bolts": 11000,
+  "moonlight mead": 2000,
+  "moonlight mead(4)": 2000,
+  "moonlight mead(m)": 2000,
+  "moonlight mead(m4)": 2000,
+  "moonlight moth (item)": 125,
+  "moonlight moth mix (2)": 125,
+  "mort myre fungus": 13000,
+  "mort myre pear": 13000,
+  "mort myre stem": 13000,
+  "mort'ton teleport": 10000,
+  "mos le'harmless teleport": 10000,
+  "mottled eel": 13000,
+  "muddy key": 11000,
+  "mummy's body": 4,
+  "mummy's feet": 4,
+  "mummy's hands": 4,
+  "mummy's head": 4,
+  "mummy's legs": 4,
+  "musketeer hat": 4,
+  "musketeer pants": 4,
+  "musketeer tabard": 4,
+  "mushroom": 11000,
+  "mushroom & onion": 13000,
+  "mushroom pie": 10000,
+  "mushroom potato": 13000,
+  "mushroom spore": 200,
+  "mycelium armour set": 5,
+  "mycelium helmet web": 10000,
+  "mycelium leggings web": 10000,
+  "mycelium poncho web": 10000,
+  "mycelium visor web": 10000,
+  "myre snelm": 150,
+  "mysterious emblem": 250,
+  "mystical robe bottom": 125,
+  "mystical robe top": 125,
+  "nail beast nails": 11000,
+  "nardah teleport": 10000,
+  "nasturtium seed": 200,
+  "nasturtiums": 600,
+  "nature impling jar": 18000,
+  "nature rune": 18000,
+  "nature talisman": 11000,
+  "nature tiara": 40,
+  "navy cavalier": 4,
+  "necklace mould": 40,
+  "necklace of anguish": 8,
+  "necklace of faith": 10000,
+  "necklace of passage(5)": 10000,
+  "needle": 40,
+  "neitiznot shield": 70,
+  "new crystal bow": 70,
+  "new crystal shield": 70,
+  "nightmare staff": 8,
+  "nihil dust": 11000,
+  "nihil shard": 30000,
+  "ninja impling jar": 18000,
+  "noose wand": 40,
+  "nose peg": 70,
+  "noxious halberd": 8,
+  "numulite": 30000,
+  "nuts": 13000,
+  "oak armchair (flatpack)": 500,
+  "oak armour case (flatpack)": 500,
+  "oak bed (flatpack)": 500,
+  "oak bench (flatpack)": 500,
+  "oak bird house": 250,
+  "oak bookcase (flatpack)": 500,
+  "oak cape rack (flatpack)": 500,
+  "oak chair (flatpack)": 500,
+  "oak clock (flatpack)": 500,
+  "oak dining table (flatpack)": 500,
+  "oak drawers (flatpack)": 500,
+  "oak dresser (flatpack)": 500,
+  "oak fancy dress box (flatpack)": 500,
+  "oak kitchen table (flatpack)": 500,
+  "oak logs": 15000,
+  "oak longbow": 18000,
+  "oak longbow (u)": 10000,
+  "oak magic wardrobe (flatpack)": 500,
+  "oak plank": 13000,
+  "oak pyre logs": 11000,
+  "oak roots": 11000,
+  "oak sapling": 200,
+  "oak shaving stand (flatpack)": 500,
+  "oak shield": 18000,
+  "oak shortbow": 18000,
+  "oak shortbow (u)": 10000,
+  "oak stock": 10000,
+  "oak toy box (flatpack)": 500,
+  "oak treasure chest (flatpack)": 500,
+  "oak wardrobe (flatpack)": 500,
+  "obsidian armour set": 5,
+  "obsidian cape": 70,
+  "obsidian cape (r)": 70,
+  "obsidian helmet": 70,
+  "obsidian platebody": 70,
+  "obsidian platelegs": 70,
+  "occult necklace": 8,
+  "occult ornament kit": 4,
+  "ochre snelm": 150,
+  "odium shard 1": 10000,
+  "odium shard 2": 10000,
+  "odium shard 3": 10000,
+  "odium ward": 8,
+  "ogre arrow": 7000,
+  "ogre arrow shaft": 7000,
+  "ogre coffin key": 3000,
+  "oil lamp": 40,
+  "oil lantern": 40,
+  "oil lantern frame": 10000,
+  "old demon mask": 4,
+  "old school bond": 100,
+  "olive oil(1)": 10000,
+  "olive oil(2)": 10000,
+  "olive oil(3)": 10000,
+  "olive oil(4)": 10000,
+  "onion": 13000,
+  "onion & tomato": 11000,
+  "onion seed": 600,
+  "onions(10)": 600,
+  "onyx": 11000,
+  "onyx amulet": 10000,
+  "onyx amulet (u)": 10000,
+  "onyx bolt tips": 11000,
+  "onyx bolts": 11000,
+  "onyx bolts (e)": 11000,
+  "onyx bracelet": 10000,
+  "onyx dragon bolts": 11000,
+  "onyx dragon bolts (e)": 11000,
+  "onyx necklace": 10000,
+  "onyx ring": 10000,
+  "opal": 13000,
+  "opal amulet": 10000,
+  "opal amulet (u)": 10000,
+  "opal bolt tips": 11000,
+  "opal bolts": 11000,
+  "opal bolts (e)": 11000,
+  "opal bracelet": 10000,
+  "opal dragon bolts": 11000,
+  "opal dragon bolts (e)": 11000,
+  "opal machete": 15,
+  "opal necklace": 10000,
+  "opal ring": 10000,
+  "opulent table (flatpack)": 500,
+  "orange": 13000,
+  "orange boater": 4,
+  "orange cape": 150,
+  "orange chunks": 13000,
+  "orange dye": 150,
+  "orange feather": 8000,
+  "orange flowers": 150,
+  "orange salamander": 125,
+  "orange sapling": 200,
+  "orange slices": 13000,
+  "orange tree seed": 200,
+  "oranges(5)": 600,
+  "ornate maul handle": 50,
+  "osman's report": 0,
+  "osmumten's fang": 8,
+  "ourania teleport (tablet)": 10000,
+  "ourg bones": 7500,
+  "n. treasure chest (flatpack)": 500,
+  "oyster": 11000,
+  "oyster pearl": 11000,
+  "oyster pearls": 11000,
+  "paddewwa teleport (tablet)": 10000,
+  "palm sapling": 200,
+  "palm tree seed": 200,
+  "pantaloons": 4,
+  "papaya fruit": 11000,
+  "papaya sapling": 200,
+  "papaya tree seed": 200,
+  "papyrus": 13000,
+  "partyhat & specs": 4,
+  "partyhat set": 5,
+  "pastry dough": 13000,
+  "pat of butter": 11000,
+  "peaceful blessing": 5,
+  "pearl bolt tips": 11000,
+  "pearl bolts": 11000,
+  "pearl bolts (e)": 11000,
+  "pearl dragon bolts": 11000,
+  "pearl dragon bolts (e)": 11000,
+  "pegasian boots": 15,
+  "pegasian crystal": 15,
+  "penguin mask": 4,
+  "perfected quetzal whistle blueprint": 50,
+  "pest control teleport": 10000,
+  "pestle and mortar": 40,
+  "phoenix necklace": 10000,
+  "phrin remains": 7500,
+  "pie dish": 500,
+  "pie recipe book": 15,
+  "pie shell": 13000,
+  "pike": 15000,
+  "pile of salt": 0,
+  "pineapple": 13000,
+  "pineapple chunks": 13000,
+  "pineapple pizza": 10000,
+  "pineapple punch": 2000,
+  "pineapple ring": 13000,
+  "pineapple sapling": 200,
+  "pineapple seed": 200,
+  "pink boater": 4,
+  "pink boots": 150,
+  "pink cape": 150,
+  "pink elegant blouse": 4,
+  "pink elegant legs": 4,
+  "pink elegant shirt": 4,
+  "pink elegant skirt": 4,
+  "pink hat": 150,
+  "pink headband": 4,
+  "pink robe bottoms": 150,
+  "pink robe top": 150,
+  "pink skirt": 150,
+  "pirate bandana (blue)": 150,
+  "pirate bandana (brown)": 150,
+  "pirate bandana (red)": 150,
+  "pirate bandana (white)": 150,
+  "pirate boots": 150,
+  "pirate hat & patch": 150,
+  "pirate's hat": 4,
+  "pirate's hook": 4,
+  "pirate leggings (beige)": 150,
+  "pirate leggings (blue)": 150,
+  "pirate leggings (brown)": 150,
+  "pirate leggings (red)": 150,
+  "piscarilius banner": 4,
+  "piscarilius hood": 4,
+  "piscarilius scarf": 4,
+  "piscatoris teleport": 10000,
+  "pith helmet": 4,
+  "pitta bread": 11000,
+  "pizza base": 11000,
+  "plain pizza": 10000,
+  "plant cure": 2000,
+  "pointed blood'n'tar snelm": 150,
+  "pointed bruise blue snelm": 150,
+  "pointed myre snelm": 150,
+  "pointed ochre snelm": 150,
+  "poison (item)": 15,
+  "poison chalice": 2000,
+  "poison ivy berries": 11000,
+  "poison ivy seed": 200,
+  "polar kebbit fur": 100,
+  "polished buttons": 15,
+  "pot": 13000,
+  "pot lid": 15,
+  "pot of cornflour": 15,
+  "pot of cream": 13000,
+  "pot of flour": 13000,
+  "potato": 13000,
+  "potato cactus": 11000,
+  "potato cactus seed": 200,
+  "potato seed": 600,
+  "potato with butter": 13000,
+  "potato with cheese": 13000,
+  "potatoes(10)": 600,
+  "pottery scarab": 13000,
+  "pottery statuette": 13000,
+  "prayer mix(1)": 2000,
+  "prayer mix(2)": 2000,
+  "prayer potion(1)": 2000,
+  "prayer potion(2)": 2000,
+  "prayer potion(3)": 2000,
+  "prayer potion(4)": 2000,
+  "prayer regeneration potion(1)": 2000,
+  "prayer regeneration potion(2)": 2000,
+  "prayer regeneration potion(3)": 2000,
+  "prayer regeneration potion(4)": 2000,
+  "premade blurb' sp.": 2000,
+  "premade c+t batta": 6000,
+  "premade ch' crunch": 6000,
+  "premade choc bomb": 6000,
+  "premade choc s'dy": 2000,
+  "premade dr' dragon": 2000,
+  "premade fr' blast": 2000,
+  "premade fr't batta": 6000,
+  "premade p' punch": 2000,
+  "premade s'y crunch": 6000,
+  "premade sgg": 2000,
+  "premade t'd batta": 6000,
+  "premade t'd crunch": 6000,
+  "premade ttl": 6000,
+  "premade veg ball": 6000,
+  "premade veg batta": 6000,
+  "premade w'm batta": 6000,
+  "premade w'm crun'": 6000,
+  "premade wiz blz'd": 2000,
+  "premade worm hole": 6000,
+  "priest gown (bottom)": 150,
+  "priest gown (top)": 150,
+  "primordial boots": 15,
+  "primordial crystal": 15,
+  "proboscis": 100,
+  "proselyte cuisse": 70,
+  "proselyte harness f": 70,
+  "proselyte harness m": 70,
+  "proselyte hauberk": 70,
+  "proselyte sallet": 70,
+  "proselyte tasset": 70,
+  "pumpkin": 50,
+  "pure essence": 20000,
+  "purple boater": 4,
+  "purple boots": 150,
+  "purple cape": 150,
+  "purple dye": 150,
+  "purple elegant blouse": 4,
+  "purple elegant legs": 4,
+  "purple elegant shirt": 4,
+  "purple elegant skirt": 4,
+  "purple firelighter": 250,
+  "purple flowers": 150,
+  "purple gloves": 150,
+  "purple hat": 150,
+  "purple partyhat": 5,
+  "purple robe bottoms": 150,
+  "purple robe top": 150,
+  "purple sweets": 10000,
+  "pyre logs": 11000,
+  "pyrophosphite": 13000,
+  "quetzal feed": 100,
+  "rabbit foot": 100,
+  "rabbit snare": 250,
+  "rain bow": 18000,
+  "rainbow fish": 6000,
+  "rake": 40,
+  "ranarr potion (unf)": 10000,
+  "ranarr seed": 200,
+  "ranarr weed": 11000,
+  "ranging mix(1)": 2000,
+  "ranging mix(2)": 2000,
+  "ranging potion(1)": 2000,
+  "ranging potion(2)": 2000,
+  "ranging potion(3)": 2000,
+  "ranging potion(4)": 2000,
+  "ranger boots": 8,
+  "ranger gloves": 8,
+  "rangers' tights": 8,
+  "rangers' tunic": 4,
+  "raurg bones": 7500,
+  "raw admiral pie": 13000,
+  "raw anchovies": 13000,
+  "raw anglerfish": 15000,
+  "raw barb-tailed kebbit": 13000,
+  "raw bass": 15000,
+  "raw bear meat": 13000,
+  "raw beast meat": 11000,
+  "raw beef": 13000,
+  "raw bird meat": 11000,
+  "raw cave eel": 13000,
+  "raw chicken": 13000,
+  "raw chompy": 13000,
+  "raw cod": 15000,
+  "raw dark crab": 15000,
+  "raw dashing kebbit": 13000,
+  "raw fish pie": 13000,
+  "raw garden pie": 13000,
+  "raw graahk": 13000,
+  "raw herring": 15000,
+  "raw jubbly": 11000,
+  "raw karambwan": 13000,
+  "raw kyatt": 13000,
+  "raw larupia": 13000,
+  "raw lobster": 15000,
+  "raw mackerel": 15000,
+  "raw manta ray": 15000,
+  "raw monkfish": 13000,
+  "raw moonlight antelope": 13000,
+  "raw mud pie": 13000,
+  "raw oomlie": 15,
+  "raw pike": 15000,
+  "raw pyre fox": 13000,
+  "raw rabbit": 13000,
+  "raw rainbow fish": 13000,
+  "raw rat meat": 13000,
+  "raw salmon": 15000,
+  "raw sardine": 15000,
+  "raw sea turtle": 15000,
+  "raw shark": 15000,
+  "raw shrimps": 15000,
+  "raw slimy eel": 13000,
+  "raw summer pie": 13000,
+  "raw sunlight antelope": 13000,
+  "raw swordfish": 15000,
+  "raw trout": 15000,
+  "raw tuna": 15000,
+  "raw ugthanki meat": 11000,
+  "raw wild kebbit": 13000,
+  "raw wild pie": 13000,
+  "raw yak meat": 11000,
+  "red bead": 11000,
+  "red beret": 4,
+  "red boater": 4,
+  "red boots": 150,
+  "red cape": 150,
+  "red cavalier": 4,
+  "red chinchompa": 7000,
+  "red d'hide body": 70,
+  "red d'hide body (g)": 8,
+  "red d'hide body (t)": 8,
+  "red d'hide chaps": 70,
+  "red d'hide chaps (g)": 8,
+  "red d'hide chaps (t)": 8,
+  "red d'hide shield": 125,
+  "red d'hide vambraces": 70,
+  "red dragon leather": 11000,
+  "red dragon mask": 4,
+  "red dragonhide": 11000,
+  "red dragonhide set": 70,
+  "red dye": 150,
+  "red elegant blouse": 4,
+  "red elegant legs": 4,
+  "red elegant shirt": 4,
+  "red elegant skirt": 4,
+  "red feather": 8000,
+  "red firelighter": 250,
+  "red flowers": 150,
+  "red gloves": 150,
+  "red halloween mask": 5,
+  "red hat": 150,
+  "red headband": 4,
+  "red partyhat": 5,
+  "red robe bottoms": 150,
+  "red robe top": 150,
+  "red salamander": 125,
+  "red spiders' eggs": 13000,
+  "red spiky vambraces": 125,
+  "red topaz": 11000,
+  "red topaz machete": 15,
+  "redberries": 13000,
+  "redberry pie": 15,
+  "redberry seed": 600,
+  "redwood bird house": 250,
+  "redwood logs": 12000,
+  "redwood pyre logs": 11000,
+  "redwood sapling": 100,
+  "redwood shield": 18000,
+  "redwood tree seed": 200,
+  "regen bracelet": 70,
+  "relicym's balm(1)": 2000,
+  "relicym's balm(2)": 2000,
+  "relicym's balm(3)": 2000,
+  "relicym's balm(4)": 2000,
+  "relicym's mix(1)": 2000,
+  "relicym's mix(2)": 2000,
+  "restore mix(1)": 2000,
+  "restore mix(2)": 2000,
+  "restore potion(1)": 2000,
+  "restore potion(2)": 2000,
+  "restore potion(3)": 2000,
+  "restore potion(4)": 2000,
+  "revenant cave teleport": 15000,
+  "revenant ether": 30000,
+  "ribcage piece": 11000,
+  "right eye patch": 150,
+  "ring mould": 40,
+  "ring of 3rd age": 4,
+  "ring of coins": 4,
+  "ring of dueling(8)": 15000,
+  "ring of endurance (uncharged)": 5,
+  "ring of forging": 10000,
+  "ring of life": 10000,
+  "ring of nature": 4,
+  "ring of pursuit": 100,
+  "ring of recoil": 15000,
+  "ring of returning(5)": 10000,
+  "ring of stone": 70,
+  "ring of suffering": 8,
+  "ring of the gods": 8,
+  "ring of wealth": 10000,
+  "ring of wealth (5)": 10000,
+  "ring of wealth scroll": 10000,
+  "riyl remains": 7500,
+  "roast beast meat": 6000,
+  "roast bird meat": 6000,
+  "roast rabbit": 6000,
+  "robe bottom of darkness": 70,
+  "robe top of darkness": 70,
+  "robin hood hat": 8,
+  "rock hammer": 40,
+  "rock thrownhammer": 11000,
+  "rock-climbing boots": 0,
+  "rock-shell boots": 125,
+  "rock-shell chunk": 11000,
+  "rock-shell gloves": 125,
+  "rock-shell helm": 70,
+  "rock-shell legs": 70,
+  "rock-shell plate": 70,
+  "rock-shell shard": 11000,
+  "rock-shell splinter": 11000,
+  "rocking chair (flatpack)": 500,
+  "roe": 13000,
+  "rolling pin": 50,
+  "rope": 250,
+  "rosemary": 600,
+  "rosemary seed": 600,
+  "round blood'n'tar snelm": 150,
+  "round bruise blue snelm": 150,
+  "round myre snelm": 150,
+  "round ochre snelm": 150,
+  "royal crown": 4,
+  "royal gown bottom": 4,
+  "royal gown top": 4,
+  "royal sceptre": 4,
+  "ruby": 13000,
+  "ruby amulet": 10000,
+  "ruby amulet (u)": 10000,
+  "ruby bolt tips": 11000,
+  "ruby bolts": 11000,
+  "ruby bolts (e)": 11000,
+  "ruby bracelet": 10000,
+  "ruby dragon bolts": 11000,
+  "ruby dragon bolts (e)": 11000,
+  "ruby harvest (item)": 125,
+  "ruby necklace": 18000,
+  "ruby ring": 10000,
+  "rune 2h sword": 70,
+  "rune armour set (lg)": 8,
+  "rune armour set (sk)": 8,
+  "rune arrow": 11000,
+  "rune arrow(p)": 11000,
+  "rune arrow(p+)": 11000,
+  "rune arrow(p++)": 11000,
+  "rune arrowtips": 10000,
+  "rune axe": 40,
+  "rune battleaxe": 70,
+  "rune boots": 70,
+  "rune brutal": 11000,
+  "rune cane": 4,
+  "rune chainbody": 70,
+  "rune claws": 70,
+  "rune crossbow": 70,
+  "rune dagger": 70,
+  "rune dagger(p)": 70,
+  "rune dagger(p+)": 70,
+  "rune dagger(p++)": 70,
+  "rune dart": 11000,
+  "rune dart tip": 11000,
+  "rune dart(p)": 11000,
+  "rune dart(p+)": 11000,
+  "rune dart(p++)": 11000,
+  "rune defender ornament kit": 4,
+  "rune dragon mask": 4,
+  "rune full helm": 70,
+  "rune full helm (g)": 8,
+  "rune full helm (t)": 8,
+  "rune gold-trimmed set (lg)": 8,
+  "rune gold-trimmed set (sk)": 8,
+  "rune halberd": 70,
+  "rune hasta": 70,
+  "rune hasta(p)": 70,
+  "rune hasta(p+)": 70,
+  "rune hasta(p++)": 70,
+  "rune helm (h1)": 70,
+  "rune helm (h2)": 70,
+  "rune helm (h3)": 70,
+  "rune helm (h4)": 70,
+  "rune helm (h5)": 70,
+  "rune javelin": 11000,
+  "rune javelin heads": 10000,
+  "rune javelin(p)": 7000,
+  "rune javelin(p+)": 11000,
+  "rune javelin(p++)": 11000,
+  "rune kiteshield": 70,
+  "rune kiteshield (g)": 8,
+  "rune kiteshield (t)": 8,
+  "rune knife": 11000,
+  "rune knife(p)": 7000,
+  "rune knife(p+)": 7000,
+  "rune knife(p++)": 7000,
+  "rune longsword": 70,
+  "rune mace": 70,
+  "rune med helm": 70,
+  "rune nails": 13000,
+  "rune pickaxe": 40,
+  "rune platebody": 70,
+  "rune platebody (g)": 8,
+  "rune platebody (h1)": 8,
+  "rune platebody (h2)": 8,
+  "rune platebody (h3)": 8,
+  "rune platebody (h4)": 8,
+  "rune platebody (h5)": 8,
+  "rune platebody (t)": 8,
+  "rune platelegs": 70,
+  "rune platelegs (g)": 8,
+  "rune platelegs (t)": 8,
+  "rune plateskirt": 70,
+  "rune plateskirt (g)": 8,
+  "rune plateskirt (t)": 8,
+  "rune pouch note": 40,
+  "rune scimitar": 70,
+  "rune scimitar ornament kit (guthix)": 4,
+  "rune scimitar ornament kit (saradomin)": 4,
+  "rune scimitar ornament kit (zamorak)": 4,
+  "rune shield (h1)": 70,
+  "rune shield (h2)": 70,
+  "rune shield (h3)": 70,
+  "rune shield (h4)": 70,
+  "rune shield (h5)": 70,
+  "rune spear": 70,
+  "rune spear(p)": 70,
+  "rune spear(p+)": 70,
+  "rune spear(p++)": 70,
+  "rune sq shield": 70,
+  "rune sword": 70,
+  "rune thrownaxe": 11000,
+  "rune trimmed set (lg)": 8,
+  "rune trimmed set (sk)": 8,
+  "rune warhammer": 70,
+  "runescroll of bloodbark": 50,
+  "runescroll of swampbark": 50,
+  "runite bar": 10000,
+  "runite bolts": 11000,
+  "runite bolts (p)": 11000,
+  "runite bolts (p+)": 11000,
+  "runite bolts (p++)": 11000,
+  "runite bolts (unf)": 13000,
+  "runite crossbow (u)": 10000,
+  "runite limbs": 10000,
+  "runite ore": 4500,
+  "sacred oil(1)": 2000,
+  "sacred oil(2)": 2000,
+  "sacred oil(3)": 2000,
+  "sacred oil(4)": 2000,
+  "sagacious spectacles": 4,
+  "salmon": 6000,
+  "saltpetre": 13000,
+  "salve graveyard teleport (tablet)": 10000,
+  "samurai boots": 70,
+  "samurai gloves": 70,
+  "samurai greaves": 70,
+  "samurai kasa": 70,
+  "samurai shirt": 70,
+  "sanfew serum(1)": 2000,
+  "sanfew serum(2)": 2000,
+  "sanfew serum(3)": 2000,
+  "sanfew serum(4)": 2000,
+  "sanguinesti staff (uncharged)": 8,
+  "santa hat": 5,
+  "sarachnis cudgel": 70,
+  "saradomin armour set (lg)": 8,
+  "saradomin armour set (sk)": 8,
+  "saradomin bracers": 8,
+  "saradomin brew(1)": 2000,
+  "saradomin brew(2)": 2000,
+  "saradomin brew(3)": 2000,
+  "saradomin brew(4)": 2000,
+  "saradomin chaps": 8,
+  "saradomin cloak": 8,
+  "saradomin coif": 8,
+  "saradomin dragonhide set": 8,
+  "saradomin full helm": 8,
+  "saradomin godsword": 8,
+  "saradomin godsword ornament kit": 4,
+  "saradomin hilt": 10000,
+  "saradomin kiteshield": 8,
+  "saradomin mitre": 8,
+  "saradomin mjolnir": 8,
+  "saradomin monk bottom": 15,
+  "saradomin monk top": 15,
+  "saradomin page 1": 5,
+  "saradomin page 2": 5,
+  "saradomin page 3": 5,
+  "saradomin page 4": 5,
+  "saradomin platebody": 8,
+  "saradomin platelegs": 8,
+  "saradomin plateskirt": 8,
+  "saradomin robe legs": 8,
+  "saradomin robe top": 8,
+  "saradomin stole": 8,
+  "saradomin's light": 5,
+  "saradomin's tear": 50,
+  "sardine": 6000,
+  "saturated heart": 8,
+  "saw": 40,
+  "scythe of vitur (uncharged)": 8,
+  "sea turtle": 10000,
+  "seasoned sardine": 15,
+  "seaweed": 13000,
+  "seaweed spore": 600,
+  "secateurs": 40,
+  "secateurs attachment": 10000,
+  "security book": 15,
+  "seed dibber": 40,
+  "seercull": 8,
+  "seers ring": 8,
+  "senntisten teleport (tablet)": 10000,
+  "serpentine helm (uncharged)": 8,
+  "serpentine visage": 5,
+  "serum 207 (1)": 2000,
+  "serum 207 (2)": 2000,
+  "serum 207 (3)": 2000,
+  "serum 207 (4)": 2000,
+  "shaman mask": 125,
+  "shark": 10000,
+  "shark lure": 10000,
+  "shattered cannon ornament kit": 5,
+  "shattered relics mystic ornament kit": 5,
+  "shattered relics variety ornament kit": 5,
+  "shattered relics void ornament kit": 5,
+  "shaving stand (flatpack)": 500,
+  "shield left half": 50,
+  "shield right half": 50,
+  "ship ticket": 18000,
+  "shirt (brown)": 150,
+  "shirt (lilac)": 150,
+  "shirt (yellow)": 150,
+  "shoe box (flatpack)": 500,
+  "short green guy": 2000,
+  "shortbow": 18000,
+  "shortbow (u)": 10000,
+  "shorts (blue)": 150,
+  "shorts (brown)": 150,
+  "shorts (yellow)": 150,
+  "shrunk ogleroot": 15,
+  "sickle mould": 40,
+  "sigil of aggression": 4,
+  "sigil of barrows": 10,
+  "sigil of binding": 8,
+  "sigil of consistency": 10,
+  "sigil of deft strikes": 10,
+  "sigil of devotion": 8,
+  "sigil of enhanced harvest": 10,
+  "sigil of escaping": 8,
+  "sigil of exaggeration": 10,
+  "sigil of finality": 4,
+  "sigil of fortification": 10,
+  "sigil of freedom": 10,
+  "sigil of garments": 8,
+  "sigil of last recall": 4,
+  "sigil of mobility": 10,
+  "sigil of nature": 8,
+  "sigil of pious protection": 4,
+  "sigil of preservation": 8,
+  "sigil of prosperity": 8,
+  "sigil of rampage": 4,
+  "sigil of remote storage": 4,
+  "sigil of resilience": 10,
+  "sigil of slaughter": 8,
+  "sigil of specialised strikes": 8,
+  "sigil of stamina": 10,
+  "sigil of storage": 10,
+  "sigil of supreme stamina": 8,
+  "sigil of the abyss": 10,
+  "sigil of the alchemist": 10,
+  "sigil of the barbarians": 8,
+  "sigil of the chef": 10,
+  "sigil of the craftsman": 10,
+  "sigil of the dwarves": 8,
+  "sigil of the elves": 8,
+  "sigil of the eternal jeweller": 10,
+  "sigil of the feral fighter": 8,
+  "sigil of the fletcher": 10,
+  "sigil of the forager": 8,
+  "sigil of the formidable fighter": 10,
+  "sigil of the fortune farmer": 8,
+  "sigil of the gnomes": 8,
+  "sigil of the guardian angel": 4,
+  "sigil of the menacing mage": 8,
+  "sigil of the meticulous mage": 10,
+  "sigil of the porcupine": 8,
+  "sigil of the potion master": 10,
+  "sigil of the rigorous ranger": 10,
+  "sigil of the ruthless ranger": 8,
+  "sigil of the serpent": 8,
+  "sigil of the skiller": 4,
+  "sigil of the smith": 10,
+  "sigil of the treasure hunter": 10,
+  "sigil of versatility": 8,
+  "silk": 18000,
+  "silver bar": 10000,
+  "silver bolts": 11000,
+  "silver bolts (p)": 11000,
+  "silver bolts (p+)": 11000,
+  "silver bolts (p++)": 11000,
+  "silver bolts (unf)": 13000,
+  "silver dust": 13000,
+  "silver locks": 8,
+  "silver ore": 13000,
+  "silver sickle": 15,
+  "sinew": 13000,
+  "sinister key": 11000,
+  "skewer": 50,
+  "skewer stick": 13000,
+  "skill cape": 4,
+  "skill cape (t)": 4,
+  "skills necklace": 10000,
+  "skills necklace(4)": 10000,
+  "skills necklace(6)": 10000,
+  "skirt (blue)": 150,
+  "skirt (brown)": 150,
+  "skirt (lilac)": 150,
+  "skull of vet'ion": 8,
+  "skull piece": 11000,
+  "slayer bell": 40,
+  "slayer's enchantment": 500,
+  "slayer's respite": 2000,
+  "slayer's respite(4)": 2000,
+  "slayer's respite(m)": 2000,
+  "slayer's respite(m4)": 2000,
+  "slayer's staff": 70,
+  "sleeping cap": 4,
+  "sliced banana": 15,
+  "sliced mushrooms": 13000,
+  "small box hedge (bagged)": 10000,
+  "small fishing net": 40,
+  "smoke battlestaff": 8,
+  "smoke rune": 18000,
+  "smouldering stone": 5,
+  "snake hide": 13000,
+  "snake hide (swamp)": 11000,
+  "snakeskin": 13000,
+  "snakeskin bandana": 125,
+  "snakeskin body": 125,
+  "snakeskin boots": 125,
+  "snakeskin chaps": 125,
+  "snakeskin shield": 125,
+  "snakeskin vambraces": 125,
+  "snapdragon": 11000,
+  "snapdragon potion (unf)": 10000,
+  "snapdragon seed": 200,
+  "snape grass": 13000,
+  "snape grass seed": 200,
+  "snowy knight (item)": 125,
+  "soaked page": 11000,
+  "soda ash": 13000,
+  "soft clay": 13000,
+  "soiled page": 11000,
+  "soul rune": 25000,
+  "soulflame horn": 5,
+  "spade": 40,
+  "spatula": 50,
+  "spectral sigil": 5,
+  "spectral spirit shield": 8,
+  "spice": 11000,
+  "spicy crunchies": 6000,
+  "spicy minced meat": 8000,
+  "spicy sauce": 13000,
+  "spicy tomato": 8000,
+  "spider carcass": 13000,
+  "spider on shaft": 6000,
+  "spider on stick": 6000,
+  "spiked boots": 15,
+  "spiked manacles": 8,
+  "spiky vambraces": 125,
+  "spinach roll": 50,
+  "spork": 50,
+  "spotted cape": 125,
+  "spotted kebbit fur": 10000,
+  "spottier cape": 125,
+  "staff": 125,
+  "staff of air": 125,
+  "staff of bob the cat": 8,
+  "staff of earth": 125,
+  "staff of fire": 125,
+  "staff of light": 8,
+  "staff of the dead": 8,
+  "staff of water": 125,
+  "stale baguette": 5,
+  "stamina mix(1)": 2000,
+  "stamina mix(2)": 2000,
+  "stamina potion(1)": 2000,
+  "stamina potion(2)": 2000,
+  "stamina potion(3)": 2000,
+  "stamina potion(4)": 2000,
+  "stretched hide": 11000,
+  "stripy feather": 8000,
+  "stripy pirate shirt (beige)": 150,
+  "stripy pirate shirt (blue)": 150,
+  "stripy pirate shirt (brown)": 150,
+  "stripy pirate shirt (red)": 150,
+  "stronghold notes": 15,
+  "strung rabbit foot": 150,
+  "studded body": 125,
+  "studded body (g)": 8,
+  "studded body (t)": 8,
+  "studded chaps": 125,
+  "studded chaps (g)": 8,
+  "studded chaps (t)": 8,
+  "sulliuscep cap": 100,
+  "sulphur blades": 15,
+  "summer pie": 10000,
+  "sunfire rune": 18000,
+  "sunfire splinters": 30000,
+  "sunlight antler bolts": 11000,
+  "sunlight moth mix (2)": 125,
+  "super antifire mix(1)": 2000,
+  "super antifire mix(2)": 2000,
+  "super antifire potion(1)": 2000,
+  "super antifire potion(2)": 2000,
+  "super antifire potion(3)": 2000,
+  "super antifire potion(4)": 2000,
+  "super attack(1)": 2000,
+  "super attack(2)": 2000,
+  "super attack(3)": 2000,
+  "super attack(4)": 2000,
+  "super combat potion(1)": 2000,
+  "super combat potion(2)": 2000,
+  "super combat potion(3)": 2000,
+  "super combat potion(4)": 2000,
+  "super def. mix(1)": 2000,
+  "super def. mix(2)": 2000,
+  "super defence(1)": 2000,
+  "super defence(2)": 2000,
+  "super defence(3)": 2000,
+  "super defence(4)": 2000,
+  "super energy mix(1)": 2000,
+  "super energy mix(2)": 2000,
+  "super energy(1)": 2000,
+  "super energy(2)": 2000,
+  "super energy(3)": 2000,
+  "super energy(4)": 2000,
+  "super kebab": 15,
+  "super potion set": 2000,
+  "super restore mix(1)": 2000,
+  "super restore mix(2)": 2000,
+  "super restore(1)": 2000,
+  "super restore(2)": 2000,
+  "super restore(3)": 2000,
+  "super restore(4)": 2000,
+  "super str. mix(1)": 2000,
+  "super str. mix(2)": 2000,
+  "super strength(1)": 2000,
+  "super strength(2)": 2000,
+  "super strength(3)": 2000,
+  "super strength(4)": 2000,
+  "superantipoison(1)": 2000,
+  "superantipoison(2)": 2000,
+  "superantipoison(3)": 2000,
+  "superantipoison(4)": 2000,
+  "superattack mix(1)": 2000,
+  "superattack mix(2)": 2000,
+  "supercompost": 2000,
+  "superior dragon bones": 7500,
+  "swamp lizard": 125,
+  "swamp paste": 13000,
+  "swamp tar": 13000,
+  "swamp toad (item)": 13000,
+  "swamp weed": 13000,
+  "sweetcorn": 11000,
+  "sweetcorn (bowl)": 13000,
+  "sweetcorn seed": 600,
+  "swordfish": 6000,
+  "tai bwo wannai teleport": 10000,
+  "tall box hedge (bagged)": 10000,
+  "tall fancy hedge (baged)": 10000,
+  "tan cavalier": 4,
+  "tangled toad's legs": 6000,
+  "target teleport scroll": 5,
+  "tarromin": 13000,
+  "tarromin potion (unf)": 10000,
+  "tarromin seed": 600,
+  "tarromin tar": 7000,
+  "tatty graahk fur": 10000,
+  "tatty kyatt fur": 10000,
+  "tatty larupia fur": 10000,
+  "te salt": 10000,
+  "teacher wand": 70,
+  "team cape zero": 4,
+  "teleport card": 500,
+  "teleport to house (tablet)": 15000,
+  "thammaron's sceptre (au)": 8,
+  "thammaron's sceptre (u)": 8,
+  "thatch spar dense": 100,
+  "thatch spar light": 100,
+  "thatch spar med": 100,
+  "thread": 18000,
+  "tiara": 10,
+  "tiara mould": 40,
+  "timber beam": 13000,
+  "tin ore": 13000,
+  "tinderbox": 40,
+  "toad batta": 6000,
+  "toad crunchies": 6000,
+  "toad's legs": 13000,
+  "toadflax": 13000,
+  "toadflax potion (unf)": 10000,
+  "toadflax seed": 600,
+  "toktz-ket-xil": 70,
+  "toktz-mej-tal": 70,
+  "toktz-xil-ak": 70,
+  "toktz-xil-ek": 70,
+  "toktz-xil-ul": 11000,
+  "tom berries": 10000,
+  "tomato": 13000,
+  "tomato seed": 600,
+  "tomatoes(5)": 600,
+  "tome of fire (empty)": 15,
+  "tooth half of key": 11000,
+  "top hat": 4,
+  "top hat & monocle": 4,
+  "topaz amulet": 10000,
+  "topaz amulet (u)": 10000,
+  "topaz bolt tips": 11000,
+  "topaz bolts": 11000,
+  "topaz bolts (e)": 11000,
+  "topaz bracelet": 10000,
+  "topaz dragon bolts": 11000,
+  "topaz dragon bolts (e)": 11000,
+  "topaz necklace": 10000,
+  "topaz ring": 10000,
+  "topiary hedge (baged)": 10000,
+  "torag's armour set": 8,
+  "torag's hammers": 15,
+  "torag's hammers 0": 15,
+  "torag's helm": 15,
+  "torag's helm 0": 15,
+  "torag's platebody": 15,
+  "torag's platebody 0": 15,
+  "torag's platelegs": 15,
+  "torag's platelegs 0": 15,
+  "tormented bracelet": 8,
+  "tormented ornament kit": 4,
+  "tormented synapse": 5,
+  "torn prayer scroll": 5,
+  "torstol": 11000,
+  "torstol potion (unf)": 10000,
+  "torstol seed": 200,
+  "tortoise shell": 7500,
+  "torture ornament kit": 4,
+  "torva full helm": 8,
+  "torva full helm (damaged)": 8,
+  "torva platebody": 8,
+  "torva platebody (damaged)": 8,
+  "torva platelegs": 8,
+  "torva platelegs (damaged)": 8,
+  "toxic blowpipe (empty)": 8,
+  "toxic staff (uncharged)": 8,
+  "toy cat": 150,
+  "toy doll": 150,
+  "toy doll (wound)": 150,
+  "toy mouse": 150,
+  "toy mouse (wound)": 150,
+  "toy soldier": 150,
+  "toy soldier (wound)": 150,
+  "trading sticks": 18000,
+  "trailblazer banner": 5,
+  "trailblazer boots (t1)": 5,
+  "trailblazer boots (t2)": 5,
+  "trailblazer boots (t3)": 5,
+  "trailblazer cane": 5,
+  "trailblazer globe": 5,
+  "trailblazer graceful ornament kit": 6,
+  "trailblazer hood (t1)": 5,
+  "trailblazer hood (t2)": 5,
+  "trailblazer hood (t3)": 5,
+  "trailblazer reloaded death scroll": 5,
+  "trailblazer reloaded home teleport scroll": 5,
+  "trailblazer rug": 5,
+  "trailblazer teleport scroll": 5,
+  "trailblazer tool ornament kit": 5,
+  "trailblazer top (t1)": 5,
+  "trailblazer top (t2)": 5,
+  "trailblazer top (t3)": 5,
+  "trailblazer trousers (t1)": 5,
+  "trailblazer trousers (t2)": 5,
+  "trailblazer trousers (t3)": 5,
+  "trasonous ring": 8,
+  "triangle sandwich": 6000,
+  "tribal mask (combat)": 150,
+  "tribal mask (disease)": 150,
+  "tribal mask (poison)": 150,
+  "tribal top (blue)": 150,
+  "tribal top (brown)": 150,
+  "tribal top (pink)": 150,
+  "tribal top (yellow)": 150,
+  "trident of the seas (full)": 8,
+  "trousers (blue)": 150,
+  "trousers (brown)": 150,
+  "trousers (lilac)": 150,
+  "trout": 6000,
+  "trout caviar": 1000,
+  "trout roe": 1000,
+  "trout": 6000,
+  "tumeken's shadow (uncharged)": 8,
+  "tuna": 6000,
+  "tuna and corn": 13000,
+  "tuna potato": 10000,
+  "turquoise boots": 150,
+  "turquoise hat": 150,
+  "turquoise robe bottoms": 150,
+  "turquoise robe top": 150,
+  "twinflame staff": 8,
+  "twisted banner": 5,
+  "twisted blueprints": 5,
+  "twisted boots (t1)": 5,
+  "twisted boots (t2)": 5,
+  "twisted boots (t3)": 5,
+  "twisted bow": 8,
+  "twisted buckler": 8,
+  "twisted cane": 10,
+  "twisted coat (t1)": 5,
+  "twisted coat (t2)": 5,
+  "twisted coat (t3)": 5,
+  "twisted hat (t1)": 5,
+  "twisted hat (t2)": 5,
+  "twisted hat (t3)": 5,
+  "twisted horns": 5,
+  "twisted relic hunter (t1) armour set": 5,
+  "twisted relic hunter (t2) armour set": 5,
+  "twisted relic hunter (t3) armour set": 5,
+  "twisted teleport scroll": 5,
+  "twisted trousers (t1)": 5,
+  "twisted trousers (t2)": 5,
+  "twisted trousers (t3)": 5,
+  "tyras helm": 150,
+  "tzhaar-ket-em": 70,
+  "tzhaar-ket-om": 70,
+  "tzhaar-ket-om ornament kit": 4,
+  "ugthanki & onion": 11000,
+  "ugthanki & tomato": 11000,
+  "ugthanki kebab": 10000,
+  "ugthanki meat": 11000,
+  "ultracompost": 2000,
+  "unblessed symbol": 10000,
+  "uncharged toxic trident": 8,
+  "uncharged toxic trident (e)": 8,
+  "uncharged trident": 8,
+  "uncharged trident (e)": 8,
+  "uncooked apple pie": 13000,
+  "uncooked berry pie": 13000,
+  "uncooked botanical pie": 13000,
+  "uncooked dragonfruit pie": 10000,
+  "uncooked egg": 13000,
+  "uncooked meat pie": 13000,
+  "uncooked mushroom pie": 13000,
+  "uncut diamond": 10000,
+  "uncut dragonstone": 10000,
+  "uncut emerald": 10000,
+  "uncut jade": 10000,
+  "uncut onyx": 11000,
+  "uncut opal": 10000,
+  "uncut red topaz": 10000,
+  "uncut ruby": 10000,
+  "uncut sapphire": 10000,
+  "uncut zenyte": 10000,
+  "unfired bowl": 10000,
+  "unfired pie dish": 10000,
+  "unfired plant pot": 10000,
+  "unfired pot": 10000,
+  "unfired pot lid": 100,
+  "unholy blessing": 5,
+  "unholy book page set": 5,
+  "unholy symbol": 125,
+  "unicorn horn": 13000,
+  "unicorn horn dust": 13000,
+  "unlit bug lantern": 40,
+  "unlit torch": 40,
+  "unpowered orb": 10000,
+  "unpowered symbol": 10000,
+  "unstrung comp bow": 10000,
+  "unstrung emblem": 10000,
+  "unstrung heavy ballista": 8,
+  "unstrung light ballista": 8,
+  "unstrung symbol": 10000,
+  "urium remains": 7500,
+  "ursine chainmace (u)": 8,
+  "urt salt": 10000,
+  "vampyre dust": 11000,
+  "varrock teleport (tablet)": 15000,
+  "veg ball": 6000,
+  "vegetable batta": 6000,
+  "venator shard": 8,
+  "venenatis spiderling": 4,
+  "verac's armour set": 8,
+  "verac's brassard": 15,
+  "verac's brassard 0": 15,
+  "verac's flail": 15,
+  "verac's flail 0": 15,
+  "verac's helm": 15,
+  "verac's helm 0": 15,
+  "verac's plateskirt": 15,
+  "verac's plateskirt 0": 15,
+  "vesta's longsword": 10,
+  "vesta's spear": 10,
+  "vial": 13000,
+  "vial of blood": 13000,
+  "vial of water": 13000,
+  "viggora's chainmace (u)": 8,
+  "vile ashes": 3000,
+  "villager armband (blue)": 150,
+  "villager armband (brown)": 150,
+  "villager armband (pink)": 150,
+  "villager armband (yellow)": 150,
+  "villager hat (blue)": 150,
+  "villager hat (brown)": 150,
+  "villager hat (pink)": 150,
+  "villager hat (yellow)": 150,
+  "villager robe (blue)": 150,
+  "villager robe (brown)": 150,
+  "villager robe (pink)": 150,
+  "villager robe (yellow)": 150,
+  "villager sandals (blue)": 150,
+  "villager sandals (brown)": 150,
+  "villager sandals (pink)": 150,
+  "villager sandals (yellow)": 150,
+  "virtus mask": 8,
+  "virtus robe bottom": 8,
+  "virtus robe top": 8,
+  "vodka": 13000,
+  "volatile orb": 8,
+  "volcanic ash": 13000,
+  "volcanic whip mix": 4,
+  "vyrewatch legs": 150,
+  "vyrewatch shoes": 150,
+  "vyrewatch top": 150,
+  "war blessing": 5,
+  "ward upgrade kit": 50,
+  "warrior helm": 70,
+  "warrior ring": 8,
+  "watchtower teleport (tablet)": 10000,
+  "water battlestaff": 18000,
+  "water orb": 11000,
+  "water rune": 50000,
+  "water talisman": 11000,
+  "water tiara": 40,
+  "waterbirth teleport (tablet)": 10000,
+  "watering can": 40,
+  "watermelon": 11000,
+  "watermelon seed": 200,
+  "watermelon slice": 11000,
+  "waterskin(0)": 10000,
+  "waterskin(4)": 2000,
+  "watson teleport": 10000,
+  "weapon poison": 2000,
+  "weapon poison(+)": 2000,
+  "weapon poison(++)": 2000,
+  "weeds": 600,
+  "west ardougne teleport (tablet)": 10000,
+  "whisky": 13000,
+  "white 2h sword": 125,
+  "white apron": 150,
+  "white battleaxe": 125,
+  "white bead": 11000,
+  "white beret": 4,
+  "white boater": 4,
+  "white boots": 125,
+  "white cavalier": 4,
+  "white chainbody": 125,
+  "white claws": 125,
+  "white dagger": 125,
+  "white dagger(p)": 125,
+  "white dagger(p+)": 125,
+  "white dagger(p++)": 125,
+  "white dark bow paint": 4,
+  "white elegant blouse": 4,
+  "white elegant skirt": 4,
+  "white firelighter": 250,
+  "white flowers": 150,
+  "white full helm": 125,
+  "white gloves": 125,
+  "white halberd": 125,
+  "white headband": 4,
+  "white kiteshield": 125,
+  "white lily": 600,
+  "white lily seed": 600,
+  "white longsword": 125,
+  "white mace": 125,
+  "white magic staff": 125,
+  "white med helm": 125,
+  "white partyhat": 5,
+  "white platebody": 125,
+  "white platelegs": 125,
+  "white plateskirt": 125,
+  "white scimitar": 125,
+  "white sq shield": 125,
+  "white sword": 125,
+  "white toy horsey": 150,
+  "white unicorn mask": 4,
+  "white warhammer": 125,
+  "whiteberry seed": 200,
+  "wild pie": 10000,
+  "wildblood hops": 11000,
+  "wildblood seed": 2000,
+  "willow bird house": 250,
+  "willow blackjack": 125,
+  "willow blackjack(d)": 125,
+  "willow blackjack(o)": 125,
+  "willow branch": 11000,
+  "willow comp bow": 8,
+  "willow logs": 15000,
+  "willow longbow": 18000,
+  "willow longbow (u)": 10000,
+  "willow pyre logs": 11000,
+  "willow roots": 11000,
+  "willow sapling": 200,
+  "willow seed": 200,
+  "willow shield": 18000,
+  "willow shortbow": 18000,
+  "willow shortbow (u)": 10000,
+  "willow stock": 10000,
+  "wine of zamorak": 11000,
+  "wizard blizzard": 2000,
+  "wizard boots": 8,
+  "wizard hat": 125,
+  "wizard's mind bomb": 2000,
+  "woad leaf": 11000,
+  "woad seed": 600,
+  "wolf bones": 13000,
+  "wolf cloak": 4,
+  "wolf mask": 4,
+  "wolfbone arrowtips": 7000,
+  "wood dining table (flatpack)": 500,
+  "wooden bed (flatpack)": 500,
+  "wooden bench (flatpack)": 500,
+  "wooden cat": 15,
+  "wooden chair (flatpack)": 500,
+  "wooden shield": 125,
+  "wooden shield (g)": 125,
+  "wooden spoon": 50,
+  "wooden stock": 10000,
+  "wool": 13000,
+  "worm batta": 6000,
+  "worm crunchies": 6000,
+  "worm hole": 6000,
+  "wrapped oomlie": 15,
+  "wrath rune": 25000,
+  "wrath talisman": 11000,
+  "wrath tiara": 40,
+  "wyrm bones": 7500,
+  "wyrmling bones": 3000,
+  "wyvern bones": 7500,
+  "wyvern visage": 5,
+  "xerician fabric": 13000,
+  "xerician hat": 125,
+  "xerician robe": 125,
+  "xerician top": 125,
+  "yak-hide": 13000,
+  "yak-hide armour (legs)": 70,
+  "yak-hide armour (top)": 70,
+  "yanillian hops": 11000,
+  "yanillian seed": 2000,
+  "yellow bead": 11000,
+  "yellow boots": 150,
+  "yellow cape": 150,
+  "yellow dark bow paint": 4,
+  "yellow dye": 150,
+  "yellow feather": 8000,
+  "yellow flowers": 150,
+  "yellow gloves": 150,
+  "yellow hat": 150,
+  "yellow partyhat": 5,
+  "yellow robe bottoms": 150,
+  "yellow robe top": 150,
+  "yew bird house": 250,
+  "yew comp bow": 8,
+  "yew logs": 12000,
+  "yew longbow": 18000,
+  "yew longbow (u)": 10000,
+  "yew pyre logs": 11000,
+  "yew roots": 11000,
+  "yew sapling": 200,
+  "yew seed": 200,
+  "yew shield": 18000,
+  "yew shortbow": 18000,
+  "yew shortbow (u)": 10000,
+  "yew stock": 10000,
+  "young impling jar": 18000,
+  "zalcano shard": 50,
+  "zamorak armour set (lg)": 8,
+  "zamorak armour set (sk)": 8,
+  "zamorak bracers": 8,
+  "zamorak brew(1)": 2000,
+  "zamorak brew(2)": 2000,
+  "zamorak brew(3)": 2000,
+  "zamorak brew(4)": 2000,
+  "zamorak chaps": 8,
+  "zamorak cloak": 8,
+  "zamorak coif": 8,
+  "zamorak crozier": 8,
+  "zamorak d'hide body": 8,
+  "zamorak d'hide boots": 8,
+  "zamorak d'hide shield": 8,
+  "zamorak dragonhide set": 8,
+  "zamorak full helm": 8,
+  "zamorak godsword": 8,
+  "zamorak godsword ornament kit": 4,
+  "zamorak hilt": 10000,
+  "zamorak kiteshield": 8,
+  "zamorak mitre": 8,
+  "zamorak mix(1)": 2000,
+  "zamorak mix(2)": 2000,
+  "zamorak mjolnir": 8,
+  "zamorak monk bottom": 15,
+  "zamorak monk top": 15,
+  "zamorak page 1": 5,
+  "zamorak page 2": 5,
+  "zamorak page 3": 5,
+  "zamorak page 4": 5,
+  "zamorak platebody": 8,
+  "zamorak platelegs": 8,
+  "zamorak plateskirt": 8,
+  "zamorak robe legs": 8,
+  "zamorak robe top": 8,
+  "zamorak stole": 8,
+  "zamorak's grapes": 11000,
+  "zamorakian hasta": 8,
+  "zamorakian spear": 8,
+  "zaryte crossbow": 8,
+  "zaryte vambraces": 7,
+  "zenyte": 11000,
+  "zenyte amulet": 8,
+  "zenyte amulet (u)": 10000,
+  "zenyte bracelet": 8,
+  "zenyte necklace": 8,
+  "zenyte ring": 8,
+  "zenyte shard": 11000,
+  "zombie head (treasure trails)": 4,
+  "zombie helmet": 50,
+  "zombie pirate key": 250,
+  "zogre bones": 3000,
+  "zul-andra teleport": 10000,
+  "zulrah's scales": 30000,
+  "zuriel's staff": 10
+};
+const categoryItems = {
+  'custom': [], // Custom will be populated dynamically
+  'gilded': ['gilded scimitar', 'gilded platebody', 'gilded platelegs', 'gilded plateskirt', 'gilded full helm', 'gilded kiteshield', 'gilded sq shield', 'gilded 2h sword', 'gilded axe', 'gilded boots', 'gilded chainbody', 'gilded coif', 'gilded d\'hide body', 'gilded d\'hide chaps', 'gilded d\'hide vambraces', 'gilded four-poster', 'gilded hasta', 'gilded med helm', 'gilded pickaxe', 'gilded spade', 'gilded spear'],
+  'runes': ['air rune', 'water rune', 'earth rune', 'fire rune', 'mind rune', 'body rune', 'chaos rune', 'death rune', 'cosmic rune', 'nature rune', 'law rune', 'blood rune', 'soul rune', 'wrath rune', 'dust rune', 'lava rune', 'mist rune', 'mud rune', 'smoke rune', 'steam rune', 'astral rune', 'aether rune', 'sunfire rune'],
+  'herbs': ['guam leaf', 'marrentill', 'tarromin', 'harralander', 'ranarr weed', 'toadflax', 'irit leaf', 'avantoe', 'kwuarm', 'snapdragon', 'cadantine', 'lantadyme', 'dwarf weed', 'torstol', 'grimy guam leaf', 'grimy marrentill', 'grimy tarromin', 'grimy harralander', 'grimy ranarr weed', 'grimy toadflax', 'grimy irit leaf', 'grimy avantoe', 'grimy kwuarm', 'grimy snapdragon', 'grimy cadantine', 'grimy lantadyme', 'grimy dwarf weed', 'grimy torstol'],
+  'food': ['shark', 'lobster', 'swordfish', 'monkfish', 'manta ray', 'sea turtle', 'dark crab', 'anglerfish', 'cooked karambwan', 'cooked sunlight antelope', 'cooked moonlight antelope', 'admiral pie', 'wild pie', 'summer pie', 'botanical pie', 'dragonfruit pie', 'mushroom pie', 'garden pie', 'fish pie', 'apple pie', 'meat pie', 'redberry pie', 'mud pie', 'cooked chompy', 'cooked jubbly', 'cooked oomlie wrap', 'cooked rabbit', 'cooked chicken', 'cooked meat', 'bread'],
+  'armour': ['monk\'s robe top', 'monk\'s robe', 'rune platebody', 'rune full helm', 'rune platelegs', 'rune kiteshield', 'proselyte sallet', 'proselyte hauberk', 'proselyte cuisse', 'proselyte tasset', 'void knight top', 'void knight robe', 'void knight gloves', 'elite void top', 'elite void robe', 'void mage helm', 'void ranger helm', 'void melee helm', 'blood moon helm', 'blood moon chestplate', 'blood moon tassets', 'blue moon helm', 'blue moon chestplate', 'blue moon tassets', 'eclipse moon helm', 'eclipse moon chestplate', 'eclipse moon tassets', 'torag\'s helm', 'torag\'s platebody', 'torag\'s platelegs', 'dharok\'s helm', 'dharok\'s platebody', 'dharok\'s platelegs', 'guthan\'s helm', 'guthan\'s platebody', 'guthan\'s chainskirt', 'verac\'s helm', 'verac\'s brassard', 'verac\'s plateskirt', 'karil\'s coif', 'karil\'s leathertop', 'karil\'s leatherskirt', 'ahrim\'s hood', 'ahrim\'s robetop', 'ahrim\'s robeskirt', 'dragon platebody', 'justiciar faceguard', 'justiciar chestguard', 'justiciar legguards', 'torva full helm', 'torva platebody', 'torva platelegs', 'inquisitor\'s great helm', 'inquisitor\'s hauberk', 'inquisitor\'s plateskirt', 'neitiznot faceguard', 'obsidian helmet', 'obsidian platebody', 'obsidian platelegs', 'dragon full helm', 'dragon platebody', 'dragon platelegs', 'dragon boots', 'rune platebody (g)', 'rune platebody (t)', 'rune platebody (h1)', 'rune platebody (h2)', 'rune platebody (h3)', 'rune platebody (h4)', 'rune platebody (h5)', 'rune full helm (g)', 'rune full helm (t)', 'rune helm (h1)', 'rune helm (h2)', 'rune helm (h3)', 'rune helm (h4)', 'rune helm (h5)', 'rune platelegs (g)', 'rune platelegs (t)', 'rune plateskirt (g)', 'rune plateskirt (t)', 'rune kiteshield (g)', 'rune kiteshield (t)', 'rune shield (h1)', 'rune shield (h2)', 'rune shield (h3)', 'rune shield (h4)', 'rune shield (h5)', 'adamant platebody (g)', 'adamant platebody (t)', 'adamant platebody (h1)', 'adamant platebody (h2)', 'adamant platebody (h3)', 'adamant platebody (h4)', 'adamant platebody (h5)', 'adamant full helm (g)', 'adamant full helm (t)', 'adamant helm (h1)', 'adamant helm (h2)', 'adamant helm (h3)', 'adamant helm (h4)', 'adamant helm (h5)', 'adamant platelegs (g)', 'adamant platelegs (t)', 'adamant plateskirt (g)', 'adamant plateskirt (t)', 'adamant kiteshield (g)', 'adamant kiteshield (t)', 'adamant shield (h1)', 'adamant shield (h2)', 'adamant shield (h3)', 'adamant shield (h4)', 'adamant shield (h5)', 'mithril platebody (g)', 'mithril platebody (t)', 'mithril full helm (g)', 'mithril full helm (t)', 'mithril platelegs (g)', 'mithril platelegs (t)', 'mithril plateskirt (g)', 'mithril plateskirt (t)', 'mithril kiteshield (g)', 'mithril kiteshield (t)', 'black platebody (g)', 'black platebody (t)', 'black platebody (h1)', 'black platebody (h2)', 'black platebody (h3)', 'black platebody (h4)', 'black platebody (h5)', 'black full helm (g)', 'black full helm (t)', 'black helm (h1)', 'black helm (h2)', 'black helm (h3)', 'black helm (h4)', 'black helm (h5)', 'black platelegs (g)', 'black platelegs (t)', 'black plateskirt (g)', 'black plateskirt (t)', 'black kiteshield (g)', 'black kiteshield (t)', 'black shield (h1)', 'black shield (h2)', 'black shield (h3)', 'black shield (h4)', 'black shield (h5)', 'iron platebody (g)', 'iron platebody (t)', 'iron full helm (g)', 'iron full helm (t)', 'iron platelegs (g)', 'iron platelegs (t)', 'iron plateskirt (g)', 'iron plateskirt (t)', 'iron kiteshield (g)', 'iron kiteshield (t)', 'bronze platebody (g)', 'bronze platebody (t)', 'bronze full helm (g)', 'bronze full helm (t)', 'bronze platelegs (g)', 'bronze platelegs (t)', 'bronze plateskirt (g)', 'bronze plateskirt (t)', 'bronze kiteshield (g)', 'bronze kiteshield (t)', 'ancient full helm', 'armadyl full helm', 'bandos full helm', 'guthix full helm', 'saradomin full helm', 'zamorak full helm', 'ancient platebody', 'armadyl platebody', 'bandos platebody', 'guthix platebody', 'saradomin platebody', 'zamorak platebody', 'ancient platelegs', 'armadyl platelegs', 'bandos platelegs', 'guthix platelegs', 'saradomin platelegs', 'zamorak platelegs', 'ancient kiteshield', 'armadyl kiteshield', 'bandos kiteshield', 'guthix kiteshield', 'saradomin kiteshield', 'zamorak kiteshield', 'decorative armour (red)', 'decorative armour (gold)', 'decorative helm (red)', 'decorative helm (gold)', 'decorative shield (red)', 'decorative shield (gold)', 'decorative sword (red)', 'decorative sword (gold)', 'decorative armour (red plated)', 'decorative armour (gold plated)', 'neitiznot shield', 'broodoo shield', 'khazard helmet', 'khazard armour', 'granite helm', 'granite body', 'granite legs', 'granite boots', 'granite gloves', 'granite shield', 'splitbark helm', 'splitbark body', 'splitbark legs', 'splitbark gauntlets', 'splitbark boots', 'bloodbark helm', 'bloodbark body', 'bloodbark legs', 'bloodbark gauntlets', 'bloodbark boots', 'swampbark helm', 'swampbark body', 'swampbark legs', 'swampbark gauntlets', 'swampbark boots', 'mystic hat', 'mystic robe top', 'mystic robe bottom', 'mystic gloves', 'mystic boots', 'mystic hat (dark)', 'mystic robe top (dark)', 'mystic robe bottom (dark)', 'mystic gloves (dark)', 'mystic boots (dark)', 'mystic hat (light)', 'mystic robe top (light)', 'mystic robe bottom (light)', 'mystic gloves (light)', 'mystic boots (light)', 'mystic hat (dusk)', 'mystic robe top (dusk)', 'mystic robe bottom (dusk)', 'mystic gloves (dusk)', 'mystic boots (dusk)', 'lunar helm', 'lunar torso', 'lunar legs', 'lunar gloves', 'lunar boots', 'moonclan hat', 'moonclan helm', 'moonclan armour', 'moonclan skirt', 'moonclan gloves', 'moonclan boots', 'moonclan cape', 'skeletal helm', 'skeletal top', 'skeletal bottoms', 'skeletal gloves', 'skeletal boots', 'infinity hat', 'infinity top', 'infinity bottoms', 'infinity gloves', 'infinity boots', 'dark infinity hat', 'dark infinity top', 'dark infinity bottoms', 'light infinity hat', 'light infinity top', 'light infinity bottoms', 'ancestral hat', 'ancestral robe top', 'ancestral robe bottom', 'virtus mask', 'virtus robe top', 'virtus robe bottom'],
+  'weapons': ['abyssal whip', 'abyssal tentacle', 'abyssal dagger', 'abyssal bludgeon', 'dragon longsword', 'dragon scimitar', 'dragon dagger', 'dragon mace', 'dragon battleaxe', 'dragon warhammer', 'dragon claws', 'dragon sword', 'dragon halberd', 'dragon 2h sword', 'rune scimitar', 'rune longsword', 'rune battleaxe', 'rune warhammer', 'rune 2h sword', 'rune halberd', 'rune dagger', 'rune mace', 'rune sword', 'rune claws', 'rune hasta', 'rune spear', 'rune pickaxe', 'rune axe', 'adamant scimitar', 'adamant longsword', 'adamant battleaxe', 'adamant warhammer', 'adamant 2h sword', 'adamant halberd', 'adamant dagger', 'adamant mace', 'adamant sword', 'adamant claws', 'adamant hasta', 'adamant spear', 'adamant pickaxe', 'adamant axe', 'mithril scimitar', 'mithril longsword', 'mithril battleaxe', 'mithril warhammer', 'mithril 2h sword', 'mithril halberd', 'mithril dagger', 'mithril mace', 'mithril sword', 'mithril claws', 'mithril hasta', 'mithril spear', 'mithril pickaxe', 'mithril axe', 'black scimitar', 'black longsword', 'black battleaxe', 'black warhammer', 'black 2h sword', 'black halberd', 'black dagger', 'black mace', 'black sword', 'black claws', 'black spear', 'black pickaxe', 'black axe', 'steel scimitar', 'steel longsword', 'steel battleaxe', 'steel warhammer', 'steel 2h sword', 'steel halberd', 'steel dagger', 'steel mace', 'steel sword', 'steel claws', 'steel hasta', 'steel spear', 'steel pickaxe', 'steel axe', 'iron scimitar', 'iron longsword', 'iron battleaxe', 'iron warhammer', 'iron 2h sword', 'iron halberd', 'iron dagger', 'iron mace', 'iron sword', 'iron claws', 'iron hasta', 'iron spear', 'iron pickaxe', 'iron axe', 'bronze scimitar', 'bronze longsword', 'bronze battleaxe', 'bronze warhammer', 'bronze 2h sword', 'bronze halberd', 'bronze dagger', 'bronze mace', 'bronze sword', 'bronze claws', 'bronze hasta', 'bronze spear', 'bronze pickaxe', 'bronze axe', 'ancient godsword', 'armadyl godsword', 'bandos godsword', 'saradomin godsword', 'zamorak godsword', 'saradomin sword', 'zamorakian spear', 'zamorakian hasta', 'leaf-bladed battleaxe', 'granite maul', 'granite longsword', 'granite hammer', 'toktz-xil-ak', 'toktz-xil-ek', 'toktz-mej-tal', 'tzhaar-ket-em', 'tzhaar-ket-om', 'bone club', 'bone spear', 'bone dagger', 'dorgeshuun spear', 'ancient mace', 'gadderhammer', 'guthix mjolnir', 'saradomin mjolnir', 'zamorak mjolnir', 'hill giant club', 'imphide wand', 'spider wand', 'beginner wand', 'apprentice wand', 'teacher wand', 'master wand', 'mage\'s book', '3rd age wand', 'kodai wand', 'trident of the seas', 'trident of the swamp', 'sanguinesti staff', 'holy sceptre', 'skull sceptre', 'pharaoh\'s sceptre', 'ancient crozier', 'armadyl crozier', 'bandos crozier', 'guthix crozier', 'saradomin crozier', 'zamorak crozier', 'craw\'s bow', 'webweaver bow', 'dark bow', '3rd age bow', 'bow of faerdhinen', 'crystal bow', 'new crystal bow', 'venator bow', 'magic longbow', 'magic shortbow', 'magic comp bow', 'seercull', 'yew longbow', 'yew comp bow', 'yew shortbow', 'maple longbow', 'maple shortbow', 'willow longbow', 'willow comp bow', 'willow shortbow', 'oak longbow', 'oak shortbow', 'comp ogre bow', 'ogre bow', 'shortbow', 'longbow', 'crossbow', 'phoenix crossbow', 'bronze crossbow', 'blurite crossbow', 'iron crossbow', 'steel crossbow', 'mith crossbow', 'adamant crossbow', 'rune crossbow', 'dragon crossbow', 'dragon hunter crossbow', 'armadyl crossbow', 'zaryte crossbow', 'karil\'s crossbow', 'dorgeshuun crossbow', 'bone crossbow', 'hunters\' crossbow', 'hunters\' sunlight crossbow', 'light ballista', 'heavy ballista', 'dragon hunter lance', 'bone dagger', 'abyssal dagger', 'dragon dagger', 'rune dagger', 'adamant dagger', 'mithril dagger', 'black dagger', 'steel dagger', 'iron dagger', 'bronze dagger', 'dragon sword', 'black sword', 'rune sword', 'adamant sword', 'mithril sword', 'steel sword', 'iron sword', 'bronze sword', 'dragon longsword', 'rune longsword', 'adamant longsword', 'mithril longsword', 'black longsword', 'steel longsword', 'iron longsword', 'bronze longsword', 'dragon scimitar', 'rune scimitar', 'adamant scimitar', 'mithril scimitar', 'black scimitar', 'steel scimitar', 'iron scimitar', 'bronze scimitar', 'dragon mace', 'rune mace', 'adamant mace', 'mithril mace', 'black mace', 'steel mace', 'iron mace', 'bronze mace', 'dragon battleaxe', 'rune battleaxe', 'adamant battleaxe', 'mithril battleaxe', 'black battleaxe', 'steel battleaxe', 'iron battleaxe', 'bronze battleaxe', 'dragon warhammer', 'rune warhammer', 'adamant warhammer', 'mithril warhammer', 'black warhammer', 'steel warhammer', 'iron warhammer', 'bronze warhammer', 'dragon claws', 'rune claws', 'adamant claws', 'black claws', 'steel claws', 'iron claws', 'bronze claws', 'dragon spear', 'rune spear', 'adamant spear', 'mithril spear', 'black spear', 'steel spear', 'iron spear', 'bronze spear', 'dragon halberd', 'rune halberd', 'adamant halberd', 'mithril halberd', 'black halberd', 'steel halberd', 'iron halberd', 'bronze halberd', 'dragon 2h sword', 'rune 2h sword', 'adamant 2h sword', 'mithril 2h sword', 'black 2h sword', 'steel 2h sword', 'iron 2h sword', 'bronze 2h sword', 'dragon pickaxe', 'rune pickaxe', 'adamant pickaxe', 'mithril pickaxe', 'black pickaxe', 'steel pickaxe', 'iron pickaxe', 'bronze pickaxe', 'dragon axe', 'rune axe', 'adamant axe', 'mithril axe', 'black axe', 'steel axe', 'iron axe', 'bronze axe', 'dragon harpoon', 'infernal harpoon', 'crystal harpoon', 'dragon thrownaxe', 'rune thrownaxe', 'adamant thrownaxe', 'mithril thrownaxe', 'steel thrownaxe', 'iron thrownaxe', 'bronze thrownaxe', 'dragon knife', 'rune knife', 'adamant knife', 'mithril knife', 'black knife', 'steel knife', 'iron knife', 'bronze knife', 'dragon javelin', 'rune javelin', 'adamant javelin', 'mithril javelin', 'steel javelin', 'iron javelin', 'bronze javelin'],
+  'ores-and-bars': ['copper ore', 'tin ore', 'iron ore', 'silver ore', 'coal', 'gold ore', 'mithril ore', 'adamantite ore', 'runite ore', 'bronze bar', 'iron bar', 'steel bar', 'silver bar', 'gold bar', 'mithril bar', 'adamantite bar', 'runite bar'],
+  'charging-items': ['air orb', 'water orb', 'earth orb', 'fire orb', 'battlestaff', 'air battlestaff', 'water battlestaff', 'earth battlestaff', 'fire battlestaff', 'lava battlestaff', 'mud battlestaff', 'steam battlestaff', 'smoke battlestaff', 'mystic air staff', 'mystic water staff', 'mystic earth staff', 'mystic fire staff', 'mystic lava staff', 'mystic mud staff', 'mystic steam staff', 'mystic smoke staff', 'slayer\'s staff (e)', 'staff of bob the cat', 'ibans staff', 'slayer\'s staff', 'staff of air', 'staff of water', 'staff of earth', 'staff of fire', 'bryophyta\'s staff', 'lunar staff', 'ancient staff', 'accursed sceptre', 'thammaron\'s sceptre', 'toxic trident', 'trident of the swamp', 'trident of the seas', 'sanguinesti staff', 'holy sceptre', 'crystal staff', 'crystal wand', 'crystal orb', 'crystal battleaxe', 'crystal halberd', 'crystal harpoon', 'crystal pickaxe', 'crystal axe', 'crystal armour seed', 'crystal tool seed', 'crystal weapon seed', 'enhanced crystal weapon seed', 'eternal crystal', 'crystal helm', 'crystal legs', 'crystal body', 'crystal bow', 'crystal shield', 'crystal halberd', 'blade of saeldor', 'bow of faerdhinen', 'enhanced crystal teleport seed', 'eternal teleport crystal', 'elven signet', 'crystal key', 'loop half of key', 'tooth half of key', 'crystal shards', 'enhanced crystal key', 'eternal teleport crystal', 'teleport crystal', 'attuned crystal bow', 'attuned crystal shield', 'attuned crystal halberd', 'blade of saeldor (c)', 'bow of faerdhinen (c)', 'crystal helm (active)', 'crystal legs (active)', 'crystal body (active)', 'crystal helm (inactive)', 'crystal legs (inactive)', 'crystal body (inactive)', 'crystal bow (i)', 'crystal shield (i)', 'crystal halberd (i)', 'crystal bow (inactive)', 'crystal shield (inactive)', 'crystal halberd (inactive)', 'crystal armour seed', 'crystal tool seed', 'crystal weapon seed', 'enhanced crystal weapon seed', 'youngllef', 'corrupted youngllef', 'smolcano', 'tiny tempor', 'corrupted bow faerdhinen', 'corrupted blade of saeldor', 'corrupted crystal armour', 'corrupted crystal bow', 'corrupted crystal shield', 'corrupted crystal halberd'],
+  '3rd-age-items': ['3rd age full helmet', '3rd age platebody', '3rd age platelegs', '3rd age kiteshield', '3rd age robe top', '3rd age robe', '3rd age mage hat', '3rd age amulet', '3rd age wand', '3rd age cloak', '3rd age longsword', '3rd age bow', '3rd age range top', '3rd age range legs', '3rd age range coif', '3rd age vambraces', '3rd age druidic robe top', '3rd age druidic robe bottoms', '3rd age druidic staff', '3rd age druidic cloak', '3rd age pickaxe', '3rd age axe', '3rd age druidic cloak', '3rd age druidic staff', '3rd age druidic robe top', '3rd age druidic robe bottoms'],
+  'potions': ['attack potion(4)', 'strength potion(4)', 'defence potion(4)', 'prayer potion(4)', 'super attack(4)', 'super strength(4)', 'super defence(4)', 'ranging potion(4)', 'magic potion(4)', 'stamina potion(4)', 'super energy(4)', 'super restore(4)', 'saradomin brew(4)', 'zamorak brew(4)', 'antidote++(4)', 'anti-venom(4)', 'anti-venom+(4)', 'extended antifire(4)', 'extended super antifire(4)', 'divine super combat potion(4)', 'divine ranging potion(4)', 'divine magic potion(4)', 'divine super attack potion(4)', 'divine super strength potion(4)', 'divine super defence potion(4)', 'divine bastion potion(4)', 'divine battlemage potion(4)', 'ancient brew(4)', 'forgotten brew(4)', 'extended antifire mix(2)', 'antifire mix(2)', 'fishing mix(2)', 'hunter mix(2)', 'magic mix(2)', 'ranging mix(2)', 'superattack mix(2)', 'super def. mix(2)', 'super str. mix(2)', 'super energy mix(2)', 'super restore mix(2)', 'stamina mix(2)', 'zamorak mix(2)', 'extended super antifire mix(2)', 'anti-venom+ mix(2)', 'anti-venom mix(2)', 'magic essence mix(2)', 'ancient mix(2)', 'lunar potion', 'goutweed', 'huasca potion'],
+  'range-armour': ['3rd age range coif', '3rd age range top', '3rd age range legs', '3rd age vambraces', 'armadyl helmet', 'armadyl chestplate', 'armadyl chainskirt', 'karil\'s coif', 'karil\'s leathertop', 'karil\'s leatherskirt', 'robin hood hat', 'ranger hat', 'ranger tunic', 'ranger boots', 'ranger gloves', 'archers ring', 'pegasian boots', 'blessed d\'hide armour', 'armadyl d\'hide', 'ancient d\'hide', 'guthix d\'hide', 'saradomin d\'hide', 'zamorak d\'hide', 'bandos d\'hide', 'black d\'hide body', 'black d\'hide chaps', 'black d\'hide vambraces', 'red d\'hide body', 'red d\'hide chaps', 'red d\'hide vambraces', 'blue d\'hide body', 'blue d\'hide chaps', 'blue d\'hide vambraces', 'green d\'hide body', 'green d\'hide chaps', 'green d\'hide vambraces', 'snakeskin bandana', 'snakeskin body', 'snakeskin chaps', 'snakeskin vambraces', 'snakeskin boots', 'snakeskin shield', 'spined helm', 'spined body', 'spined chaps', 'spined boots', 'spined gloves', 'archer helm', 'coif', 'leather cowl', 'hardleather body', 'leather body', 'leather chaps', 'leather vambraces', 'leather boots', 'leather gloves'],
+  'melee-armour': ['torva full helm', 'torva platebody', 'torva platelegs', 'neitiznot faceguard', 'serpentine helm', 'justiciar faceguard', 'justiciar chestguard', 'justiciar legguards', 'bandos chestplate', 'bandos tassets', 'bandos boots', 'obsidian helmet', 'obsidian platebody', 'obsidian platelegs', 'dragon full helm', 'dragon platebody', 'dragon chainbody', 'dragon platelegs', 'dragon plateskirt', 'dragon boots', 'dragon med helm', 'dragon sq shield', 'rune platebody', 'rune chainbody', 'rune full helm', 'rune platelegs', 'rune plateskirt','rune boots', 'rune sq shield', 'fighter torso', 'fighter hat', 'berserker helm', 'warrior helm', 'fremennik kilt', 'rock-shell helm', 'rock-shell plate', 'rock-shell legs', 'rock-shell boots', 'rock-shell gloves', 'helm of neitiznot', 'berserker helm', 'warrior helm', 'adamant platebody', 'adamant chainbody', 'adamant full helm', 'adamant platelegs', 'adamant plateskirt', 'adamant boots', 'adamant sq shield', 'mithril platebody', 'mithril chainbody', 'mithril full helm', 'mithril platelegs', 'mithril plateskirt', 'mithril boots', 'mithril sq shield', 'black platebody', 'black chainbody', 'black full helm', 'black platelegs', 'black plateskirt', 'black boots', 'black sq shield', 'steel platebody', 'steel chainbody', 'steel full helm', 'steel platelegs', 'steel plateskirt', 'steel boots', 'steel sq shield', 'iron platebody', 'iron chainbody', 'iron full helm', 'iron platelegs', 'iron plateskirt', 'iron boots', 'iron sq shield', 'bronze platebody', 'bronze chainbody', 'bronze full helm', 'bronze platelegs', 'bronze plateskirt', 'bronze boots', 'bronze sq shield', 'dharok\'s helm', 'dharok\'s platebody', 'dharok\'s platelegs', 'torag\'s helm', 'torag\'s platebody', 'torag\'s platelegs', 'verac\'s helm', 'verac\'s brassard', 'verac\'s plateskirt', 'guthan\'s helm', 'guthan\'s platebody', 'guthan\'s chainskirt', '3rd age full helmet', '3rd age platebody', '3rd age platelegs', '3rd age kiteshield', 'ancient full helm', 'armadyl full helm', 'bandos full helm', 'guthix full helm', 'saradomin full helm', 'zamorak full helm', 'ancient platebody', 'armadyl platebody', 'bandos platebody', 'guthix platebody', 'saradomin platebody', 'zamorak platebody', 'ancient platelegs', 'armadyl platelegs', 'bandos platelegs', 'guthix platelegs', 'saradomin platelegs', 'zamorak platelegs', 'ancient kiteshield', 'armadyl kiteshield', 'bandos kiteshield', 'guthix kiteshield', 'saradomin kiteshield', 'zamorak kiteshield', 'decorative armour (red)', 'decorative armour (gold)', 'decorative helm (red)', 'decorative helm (gold)', 'decorative shield (red)', 'decorative shield (gold)', 'decorative sword (red)', 'decorative sword (gold)', 'decorative armour (red plated)', 'decorative armour (gold plated)', 'neitiznot shield', 'broodoo shield', 'khazard helmet', 'khazard armour', 'granite helm', 'granite body', 'granite legs', 'granite boots', 'granite gloves', 'granite shield', 'splitbark helm', 'lunar helm', 'moonclan helm', 'fighter hat', 'berserker helm', 'warrior helm', 'archer helm', 'farseer helm', 'helm of neitiznot', 'infinity hat', 'pirate\'s hat', 'dragon full helm', 'dragon med helm', 'dragon sq shield', 'dragon platebody', 'dragon chainbody', 'dragon platelegs', 'dragon plateskirt', 'dragon boots', 'primordial boots', 'eternal boots', 'pegasian boots', 'ranger boots', 'holy sandals', 'druidic boots', 'bandos boots', 'guardian boots', 'granite boots', 'boots of brimstone', 'boots of stone', 'boots of darkness', 'barefoot', 'climbing boots', 'rock climbing boots', 'builder\'s boots', 'rune boots', 'climbing boots (g)', 'adamant boots', 'mithril boots', 'black boots', 'white boots', 'steel boots', 'iron boots', 'bronze boots', 'leather boots', 'decorative boots (gold)', 'fighting boots', 'fancy boots', 'frog-leather boots', 'moonclan boots', 'splitbark boots', 'lunar boots', 'decorative boots (red)', 'samurai boots', 'trimmed leather armour', 'studded body', 'studded chaps', 'snakeskin body', 'snakeskin chaps', 'snakeskin vambraces', 'snakeskin boots', 'snakeskin bandana', 'spined body', 'spined chaps', 'spined helm', 'spined boots', 'spined gloves', 'yak-hide armour', 'fremennik round shield', 'green d\'hide body', 'green d\'hide chaps', 'green d\'hide vambraces', 'blue d\'hide body', 'blue d\'hide chaps', 'blue d\'hide vambraces', 'red d\'hide body', 'red d\'hide chaps', 'red d\'hide vambraces', 'black d\'hide body', 'black d\'hide chaps', 'black d\'hide vambraces', 'ancient d\'hide', 'armadyl d\'hide', 'bandos d\'hide', 'guthix d\'hide', 'saradomin d\'hide', 'zamorak d\'hide', 'blessed dragonhide armour', '3rd age range top', '3rd age range legs', '3rd age range coif', '3rd age vambraces', '3rd age robe top', '3rd age robe', '3rd age mage hat', '3rd age amulet', '3rd age cloak', 'crystal helm', 'crystal legs', 'crystal body', 'ancestral hat', 'ancestral robe top', 'ancestral robe bottom', 'virtus mask', 'virtus robe top', 'virtus robe bottom'],
+  'mage-armour': ['3rd age mage hat', '3rd age robe top', '3rd age robe', '3rd age amulet', '3rd age cloak', 'ancestral hat', 'ancestral robe top', 'ancestral robe bottom', 'infinity hat', 'infinity top', 'infinity bottoms', 'infinity gloves', 'infinity boots', 'ahrim\'s hood', 'ahrim\'s robetop', 'ahrim\'s robeskirt', 'ancient bracers', 'ancient chaps', 'ancient coif', 'ancient cloak', 'ancient mitre', 'ancient robe top', 'ancient robe legs', 'ancient stole', 'ancient crozier', 'virtus mask', 'virtus robe top', 'virtus robe bottom', 'mystic hat', 'mystic robe top', 'mystic robe bottom', 'mystic gloves', 'mystic boots', 'mystic hat (dark)', 'mystic robe top (dark)', 'mystic robe bottom (dark)', 'mystic gloves (dark)', 'mystic boots (dark)', 'mystic hat (light)', 'mystic robe top (light)', 'mystic robe bottom (light)', 'mystic gloves (light)', 'mystic boots (light)', 'mystic hat (dusk)', 'mystic robe top (dusk)', 'mystic robe bottom (dusk)', 'mystic gloves (dusk)', 'mystic boots (dusk)', 'lunar helm', 'lunar torso', 'lunar legs', 'lunar gloves', 'lunar boots', 'lunar cape', 'splitbark helm', 'splitbark body', 'splitbark legs', 'splitbark gauntlets', 'splitbark boots', 'bloodbark helm', 'bloodbark body', 'bloodbark legs', 'bloodbark gauntlets', 'bloodbark boots', 'swampbark helm', 'swampbark body', 'swampbark legs', 'swampbark gauntlets', 'swampbark boots', 'xerician hat', 'xerician top', 'xerician robe', 'elder chaos hood', 'elder chaos top', 'elder chaos robe', 'imbued guthix cape', 'imbued saradomin cape', 'imbued zamorak cape', 'guthix cape', 'saradomin cape', 'zamorak cape', 'guthix max cape', 'saradomin max cape', 'zamorak max cape', 'lunar cape', 'elven top', 'elven skirt', 'elven hat', 'elven gloves', 'elven boots', 'elven cloak', 'crystal helm', 'crystal legs', 'crystal body', 'ghostly hood', 'ghostly robe top', 'ghostly robe bottom', 'ghostly cloak', 'ghostly gloves', 'ghostly boots', 'moonclan hat', 'moonclan helm', 'moonclan armour', 'moonclan skirt', 'moonclan gloves', 'moonclan boots', 'moonclan cape', 'wizard hat', 'wizard robe top', 'wizard robe skirt', 'wizard gloves', 'wizard boots', 'gnome hat', 'gnome top', 'gnome robe', 'gnome scarf', 'gnome boots', 'gnome goggles', 'ham hood', 'ham logo', 'ham robe', 'ham shirt', 'ham cloak', 'ham boots', 'ham gloves', 'team cape'],
+  'range-weapons': ['craw\'s bow', 'webweaver bow', 'dark bow', '3rd age bow', 'bow of faerdhinen', 'crystal bow', 'new crystal bow', 'venator bow', 'magic longbow', 'magic shortbow', 'magic comp bow', 'seercull', 'yew longbow', 'yew comp bow', 'yew shortbow', 'maple longbow', 'maple shortbow', 'willow longbow', 'willow comp bow', 'willow shortbow', 'oak longbow', 'oak shortbow', 'comp ogre bow', 'ogre bow', 'shortbow', 'longbow', 'crossbow', 'phoenix crossbow', 'bronze crossbow', 'blurite crossbow', 'iron crossbow', 'steel crossbow', 'mith crossbow', 'adamant crossbow', 'rune crossbow', 'dragon crossbow', 'dragon hunter crossbow', 'armadyl crossbow', 'zaryte crossbow', 'karil\'s crossbow', 'dorgeshuun crossbow', 'bone crossbow', 'hunters\' crossbow', 'hunters\' sunlight crossbow', 'light ballista', 'heavy ballista'],
+  'melee-weapons': ['abyssal bludgeon', 'abyssal dagger', 'abyssal tentacle', 'abyssal whip', 'ancient godsword', 'armadyl godsword', 'bandos godsword', 'saradomin godsword', 'zamorak godsword', 'blade of saeldor', 'bone dagger', 'brine sabre', 'bronze axe', 'bronze battleaxe', 'bronze claws', 'bronze dagger', 'bronze halberd', 'bronze hasta', 'bronze mace', 'bronze pickaxe', 'bronze scimitar', 'bronze spear', 'bronze sword', 'bronze warhammer', 'bronze 2h sword', 'dragon 2h sword', 'dragon axe', 'dragon battleaxe', 'dragon claws', 'dragon dagger', 'dragon halberd', 'dragon harpoon', 'dragon longsword', 'dragon mace', 'dragon pickaxe', 'dragon scimitar', 'dragon spear', 'dragon sword', 'dragon warhammer', 'ghrazi rapier', 'granite hammer', 'granite longsword', 'granite maul', 'inquisitor\'s mace', 'iron axe', 'iron battleaxe', 'iron claws', 'iron dagger', 'iron halberd', 'iron hasta', 'iron mace', 'iron pickaxe', 'iron scimitar', 'iron spear', 'iron sword', 'iron warhammer', 'iron 2h sword', 'keris', 'leaf-bladed battleaxe', 'mithril axe', 'mithril battleaxe', 'mithril claws', 'mithril dagger', 'mithril halberd', 'mithril hasta', 'mithril mace', 'mithril pickaxe', 'mithril scimitar', 'mithril spear', 'mithril sword', 'mithril warhammer', 'mithril 2h sword', 'osmuten\'s fang', 'rune 2h sword', 'rune axe', 'rune battleaxe', 'rune claws', 'rune dagger', 'rune halberd', 'rune hasta', 'rune mace', 'rune pickaxe', 'rune scimitar', 'rune spear', 'rune sword', 'rune warhammer', 'saradomin sword', 'scythe of vitur', 'soulreaper axe', 'steel axe', 'steel battleaxe', 'steel claws', 'steel dagger', 'steel halberd', 'steel hasta', 'steel mace', 'steel pickaxe', 'steel scimitar', 'steel spear', 'steel sword', 'steel warhammer', 'steel 2h sword', 'swift blade', 'ursine chainmace', 'verzik\'s crystal shard', 'viggora\'s chainmace', 'zamorakian hasta', 'zamorakian spear'],
+  'mage-weapons': ['tumeken\'s shadow', 'elidinis\' ward', 'kodai wand', 'sanguinesti staff', 'trident of the swamp', 'trident of the seas', 'staff of light', 'staff of the dead', 'zuriel\'s staff', 'ancient staff', 'master wand', 'nightmare staff', 'eldritch nightmare staff', 'volatile nightmare staff', 'harmonised nightmare staff', 'slayer\'s staff (e)', 'staff of bob the cat', 'ibans staff', 'smoke battlestaff', 'mystic smoke staff', 'mystical staff', 'dust battlestaff', 'mystic dust staff', 'air battlestaff', 'mystic air staff', 'fire battlestaff', 'mystic fire staff', 'earth battlestaff', 'mystic earth staff', 'lava battlestaff', 'mystic lava staff', 'mud battlestaff', 'mystic mud staff', 'steam battlestaff', 'mystic steam staff', 'staff of air', 'staff of water', 'staff of earth', 'staff of fire', 'battlestaff', 'bryophyta\'s staff', 'lunar staff', 'ancient staff', 'accursed sceptre', 'thammaron\'s sceptre', '3rd age wand', 'master wand', 'teacher wand', 'apprentice wand', 'beginner wand', 'kodai wand', 'trident of the seas', 'trident of the swamp', 'sanguinesti staff', 'dawnbringer', 'staff of the dead', 'toxic staff of the dead', 'staff of light', 'staff of balance', 'holy sceptre', 'skull sceptre', 'pharaoh\'s sceptre', 'ancient crozier', 'armadyl crozier', 'bandos crozier', 'guthix crozier', 'saradomin crozier', 'zamorak crozier'],
+  'ammo': ['rune arrow', 'dragon arrow', 'amethyst arrow', 'adamant arrow', 'mithril arrow', 'steel arrow', 'iron arrow', 'bronze arrow', 'broad arrow', 'rune bolt', 'dragon bolt', 'adamant bolt', 'mithril bolt', 'steel bolt', 'iron bolt', 'bronze bolt', 'diamond bolt', 'ruby bolt', 'emerald bolt', 'sapphire bolt', 'onyx bolt', 'dragonstone bolt', 'topaz bolt', 'pearl bolt', 'opal bolt', 'jade bolt', 'bolt rack', 'atlatl dart', 'dragon dart', 'amethyst dart', 'adamant dart', 'mithril dart', 'steel dart', 'iron dart', 'bronze dart', 'dragon javelin', 'amethyst javelin', 'adamant javelin', 'mithril javelin', 'steel javelin', 'iron javelin', 'bronze javelin', 'dragon thrownaxe', 'adamant thrownaxe', 'mithril thrownaxe', 'steel thrownaxe', 'iron thrownaxe', 'bronze thrownaxe', 'dragon knife', 'adamant knife', 'mithril knife', 'steel knife', 'iron knife', 'bronze knife', 'toktz-xil-ul', 'moonlight antler bolts', 'sunlight antler bolts', 'hunter spear tips', 'kebbit bolts', 'long kebbit bolts', 'bone bolts', 'ogre arrow', 'wolfbone arrowtips', 'flighted ogre arrow', 'barbed bolts', 'broad bolts', 'amethyst broad bolts', 'runite bolts', 'dragon bolts', 'diamond dragon bolts', 'ruby dragon bolts', 'emerald dragon bolts', 'sapphire dragon bolts', 'onyx dragon bolts', 'dragonstone dragon bolts', 'topaz dragon bolts', 'pearl dragon bolts', 'opal dragon bolts', 'jade dragon bolts', 'diamond dragon bolts (e)', 'ruby dragon bolts (e)', 'emerald dragon bolts (e)', 'sapphire dragon bolts (e)', 'onyx dragon bolts (e)', 'dragonstone dragon bolts (e)', 'topaz dragon bolts (e)', 'pearl dragon bolts (e)', 'opal dragon bolts (e)', 'jade dragon bolts (e)', 'adamant bolts', 'mithril bolts', 'steel bolts', 'iron bolts', 'bronze bolts', 'silver bolts', 'blurite bolts', 'black brutal', 'rune brutal', 'adamant brutal', 'mithril brutal', 'steel brutal', 'iron brutal', 'bronze brutal'],
+  'gems': ['uncut sapphire', 'uncut emerald', 'uncut ruby', 'uncut diamond', 'sapphire', 'emerald', 'ruby', 'diamond', 'uncut opal', 'uncut jade', 'uncut red topaz', 'opal', 'jade', 'red topaz']
+};
+/* ---------- Utilities ---------- */
+const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
+const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
+const abbreviateNumber = (num) => {
+  if (num >= 1e9) {
+    return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
+  } if (num >= 1e6) {
+    return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
+  } if (num >= 1e3) {
+    return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return num.toLocaleString();
+};
+async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
+const loadMapping=()=>jget(API+"/mapping");
+const loadLatest =()=>jget(API+"/latest");
+const loadVolumes=()=>jget(API+"/volumes");
+const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
+function bigIconUrl(id){ return `http://127.0.0.1:8787/rsbig/${id}`; }
+function wikiIconUrl(name){ if(!name) return ""; const fixed = name.replace(/ /g,"_"); return `http://127.0.0.1:8787/images/${encodeURIComponent(fixed)}`; }
+function suggestPrices(low, high){
+  if(low==null||high==null) return {buyMin:null, buyMax:null, sellMin:null, sellMax:null};
+  const spread = high - low;
+  let buyMargin = Math.max(1, Math.floor(spread * 0.1)); // Increased to 10% for lower buy prices
+  let sellMargin = Math.max(1, Math.floor(spread * 0.1)); // Increased to 10% for higher sell prices
+  if (high < 100) {
+    buyMargin = 2;
+    sellMargin = 4;
+  } else if (high < 1000) {
+    buyMargin = 5;
+    sellMargin = 10;
+  } else if (high < 10000) {
+    buyMargin = 10;
+    sellMargin = 20;
+  } else {
+    buyMargin = Math.floor(high * 0.005); // Increased to 0.5%
+    sellMargin = Math.floor(high * 0.01); // Increased to 1%
+  }
+  const buyMin = Math.max(1, low - buyMargin);
+  const buyMax = low;
+  let sellMin = high;
+  let sellMax = Math.max(1, high + sellMargin);
+  const tax = 0.01;
+  const minSell = Math.ceil(buyMax / (1 - tax)) + 1;
+  sellMin = Math.max(sellMin, minSell);
+  sellMax = Math.max(sellMax, minSell + Math.max(2, Math.floor(sellMargin / 2)));
+  return {buyMin, buyMax, sellMin, sellMax};
+}
+/* Map backend timeseries to arrays */
+function seriesFromTS(ts){
+  const src = ts?.data || [];
+  const rows = src.map(r=>({
+    t: Number(r.timestamp ?? r.ts ?? r.time),
+    lo: r.avgLowPrice ?? r.low ?? null,
+    hi: r.avgHighPrice ?? r.high ?? null,
+    vol: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? null
+  }))
+  .filter(r=>r.t && (r.lo!=null || r.hi!=null))
+  .filter(r=>r.t && (r.lo!=null || r.hi!=null))
+  .sort((a,b)=>a.t-b.t);
+  return {
+    labels: rows.map(r=>r.t),
+    low: rows.map(r=>r.lo),
+    high: rows.map(r=>r.hi),
+    vol: rows.map(r=>r.vol ?? 0)
+  };
+}
+/* ========== Chart (line + scatter + hold line) ========== */
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
+function ypx(v, vmin, vmax, y0, h){
+  if(vmin===vmax) return y0+h/2;
+  const p=(v-vmin)/(vmax-vmin);
+  return y0 + (1-p)*h;
+}
+function linearRegression(x, y) {
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+  const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
+  const intercept = meanY - slope * meanX;
+  return { slope, intercept };
+}
+function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode){
+  const c = can;
+  const W=c.width, H=c.height;
+  const x0=60, y0=30, w=W-x0-14, h=H-y0-42;
+  context.clearRect(0,0,W,H);
+  if(!series || !series.labels?.length){ return; }
+  // windowing (zoom + pan)
+  const n = series.labels.length;
+  const win = Math.max(12, Math.floor(n/z));
+  const start = Math.max(0,Math.min(n-win, Math.floor(off)));
+  const end = start + win;
+  const L = series.labels.slice(start,end);
+  const LO = series.low.slice(start,end);
+  const HI = series.high.slice(start,end);
+  const VO = (series.vol||[]).slice(start,end);
+  // value domain from price series
+  const vals = [...LO, ...HI].filter(v=>v!=null);
+  if(!vals.length) return;
+  let vmin = Math.min(...vals), vmax = Math.max(...vals);
+  if(vmin===vmax){ vmin-=1; vmax+=1; }
+  // axes
+  context.strokeStyle="#000"; context.globalAlpha=0.5;
+  context.beginPath(); context.moveTo(x0,y0); context.lineTo(x0,y0+h); context.lineTo(x0+w,y0+h); context.stroke();
+  context.globalAlpha=1;
+  // background grid
+  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
+  const lines=5;
+  for(let i=0;i<=lines;i++){
+    const y=y0 + (h*i/lines);
+    context.strokeStyle="rgba(255,255,255,0.06)";
+    context.beginPath(); context.moveTo(x0,y); context.lineTo(x0+w,y); context.stroke();
+  }
+  const stepX = w / Math.max(1,(L.length-1));
+  // draw low (offer) red and high (list) green
+  function drawSeries(arr, color, mode){
+    context.strokeStyle=color;
+    context.fillStyle=color;
+    if(mode==="line"){
+      context.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const v=arr[i]; if(v==null) continue;
+        const x=x0 + i*stepX;
+        const y=ypx(v, vmin, vmax, y0, h);
+        if(i===0) context.moveTo(x,y); else context.lineTo(x,y);
+      }
+      context.lineWidth=2; context.stroke();
+    }else{ // scatter
+      for(let i=0;i<arr.length;i++){
+        const v=arr[i]; if(v==null) continue;
+        const x=x0 + i*stepX;
+        const y=ypx(v, vmin, vmax, y0, h);
+        context.beginPath(); context.arc(x,y,3,0,Math.PI*2); context.fill();
+      }
+    }
+  }
+  // draw low (offer) red and high (list) green
+  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), (mode==="line"?"line":"dot"));
+  let highColor = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
+  if (can.id === 'historicalChart') highColor = '#ff69b4';
+  drawSeries(HI, highColor, (mode==="line"?"line":"dot"));
+  // Dotted prediction lines
+  function drawPrediction(arr, color) {
+    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
+    if (nonNull.length < 2) return;
+    const xVals = nonNull.map(({i}) => i);
+    const yVals = nonNull.map(({v}) => v);
+    const { slope, intercept } = linearRegression(xVals, yVals);
+    context.save();
+    context.setLineDash([6,6]);
+    context.strokeStyle = color;
+    context.beginPath();
+    const startX = x0;
+    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
+    const endX = x0 + (arr.length - 1) * stepX + stepX * 0.2; // extend 20%
+    const endY = ypx(slope * (arr.length - 1 + (arr.length * 0.2)) + intercept, vmin, vmax, y0, h);
+    context.moveTo(startX, startY);
+    context.lineTo(endX, endY);
+    context.stroke();
+    context.restore();
+  }
+  drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
+  drawPrediction(HI, highColor);
+  // y labels on top
+  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
+  for(let i=0;i<=lines;i++){
+    const y=y0 + (h*i/lines);
+    const v = Math.round(vmax - (vmax-vmin)*i/lines);
+    context.fillText(abbreviateNumber(v), 6, y-4);
+  }
+  // X axis labels (dates) on top
+  context.fillStyle="#fff"; context.font="bold 12px Segoe UI, Arial";
+  const numLabels = 6;
+  const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
+  for(let i=0; i < L.length; i += labelStep){
+    let dateStr;
+    if (can.id === 'historicalChart') {
+      dateStr = new Date(L[i]*1000).getFullYear().toString();
+    } else {
+      dateStr = new Date(L[i]*1000).toLocaleDateString();
+    }
+    const x = x0 + i*stepX;
+    context.fillText(dateStr, x - 20, H - 10);
+  }
+  // hover tooltip
+  c.onmousemove = (ev)=>{
+    const rect=c.getBoundingClientRect();
+    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
+    if(mx<x0 || mx>x0+w || my<y0 || my>y0+h){ tip.style.display="none"; return; }
+    const idx=Math.max(0,Math.min(L.length-1, Math.round((mx-x0)/stepX)));
+    const t=L[idx]*1000;
+    const lo=LO[idx], hi=HI[idx], vol=VO[idx]||0;
+    tip.style.display="block";
+    tip.style.left = (mx+12)+"px";
+    tip.style.top = (my-10)+"px";
+    tip.innerHTML = `<strong>${new Date(t).toLocaleString()}</strong><br/>
+                     Low: ${fmtGp(lo)}<br/>
+                     High: ${fmtGp(hi)}<br/>
+                     Vol: ${fmtNum(vol)}`;
+  };
+  c.onmouseleave = () => tip.style.display="none";
+}
+/* ---------- Item selection & sidebar ---------- */
+async function setItem(m){
+  selected=m; $("#query").value=m.name;
+  const img=$("#itemImg");
+  img.src=bigIconUrl(m.id);
+  img.onerror=()=>{ img.onerror=null; img.src=wikiIconUrl(m.icon||m.name); };
+  $("#status").textContent="Loading latest…";
+  latest = await loadLatest();
+  volumes= await loadVolumes();
+  const node=latest.data[String(m.id)];
+  const lo=node?.low ?? node?.avgLowPrice ?? null;
+  const hi=node?.high ?? node?.avgHighPrice ?? null;
+  let rec=suggestPrices(lo,hi);
+  adjustedBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
+  adjustedSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
+  buyLimit = buyLimits[m.name.toLowerCase()] || buyLimits[m.id] || 10000; // Use name or or id, default 10k
+  $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
+  $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
+  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
+  $("#flipProfitLabel").textContent = "Expected Flip Profit";
+  updateFlipProfit();
+  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
+  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
+  $("#status").textContent="Loading chart…";
+  const step = (view==="day"?"1h":view==="week"?"6h":view==="month"?"24h":"24h");
+  const ts = await loadTS(step, m.id);
+  currentSeries = seriesFromTS(ts);
+  // Load recent 5m series to cap suggestions
+  const tsRecent = await loadTS("5m", m.id);
+  const seriesRecent = seriesFromTS(tsRecent);
+  const recentHighs = seriesRecent.high.filter(v => v != null);
+  const maxRecentHi = recentHighs.length ? Math.max(...recentHighs) : hi || 0;
+  rec.sellMin = Math.min(rec.sellMin, maxRecentHi + Math.floor(maxRecentHi * 0.05)); // Relaxed cap to +5%
+  rec.sellMax = Math.min(rec.sellMax, maxRecentHi + Math.floor(maxRecentHi * 0.1)); // Relaxed cap to +10%
+  if(view === "day") zoom = 6;
+  else if(view === "month") zoom = 1;
+  else zoom = 1.5;
+  offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
+  drawChart(currentSeries);
+  // Update 1h spread
+  const ts1h = await loadTS("1h", m.id);
+  const series1h = seriesFromTS(ts1h);
+  const lo1h = series1h.low[series1h.low.length - 1] || lo;
+  const hi1h = series1h.high[series1h.high.length - 1] || hi;
+  const spread1h = hi1h - lo1h;
+  $("#spreadMargin").textContent = `1h Spread: ${fmtGp(spread1h)}`;
+  // Update small historical chart with lifetime data (using 24h for more history)
+  const tsHistorical = await loadTS("24h", m.id);
+  const historicalSeries = seriesFromTS(tsHistorical);
+  const histSeries = {...historicalSeries, low: historicalSeries.low.map(()=>null)}; // Only high line
+  drawChart(histSeries, $("#historicalChart").getContext("2d"), $("#historicalChart"), 4, 0, "line");
+  // Update lifetime title
+  const historicalH3 = document.querySelector('.side .card-like h3');
+  historicalH3.innerHTML = `1 Year: <span style="color:var(--ink)">${m.name}</span>`;
+  // Fetch item description from OSRS Wiki
+  let desc = '';
+  try {
+    const response = await fetch(`https://oldschool.runescape.wiki/api.php?action=query&prop=extracts&exintro&explaintext&redirects=1&titles=${encodeURIComponent(m.name)}&format=json`);
+    const data = await response.json();
+    const page = Object.values(data.query.pages)[0];
+    desc = page.extract || 'No description available.';
+  } catch (e) {
+    desc = 'Failed to load description.';
+  }
+  $("#itemDesc").innerHTML = `<h3>About ${m.name}</h3><p>${desc}</p>`;
+  $("#status").textContent="Ready";
+  // Update add to watchlist button
+  $("#addWatchBtn").disabled = customWatchlist.includes(m.id);
+}
+function updateSmartBuyFromInput(){
+  adjustedBuy = parseInt($("#smartBuyInput").value.replace(/,/g, '')) || null;
+  $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
+  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
+  updateFlipProfit();
+}
+function updateSmartSellFromInput(){
+  adjustedSell = parseInt($("#smartSellInput").value.replace(/,/g, '')) || null;
+  $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
+  updateFlipProfit();
+}
+function adjustPrice(type, delta){
+  if (type === 'buy') {
+    adjustedBuy = (adjustedBuy || 0) + delta;
+    $("#smartBuyInput").value = adjustedBuy.toLocaleString() + ' gp';
+    $("#capitalRequired").textContent = fmtGp(adjustedBuy * buyLimit);
+  } else if (type === 'sell') {
+    adjustedSell = (adjustedSell || 0) + delta;
+    $("#smartSellInput").value = adjustedSell.toLocaleString() + ' gp';
+  }
+  updateFlipProfit();
+}
+function adjustBuyLimit(delta){
+  buyLimit += delta;
+  if (buyLimit < 1) buyLimit = 1;
+  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
+  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
+  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
+  updateFlipProfit();
+}
+function updateBuyLimitFromInput(){
+  buyLimit = parseInt($("#buyLimitDisplay").value.replace(/,/g, '')) || 10000;
+  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
+  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
+  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
+  updateFlipProfit();
+}
+function updateFlipProfit(){
+  if (adjustedBuy && adjustedSell && buyLimit) {
+    const profitPerItem = adjustedSell - adjustedBuy - Math.min(5000000, Math.floor(adjustedSell * 0.01)); // 1% tax, cap 5m
+    const totalProfit = profitPerItem * Math.min(buyLimit, 100); // Cap at 100 units for realistic profit
+    $("#flipProfit").textContent = fmtGp(totalProfit);
+  } else {
+    $("#flipProfit").textContent = "—";
+  }
+}
+function rowIcon(m){ return wikiIconUrl(m.icon||m.name); }
+async function buildSidebar(){
+  if(!latest||!mapping) return;
+  const candidates = [];
+  const volMin = 50000; // Increased for higher volume
+  const minPrice = 500; // Increased for higher price items
+  const minProfit = 50000; // Minimum expected profit
+  for(const m of mapping){
+    if(dismissed.includes(m.id)) continue;
+    if(!membersOn && m.members) continue; // hide member items in F2P mode
+    const node=latest.data[String(m.id)];
+    if(!node) continue;
+    const lo=node.low??node.avgLowPrice;
+    const hi=node.high??node.avgHighPrice;
+    if(lo==null||hi==null) continue;
+    const spread=(hi-lo);
+    if(spread <=1 || (lo && (spread / lo < 0.01))) continue; // Skip low margin
+    const vol=volumes?.data?.[String(m.id)] ?? 0;
+    if(vol < volMin) continue;
+    const rec = suggestPrices(lo, hi);
+    const medianBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
+    const medianSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
+    if (medianBuy < minPrice) continue; // Skip low value
+    const profitPerItem = medianSell - medianBuy - Math.min(5000000, Math.floor(medianSell * 0.01));
+    const itemBuyLimit = buyLimits[m.name.toLowerCase()] || 10000;
+    const expectedProfit = profitPerItem * itemBuyLimit;
+    if (expectedProfit < minProfit) continue;
+    candidates.push({id:m.id, name:m.name, icon:rowIcon(m), spread, vol, medianBuy, medianSell, preScore: vol * spread});
+  }
+  candidates.sort((a,b) => b.preScore - a.preScore);
+  const topCandidates = candidates.slice(0, 100); // Limit to top 100 for speed
+  // Fetch timeseries in parallel for top candidates
+  const tsPromises = topCandidates.map(c => loadTS("5m", c.id));
+  const tsResults = await Promise.all(tsPromises);
+  topCandidates.forEach((c, i) => {
+    const seriesRecent = seriesFromTS(tsResults[i]);
+    const recentLows = seriesRecent.low.filter(v => v != null).slice(-10); // Last 10 points
+    const avgRecentLow = recentLows.length ? recentLows.reduce((a,b)=>a+b,0)/recentLows.length : c.lo;
+    const dropPercent = (avgRecentLow - c.lo) / avgRecentLow;
+    c.isGoodDeal = dropPercent > 0.1; // >10% drop from recent avg
+    c.profitPerItem = c.medianSell - c.medianBuy - Math.min(5000000, Math.floor(c.medianSell * 0.01));
+    c.expectedProfit = c.profitPerItem * (buyLimits[c.name.toLowerCase()] || 10000);
+    c.score = c.vol * c.spread * (1 + dropPercent);
+  });
+  topCandidates.sort((a,b)=> b.expectedProfit - a.expectedProfit); // Prioritize by total expected profit
+  flipSuggestions = topCandidates;
+  updateSmartSuggest();
+}
+function updateSmartSuggest(){
+  if(flipSuggestions.length === 0) return;
+  const top = flipSuggestions[suggestIndex % flipSuggestions.length];
+  const m = mapping.find(x=>x.id === top.id);
+  if(!m) return;
+  $("#smartSuggest").innerHTML = `
+    <img src="${bigIconUrl(top.id)}" alt="${m.name}">
+    <div class="details">
+      <div class="name">${m.name}</div>
+      <div class="prices">
+        <div class="price buy"><label>Buy</label><strong>${top.medianBuy ? top.medianBuy.toLocaleString() + ' gp' : '—'}</strong></div>
+        <div class="price sell"><label>Sell</label><strong>${top.medianSell ? top.medianSell.toLocaleString() + ' gp' : '—'}</strong></div>
+      </div>
+    </div>
+    ${top.isGoodDeal ? '<div class="good-deal">Good Deal Alert!</div>' : ''}
+  `;
+  $("#smartSuggest").dataset.id = top.id;
+  $("#smartSuggest").onclick = () => {
+    const mItem = mapping.find(x => x.id == top.id);
+    if (mItem) setItem(mItem);
+  };
+  const profitPerItem = top.medianSell - top.medianBuy - Math.min(5000000, Math.floor(top.medianSell * 0.01));
+  const itemBuyLimit = buyLimits[top.name.toLowerCase()] || 10000;
+  const totalProfit = profitPerItem * Math.min(itemBuyLimit, 100); // Cap for realistic profit
+  $("#suggestProfit strong").textContent = fmtGp(totalProfit);
+}
+async function buildWatchlist(sortBy = 'buy'){
+  if(!latest||!mapping) return;
+  const rows=[];
+  for(const id of watchlist){
+    const m = mapping.find(x=>x.id === id);
+    if(!m) continue;
+    const node=latest.data[String(id)];
+    if(!node) continue;
+    const lo=node.low??node.avgLowPrice;
+    const hi=node.high??node.avgHighPrice;
+    if(lo==null||hi==null) continue;
+    const spread=(hi-lo);
+    const vol=volumes?.data?.[String(id)] ?? 0;
+    const rec = suggestPrices(lo, hi);
+    const medianBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
+    const medianSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
+    rows.push({id:m.id,name:m.name,icon:rowIcon(m), spread, vol, medianBuy, medianSell});
+  }
+  if(sortBy === 'name') rows.sort((a,b)=> a.name.localeCompare(b.name));
+  else if(sortBy === 'buy') rows.sort((a,b)=> (b.medianBuy || 0) - (a.medianBuy || 0));
+  else if(sortBy === 'sell') rows.sort((a,b)=> (b.medianSell || 0) - (a.medianSell || 0));
+  else rows.sort((a,b)=> b.spread - a.spread);
+  $("#watch").innerHTML = rows.map(r=>{
+    const isLong = (r.medianBuy && r.medianBuy > 999999) || (r.medianSell && r.medianSell > 999999);
+    return `
+    <div class="row ${isLong ? 'long-price' : ''}">
+      <img src="${r.icon}" alt="" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
+      <div class="sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="delta">${r.medianBuy ? abbreviateNumber(r.medianBuy) : '—'}</div>
+      <div class="vol">${r.medianSell ? abbreviateNumber(r.medianSell) : '—'}</div>
+    </div>
+  `}).join("");
+  document.querySelectorAll('#watch .sym').forEach(el => {
+    el.onclick = () => {
+      const m = mapping.find(x => x.id == el.dataset.id);
+      if (m) setItem(m);
+    };
+  });
+}
+/* ---------- Popout Chart ---------- */
+function popoutChart(){
+  const popup = window.open('', '_blank', 'width=900,height=600');
+  popup.document.write(`
+    <html>
+    <head><title>Chart Popout</title></head>
+    <body style="margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Inter,system-ui,Arial;">
+    <div style="padding:10px;display:flex;flex-direction:column;height:100%;">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+      <div class="viewtabs">
+        <button data-view="day" class="active">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="month">Month</button>
+      </div>
+      <div class="tools" style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
+        <span class="small" style="margin-left:10px">Mode:</span>
+        <button id="lineMode" class="active">Line</button>
+        <button id="dotMode">Scatter</button>
+      </div>
+    </div>
+    <canvas id="popChart" style="flex:1;background:var(--grid);border:1px solid var(--edge);border-radius:12px;"></canvas>
+    <div class="legend" style="display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)">
+      <span class="sell">Smart Low Buy</span><span class="buy">SmartHigh Sell</span>
+    </div>
+    <div id="foot" class="small" style="margin-top:6px"></div>
+    </div>
+    </body>
+    </html>
+  `);
+  popup.document.head.appendChild(document.createElement('style')).textContent = document.querySelector('style').textContent;
+  const popCanvas = popup.document.getElementById('popChart');
+  popCanvas.width = 880;
+  popCanvas.height = 480;
+  const popCtx = popCanvas.getContext('2d');
+  let popSeries = currentSeries;
+  let popView = view;
+  let popZoom = zoom;
+  let popOffset = offset;
+  let popDrawMode = drawMode;
+  function popDraw() {
+    drawChart(popSeries, popCtx, popCanvas, popZoom, popOffset, popDrawMode);
+    popup.document.getElementById('foot').textContent = $("#foot").textContent;
+  }
+  popup.document.querySelectorAll('.viewtabs button').forEach(b=>{
+    b.onclick=async ()=>{
+      popup.document.querySelector('.viewtabs button.active').classList.remove("active");
+      b.classList.add("active");
+      popView=b.dataset.view;
+      const step = (popView==="day"?"1h":popView==="week"?"6h":"24h");
+      const ts = await loadTS(step, selected.id);
+      popSeries = seriesFromTS(ts);
+      popZoom = 1.5;
+      popOffset = Math.max(0, (popSeries.labels.length - 60));
+      popDraw();
+    }
+  });
+  popup.document.getElementById("zIn").onclick = ()=>{ popZoom=Math.min(8, popZoom*1.25); popDraw(); };
+  popup.document.getElementById("zOut").onclick= ()=>{ popZoom=Math.max(1, popZoom/1.25); popDraw(); };
+  popup.document.getElementById("lineMode").onclick=()=>{ popDrawMode="line"; popup.document.getElementById("lineMode").classList.add("active"); popup.document.getElementById("dotMode").classList.remove("active"); popDraw(); };
+  popup.document.getElementById("dotMode").onclick =()=>{ popDrawMode="dot"; popup.document.getElementById("dotMode").classList.add("active"); popup.document.getElementById("lineMode").classList.remove("active"); popDraw(); };
+  popDraw();
+}
+/* ---------- Boot ---------- */
+(async function boot(){
+  try{
+    $("#status").textContent="Fetching mapping…";
+    mapping = await loadMapping();
+    // Load watchlist
+    let watchKey = membersOn ? 'watchlist_members' : 'watchlist_f2p';
+    watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
+    customWatchlist = JSON.parse(localStorage.getItem('customWatchlist')) || [];
+    dismissed = [];
+    const membersOnlyCategories = ['herbs', 'potions', '3rd-age-items', 'charging-items', 'mage-armour', 'melee-armour', 'range-armour'];
+    const categorySelect = $("#categorySelect");
+    function updateCategoryOptions() {
+      categorySelect.innerHTML = '';
+      const option = document.createElement('option');
+      option.value = 'custom';
+      option.textContent = 'Custom Watchlist';
+      categorySelect.appendChild(option);
+      Object.keys(categoryItems).forEach(cat => {
+        if (cat !== 'custom' && (membersOn || !membersOnlyCategories.includes(cat))) {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+          categorySelect.appendChild(option);
+        }
+      });
+    }
+    updateCategoryOptions();
+    categorySelect.value = 'gems';
+    const loadCategory = async (cat) => {
+      if (cat === 'custom') {
+        watchlist = customWatchlist;
+      } else {
+        const itemNames = categoryItems[cat] || [];
+        watchlist = [];
+        for (const name of itemNames) {
+          const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase());
+          if (m && (membersOn || !m.members)) watchlist.push(m.id);
+        }
+      }
+      latest = await loadLatest();
+      watchlist.sort((a,b) => {
+        const pa = latest.data[a]?.high || 0;
+        const pb = latest.data[b]?.high || 0;
+        return pb - pa; // descending
+      });
+      localStorage.setItem(watchKey, JSON.stringify(watchlist));
+      buildWatchlist();
+    };
+    loadCategory('gems');
+    categorySelect.addEventListener('change', () => loadCategory(categorySelect.value));
+    // Autocomplete
+    const sb=$("#suggestBox");
+    $("#query").addEventListener("input", ()=>{
+      const q=$("#query").value.trim().toLowerCase();
+      if(!q){ sb.style.display="none"; sb.innerHTML=""; return; }
+      const list=mapping.filter(x=> (!membersOn && x.members ? false : true) && x.name.toLowerCase().includes(q)).slice(0,20);
+      sb.innerHTML=list.map(x=>`<div data-id="${x.id}">${x.name}</div>`).join("");
+      sb.style.display=list.length?"block":"none";
+    });
+    sb.addEventListener("click", (e)=>{
+      const id=e.target?.dataset?.id;
+      if(!id) return;
+      const m=mapping.find(x=>String(x.id)===String(id));
+      if(m){ sb.style.display="none"; setItem(m); }
+    });
+    // View buttons
+    document.querySelectorAll(".viewtabs button").forEach(b=>{
+      b.onclick=()=>{
+        document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        view=b.dataset.view;
+        if(selected) setItem(selected);
+      }
+    });
+    // Chart tools
+    $("#zIn").onclick = ()=>{ zoom=Math.min(8, zoom*1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
+    $("#zOut").onclick= ()=>{ zoom=Math.max(1, zoom/1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
+    $("#lineMode").onclick=()=>{ drawMode="line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); drawChart(currentSeries); };
+    $("#dotMode").onclick =()=>{ drawMode="dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); drawChart(currentSeries); };
+    $("#popoutBtn").onclick = () => popoutChart();
+    // Mode pill for F2P/Members
+    $("#btnF2P").onclick=()=>{ membersOn=false; $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
+      watchKey = 'watchlist_f2p';
+      watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
+      updateCategoryOptions();
+      loadCategory(categorySelect.value);
+      buildSidebar(); buildWatchlist(); };
+    $("#btnMembers").onclick=()=>{ membersOn=true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
+      watchKey = 'watchlist_members';
+      watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
+      updateCategoryOptions();
+      loadCategory(categorySelect.value);
+      buildSidebar(); buildWatchlist(); };
+    // Add to watchlist
+    $("#addWatchBtn").onclick = ()=>{
+      if(selected && !customWatchlist.includes(selected.id)){
+        customWatchlist.push(selected.id);
+        localStorage.setItem('customWatchlist', JSON.stringify(customWatchlist));
+        if (categorySelect.value === 'custom') {
+          buildWatchlist();
+        }
+        $("#addWatchBtn").disabled = true;
+      }
+    };
+    // Next suggestion
+    $("#nextSuggest").onclick = () => {
+      suggestIndex = (suggestIndex + 1) % flipSuggestions.length;
+      updateSmartSuggest();
+    };
+    // Refresh
+    $("#refreshBtn").onclick=async ()=>{
+      $("#loader-overlay").style.display = "flex";
+      $("#status").textContent="Refreshing…";
+      latest = await loadLatest();
+      volumes = await loadVolumes();
+      dismissed = [];
+      await buildSidebar();
+      buildWatchlist();
+      if(selected) await setItem(selected);
+      $("#loader-overlay").style.display = "none";
+      $("#status").textContent="Live data refreshed";
+      setTimeout(()=>$("#status").textContent="Ready", 1200);
+    };
+    // Initial load
+    latest = await loadLatest();
+    volumes = await loadVolumes();
+    await buildSidebar();
+    buildWatchlist();
+    // Preload a default item if present
+    const gildedScimitar = mapping.find(x=>x.name.toLowerCase()==="gilded scimitar");
+    if(gildedScimitar) setItem(gildedScimitar);
+    // Color pickers
+    const lowColorPicker = document.getElementById('lowColorPicker');
+    const highColorPicker = document.getElementById('highColorPicker');
+    const savedLowColor = localStorage.getItem('lowColor') || '#fb6a6a';
+    const savedHighColor = localStorage.getItem('highColor') || '#5cc76a';
+    document.documentElement.style.setProperty('--low-color', savedLowColor);
+    document.documentElement.style.setProperty('--high-color', savedHighColor);
+    lowColorPicker.value = savedLowColor;
+    highColorPicker.value = savedHighColor;
+    lowColorPicker.addEventListener('change', (e) => {
+      document.documentElement.style.setProperty('--low-color', e.target.value);
+      localStorage.setItem('lowColor', e.target.value);
+      if (currentSeries) drawChart(currentSeries);
+    });
+    highColorPicker.addEventListener('change', (e) => {
+      document.documentElement.style.setProperty('--high-color', e.target.value);
+      localStorage.setItem('highColor', e.target.value);
+      if (currentSeries) drawChart(currentSeries);
+    });
+    // Watchlist sorting
+    let sortDirections = {symbol: 'desc', buy: 'desc', sell: 'desc'};
+    function updateSortArrows() {
+      $('#sortSymbol .sort-arrow').textContent = sortDirections.symbol === 'asc' ? '▲' : '▼';
+      $('#sortBuy .sort-arrow').textContent = sortDirections.buy === 'asc' ? '▲' : '▼';
+      $('#sortSell .sort-arrow').textContent = sortDirections.sell === 'asc' ? '▲' : '▼';
+    }
+    $("#sortSymbol").onclick = () => {
+      sortDirections.symbol = sortDirections.symbol === 'asc' ? 'desc' : 'asc';
+      buildWatchlist('name');
+      updateSortArrows();
+    };
+    $("#sortBuy").onclick = () => {
+      sortDirections.buy = sortDirections.buy === 'asc' ? 'desc' : 'asc';
+      buildWatchlist('buy');
+      updateSortArrows();
+    };
+    $("#sortSell").onclick = () => {
+      sortDirections.sell = sortDirections.sell === 'asc' ? 'desc' : 'asc';
+      buildWatchlist('sell');
+      updateSortArrows();
+    };
+    updateSortArrows();
+  }catch(e){
+    console.error(e);
+    $("#status").textContent="Error: "+e.message;
+    $("#status").classList.add("status-error");
+  }
+})();
+</script>
+</body>
+</html>
