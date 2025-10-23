@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+<head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
 <meta name="description" content="Grant Exchange is the ultimate OSRS Grand Exchange flipping tool for F2P and Members. Get real-time market data, smart buy/sell suggestions, and profit calculations to maximize gold in RuneScape.">
@@ -365,102 +366,112 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  html {
-    transform: scale(1.0); /* Override desktop scale for mobile to make full size */
-    width: 100%;
-    height: 100%;
-  }
-  body {
-    font-size: 14px; /* Slightly smaller base font for compact fit */
-  }
   .wrap {
-    max-width: 100%; /* Full width on mobile */
-    margin: 10px auto; /* Reduced margin */
-    padding: 0 4px; /* Minimal padding to avoid overflow */
-    gap: 8px; /* Tighter gap */
-  }
-  .header {
-    grid-template-columns: auto 1fr auto; /* Adjust for smaller screen */
-    gap: 8px; /* Tighter gap */
-  }
-  h1 {
-    font-size: 22px; /* Smaller header */
-  }
-  .badge, .small {
-    font-size: 10px; /* Smaller text */
+    grid-template-columns: 1fr; /* Stack sidebar below main content */
+    padding: 0 8px; /* Compact padding */
+    gap: 10px; /* Reduced gap for modern, tight layout */
   }
   .grid {
-    grid-template-columns: auto 1fr; /* Image and search side-by-side */
-    gap: 6px; /* Tighter gaps */
+    display: grid;
+    grid-template-columns: auto 1fr; /* Image left, search right for side-by-side */
+    gap: 8px; /* Smaller gaps */
+    align-items: start; /* Top align */
   }
   .imgbox {
-    width: 80px; /* Even smaller image */
-    height: 80px;
+    grid-column: 1; /* Left column for image */
+    width: 100px; /* Smaller image to compact */
+    height: 100px;
+    margin: 0; /* Left align, no margin */
+    order: 1;
   }
-  .label {
-    font-size: 20px; /* Smaller label */
+  .imgbox img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: pointer; /* Clickable for item search focus */
   }
-  .sbar input {
-    font-size: 14px; /* Smaller input font */
-    padding: 10px; /* Reduced padding */
+  .grid > div:nth-child(2) { /* Search/profit right of image */
+    grid-column: 2;
+    order: 2;
   }
-  .kv {
-    margin: 2px 0; /* Minimal margins */
-    font-size: 14px; /* Smaller font */
+  .grid > div:nth-child(3) { /* Smart prices full width below */
+    grid-column: 1 / -1;
+    order: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3-column for low/high/limit */
+    grid-template-rows: auto auto; /* Row 1: titles, Row 2: inputs/arrows */
+    gap: 4px; /* Tighter gaps between rows/columns */
+    background: #231b0d; /* Dark bg for panel feel */
+    border: 1px solid var(--edge); /* Border for definition */
+    border-radius: 10px; /* Rounded */
+    padding: 6px; /* Reduced inner padding */
   }
-  .grid > div:nth-child(3) {
-    grid-template-columns: 1fr 1fr 1fr; /* Keep 3 columns but tighter */
-    gap: 2px; /* Minimal gaps */
-    padding: 4px; /* Reduced padding */
+  .title:nth-child(1) { /* Smart Low Buy title in column 1 */
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .title:nth-child(3) { /* Smart High Sell title in column 2 */
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .title:nth-child(5) { /* Buy Limit title in column 3 */
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .price-adjust:nth-child(2) { /* Low adjust below its title in column 1 */
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .price-adjust:nth-child(4) { /* High adjust below its title in column 2 */
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .price-adjust:nth-child(6) { /* Buy limit adjust below its title in column 3 */
+    grid-column: 3;
+    grid-row: 2;
   }
   .title {
-    font-size: 12px; /* Smaller titles */
+    font-size: 14px; /* Increased title size for better readability */
+    margin: 0; /* No margins for tight fit */
+    text-align: center; /* Center for symmetry */
   }
   .price-adjust {
-    gap: 1px; /* Tighter gaps */
+    flex-direction: row; /* Arrows on sides of value, same line */
+    align-items: center;
+    gap: 2px; /* Very tight gaps between arrows and input */
+    border: none; /* Remove inner borders if too busy */
+    background: transparent; /* Clean look */
+    justify-content: center; /* Center the group */
   }
   .price-input, .buy-limit-input {
-    font-size: 16px; /* Slightly smaller */
-    max-width: 60px; /* Narrower inputs */
+    flex: 1;
+    font-size: 18px; /* Increased text size for values */
+    text-align: center; /* Center values */
+    max-width: 80px; /* Limit width for compact fit */
   }
-  .price-adjust button {
-    padding: 1px 4px; /* Smaller buttons */
-    font-size: 14px; /* Smaller arrows */
-    min-width: 24px; /* Smaller min width */
+  .sbar input {
+    font-size: 16px; /* Smaller font for mobile */
   }
-  .refreshRow {
-    gap: 8px; /* Tighter */
-  }
-  .btn-refresh, .btn-watch {
-    font-size: 14px; /* Smaller buttons */
-    padding: 10px 16px; /* Reduced padding */
+  .kv {
+    margin: 4px 0; /* Compact margins */
   }
   .chart {
-    height: 240px; /* Shorter chart */
+    height: 280px; /* Slightly shorter for compact view */
   }
   .side {
-    gap: 6px; /* Tighter gap */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */
+    gap: 8px;
   }
-  .side h3 {
-    font-size: 16px; /* Smaller headers */
+  .side .suggest-box, .side .card-like {
+    grid-column: span 1; /* Each takes half */
   }
-  .small-chart {
-    height: 1.5in; /* Shorter small chart */
+  .side .card:nth-child(3) { /* Watchlist card full width */
+    grid-column: 1 / -1; /* Span both columns for full width */
   }
   .tb {
-    max-height: 300px; /* Shorter watchlist */
+    max-height: 350px; /* Slightly shorter */
   }
-  .row {
-    padding: 8px 4px; /* Reduced padding */
-    min-height: 32px; /* Shorter rows */
-  }
-  .sym {
-    font-size: 13px; /* Smaller text */
-  }
-  .help {
-    font-size: 14px; /* Smaller help text */
-  }
-}
 /* Themed Up/Down Arrows */
 .price-adjust button {
   background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
@@ -543,8 +554,9 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 }
 
 
-
 </style>
+</head>
+<body>
 <body>
 <div id="loader-overlay" style="display:none;">
   <div class="loader-wheel"></div>
