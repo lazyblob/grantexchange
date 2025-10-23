@@ -1,10 +1,66 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Grant Exchange v1.6.38</title>
-<!-- ===================== CSS (v1.5.5) ===================== -->
+<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
+<meta name="description" content="Grant Exchange is the ultimate OSRS Grand Exchange flipping tool for F2P and Members. Get real-time market data, smart buy/sell suggestions, and profit calculations to maximize gold in RuneScape.">
+<meta name="keywords" content="OSRS flipping tool, RuneScape Grand Exchange, OSRS gold making, item flipping guide, OSRS economy tracker, F2P flipping, Members flipping">
+<meta name="robots" content="index, follow"> <!-- Allows indexing and link following -->
+<link rel="canonical" href="https://grantexchange.net/"> <!-- Prevents duplicate issues -->
+<!-- Open Graph (Facebook, LinkedIn) -->
+<meta property="og:title" content="Grant Exchange - OSRS Flipping Tool">
+<meta property="og:description" content="Maximize profits with real-time GE data, smart suggestions, and watchlists for RuneScape flipping.">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png"> <!-- Use your favicon or a screenshot -->
+<meta property="og:url" content="https://grantexchange.net/">
+<meta property="og:type" content="website">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grant Exchange - OSRS Flipping Tool">
+<meta name="twitter:description" content="Maximize profits with real-time GE data, smart suggestions, and watchlists for RuneScape flipping.">
+<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Grant Exchange",
+  "url": "https://grantexchange.net/",
+  "description": "Ultimate OSRS Grand Exchange flipping tool with real-time data, smart suggestions, and profit calculations for RuneScape players.",
+  "applicationCategory": "Game",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<!-- Bing Webmaster Tools -->
+<meta name="msvalidate.01" content="B8AD4B8F6BA522C07502C8DEB4BEE524" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-43YM2RCX1R');
+</script>
+<!-- ===================== CSS ===================== -->
 <style>
+html {
+  transform: scale(0.8);  /* Scale everything to 80% */
+  transform-origin: top left;  /* Anchor scaling from top-left to avoid centering issues */
+  width: 125%;  /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
+  height: 125%;  /* Same for height */
+}
+body {
+  overflow: auto;  /* Ensure scrolling works if needed */
+}
+
 :root{
   --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
   --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
@@ -225,6 +281,24 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   85% {border-color: #8b00ff;}
   100% {border-color: #ff0000;}
 }
+
+.sbar {
+  position: relative; /* Anchor dropdown to this container */
+}
+
+.suggest { /* Matches your existing class */
+  position: absolute;
+  left: 0;
+  top: 100%; /* Drops directly below the input */
+  width: 100%; /* Matches search bar width */
+  z-index: 10;
+  background: #231b0d; /* Matches your theme */
+  border: 1px solid var(--edge);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  overflow: auto;
+  max-height: 200px; /* Optional: scroll if many results */
+}
+
 /* Suggestion box */
 .suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
 .suggest-box img{width:100px;height:100px;image-rendering:pixelated}
@@ -287,6 +361,206 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .wrap {
+    grid-template-columns: 1fr; /* Stack sidebar below main content */
+    padding: 0 8px; /* Compact padding */
+    gap: 10px; /* Reduced gap for modern, tight layout */
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Image left, search right for side-by-side */
+    gap: 8px; /* Smaller gaps */
+    align-items: start; /* Top align */
+  }
+  .imgbox {
+    grid-column: 1; /* Left column for image */
+    width: 100px; /* Smaller image to compact */
+    height: 100px;
+    margin: 0; /* Left align, no margin */
+    order: 1;
+  }
+  .imgbox img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: pointer; /* Clickable for item search focus */
+  }
+  .grid > div:nth-child(2) { /* Search/profit right of image */
+    grid-column: 2;
+    order: 2;
+  }
+  .grid > div:nth-child(3) { /* Smart prices full width below */
+    grid-column: 1 / -1;
+    order: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3-column for low/high/limit */
+    grid-template-rows: auto auto; /* Row 1: titles, Row 2: inputs/arrows */
+    gap: 4px; /* Tighter gaps between rows/columns */
+    background: #231b0d; /* Dark bg for panel feel */
+    border: 1px solid var(--edge); /* Border for definition */
+    border-radius: 10px; /* Rounded */
+    padding: 6px; /* Reduced inner padding */
+  }
+  .title:nth-child(1) { /* Smart Low Buy title in column 1 */
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .title:nth-child(3) { /* Smart High Sell title in column 2 */
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .title:nth-child(5) { /* Buy Limit title in column 3 */
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .price-adjust:nth-child(2) { /* Low adjust below its title in column 1 */
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .price-adjust:nth-child(4) { /* High adjust below its title in column 2 */
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .price-adjust:nth-child(6) { /* Buy limit adjust below its title in column 3 */
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .title {
+    font-size: 14px; /* Increased title size for better readability */
+    margin: 0; /* No margins for tight fit */
+    text-align: center; /* Center for symmetry */
+  }
+  .price-adjust {
+    flex-direction: row; /* Arrows on sides of value, same line */
+    align-items: center;
+    gap: 2px; /* Very tight gaps between arrows and input */
+    border: none; /* Remove inner borders if too busy */
+    background: transparent; /* Clean look */
+    justify-content: center; /* Center the group */
+  }
+  .price-input, .buy-limit-input {
+    flex: 1;
+    font-size: 18px; /* Increased text size for values */
+    text-align: center; /* Center values */
+    max-width: 80px; /* Limit width for compact fit */
+  }
+  .sbar input {
+    font-size: 16px; /* Smaller font for mobile */
+  }
+  .kv {
+    margin: 4px 0; /* Compact margins */
+  }
+  .chart {
+    height: 280px; /* Slightly shorter for compact view */
+  }
+  .side {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */
+    gap: 8px;
+  }
+  .side .suggest-box, .side .card-like {
+    grid-column: span 1; /* Each takes half */
+  }
+  .side .card:nth-child(3) { /* Watchlist card full width */
+    grid-column: 1 / -1; /* Span both columns for full width */
+  }
+  .tb {
+    max-height: 350px; /* Slightly shorter */
+  }
+  /* Ensure long text wraps */
+  .sym, .name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+/* Themed Up/Down Arrows */
+.price-adjust button {
+  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+  border: 2px solid var(--edge); /* Thicker border for emphasis */
+  border-radius: 12px; /* More rounded */
+  padding: 2px 8px; /* Smaller padding */
+  font-size: 18px; /* Slightly smaller text/symbols */
+  font-weight: 900; /* Max bold */
+  color: var(--gold); /* Gold base, overridden for low/high */
+  cursor: pointer;
+  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+  line-height: 1; /* Tight line height */
+  min-width: 32px; /* Smaller minimum width */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.price-adjust button.down::before {
+  content: "▽"; /* Tip-only down arrow (no tail) */
+}
+.price-adjust button.up::before {
+  content: "△"; /* Tip-only up arrow (no tail) */
+}
+.price-adjust button {
+  content: ""; /* Clear original text */
+}
+.price-adjust button:hover {
+  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+  transform: translateY(-2px); /* More lift */
+  filter: brightness(1.1); /* Brighter on hover */
+}
+.price-adjust button:active {
+  transform: translateY(0); /* Press down effect */
+  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.price-adjust.low button {
+  color: var(--low-color); /* Red for low arrows */
+}
+.price-adjust.high button {
+  color: var(--high-color); /* Green for high arrows */
+}
+
+/* Themed Color Selectors */
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #2b2212; /* Dark panel bg */
+  border: 1px solid var(--edge); /* Edge border */
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: var(--muted); /* Muted label text */
+}
+.color-picker input[type="color"] {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none;
+  width: 24px; /* Small square */
+  height: 24px;
+  border: none; /* No border */
+  background: transparent; /* Transparent bg */
+  cursor: pointer;
+}
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker input[type="color"]::-webkit-color-swatch {
+  border: 1px solid var(--edge); /* Theme border */
+  border-radius: 4px; /* Rounded */
+}
+.color-picker input[type="color"]::-moz-color-swatch {
+  border: 1px solid var(--edge); /* Firefox compat */
+  border-radius: 4px;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px #00ff00; }
+  to { box-shadow: 0 0 15px #00ff00; }
+}
+
+
+
 </style>
 <body>
 <div id="loader-overlay" style="display:none;">
@@ -295,7 +569,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.6.38</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.0</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -314,8 +588,8 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
         <div class="label">What item?</div>
         <div class="sbar">
           <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
+          <div id="suggestBox" class="suggest" style="display:none"></div>
         </div>
-        <div id="suggestBox" class="suggest" style="display:none"></div>
         <div class="kv" style="margin-top:4px"><span id="flipProfitLabel">Expected Flip Profit</span><strong id="flipProfit" style="color:var(--gold);font-size:20px">—</strong></div>
         <div class="kv" style="margin-top:12px"><span>Capital Required</span><strong id="capitalRequired" style="color:var(--gold);font-size:20px">—</strong></div>
         <div class="small" id="buyLimitInfo"></div>
@@ -354,8 +628,8 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     <div class="legend"><span class="sell">Smart Low Buy</span><span class="buy">Smart High Sell</span></div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px;">
       <div style="display:flex; gap:10px; align-items:center;">
-        <label>Low: <input type="color" id="lowColorPicker" value="#fb6a6a"></label>
-        <label>High: <input type="color" id="highColorPicker" value="#5cc76a"></label>
+        <label class="color-picker">Low: <input type="color" id="lowColorPicker" value="#fb6a6a"></label>
+        <label class="color-picker">High: <input type="color" id="highColorPicker" value="#5cc76a"></label>
       </div>
       <div style="display:flex; gap:10px;">
         <button id="refreshBtn" class="btn-refresh">Refresh All Data</button>
@@ -413,8 +687,24 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   </div>
   <div class="card left" style="grid-column:1 / -1">
     <div class="help" style="margin-top:20px">
-      <h3>About Grant Exchange</h3>
-      <p>Grant Exchange is the ultimate RuneScape Grand Exchange flipping tool designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor!</p>
+      <h3>Grant Exchange - OSRS Flipping Tool & GE Tracker</h3>
+      <p>Use our OSRS flipping tool for real-time Grand Exchange prices. This tool is designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor!</p>
+     <!-- FAQ  -->
+      <h2>Frequently Asked Questions</h2>
+      <h3>How to Flip Items in OSRS?</h3>
+      <p>Flipping in Old School RuneScape (OSRS) involves buying items low on the Grand Exchange and selling high for profit. Here are some tips:</p>
+      <ul>
+       <li>Start with high-volume items like runes, ores, or gems to ensure quick buys/sells.</li>
+       <li>Use the search bar in Grant Exchange to check real-time prices and spreads—aim for items with at least a 50k GP profit goal per flip.</li>
+       <li>Buy at "Smart Low Buy" prices and sell at "Smart High Sell" suggestions to account for margins and taxes (2% GE tax, capped at 5m GP).</li>
+       <li>Respect buy limits (e.g., 10k for bars)—use the tool's buy limit adjuster to calculate capital needed.</li>
+       <li>Monitor trends with the day/week/month charts; flip during peak player times for faster fills.</li>
+       <li>Avoid over-investing—start small in F2P mode with items like steel bars, then scale to Members exclusives like potions.</li>
+      </ul>
+      <h3>What's the Difference Between F2P and Members Mode?</h3>
+      <p>F2P mode filters out Members-only items for free-to-play users, while Members mode shows everything, including high-profit items like herbs and potions. Switch via the pill buttons for tailored suggestions.</p>
+      <h3>How Accurate Are the Profit Calculations?</h3>
+      <p>Profits are estimates based on current GE data, including 2% tax. Actual results vary with market fluctuations—use the watchlist and refresh button for live updates.</p>
     </div>
   </div>
 </div> <!-- .wrap -->
@@ -4098,9 +4388,11 @@ const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
   if (num >= 1e9) {
     return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
-  } if (num >= 1e6) {
+  } 
+  if (num >= 1e6) {
     return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
-  } if (num >= 1e3) {
+  } 
+  if (num >= 1e3) {
     return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
   }
   return num.toLocaleString();
@@ -4110,10 +4402,16 @@ const loadMapping=()=>jget(API+"/mapping");
 const loadLatest =()=>jget(API+"/latest");
 const loadVolumes=()=>jget(API+"/volumes");
 const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
-function bigIconUrl(id){ return `http://127.0.0.1:8787/rsbig/${id}`; }
-function wikiIconUrl(name){ if(!name) return ""; const fixed = name.replace(/ /g,"_"); return `http://127.0.0.1:8787/images/${encodeURIComponent(fixed)}`; }
-function suggestPrices(low, high){
-  if(low==null||high==null) return {buyMin:null, buyMax:null, sellMin:null, sellMax:null};
+function bigIconUrl(id){ 
+  return `./images/${id}.png`;  // Relative path; works locally and on GitHub Pages
+}
+function wikiIconUrl(name){ 
+  if(!name) return "";
+  const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase()); // Get ID from name
+  return m ? `./images/${m.id}.png` : "";  // Use ID for consistency
+}
+function suggestPrices(low, high) {
+  if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
   const spread = high - low;
   let buyMargin = Math.max(1, Math.floor(spread * 0.1)); // Increased to 10% for lower buy prices
   let sellMargin = Math.max(1, Math.floor(spread * 0.1)); // Increased to 10% for higher sell prices
@@ -4138,7 +4436,7 @@ function suggestPrices(low, high){
   const minSell = Math.ceil(buyMax / (1 - tax)) + 1;
   sellMin = Math.max(sellMin, minSell);
   sellMax = Math.max(sellMax, minSell + Math.max(2, Math.floor(sellMargin / 2)));
-  return {buyMin, buyMax, sellMin, sellMax};
+  return { buyMin, buyMax, sellMin, sellMax };
 }
 /* Map backend timeseries to arrays */
 function seriesFromTS(ts){
@@ -4306,6 +4604,7 @@ async function setItem(m){
   selected=m; $("#query").value=m.name;
   const img=$("#itemImg");
   img.src=bigIconUrl(m.id);
+  img.alt = m.name;  // e.g., "Gilded scimitar"
   img.onerror=()=>{ img.onerror=null; img.src=wikiIconUrl(m.icon||m.name); };
   $("#status").textContent="Loading latest…";
   latest = await loadLatest();
@@ -4416,7 +4715,7 @@ function updateFlipProfit(){
     $("#flipProfit").textContent = "—";
   }
 }
-function rowIcon(m){ return wikiIconUrl(m.icon||m.name); }
+function rowIcon(m){ return bigIconUrl(m.id); }
 async function buildSidebar(){
   if(!latest||!mapping) return;
   const candidates = [];
@@ -4515,12 +4814,12 @@ async function buildWatchlist(sortBy = 'buy'){
   $("#watch").innerHTML = rows.map(r=>{
     const isLong = (r.medianBuy && r.medianBuy > 999999) || (r.medianSell && r.medianSell > 999999);
     return `
-    <div class="row ${isLong ? 'long-price' : ''}">
-      <img src="${r.icon}" alt="" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
-      <div class="sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
-      <div class="delta">${r.medianBuy ? abbreviateNumber(r.medianBuy) : '—'}</div>
-      <div class="vol">${r.medianSell ? abbreviateNumber(r.medianSell) : '—'}</div>
-    </div>
+   <div class="row ${isLong ? 'long-price' : ''}">
+    <img src="${r.icon}" alt="${r.name}" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
+    <div class="sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+    <div class="delta">${r.medianBuy ? abbreviateNumber(r.medianBuy) : '—'}</div>
+    <div class="vol">${r.medianSell ? abbreviateNumber(r.medianSell) : '—'}</div>
+   </div>
   `}).join("");
   document.querySelectorAll('#watch .sym').forEach(el => {
     el.onclick = () => {
@@ -4766,6 +5065,41 @@ function popoutChart(){
       updateSortArrows();
     };
     updateSortArrows();
+
+    // New: Real-time price alerts (poll every 5 mins)
+    let previousPrices = {}; // Store previous high prices
+    watchlist.forEach(id => previousPrices[id] = latest.data[id]?.high || 0); // Initial
+
+    setInterval(async () => {
+      const newLatest = await loadLatest();
+      watchlist.forEach(id => {
+        const oldHi = previousPrices[id] || 0;
+        const newHi = newLatest.data[id]?.high || 0;
+        if (oldHi === 0) return;
+        const changePercent = ((newHi - oldHi) / oldHi) * 100;
+        const row = document.querySelector(`#watch .row [data-id="${id}"]`)?.parentNode;
+        if (!row) return;
+        row.style.border = '1px solid var(--edge)'; // Reset
+        row.style.animation = 'none';
+        if (changePercent <= -20) {
+          row.style.border = '2px solid #8b0000'; // Dark red drop
+        } else if (changePercent <= -10) {
+          row.style.border = '2px solid #ff0000'; // Red drop
+        } else if (changePercent <= -5) {
+          row.style.border = '2px solid #ffff00'; // Yellow drop
+        } else if (changePercent >= 20) {
+          row.style.border = '2px solid #00ff00'; // Green gain + glow
+          row.style.animation = 'glow 1.5s infinite alternate';
+        } else if (changePercent >= 10) {
+          row.style.border = '2px solid #00ff00'; // Green gain
+        } else if (changePercent >= 5) {
+          row.style.border = '2px solid #00ffff'; // Cyan gain
+        }
+        previousPrices[id] = newHi;
+      });
+      latest = newLatest; // Update global
+      buildWatchlist(); // Refresh watchlist
+    }, 300000); // 5 mins
   }catch(e){
     console.error(e);
     $("#status").textContent="Error: "+e.message;

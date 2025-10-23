@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://grantexchange.net/sitemap.xml
