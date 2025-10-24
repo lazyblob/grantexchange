@@ -704,8 +704,8 @@ let suggestIndex = 0;
 let adjustedBuy = null;
 let adjustedSell = null;
 let buyLimit = 0;
-let buyLimits = {}; // Cached buy limits (lazy-loaded from items-json/${id}.json)
-let categoryItems; // Loaded from categories.json
+const buyLimits = {}; // Cached buy limits (lazy-loaded from items-json/${id}.json)
+const categoryItems = {};
 /* ---------- Utilities ---------- */
 const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
 const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
@@ -771,6 +771,7 @@ function seriesFromTS(ts){
     hi: r.avgHighPrice ?? r.high ?? null,
     vol: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? null
   }))
+  .filter(r=>r.t && (r.lo!=null || r.hi!=null))
   .filter(r=>r.t && (r.lo!=null || r.hi!=null))
   .sort((a,b)=>a.t-b.t);
   return {
@@ -922,22 +923,19 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   };
   c.onmouseleave = () => tip.style.display="none";
 }
-/* ---------- Lazy Fetch for Buy Limits ---------- */
-async function getBuyLimit(id, name) {
-  const key = id; // Use ID as primary key (faster, unique)
-  if (buyLimits[key] != null) return buyLimits[key]; // Cached
+/* ---------- Item selection & sidebar ---------- */
+async function getBuyLimit(id) {
+  if (buyLimits[id]) return buyLimits[id];
   try {
-    const response = await fetch(`./items-json/${id}.json`); // Path to your folder/files
-    const itemData = await response.json();
-    buyLimits[key] = itemData.buy_limit ?? 10000; // Cache (null -> 10000 default)
-    if (name) buyLimits[name.toLowerCase()] = buyLimits[key]; // Dual-map by name too
-    return buyLimits[key];
+    const res = await fetch(`./items-json/${id}.json`);
+    const data = await res.json();
+    buyLimits[id] = data.buy_limit; // Adjust if field is e.g., "buyLimit" instead of "buy_limit"
+    return buyLimits[id];
   } catch (e) {
-    console.warn(`Failed to load buy limit for item ${id} (${name}):`, e);
-    return 10000; // Default fallback
+    console.warn(`Failed to load buy limit for item ${id}:`, e);
+    return null;
   }
 }
-/* ---------- Item selection & sidebar ---------- */
 async function setItem(m){
   selected=m; $("#query").value=m.name;
   const img=$("#itemImg");
@@ -953,7 +951,7 @@ async function setItem(m){
   let rec=suggestPrices(lo,hi);
   adjustedBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
   adjustedSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
-  buyLimit = await getBuyLimit(m.id, m.name); // Lazy fetch/cache
+  buyLimit = await getBuyLimit(m.id) || 10000; // Lazy load + cache
   $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
   $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
   $("#buyLimitDisplay").value = buyLimit.toLocaleString();
@@ -1077,9 +1075,9 @@ async function buildSidebar(){
     const medianSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
     if (medianBuy < minPrice) continue; // Skip low value
     const profitPerItem = medianSell - medianBuy - Math.min(5000000, Math.floor(medianSell * 0.01));
-    const itemBuyLimit = await getBuyLimit(m.id, m.name); // Lazy fetch/cache
-    const expectedProfit = profitPerItem * itemBuyLimit;
-    if (expectedProfit < minProfit) continue;
+    // Temp expectedProfit without buyLimit (we'll recalculate after fetching)
+    const tempExpectedProfit = profitPerItem * 10000; // Default for pre-filter
+    if (tempExpectedProfit < minProfit) continue;
     candidates.push({id:m.id, name:m.name, icon:rowIcon(m), spread, vol, medianBuy, medianSell, preScore: vol * spread});
   }
   candidates.sort((a,b) => b.preScore - a.preScore);
@@ -1087,6 +1085,9 @@ async function buildSidebar(){
   // Fetch timeseries in parallel for top candidates
   const tsPromises = topCandidates.map(c => loadTS("5m", c.id));
   const tsResults = await Promise.all(tsPromises);
+  // Fetch buy limits in parallel for top candidates
+  const buyLimitPromises = topCandidates.map(c => getBuyLimit(c.id));
+  const buyLimitResults = await Promise.all(buyLimitPromises);
   topCandidates.forEach((c, i) => {
     const seriesRecent = seriesFromTS(tsResults[i]);
     const recentLows = seriesRecent.low.filter(v => v != null).slice(-10); // Last 10 points
@@ -1094,14 +1095,15 @@ async function buildSidebar(){
     const dropPercent = (avgRecentLow - c.lo) / avgRecentLow;
     c.isGoodDeal = dropPercent > 0.1; // >10% drop from recent avg
     c.profitPerItem = c.medianSell - c.medianBuy - Math.min(5000000, Math.floor(c.medianSell * 0.01));
-    c.expectedProfit = c.profitPerItem * (await getBuyLimit(c.id, c.name));
+    c.buyLimit = buyLimitResults[i] || 10000; // Use fetched/cached value
+    c.expectedProfit = c.profitPerItem * c.buyLimit;
     c.score = c.vol * c.spread * (1 + dropPercent);
   });
   topCandidates.sort((a,b)=> b.expectedProfit - a.expectedProfit); // Prioritize by total expected profit
   flipSuggestions = topCandidates;
   updateSmartSuggest();
 }
-async function updateSmartSuggest(){
+function updateSmartSuggest(){
   if(flipSuggestions.length === 0) return;
   const top = flipSuggestions[suggestIndex % flipSuggestions.length];
   const m = mapping.find(x=>x.id === top.id);
@@ -1123,7 +1125,7 @@ async function updateSmartSuggest(){
     if (mItem) setItem(mItem);
   };
   const profitPerItem = top.medianSell - top.medianBuy - Math.min(5000000, Math.floor(top.medianSell * 0.01));
-  const itemBuyLimit = await getBuyLimit(top.id, top.name);
+  const itemBuyLimit = top.buyLimit; // Use pre-fetched from buildSidebar
   const totalProfit = profitPerItem * Math.min(itemBuyLimit, 100); // Cap for realistic profit
   $("#suggestProfit strong").textContent = fmtGp(totalProfit);
 }
@@ -1234,12 +1236,12 @@ function popoutChart(){
   try{
     $("#status").textContent="Fetching mapping…";
     mapping = await loadMapping();
-    // Load categoryItems from JSON
+    // Load categoryItems from categories.json
+    let categoryItems = {}; // Default to empty
     try {
-      const categoryResponse = await fetch('./categories.json');
-      categoryItems = await categoryResponse.json();
+      const categoriesResponse = await fetch('./categories.json');
+      categoryItems = await categoriesResponse.json();
     } catch (e) {
-      categoryItems = { custom: [] };
       console.warn("Failed to load categories.json:", e);
     }
     // Load watchlist
@@ -1264,13 +1266,13 @@ function popoutChart(){
         }
       });
     }
-    updateCategoryOptions();
-    categorySelect.value = 'gems';
+    updateCategoryOptions(); // Call after loading categoryItems
+    categorySelect.value = 'gems'; // Default, assuming 'gems' exists in categories.json
     const loadCategory = async (cat) => {
       if (cat === 'custom') {
         watchlist = customWatchlist;
       } else {
-        const itemNames = categoryItems[cat] || [];
+        const itemNames = categoryItems[cat] || []; // Now from loaded JSON
         watchlist = [];
         for (const name of itemNames) {
           const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase());
