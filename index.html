@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
-<meta name="description" content="Grant Exchange is the ultimate OSRS Grand Exchange flipping tool for F2P and Members. Get real-time market data, smart buy/sell suggestions, and profit calculations to maximize gold in RuneScape.">
-<meta name="keywords" content="OSRS flipping tool, RuneScape Grand Exchange, OSRS gold making, item flipping guide, OSRS economy tracker, F2P flipping, Members flipping">
+<meta name="description" content="Grant Exchange is the ultimate OSRS Grand Exchange flipping tool for F2P and Members. Get real-time market data, smart buy/sell suggestions, profit calculations, and a high alchemy profit guide to maximize gold in RuneScape.">
+<meta name="keywords" content="OSRS flipping tool, RuneScape Grand Exchange, OSRS gold making, item flipping guide, OSRS economy tracker, F2P flipping, Members flipping, OSRS high alch calculator, RuneScape alchemy profit guide, best high alch items">
 <meta name="robots" content="index, follow"> <!-- Allows indexing and link following -->
 <link rel="canonical" href="https://grantexchange.net/"> <!-- Prevents duplicate issues -->
 <!-- Open Graph (Facebook, LinkedIn) -->
@@ -34,6 +34,22 @@
     "price": "0",
     "priceCurrency": "USD"
   }
+},
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Make Profit with High Alchemy in OSRS",
+  "description": "Guide to using high alchemy for gold making in Old School RuneScape, including best items and profit calculations.",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "text": "Gather nature runes and items from the Grand Exchange."
+    },
+    {
+      "@type": "HowToStep",
+      "text": "Cast High Level Alchemy on items for profit (alch value minus buy price minus nature rune cost)."
+    }
+  ]
 }
 </script>
 <!-- Bing Webmaster Tools -->
@@ -354,6 +370,22 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Tabs for bottom section */
+.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
+.help-tab-content { display: none; }
+.help-tab-content.active { display: block; }
+/* Alch table (tighter) */
+.alch-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
+.alch-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
+.alch-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+.alch-row { display: grid; grid-template-columns: 40px 1fr 120px 120px 120px 140px; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
+.alch-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
+.alch-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.alch-buy, .alch-nat, .alch-value, .alch-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
+.alch-profit.positive { color: var(--high-color); }
+.alch-profit.negative { color: var(--low-color); }
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .wrap {
@@ -549,7 +581,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.1</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.2</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -666,25 +698,54 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     </div>
   </div>
   <div class="card left" style="grid-column:1 / -1">
+  <div class="help-tabs">
+    <button id="faqTab" class="active">FAQ</button>
+    <button id="alchTab">High Alch Guide</button>
+  </div>
+  <div id="faqContent" class="help-tab-content active">
     <div class="help" style="margin-top:20px">
       <h3>Grant Exchange - OSRS Flipping Tool & GE Tracker</h3>
-      <p>Use our OSRS flipping tool for real-time Grand Exchange prices. This tool is designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor!</p>
-     <!-- FAQ -->
+      <p>Use our OSRS flipping tool for real-time Grand Exchange prices. This tool is designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor! See our <button onclick="switchToAlchTab()">High Alch Profit Guide</button> for more money-making tips.</p>
+      <!-- FAQ -->
       <h2>Frequently Asked Questions</h2>
       <h3>How to Flip Items in OSRS?</h3>
       <p>Flipping in Old School RuneScape (OSRS) involves buying items low on the Grand Exchange and selling high for profit. Here are some tips:</p>
       <ul>
-       <li>Start with high-volume items like runes, ores, or gems to ensure quick buys/sells.</li>
-       <li>Use the search bar in Grant Exchange to check real-time prices and spreads—aim for items with at least a 50k GP profit goal per flip.</li>
-       <li>Buy at "Smart Low Buy" prices and sell at "Smart High Sell" suggestions to account for margins and taxes (2% GE tax, capped at 5m GP).</li>
-       <li>Respect buy limits (e.g., 10k for bars)—use the tool's buy limit adjuster to calculate capital needed.</li>
-       <li>Monitor trends with the day/week/month charts; flip during peak player times for faster fills.</li>
-       <li>Avoid over-investing—start small in F2P mode with items like steel bars, then scale to Members exclusives like potions.</li>
+        <li>Start with high-volume items like runes, ores, or gems to ensure quick buys/sells.</li>
+        <li>Use the search bar in Grant Exchange to check real-time prices and spreads—aim for items with at least a 50k GP profit goal per flip.</li>
+        <li>Buy at "Smart Low Buy" prices and sell at "Smart High Sell" suggestions to account for margins and taxes (2% GE tax, capped at 5m GP).</li>
+        <li>Respect buy limits (e.g., 10k for bars)—use the tool's buy limit adjuster to calculate capital needed.</li>
+        <li>Monitor trends with the day/week/month charts; flip during peak player times for faster fills.</li>
+        <li>Avoid over-investing—start small in F2P mode with items like steel bars, then scale to Members exclusives like potions.</li>
       </ul>
       <h3>What's the Difference Between F2P and Members Mode?</h3>
       <p>F2P mode filters out Members-only items for free-to-play users, while Members mode shows everything, including high-profit items like herbs and potions. Switch via the pill buttons for tailored suggestions.</p>
       <h3>How Accurate Are the Profit Calculations?</h3>
       <p>Profits are estimates based on current GE data, including 2% tax. Actual results vary with market fluctuations—use the watchlist and refresh button for live updates.</p>
+    </div>
+  </div>
+  <div id="alchContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>OSRS High Alchemy Profit Guide & Calculator</h2>
+      <p>High Alchemy (High Alch) is a great money maker in Old School RuneScape (OSRS), allowing you to convert items into gold using the High Level Alchemy spell (requires 55 Magic, a fire rune or staff, and a nature rune). It's an excellent passive gold-making method for F2P and Members players, often netting 100k-500k GP per hour while training Magic. Buy items below their high alch value on the Grand Exchange, alch them for instant GP, and profit from the difference (minus nature rune cost). Use this OSRS high alch calculator to find the best items—updated with real-time GE prices. Perfect for low-effort RuneScape gold farming alongside flipping.</p>
+      <h3>How to High Alch for Profit in OSRS</h3>
+      <ul>
+        <li>Equip a fire staff to save on fire runes.</li>
+        <li>Buy items and nature runes (ID: 561) from the GE—check prices below.</li>
+        <li>Cast High Alch on items; profit = High Alch Value - GE Buy Price - Nature Rune Price.</li>
+        <li>Aim for positive profit items; alch in safe spots like banks for efficiency.</li>
+        <li>In F2P mode, only free-to-play items show; switch to Members for more options.</li>
+      </ul>
+      <p>Nature Rune Price: <span id="natPrice">Loading...</span></p>
+      <div class="head"> <!-- Header like watchlist -->
+        <div></div>
+        <div>Item</div>
+        <div>Alch Value</div>
+        <div>Buy GP</div>
+        <div>Nat GP</div>
+        <div>Profit/Alch</div>
+      </div>
+      <div id="alchList" class="alch-tb"></div>
     </div>
   </div>
 </div> <!-- .wrap -->
@@ -706,6 +767,9 @@ let adjustedSell = null;
 let buyLimit = 0;
 const buyLimits = {}; // Cached buy limits (lazy-loaded from items-json/${id}.json)
 const categoryItems = {};
+const f2pAlchItems = ['rune pickaxe', 'rune platebody', 'rune kiteshield', 'rune battleaxe', 'rune longsword', 'rune med helm', 'rune 2h sword', 'rune full helm', 'green d\'hide body', 'rune sword', 'rune mace', 'rune platelegs', 'rune plateskirt', 'rune axe', 'rune scimitar', 'adamant platebody', 'rune sq shield', 'rune chainbody', 'mithril kiteshield', 'adamant kiteshield', 'adamant chainbody', 'mithril platebody', 'adamant platelegs', 'Steel platebody', 'rune dagger'];
+const membersAlchItems = ['dragon med helm', 'dragon battleaxe', 'dragon platelegs', 'black d\'hide body', 'dragon halberd', 'red d\'hide body', 'dragon scimitar', 'dragon longsword', 'rune halberd', 'dragon dagger', 'rune spear', 'blue d\'hide body', 'mystic robe bottom', 'dragon spear', 'mystic robe top', 'rune dagger(p+)', 'rune hasta', 'red d\'hide vambraces', 'dragon plateskirt', ...f2pAlchItems, 'blue d\'hide vambraces', 'combat bracelet', 'mystic water staff', 'mystic gloves', 'black d\'hide vambraces', 'water battlestaff', 'air battlestaff', 'red d\'hide chaps', 'earth battlestaff', 'fire battlestaff', 'diamond bracelet'];
+const natRuneId = 561; // Nature rune
 /* ---------- Utilities ---------- */
 const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
 const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
@@ -938,6 +1002,7 @@ async function getBuyLimit(id) {
 }
 async function setItem(m){
   selected=m; $("#query").value=m.name;
+  document.title = `${m.name} Live Prices, Graphs, Historical Data - (OSRS) GE - Grant Exchange`;
   const img=$("#itemImg");
   img.src=bigIconUrl(m.id);
   img.alt = m.name; // e.g., "Gilded scimitar"
@@ -1168,6 +1233,40 @@ async function buildWatchlist(sortBy = 'buy'){
     };
   });
 }
+async function buildAlchList() {
+  const items = membersOn ? membersAlchItems : f2pAlchItems;
+  const natNode = latest.data[natRuneId];
+  const natPrice = natNode?.low ?? natNode?.avgLowPrice ?? 0;
+  $('#natPrice').textContent = fmtGp(natPrice);
+  const rows = [];
+  for (const name of items) {
+    const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (!m) continue;
+    const node = latest.data[m.id];
+    const buyPrice = node?.low ?? node?.avgLowPrice ?? 0;
+    let alchValue = 0;
+    try {
+      const itemData = await jget(`./items-json/${m.id}.json`);
+      alchValue = itemData.highalch ?? 0;
+    } catch (e) { console.warn(`Failed to load alch for ${m.id}`); }
+    const profit = alchValue - buyPrice - natPrice;
+    rows.push({id: m.id, name: m.name, icon: rowIcon(m), buyPrice, natPrice, alchValue, profit});
+  }
+  rows.sort((a,b) => b.profit - a.profit); // Sort by profit desc
+  $('#alchList').innerHTML = rows.map(r => `
+    <div class="alch-row">
+      <img src="${r.icon}" alt="${r.name}" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
+      <div class="alch-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="alch-value">${abbreviateNumber(r.alchValue)}</div>
+      <div class="alch-buy">${abbreviateNumber(r.buyPrice)}</div>
+      <div class="alch-nat">${abbreviateNumber(r.natPrice)}</div>
+      <div class="alch-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+  document.querySelectorAll('#alchList .alch-sym').forEach(el => {
+    el.onclick = () => { const m = mapping.find(x => x.id == el.dataset.id); if (m) setItem(m); };
+  });
+}
 /* ---------- Popout Chart ---------- */
 function popoutChart(){
   const popup = window.open('', '_blank', 'width=900,height=600');
@@ -1326,13 +1425,13 @@ function popoutChart(){
       watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
       updateCategoryOptions();
       loadCategory(categorySelect.value);
-      buildSidebar(); buildWatchlist(); };
+      buildSidebar(); buildWatchlist(); buildAlchList(); };
     $("#btnMembers").onclick=()=>{ membersOn=true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
       watchKey = 'watchlist_members';
       watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
       updateCategoryOptions();
       loadCategory(categorySelect.value);
-      buildSidebar(); buildWatchlist(); };
+      buildSidebar(); buildWatchlist(); buildAlchList(); };
     // Add to watchlist
     $("#addWatchBtn").onclick = ()=>{
       if(selected && !customWatchlist.includes(selected.id)){
@@ -1359,6 +1458,7 @@ function popoutChart(){
       await buildSidebar();
       buildWatchlist();
       if(selected) await setItem(selected);
+      await buildAlchList();
       $("#loader-overlay").style.display = "none";
       $("#status").textContent="Live data refreshed";
       setTimeout(()=>$("#status").textContent="Ready", 1200);
@@ -1413,6 +1513,12 @@ function popoutChart(){
       updateSortArrows();
     };
     updateSortArrows();
+    // Tab switching
+    $('#faqTab').onclick = () => { $('#faqTab').classList.add('active'); $('#alchTab').classList.remove('active'); $('#faqContent').classList.add('active'); $('#alchContent').classList.remove('active'); };
+    $('#alchTab').onclick = () => { $('#alchTab').classList.add('active'); $('#faqTab').classList.remove('active'); $('#alchContent').classList.add('active'); $('#faqContent').classList.remove('active'); buildAlchList(); }; // Lazy load on tab open
+    function switchToAlchTab() { $('#alchTab').click(); }
+    // Initial alch build (optional; or lazy on tab)
+    buildAlchList();
     // New: Real-time price alerts (poll every 5 mins)
     let previousPrices = {}; // Store previous high prices
     watchlist.forEach(id => previousPrices[id] = latest.data[id]?.high || 0); // Initial
@@ -1445,6 +1551,7 @@ function popoutChart(){
       });
       latest = newLatest; // Update global
       buildWatchlist(); // Refresh watchlist
+      buildAlchList();
     }, 300000); // 5 mins
   }catch(e){
     console.error(e);
