@@ -64,12 +64,6 @@
 </script>
 <!-- ===================== CSS ===================== -->
 <style>
-html {
-  transform: scale(0.8); /* Scale everything to 80% */
-  transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
-  width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
-  height: 125%; /* Same for height */
-}
 body {
   overflow: auto; /* Ensure scrolling works if needed */
 }
@@ -386,24 +380,41 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 .alch-buy, .alch-nat, .alch-value, .alch-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
 .alch-profit.positive { color: var(--high-color); }
 .alch-profit.negative { color: var(--low-color); }
+/* Desktop scaling */
+@media (min-width: 769px) {
+  html {
+    transform: scale(0.8); /* Scale everything to 80% */
+    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
+    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
+    height: 125%; /* Same for height */
+  }
+}
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
   .wrap {
     grid-template-columns: 1fr; /* Stack sidebar below main content */
     padding: 0 8px; /* Compact padding */
     gap: 10px; /* Reduced gap for modern, tight layout */
+    max-width: 100%;
+    margin: 10px auto;
   }
   .grid {
     display: grid;
-    grid-template-columns: auto 1fr; /* Image left, search right for side-by-side */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     gap: 8px; /* Smaller gaps */
     align-items: start; /* Top align */
   }
   .imgbox {
-    grid-column: 1; /* Left column for image */
-    width: 100px; /* Smaller image to compact */
-    height: 100px;
+    grid-column: 1;
+    grid-row: 1;
+    width: 80px; /* Smaller image to compact */
+    height: 80px;
     margin: 0; /* Left align, no margin */
+    justify-self: start;
     order: 1;
   }
   .imgbox img {
@@ -412,50 +423,70 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     object-fit: contain;
     cursor: pointer; /* Clickable for item search focus */
   }
-  .grid > div:nth-child(2) { /* Search/profit right of image */
-    grid-column: 2;
+  .grid > div:nth-child(2) { /* Search/profit right of image, top row */
+    grid-column: 1;
+    grid-row: 2;
     order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter */
   }
-  .grid > div:nth-child(3) { /* Smart prices full width below */
-    grid-column: 1 / -1;
+  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
+    grid-column: 1;
+    grid-row: 3;
     order: 3;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* 3-column for low/high/limit */
-    grid-template-rows: auto auto; /* Row 1: titles, Row 2: inputs/arrows */
-    gap: 4px; /* Tighter gaps between rows/columns */
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter gaps between rows/columns */
     background: #231b0d; /* Dark bg for panel feel */
     border: 1px solid var(--edge); /* Border for definition */
     border-radius: 10px; /* Rounded */
-    padding: 6px; /* Reduced inner padding */
+    padding: 4px; /* Reduced inner padding */
   }
-  .title:nth-child(1) { /* Smart Low Buy title in column 1 */
-    grid-column: 1;
-    grid-row: 1;
+  .label {
+    font-size: 16px; /* Smaller label */
+    margin: 0;
   }
-  .title:nth-child(3) { /* Smart High Sell title in column 2 */
-    grid-column: 2;
-    grid-row: 1;
+  .sbar input {
+    font-size: 14px; /* Smaller input */
+    padding: 8px;
   }
-  .title:nth-child(5) { /* Buy Limit title in column 3 */
-    grid-column: 3;
-    grid-row: 1;
+  .kv {
+    display: flex;
+    flex-direction: row; /* Keep row for better space use */
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0; /* Even tighter margins */
+    font-size: 12px; /* Smaller font for info */
   }
-  .price-adjust:nth-child(2) { /* Low adjust below its title in column 1 */
-    grid-column: 1;
-    grid-row: 2;
+  .kv span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .price-adjust:nth-child(4) { /* High adjust below its title in column 2 */
-    grid-column: 2;
-    grid-row: 2;
+  .kv strong {
+    flex: 1;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px; /* Slightly larger for numbers */
   }
-  .price-adjust:nth-child(6) { /* Buy limit adjust below its title in column 3 */
-    grid-column: 3;
-    grid-row: 2;
+  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin {
+    font-size: 12px; /* Compact text */
+  }
+  #spreadMargin {
+    text-align: left;
+    margin: 2px 0;
+  }
+  .small {
+    font-size: 10px; /* Smaller buy limit info */
   }
   .title {
-    font-size: 14px; /* Increased title size for better readability */
+    font-size: 12px; /* Smaller titles */
     margin: 0; /* No margins for tight fit */
-    text-align: center; /* Center for symmetry */
+    text-align: left; /* Left align for flow */
   }
   .price-adjust {
     flex-direction: row; /* Arrows on sides of value, same line */
@@ -463,19 +494,22 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     gap: 2px; /* Very tight gaps between arrows and input */
     border: none; /* Remove inner borders if too busy */
     background: transparent; /* Clean look */
-    justify-content: center; /* Center the group */
+    justify-content: flex-start; /* Left align */
   }
   .price-input, .buy-limit-input {
     flex: 1;
-    font-size: 18px; /* Increased text size for values */
-    text-align: center; /* Center values */
-    max-width: 80px; /* Limit width for compact fit */
+    font-size: 14px; /* Smaller text size for values */
+    text-align: right; /* Right align numbers */
+    width: auto; /* Auto width to fit */
+    max-width: none; /* Remove max-width to handle long numbers */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .sbar input {
-    font-size: 16px; /* Smaller font for mobile */
-  }
-  .kv {
-    margin: 4px 0; /* Compact margins */
+  .price-adjust button {
+    font-size: 16px; /* Smaller arrows */
+    padding: 0 4px;
+    min-width: 24px;
   }
   .chart {
     height: 280px; /* Slightly shorter for compact view */
@@ -487,13 +521,122 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   }
   .side .suggest-box, .side .card-like {
     grid-column: span 1; /* Each takes half */
+    padding: 8px; /* Narrower padding */
+    max-width: 100%; /* Fit to mobile */
+  }
+  .side .card-like {
+    order: -1;
   }
   .side .card:nth-child(3) { /* Watchlist card full width */
     grid-column: 1 / -1; /* Span both columns for full width */
+    padding: 8px; /* Narrower */
+  }
+  .suggest-box .item {
+    flex-direction: column; /* Stack for narrow fit */
+    gap: 4px;
+    padding: 6px;
+  }
+  .suggest-box img {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+  }
+  .suggest-box .details {
+    text-align: center;
+  }
+  .suggest-box .prices {
+    justify-content: center;
+    gap: 10px;
+  }
+  .suggest-box .price strong {
+    font-size: 14px;
+  }
+  .suggest-box .next-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .card-like {
+    padding: 8px;
+  }
+  .card-like h3 {
+    font-size: 14px;
+  }
+  .small-chart {
+    height: 200px;
   }
   .tb {
     max-height: 350px; /* Slightly shorter */
   }
+  .head {
+    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */
+    font-size: 10px;
+    gap: 4px;
+    padding: 4px 6px;
+  }
+  .row {
+    grid-template-columns: 20px 1fr 50px 50px;
+    padding: 6px;
+    gap: 4px;
+    min-height: 30px;
+  }
+  .row.long-price {
+    min-height: 50px;
+  }
+  .sym {
+    font-size: 12px;
+  }
+  .delta, .vol {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .alch-tb .head {
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+    gap: 4px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .alch-row {
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+    gap: 4px;
+    padding: 6px;
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
 /* Themed Up/Down Arrows */
 .price-adjust button {
   background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
@@ -572,6 +715,73 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   from { box-shadow: 0 0 5px #00ff00; }
   to { box-shadow: 0 0 15px #00ff00; }
 }
+  h1 { font-size: 20px; }
+  h3 { font-size: 16px; }
+  .label { font-size: 20px; }
+  .help { font-size: 14px; }
+  .chart { height: 200px; }
+  .tb { max-height: 200px; }
+  .small-chart { height: 120px; }
+  .suggest { width: 100%; }
+  .head {
+    grid-template-columns: 22px 1fr 60px 60px;
+    font-size: 10px;
+  }
+  .row {
+    grid-template-columns: 22px 1fr 60px 60px;
+    padding: 8px;
+    gap: 4px;
+  }
+  .sym {
+    font-size: 13px;
+  }
+  .last, .delta, .pct, .vol {
+    font-size: 12px;
+  }
+  .alch-tb .head {
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  .alch-row {
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+    gap: 6px;
+    padding: 8px 8px;
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+    font-size: 12px;
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
+}
 </style>
 </head>
 <body>
@@ -581,7 +791,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.3</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.4</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -722,6 +932,17 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
       <p>F2P mode filters out Members-only items for free-to-play users, while Members mode shows everything, including high-profit items like herbs and potions. Switch via the pill buttons for tailored suggestions.</p>
       <h3>How Accurate Are the Profit Calculations?</h3>
       <p>Profits are estimates based on current GE data, including 2% tax. Actual results vary with market fluctuations—use the watchlist and refresh button for live updates.</p>
+      <h3>How do the price alerts in the watchlist work?</h3>
+      <p>The watchlist rows highlight with colored borders based on the percentage change in the item's high price over the last 5 minutes:</p>
+      <ul>
+        <li>Green glow border if increased >=20%</li>
+        <li>Green border if increased >=10%</li>
+        <li>Cyan border if increased >=5%</li>
+        <li>Yellow border if decreased <=-5%</li>
+        <li>Red border if decreased <=-10%</li>
+        <li>Dark red border if decreased <=-20%</li>
+      </ul>
+      <p>This provides real-time alerts for short-term price fluctuations. Note that large changes like 20% in 5 minutes are rare for most items, so you might not see the glow often. For example, adamant bars typically have stable prices with small changes, so they may not trigger the higher alerts frequently.</p>
     </div>
   </div>
   <div id="alchContent" class="help-tab-content">
