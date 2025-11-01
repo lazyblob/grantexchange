@@ -3,30 +3,34 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
-<meta name="description" content="Grant Exchange is the ultimate OSRS Grand Exchange flipping tool for F2P and Members. Get real-time market data, smart buy/sell suggestions, profit calculations, and a high alchemy profit guide to maximize gold in RuneScape.">
-<meta name="keywords" content="OSRS flipping tool, RuneScape Grand Exchange, OSRS gold making, item flipping guide, OSRS economy tracker, F2P flipping, Members flipping, OSRS high alch calculator, RuneScape alchemy profit guide, best high alch items">
+<title>OSRS Grand Exchange Price Checker & Flipping Tool - GE Tracker & Money Making Guides</title>
+<meta name="description" content="Track real-time prices on the OSRS Grand Exchange with our GE tracker. Access smart flipping suggestions, profit calculators, and comprehensive money making guides for both F2P and Members players. Explore effective OSRS gold making strategies, including item flipping, high alch methods, and RuneScape economy tracking.">
+<meta name="keywords" content="OSRS Grand Exchange, OSRS GE, OSRS flipping tool, RuneScape Grand Exchange, OSRS gold making, money making OSRS, guides to make money OSRS, making money in OSRS, item flipping guide, OSRS economy tracker, F2P flipping, Members flipping, OSRS high alch calculator, RuneScape alchemy profit guide, best high alch items, RuneScape GE, OSRS price checker, Grand Exchange OSRS, Old School RuneScape Grand Exchange, Old School RuneScape exchange, Old School Grand Exchange, OSRS exchange, OSRS Grand Exchange tracker, GE OSRS, OSRS price check, RS 07 GE, 07 Grand Exchange, Grand Exchange prices OSRS, live Grand Exchange prices OSRS, RuneScape Grand Exchange buy limits, Grand Exchange prices">
 <meta name="robots" content="index, follow"> <!-- Allows indexing and link following -->
 <link rel="canonical" href="https://grantexchange.net/"> <!-- Prevents duplicate issues -->
 <!-- Open Graph (Facebook, LinkedIn) -->
-<meta property="og:title" content="OSRS Grand Exchange - Price Checker, Money Making, Flipping Tool - Grant Exchange">
-<meta property="og:description" content="Maximize profits with real-time GE data, smart suggestions, and watchlists for RuneScape flipping.">
+<meta property="og:title" content="OSRS Grand Exchange Price Checker & Flipping Tool - GE Tracker & Money Making Guides">
+<meta property="og:description" content="Track real-time prices on the OSRS Grand Exchange with our GE tracker. Access smart flipping suggestions, profit calculators, and comprehensive money making guides for both F2P and Members players. Explore effective OSRS gold making strategies, including item flipping, high alch methods, and RuneScape economy tracking.">
 <meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png"> <!-- Use your favicon or a screenshot -->
 <meta property="og:url" content="https://grantexchange.net/">
 <meta property="og:type" content="website">
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="icon" type="image/png" sizes="48x48" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="icon" type="image/png" sizes="96x96" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="icon" type="image/png" sizes="144x144" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <!-- Twitter Cards -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Grant Exchange - OSRS Flipping Tool">
-<meta name="twitter:description" content="Maximize profits with real-time GE data, smart suggestions, and watchlists for RuneScape flipping.">
+<meta name="twitter:title" content="OSRS Grand Exchange Price Checker & Flipping Tool - GE Tracker & Money Making Guides">
+<meta name="twitter:description" content="Track real-time prices on the OSRS Grand Exchange with our GE tracker. Access smart flipping suggestions, profit calculators, and comprehensive money making guides for both F2P and Members players. Explore effective OSRS gold making strategies, including item flipping, high alch methods, and RuneScape economy tracking.">
 <meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Grant Exchange",
+  "name": "OSRS Grand Exchange Price Checker & Flipping Tool - GE Tracker",
   "url": "https://grantexchange.net/",
-  "description": "Ultimate OSRS Grand Exchange flipping tool with real-time data, smart suggestions, and profit calculations for RuneScape players.",
+  "description": "Advanced tool for tracking real-time GE data in OSRS, offering flipping suggestions, profit tools, and guides to help RuneScape players maximize gold earnings.",
   "applicationCategory": "Game",
   "operatingSystem": "Web",
   "offers": {
@@ -38,16 +42,16 @@
 {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  "name": "How to Make Profit with High Alchemy in OSRS",
-  "description": "Guide to using high alchemy for gold making in Old School RuneScape, including best items and profit calculations.",
+  "name": "How to Profit from High Alchemy in OSRS",
+  "description": "Step-by-step guide to high alch for gold in Old School RuneScape, featuring top items and profit estimates using current Grand Exchange prices.",
   "step": [
     {
       "@type": "HowToStep",
-      "text": "Gather nature runes and items from the Grand Exchange."
+      "text": "Acquire nature runes and suitable items via the OSRS Grand Exchange."
     },
     {
       "@type": "HowToStep",
-      "text": "Cast High Level Alchemy on items for profit (alch value minus buy price minus nature rune cost)."
+      "text": "Use High Level Alchemy to convert items to gold, calculating profit as alch value less purchase price and rune cost."
     }
   ]
 }
@@ -365,21 +369,26 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   100% { transform: rotate(360deg); }
 }
 /* Tabs for bottom section */
-.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
 .help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
+.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color:var(--orange); }
 .help-tab-content { display: none; }
 .help-tab-content.active { display: block; }
 /* Alch table (tighter) */
-.alch-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
-.alch-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
-.alch-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
-.alch-row { display: grid; grid-template-columns: 40px 1fr 120px 120px 120px 140px; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
-.alch-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
-.alch-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.alch-buy, .alch-nat, .alch-value, .alch-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
-.alch-profit.positive { color: var(--high-color); }
-.alch-profit.negative { color: var(--low-color); }
+.alch-tb, .sets-tb, .craft-tb, .enchant-tb, .smith-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
+.alch-tb::-webkit-scrollbar, .sets-tb::-webkit-scrollbar, .craft-tb::-webkit-scrollbar, .enchant-tb::-webkit-scrollbar, .smith-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
+.alch-tb::-webkit-scrollbar-thumb, .sets-tb::-webkit-scrollbar-thumb, .craft-tb::-webkit-scrollbar-thumb, .enchant-tb::-webkit-scrollbar-thumb, .smith-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { display: grid; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
+.alch-row { grid-template-columns: 40px 1fr 120px 120px 120px 140px; }
+.sets-row { grid-template-columns: 1fr 120px 120px 120px 1fr; } /* Added column for pieces */
+.craft-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.enchant-row { grid-template-columns: 40px 1fr 80px 1fr 1fr 80px 120px; }
+.smith-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.alch-row img, .sets-row img, .craft-row img, .enchant-row img, .smith-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
+.alch-sym, .sets-sym, .craft-sym, .enchant-sym, .smith-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.alch-buy, .alch-nat, .alch-value, .alch-profit, .sets-buy, .sets-sell, .sets-profit, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
+.alch-profit.positive, .sets-profit.positive, .craft-profit.positive, .enchant-profit.positive, .smith-profit.positive { color: var(--high-color); }
+.alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
 /* Desktop scaling */
 @media (min-width: 769px) {
   html {
@@ -591,18 +600,18 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .alch-tb .head {
+  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head {
     grid-template-columns: 30px 1fr 50px 50px 50px 60px;
     gap: 4px;
     padding: 4px 6px;
     font-size: 10px;
   }
-  .alch-row {
+  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row {
     grid-template-columns: 30px 1fr 50px 50px 50px 60px;
     gap: 4px;
     padding: 6px;
   }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit {
     font-size: 10px;
     white-space: nowrap;
     overflow: hidden;
@@ -791,7 +800,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1> <span class="badge">v1.7.4</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v1.7.5</span> <span class="badge">OSRS GE Price Checking Tool</span><span id="activeTraders" class="small">Active Traders (Week): Loading...</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -911,51 +920,56 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   <div class="help-tabs">
     <button id="faqTab" class="active">FAQ</button>
     <button id="alchTab">High Alch Guide</button>
+    <button id="setsTab">Sets</button>
+    <button id="craftingTab">Crafting</button>
+    <button id="enchantingTab">Enchanting</button>
+    <button id="smithingTab">Smithing</button>
+    <button id="contactTab">Contact</button>
   </div>
   <div id="faqContent" class="help-tab-content active">
     <div class="help" style="margin-top:20px">
-      <h3>Grant Exchange - OSRS Flipping Tool & GE Tracker</h3>
-      <p>Use our OSRS flipping tool for real-time Grand Exchange prices. This tool is designed to help players make money efficiently. Whether you're a F2P or Members player, our app provides real-time market data, smart buy/sell suggestions, and profit calculations to optimize your flips. Use the search bar to find items, adjust prices with the arrows, and add to your watchlist for quick monitoring. Flip items like gems, ores, logs, and more without overspending gold—maximize profits by buying low and selling high based on historical trends and current volumes. Perfect for OSRS gold making strategies, item flipping guides, and RuneScape economy tracking. Start flipping today and build your wealth in Gielinor! See our <button onclick="switchToAlchTab()">High Alch Profit Guide</button> for more money-making tips.</p>
+      <h2>Tools for OSRS Grand Exchange and Money Making</h2>
+      <p>Our flipping tool provides real-time prices from the OSRS Grand Exchange to help you maximize gold earnings. Designed for both F2P and Members, it offers market data, buy/sell recommendations, and profit tools to streamline your trades. Search for items, fine-tune prices, and track favorites in the watchlist. Ideal for flipping gems, ores, and more based on trends and volumes—enhance your RuneScape experience with efficient gold strategies. Check our <button onclick="switchToAlchTab()">high alch guide</button> for additional earning tips.</p>
       <!-- FAQ -->
-      <h2>Frequently Asked Questions</h2>
-      <h3>How to Flip Items in OSRS?</h3>
-      <p>Flipping in Old School RuneScape (OSRS) involves buying items low on the Grand Exchange and selling high for profit. Here are some tips:</p>
+      <h2>Common Questions on OSRS GE and Gold Strategies</h2>
+      <h3>How Does Item Flipping Work on the OSRS Grand Exchange?</h3>
+      <p>Item flipping means purchasing low and selling high for profit. Tips include focusing on high-volume goods like runes or gems for quick turnover. Use our tool to view current spreads and aim for solid returns per trade, considering taxes and limits.</p>
       <ul>
-        <li>Start with high-volume items like runes, ores, or gems to ensure quick buys/sells.</li>
-        <li>Use the search bar in Grant Exchange to check real-time prices and spreads—aim for items with at least a 50k GP profit goal per flip.</li>
-        <li>Buy at "Smart Low Buy" prices and sell at "Smart High Sell" suggestions to account for margins and taxes (2% GE tax, capped at 5m GP).</li>
-        <li>Respect buy limits (e.g., 10k for bars)—use the tool's buy limit adjuster to calculate capital needed.</li>
-        <li>Monitor trends with the day/week/month charts; flip during peak player times for faster fills.</li>
-        <li>Avoid over-investing—start small in F2P mode with items like steel bars, then scale to Members exclusives like potions.</li>
+        <li>High-volume items ensure faster transactions.</li>
+        <li>Check real-time data to identify profitable opportunities.</li>
+        <li>Account for the 1% tax, capped at 5m GP.</li>
+        <li>Adhere to buy limits for accurate capital planning.</li>
+        <li>Analyze charts for optimal timing.</li>
+        <li>Begin with smaller investments in F2P, expand in Members mode.</li>
       </ul>
-      <h3>What's the Difference Between F2P and Members Mode?</h3>
-      <p>F2P mode filters out Members-only items for free-to-play users, while Members mode shows everything, including high-profit items like herbs and potions. Switch via the pill buttons for tailored suggestions.</p>
-      <h3>How Accurate Are the Profit Calculations?</h3>
-      <p>Profits are estimates based on current GE data, including 2% tax. Actual results vary with market fluctuations—use the watchlist and refresh button for live updates.</p>
-      <h3>How do the price alerts in the watchlist work?</h3>
-      <p>The watchlist rows highlight with colored borders based on the percentage change in the item's high price over the last 5 minutes:</p>
+      <h3>F2P vs. Members Mode for OSRS Money Making?</h3>
+      <p>F2P limits to free items, while Members unlocks higher-profit options like herbs. Toggle modes for customized flipping ideas tailored to your playstyle.</p>
+      <h3>Are Profit Estimates Reliable for OSRS Gold Making?</h3>
+      <p>Calculations use live GE data with tax considerations. Markets fluctuate, so refresh often and monitor your watchlist for updates.</p>
+      <h3>How Do Price Alerts Function in the Watchlist?</h3>
+      <p>Alerts highlight changes in high prices over five minutes with borders:</p>
       <ul>
-        <li>Green glow border if increased >=20%</li>
-        <li>Green border if increased >=10%</li>
-        <li>Cyan border if increased >=5%</li>
-        <li>Yellow border if decreased <=-5%</li>
-        <li>Red border if decreased <=-10%</li>
-        <li>Dark red border if decreased <=-20%</li>
+        <li>Green glow for +20% or more.</li>
+        <li>Green for +10%.</li>
+        <li>Cyan for +5%.</li>
+        <li>Yellow for -5%.</li>
+        <li>Red for -10%.</li>
+        <li>Dark red for -20%.</li>
       </ul>
-      <p>This provides real-time alerts for short-term price fluctuations. Note that large changes like 20% in 5 minutes are rare for most items, so you might not see the glow often. For example, adamant bars typically have stable prices with small changes, so they may not trigger the higher alerts frequently.</p>
+      <p>These signal short-term shifts; large swings are uncommon for stable items like adamant bars.</p>
     </div>
   </div>
   <div id="alchContent" class="help-tab-content">
     <div class="help" style="margin-top:20px">
-      <h2>OSRS High Alchemy Profit Guide & Calculator</h2>
-      <p>High Alchemy (High Alch) is a great money maker in Old School RuneScape (OSRS), allowing you to convert items into gold using the High Level Alchemy spell (requires 55 Magic, a fire rune or staff, and a nature rune). It's an excellent passive gold-making method for F2P and Members players, often netting 100k-500k GP per hour while training Magic. Buy items below their high alch value on the Grand Exchange, alch them for instant GP, and profit from the difference (minus nature rune cost). Use this OSRS high alch calculator to find the best items—updated with real-time GE prices. Perfect for low-effort RuneScape gold farming alongside flipping.</p>
-      <h3>How to High Alch for Profit in OSRS</h3>
+      <h2>High Alchemy Profit Guide & Calculator for OSRS</h2>
+      <p>High alch turns items into gold with the alchemy spell, ideal for passive earnings and Magic training. Purchase below alch value on the GE, cast the spell, and pocket the difference minus rune costs. Our calculator highlights top items with current prices for efficient gold farming.</p>
+      <h3>Steps for Profitable High Alch in OSRS</h3>
       <ul>
-        <li>Equip a fire staff to save on fire runes.</li>
-        <li>Buy items and nature runes (ID: 561) from the GE—check prices below.</li>
-        <li>Cast High Alch on items; profit = High Alch Value - GE Buy Price - Nature Rune Price.</li>
-        <li>Aim for positive profit items; alch in safe spots like banks for efficiency.</li>
-        <li>In F2P mode, only free-to-play items show; switch to Members for more options.</li>
+        <li>Use a fire staff to cut rune expenses.</li>
+        <li>Source items and nature runes from the GE.</li>
+        <li>Compute profit: alch value minus buy and rune prices.</li>
+        <li>Target profitable entries; alch safely near banks.</li>
+        <li>F2P shows accessible items; Members expands choices.</li>
       </ul>
       <p>Nature Rune Price: <span id="natPrice">Loading...</span></p>
       <div class="head"> <!-- Header like watchlist -->
@@ -967,6 +981,73 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
         <div>Profit/Alch</div>
       </div>
       <div id="alchList" class="alch-tb"></div>
+    </div>
+  </div>
+  <div id="setsContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>Armor Sets Profit Calculator for OSRS</h2>
+      <p>Profit by assembling or disassembling sets on the GE, factoring in taxes. This method complements other strategies for steady gold gains.</p>
+      <div class="head">
+        <div>Set</div>
+        <div>Buy Pieces</div>
+        <div>Sell Set</div>
+        <div>Profit (Pack)</div>
+        <div>Pieces</div>
+      </div>
+      <div id="setsList" class="sets-tb"></div>
+    </div>
+  </div>
+  <div id="craftingTabContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>Crafting Profit Guide for OSRS</h2>
+      <p>Craft jewelry from gold bars and gems bought on the GE, then sell for profit after taxes. A reliable approach for skill and gold progression.</p>
+      <div class="head">
+        <div></div>
+        <div>Item</div>
+        <div>Level</div>
+        <div>Exp</div>
+        <div>Buy Cost</div>
+        <div>Profit</div>
+      </div>
+      <div id="craftList" class="craft-tb"></div>
+    </div>
+  </div>
+  <div id="enchantingContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>Enchanting Profit Guide for OSRS</h2>
+      <p>Enchant jewelry using GE-sourced bases and runes, selling enchanted versions post-tax. Boosts Magic while generating income.</p>
+      <div class="head">
+        <div></div>
+        <div>Spell</div>
+        <div>Level</div>
+        <div>Base Item</div>
+        <div>Enchanted</div>
+        <div>Exp</div>
+        <div>Profit</div>
+      </div>
+      <div id="enchantList" class="enchant-tb"></div>
+    </div>
+  </div>
+  <div id="smithingContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>Smithing Profit Guide (Steel to Rune) for OSRS</h2>
+      <p>Smith bars into items for alching or selling, using GE prices. Effective for Smithing levels and gold accumulation.</p>
+      <div class="head">
+        <div></div>
+        <div>Item</div>
+        <div>Bars</div>
+        <div>Level</div>
+        <div>Exp</div>
+        <div>Profit (Alch)</div>
+      </div>
+      <div id="smithList" class="smith-tb"></div>
+    </div>
+  </div>
+  <div id="contactContent" class="help-tab-content">
+    <div class="help" style="margin-top:20px">
+      <h2>Contact Us</h2>
+      <p>Share feature ideas or report issues below.</p>
+      <p>The contact form is temporarily unavailable. Email us at example@email.com for assistance.</p>
     </div>
   </div>
 </div> <!-- .wrap -->
@@ -991,6 +1072,94 @@ const categoryItems = {};
 const f2pAlchItems = ['rune pickaxe', 'rune platebody', 'rune kiteshield', 'rune battleaxe', 'rune longsword', 'rune med helm', 'rune 2h sword', 'rune full helm', 'green d\'hide body', 'rune sword', 'rune mace', 'rune platelegs', 'rune plateskirt', 'rune axe', 'rune scimitar', 'adamant platebody', 'rune sq shield', 'rune chainbody', 'mithril kiteshield', 'adamant kiteshield', 'adamant chainbody', 'mithril platebody', 'adamant platelegs', 'Steel platebody', 'rune dagger'];
 const membersAlchItems = ['dragon med helm', 'dragon battleaxe', 'dragon platelegs', 'black d\'hide body', 'dragon halberd', 'red d\'hide body', 'dragon scimitar', 'dragon longsword', 'rune halberd', 'dragon dagger', 'rune spear', 'blue d\'hide body', 'mystic robe bottom', 'dragon spear', 'mystic robe top', 'rune dagger(p+)', 'rune hasta', 'red d\'hide vambraces', 'dragon plateskirt', ...f2pAlchItems, 'blue d\'hide vambraces', 'combat bracelet', 'mystic water staff', 'mystic gloves', 'black d\'hide vambraces', 'water battlestaff', 'air battlestaff', 'red d\'hide chaps', 'earth battlestaff', 'fire battlestaff', 'diamond bracelet'];
 const natRuneId = 561; // Nature rune
+const goldBarId = 2357; // Gold bar ID
+const armorSets = [{"set_name":"Bronze set (lg)","components":["Bronze platebody","Bronze platelegs","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (lg)","components":["Iron platebody","Iron platelegs","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (lg)","components":["Steel platebody","Steel platelegs","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (lg)","components":["Black platebody","Black platelegs","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (lg)","components":["Mithril platebody","Mithril platelegs","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (lg)","components":["Adamant platebody","Adamant platelegs","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (lg)","components":["Rune platebody","Rune platelegs","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (lg)","components":["Dragon platebody","Dragon platelegs","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (lg)","components":["Bronze platebody (g)","Bronze platelegs (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (lg)","components":["Iron platebody (g)","Iron platelegs (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (lg)","components":["Steel platebody (g)","Steel platelegs (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (lg)","components":["Black platebody (g)","Black platelegs (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (lg)","components":["Mithril platebody (g)","Mithril platelegs (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (lg)","components":["Adamant platebody (g)","Adamant platelegs (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (lg)","components":["Rune platebody (g)","Rune platelegs (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (lg)","components":["Gilded platebody","Gilded platelegs","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (lg)","components":["Bronze platebody (t)","Bronze platelegs (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (lg)","components":["Iron platebody (t)","Iron platelegs (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (lg)","components":["Steel platebody (t)","Steel platelegs (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (lg)","components":["Black platebody (t)","Black platelegs (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (lg)","components":["Mithril platebody (t)","Mithril platelegs (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (lg)","components":["Adamant platebody (t)","Adamant platelegs (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (lg)","components":["Rune platebody (t)","Rune platelegs (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (lg)","components":["Guthix platebody","Guthix platelegs","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (lg)","components":["Saradomin platebody","Saradomin platelegs","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (lg)","components":["Zamorak platebody","Zamorak platelegs","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (lg)","components":["Ancient platebody","Ancient platelegs","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (lg)","components":["Armadyl platebody","Armadyl platelegs","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (lg)","components":["Bandos platebody","Bandos platelegs","Bandos full helm","Bandos kiteshield"]},{"set_name":"Bronze set (sk)","components":["Bronze platebody","Bronze plateskirt","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (sk)","components":["Iron platebody","Iron plateskirt","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (sk)","components":["Steel platebody","Steel plateskirt","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (sk)","components":["Black platebody","Black plateskirt","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (sk)","components":["Mithril platebody","Mithril plateskirt","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (sk)","components":["Adamant platebody","Adamant plateskirt","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (sk)","components":["Rune platebody","Rune plateskirt","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (sk)","components":["Dragon platebody","Dragon plateskirt","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (sk)","components":["Bronze platebody (g)","Bronze plateskirt (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (sk)","components":["Iron platebody (g)","Iron plateskirt (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (sk)","components":["Steel platebody (g)","Steel plateskirt (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (sk)","components":["Black platebody (g)","Black plateskirt (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (sk)","components":["Mithril platebody (g)","Mithril plateskirt (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (sk)","components":["Adamant platebody (g)","Adamant plateskirt (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (sk)","components":["Rune platebody (g)","Rune plateskirt (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (sk)","components":["Gilded platebody","Gilded plateskirt","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (sk)","components":["Bronze platebody (t)","Bronze plateskirt (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (sk)","components":["Iron platebody (t)","Iron plateskirt (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (sk)","components":["Steel platebody (t)","Steel plateskirt (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (sk)","components":["Black platebody (t)","Black plateskirt (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (sk)","components":["Mithril platebody (t)","Mithril plateskirt (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (sk)","components":["Adamant platebody (t)","Adamant plateskirt (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (sk)","components":["Rune platebody (t)","Rune plateskirt (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (sk)","components":["Guthix platebody","Guthix plateskirt","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (sk)","components":["Saradomin platebody","Saradomin plateskirt","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (sk)","components":["Zamorak platebody","Zamorak plateskirt","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (sk)","components":["Ancient platebody","Ancient plateskirt","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (sk)","components":["Armadyl platebody","Armadyl plateskirt","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (sk)","components":["Bandos platebody","Bandos plateskirt","Bandos full helm","Bandos kiteshield"]},{"set_name":"Initiate harness m","components":["Initiate hauberk","Initiate cuisse","Initiate helm"]}];
+const goldJewelry = [{"item":"Gold ring","level":5,"exp":15,"gem":null},{"item":"Gold necklace","level":6,"exp":20,"gem":null},{"item":"Gold bracelet","level":7,"exp":25,"gem":null},{"item":"Gold amulet (u)","level":8,"exp":30,"gem":null},{"item":"Sapphire ring","level":20,"exp":40,"gem":"sapphire"},{"item":"Sapphire necklace","level":22,"exp":55,"gem":"sapphire"},{"item":"Sapphire bracelet","level":23,"exp":60,"gem":"sapphire"},{"item":"Sapphire amulet (u)","level":24,"exp":65,"gem":"sapphire"},{"item":"Emerald ring","level":27,"exp":55,"gem":"emerald"},{"item":"Emerald necklace","level":29,"exp":60,"gem":"emerald"},{"item":"Emerald bracelet","level":30,"exp":65,"gem":"emerald"},{"item":"Emerald amulet (u)","level":31,"exp":70,"gem":"emerald"},{"item":"Ruby ring","level":34,"exp":70,"gem":"ruby"},{"item":"Ruby necklace","level":40,"exp":75,"gem":"ruby"},{"item":"Ruby bracelet","level":42,"exp":80,"gem":"ruby"},{"item":"Ruby amulet (u)","level":50,"exp":85,"gem":"ruby"},{"item":"Diamond ring","level":43,"exp":85,"gem":"diamond"},{"item":"Diamond necklace","level":56,"exp":90,"gem":"diamond"},{"item":"Diamond bracelet","level":58,"exp":95,"gem":"diamond"},{"item":"Diamond amulet (u)","level":70,"exp":100,"gem":"diamond"},{"item":"Dragonstone ring","level":55,"exp":100,"gem":"dragonstone"},{"item":"Dragon necklace","level":72,"exp":105,"gem":"dragonstone"},{"item":"Dragonstone bracelet","level":74,"exp":110,"gem":"dragonstone"},{"item":"Dragonstone amulet (u)","level":80,"exp":150,"gem":"dragonstone"},{"item":"Onyx ring","level":67,"exp":115,"gem":"onyx"},{"item":"Onyx necklace","level":82,"exp":120,"gem":"onyx"},{"item":"Onyx bracelet","level":84,"exp":125,"gem":"onyx"},{"item":"Onyx amulet (u)","level":90,"exp":165,"gem":"onyx"},{"item":"Zenyte ring","level":89,"exp":150,"gem":"zenyte"},{"item":"Zenyte necklace","level":92,"exp":165,"gem":"zenyte"},{"item":"Zenyte bracelet","level":95,"exp":180,"gem":"zenyte"},{"item":"Zenyte amulet (u)","level":98,"exp":200,"gem":"zenyte"}];
+const enchantJewelry = [{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal ring","enchanted_item":"Ring of pursuit","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal necklace","enchanted_item":"Dodgy necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal bracelet","enchanted_item":"Expeditious bracelet","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal amulet","enchanted_item":"Amulet of bounty","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade ring","enchanted_item":"Ring of returning","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade necklace","enchanted_item":"Necklace of passage","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade bracelet","enchanted_item":"Flamtaer bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade amulet","enchanted_item":"Amulet of chemistry","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire ring","enchanted_item":"Ring of recoil","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire necklace","enchanted_item":"Games necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire bracelet","enchanted_item":"Bracelet of clay","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire amulet","enchanted_item":"Amulet of magic","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald ring","enchanted_item":"Ring of dueling","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald necklace","enchanted_item":"Binding necklace","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald bracelet","enchanted_item":"Castle wars bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald amulet","enchanted_item":"Amulet of defence","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz ring","enchanted_item":"Efaritay's aid","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz necklace","enchanted_item":"Necklace of faith","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz bracelet","enchanted_item":"Bracelet of slaughter","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz amulet","enchanted_item":"Burning amulet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby ring","enchanted_item":"Ring of forging","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby necklace","enchanted_item":"Digsite pendant","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby bracelet","enchanted_item":"Inoculation bracelet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby amulet","enchanted_item":"Amulet of strength","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond ring","enchanted_item":"Ring of life","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond necklace","enchanted_item":"Phoenix necklace","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond bracelet","enchanted_item":"Abyssal bracelet","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond amulet","enchanted_item":"Amulet of power","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone ring","enchanted_item":"Ring of wealth","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragon necklace","enchanted_item":"Skills necklace","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone bracelet","enchanted_item":"Combat bracelet","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone amulet","enchanted_item":"Amulet of glory","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx ring","enchanted_item":"Ring of stone","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx necklace","enchanted_item":"Berserker necklace","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx bracelet","enchanted_item":"Regen bracelet","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx amulet","enchanted_item":"Amulet of fury","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte ring","enchanted_item":"Ring of suffering","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte necklace","enchanted_item":"Necklace of anguish","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte bracelet","enchanted_item":"Tormented bracelet","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte amulet","enchanted_item":"Amulet of torture","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110}];
+const smithItems = [
+  // Steel
+  {"item":"Steel dagger","bars":1,"level":30,"exp":37.5,"barId":2353},
+  {"item":"Steel axe","bars":1,"level":31,"exp":37.5,"barId":2353},
+  {"item":"Steel mace","bars":1,"level":32,"exp":37.5,"barId":2353},
+  {"item":"Steel med helm","bars":1,"level":33,"exp":37.5,"barId":2353},
+  {"item":"Steel sword","bars":1,"level":34,"exp":37.5,"barId":2353},
+  {"item":"Steel scimitar","bars":2,"level":35,"exp":75,"barId":2353},
+  {"item":"Steel limbs","bars":1,"level":36,"exp":37.5,"barId":2353},
+  {"item":"Steel longsword","bars":2,"level":36,"exp":75,"barId":2353},
+  {"item":"Steel studs","bars":1,"level":36,"exp":37.5,"barId":2353},
+  {"item":"Steel full helm","bars":2,"level":37,"exp":75,"barId":2353},
+  {"item":"Steel sq shield","bars":2,"level":38,"exp":75,"barId":2353},
+  {"item":"Steel warhammer","bars":3,"level":39,"exp":112.5,"barId":2353},
+  {"item":"Steel battleaxe","bars":3,"level":40,"exp":112.5,"barId":2353},
+  {"item":"Steel chainbody","bars":3,"level":41,"exp":112.5,"barId":2353},
+  {"item":"Steel kiteshield","bars":3,"level":42,"exp":112.5,"barId":2353},
+  {"item":"Steel claws","bars":2,"level":43,"exp":75,"barId":2353},
+  {"item":"Steel 2h sword","bars":3,"level":44,"exp":112.5,"barId":2353},
+  {"item":"Steel platelegs","bars":3,"level":46,"exp":112.5,"barId":2353},
+  {"item":"Steel plateskirt","bars":3,"level":46,"exp":112.5,"barId":2353},
+  {"item":"Steel platebody","bars":5,"level":48,"exp":187.5,"barId":2353},
+  // Mithril
+  {"item":"Mithril dagger","bars":1,"level":50,"exp":50,"barId":2359},
+  {"item":"Mithril axe","bars":1,"level":51,"exp":50,"barId":2359},
+  {"item":"Mithril mace","bars":1,"level":52,"exp":50,"barId":2359},
+  {"item":"Mithril med helm","bars":1,"level":53,"exp":50,"barId":2359},
+  {"item":"Mithril sword","bars":1,"level":54,"exp":50,"barId":2359},
+  {"item":"Mithril scimitar","bars":2,"level":55,"exp":100,"barId":2359},
+  {"item":"Mithril limbs","bars":1,"level":56,"exp":50,"barId":2359},
+  {"item":"Mithril longsword","bars":2,"level":56,"exp":100,"barId":2359},
+  {"item":"Mithril full helm","bars":2,"level":57,"exp":100,"barId":2359},
+  {"item":"Mithril sq shield","bars":2,"level":58,"exp":100,"barId":2359},
+  {"item":"Mithril warhammer","bars":3,"level":59,"exp":150,"barId":2359},
+  {"item":"Mith grapple tip","bars":1,"level":59,"exp":50,"barId":2359},
+  {"item":"Mithril battleaxe","bars":3,"level":60,"exp":150,"barId":2359},
+  {"item":"Mithril chainbody","bars":3,"level":61,"exp":150,"barId":2359},
+  {"item":"Mithril kiteshield","bars":3,"level":62,"exp":150,"barId":2359},
+  {"item":"Mithril claws","bars":2,"level":63,"exp":100,"barId":2359},
+  {"item":"Mithril 2h sword","bars":3,"level":64,"exp":150,"barId":2359},
+  {"item":"Mithril platelegs","bars":3,"level":66,"exp":150,"barId":2359},
+  {"item":"Mithril plateskirt","bars":3,"level":66,"exp":150,"barId":2359},
+  {"item":"Mithril platebody","bars":5,"level":68,"exp":250,"barId":2359},
+  // Adamant
+  {"item":"Adamant dagger","bars":1,"level":70,"exp":62.5,"barId":2361},
+  {"item":"Adamant axe","bars":1,"level":71,"exp":62.5,"barId":2361},
+  {"item":"Adamant mace","bars":1,"level":72,"exp":62.5,"barId":2361},
+  {"item":"Adamant med helm","bars":1,"level":73,"exp":62.5,"barId":2361},
+  {"item":"Adamant sword","bars":1,"level":74,"exp":62.5,"barId":2361},
+  {"item":"Adamant scimitar","bars":2,"level":75,"exp":125,"barId":2361},
+  {"item":"Adamantite limbs","bars":1,"level":76,"exp":62.5,"barId":2361},
+  {"item":"Adamant longsword","bars":2,"level":76,"exp":125,"barId":2361},
+  {"item":"Adamant full helm","bars":2,"level":77,"exp":125,"barId":2361},
+  {"item":"Adamant sq shield","bars":2,"level":78,"exp":125,"barId":2361},
+  {"item":"Adamant warhammer","bars":3,"level":79,"exp":187.5,"barId":2361},
+  {"item":"Adamant battleaxe","bars":3,"level":80,"exp":187.5,"barId":2361},
+  {"item":"Adamant chainbody","bars":3,"level":81,"exp":187.5,"barId":2361},
+  {"item":"Adamant kiteshield","bars":3,"level":82,"exp":187.5,"barId":2361},
+  {"item":"Adamant claws","bars":2,"level":83,"exp":125,"barId":2361},
+  {"item":"Adamant 2h sword","bars":3,"level":84,"exp":187.5,"barId":2361},
+  {"item":"Adamant platelegs","bars":3,"level":86,"exp":187.5,"barId":2361},
+  {"item":"Adamant plateskirt","bars":3,"level":86,"exp":187.5,"barId":2361},
+  {"item":"Adamant platebody","bars":5,"level":88,"exp":312.5,"barId":2361},
+  // Rune
+  {"item":"Rune dagger","bars":1,"level":85,"exp":75,"barId":2363},
+  {"item":"Rune axe","bars":1,"level":86,"exp":75,"barId":2363},
+  {"item":"Rune mace","bars":1,"level":87,"exp":75,"barId":2363},
+  {"item":"Rune med helm","bars":1,"level":88,"exp":75,"barId":2363},
+  {"item":"Rune sword","bars":1,"level":89,"exp":75,"barId":2363},
+  {"item":"Rune scimitar","bars":2,"level":90,"exp":150,"barId":2363},
+  {"item":"Runite limbs","bars":1,"level":91,"exp":75,"barId":2363},
+  {"item":"Rune longsword","bars":2,"level":91,"exp":150,"barId":2363},
+  {"item":"Rune full helm","bars":2,"level":92,"exp":150,"barId":2363},
+  {"item":"Rune sq shield","bars":2,"level":93,"exp":150,"barId":2363},
+  {"item":"Rune warhammer","bars":3,"level":94,"exp":225,"barId":2363},
+  {"item":"Rune battleaxe","bars":3,"level":95,"exp":225,"barId":2363},
+  {"item":"Rune chainbody","bars":3,"level":96,"exp":225,"barId":2363},
+  {"item":"Rune kiteshield","bars":3,"level":97,"exp":225,"barId":2363},
+  {"item":"Rune claws","bars":2,"level":98,"exp":150,"barId":2363},
+  {"item":"Rune 2h sword","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune platelegs","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune plateskirt","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune platebody","bars":5,"level":99,"exp":375,"barId":2363}
+];
 /* ---------- Utilities ---------- */
 const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
 const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
@@ -1006,7 +1175,7 @@ const abbreviateNumber = (num) => {
   }
   return num.toLocaleString();
 };
-async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
+async function jget(url){ const r=await fetch(url, {cache: "default"}); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
 const loadMapping=()=>jget(API+"/mapping");
 const loadLatest =()=>jget(API+"/latest");
 const loadVolumes=()=>jget(API+"/volumes");
@@ -1219,6 +1388,18 @@ async function getBuyLimit(id) {
   } catch (e) {
     console.warn(`Failed to load buy limit for item ${id}:`, e);
     return null;
+  }
+}
+async function getItemId(name) {
+  const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase());
+  return m ? m.id : null;
+}
+async function getAlchValue(id) {
+  try {
+    const data = await jget(`./items-json/${id}.json`);
+    return data.highalch || 0;
+  } catch (e) {
+    return 0;
   }
 }
 async function setItem(m){
@@ -1441,7 +1622,7 @@ async function buildWatchlist(sortBy = 'buy'){
     const isLong = (r.medianBuy && r.medianBuy > 999999) || (r.medianSell && r.medianSell > 999999);
     return `
    <div class="row ${isLong ? 'long-price' : ''}">
-    <img src="${r.icon}" alt="${r.name}" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
+    <img src="${r.icon}" alt="${r.name}">
     <div class="sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
     <div class="delta">${r.medianBuy ? abbreviateNumber(r.medianBuy) : '—'}</div>
     <div class="vol">${r.medianSell ? abbreviateNumber(r.medianSell) : '—'}</div>
@@ -1476,7 +1657,7 @@ async function buildAlchList() {
   rows.sort((a,b) => b.profit - a.profit); // Sort by profit desc
   $('#alchList').innerHTML = rows.map(r => `
     <div class="alch-row">
-      <img src="${r.icon}" alt="${r.name}" onclick="setItem(mapping.find(x => x.id == ${r.id}))">
+      <img src="${r.icon}" alt="${r.name}">
       <div class="alch-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
       <div class="alch-value">${abbreviateNumber(r.alchValue)}</div>
       <div class="alch-buy">${abbreviateNumber(r.buyPrice)}</div>
@@ -1487,6 +1668,131 @@ async function buildAlchList() {
   document.querySelectorAll('#alchList .alch-sym').forEach(el => {
     el.onclick = () => { const m = mapping.find(x => x.id == el.dataset.id); if (m) setItem(m); };
   });
+}
+async function buildSetsList() {
+  const rows = [];
+  for (const s of armorSets) {
+    const setM = mapping.find(x => x.name.toLowerCase() === s.set_name.toLowerCase());
+    if (!setM) continue;
+    const setBuy = latest.data[setM.id]?.low ?? 0;
+    let piecesSell = 0;
+    let tax = 0;
+    for (const comp of s.components) {
+      const compM = mapping.find(x => x.name.toLowerCase() === comp.toLowerCase());
+      if (!compM) continue;
+      const high = latest.data[compM.id]?.high ?? 0;
+      piecesSell += high;
+      tax += Math.min(5000000, Math.floor(high * 0.01));
+    }
+    const profit = piecesSell - tax - setBuy; // Profit from buying set, unpacking, selling pieces
+    rows.push({name: s.set_name, buy: setBuy, sell: piecesSell, profit, pieces: s.components.join(', ')});
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#setsList').innerHTML = rows.map(r => `
+    <div class="sets-row">
+      <div class="sets-sym" title="${r.name}">${r.name}</div>
+      <div class="sets-buy">${abbreviateNumber(r.buy)}</div>
+      <div class="sets-sell">${abbreviateNumber(r.sell)}</div>
+      <div class="sets-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+      <div class="sets-pieces" style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.pieces}</div>
+    </div>
+  `).join('');
+}
+async function buildCraftList() {
+  const goldBarPrice = latest.data[goldBarId]?.low ?? 0;
+  const rows = [];
+  for (const c of goldJewelry) {
+    const itemM = mapping.find(x => x.name.toLowerCase() === c.item.toLowerCase());
+    if (!itemM || (!membersOn && itemM.members)) continue;
+    const sell = latest.data[itemM.id]?.high ?? 0;
+    let buyCost = goldBarPrice;
+    if (c.gem) {
+      const gemM = mapping.find(x => x.name.toLowerCase() === `uncut ${c.gem}`.toLowerCase() || x.name.toLowerCase() === c.gem.toLowerCase());
+      if (gemM) buyCost += latest.data[gemM.id]?.low ?? 0;
+    }
+    const tax = Math.min(5000000, Math.floor(sell * 0.01));
+    const profit = sell - tax - buyCost;
+    rows.push({id: itemM.id, name: c.item, level: c.level, exp: c.exp, buyCost, profit});
+  }
+  if (rows.length === 0) {
+    $('#craftList').innerHTML = '<p>No F2P items available for crafting.</p>';
+    return;
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#craftList').innerHTML = rows.map(r => `
+    <div class="craft-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.name}">
+      <div class="craft-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="craft-level">${r.level}</div>
+      <div class="craft-exp">${r.exp}</div>
+      <div class="craft-buy">${abbreviateNumber(r.buyCost)}</div>
+      <div class="craft-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+}
+async function buildEnchantList() {
+  const rows = [];
+  for (const e of enchantJewelry) {
+    const baseM = mapping.find(x => x.name.toLowerCase() === e.base_item.toLowerCase());
+    if (!baseM || (!membersOn && baseM.members)) continue;
+    const enchM = mapping.find(x => x.name.toLowerCase() === e.enchanted_item.toLowerCase());
+    if (!enchM || (!membersOn && enchM.members)) continue;
+    const buyBase = latest.data[baseM.id]?.low ?? 0;
+    const sellEnch = latest.data[enchM.id]?.high ?? 0;
+    let runesCost = 0;
+    // Parse runes, e.g. "1 Water rune, 1 Cosmic rune"
+    const runes = e.runes.split(', ');
+    for (const runeStr of runes) {
+      const [amount, ...runeNameArr] = runeStr.split(' ');
+      const runeName = runeNameArr.join(' ');
+      const runeM = mapping.find(x => x.name.toLowerCase() === runeName.toLowerCase());
+      if (runeM) runesCost += (parseInt(amount) || 1) * (latest.data[runeM.id]?.low ?? 0);
+    }
+    const tax = Math.min(5000000, Math.floor(sellEnch * 0.01));
+    const profit = sellEnch - tax - buyBase - runesCost;
+    rows.push({level: e.level, spell: e.spell, base: e.base_item, enchanted: e.enchanted_item, runes: e.runes, exp: e.exp, profit, id: enchM.id});
+  }
+  if (rows.length === 0) {
+    $('#enchantList').innerHTML = '<p>No F2P items available for enchanting.</p>';
+    return;
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#enchantList').innerHTML = rows.map(r => `
+    <div class="enchant-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.enchanted}">
+      <div class="enchant-sym">${r.spell}</div>
+      <div class="enchant-level">${r.level}</div>
+      <div class="enchant-base">${r.base}</div>
+      <div class="enchant-enchanted">${r.enchanted}</div>
+      <div class="enchant-exp">${r.exp}</div>
+      <div class="enchant-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+}
+async function buildSmithList() {
+  const rows = [];
+  for (const s of smithItems) {
+    if (!membersOn && s.level > 48) continue; // Assume steel max for F2P, adjust if needed
+    const itemM = mapping.find(x => x.name.toLowerCase() === s.item.toLowerCase());
+    if (!itemM) continue;
+    const alchValue = await getAlchValue(itemM.id);
+    const barPrice = latest.data[s.barId]?.low ?? 0;
+    const buyCost = s.bars * barPrice;
+    const profit = alchValue - buyCost;
+    rows.push({id: itemM.id, name: s.item, bars: s.bars, level: s.level, exp: s.exp, alchValue, profit});
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#smithList').innerHTML = rows.map(r => `
+    <div class="smith-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.name}">
+      <div class="smith-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="smith-bars">${r.bars}</div>
+      <div class="smith-level">${r.level}</div>
+      <div class="smith-exp">${r.exp}</div>
+      <div class="smith-alch">${abbreviateNumber(r.alchValue)}</div>
+      <div class="smith-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
 }
 /* ---------- Popout Chart ---------- */
 function popoutChart(){
@@ -1646,13 +1952,13 @@ function popoutChart(){
       watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
       updateCategoryOptions();
       loadCategory(categorySelect.value);
-      buildSidebar(); buildWatchlist(); buildAlchList(); };
+      buildSidebar(); buildWatchlist(); buildAlchList(); buildSetsList(); buildCraftList(); buildEnchantList(); buildSmithList(); };
     $("#btnMembers").onclick=()=>{ membersOn=true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
       watchKey = 'watchlist_members';
       watchlist = JSON.parse(localStorage.getItem(watchKey)) || [];
       updateCategoryOptions();
       loadCategory(categorySelect.value);
-      buildSidebar(); buildWatchlist(); buildAlchList(); };
+      buildSidebar(); buildWatchlist(); buildAlchList(); buildSetsList(); buildCraftList(); buildEnchantList(); buildSmithList(); };
     // Add to watchlist
     $("#addWatchBtn").onclick = ()=>{
       if(selected && !customWatchlist.includes(selected.id)){
@@ -1680,6 +1986,10 @@ function popoutChart(){
       buildWatchlist();
       if(selected) await setItem(selected);
       await buildAlchList();
+      await buildSetsList();
+      await buildCraftList();
+      await buildEnchantList();
+      await buildSmithList();
       $("#loader-overlay").style.display = "none";
       $("#status").textContent="Live data refreshed";
       setTimeout(()=>$("#status").textContent="Ready", 1200);
@@ -1735,11 +2045,40 @@ function popoutChart(){
     };
     updateSortArrows();
     // Tab switching
-    $('#faqTab').onclick = () => { $('#faqTab').classList.add('active'); $('#alchTab').classList.remove('active'); $('#faqContent').classList.add('active'); $('#alchContent').classList.remove('active'); };
-    $('#alchTab').onclick = () => { $('#alchTab').classList.add('active'); $('#faqTab').classList.remove('active'); $('#alchContent').classList.add('active'); $('#faqContent').classList.remove('active'); buildAlchList(); }; // Lazy load on tab open
-    function switchToAlchTab() { $('#alchTab').click(); }
+    const tabs = {
+      faq: $('#faqContent'),
+      alch: $('#alchContent'),
+      sets: $('#setsContent'),
+      crafting: $('#craftingTabContent'),
+      enchanting: $('#enchantingContent'),
+      smithing: $('#smithingContent'),
+      contact: $('#contactContent')
+    };
+    const tabButtons = {
+      faq: $('#faqTab'),
+      alch: $('#alchTab'),
+      sets: $('#setsTab'),
+      crafting: $('#craftingTab'),
+      enchanting: $('#enchantingTab'),
+      smithing: $('#smithingTab'),
+      contact: $('#contactTab')
+    };
+    function switchTab(tabName, buildFunc) {
+      Object.values(tabButtons).forEach(btn => btn.classList.remove('active'));
+      Object.values(tabs).forEach(content => content.classList.remove('active'));
+      tabButtons[tabName].classList.add('active');
+      tabs[tabName].classList.add('active');
+      if (buildFunc) buildFunc();
+    }
+    $('#faqTab').onclick = () => switchTab('faq');
+    $('#alchTab').onclick = () => switchTab('alch', buildAlchList);
+    $('#setsTab').onclick = () => switchTab('sets', buildSetsList);
+    $('#craftingTab').onclick = () => switchTab('crafting', buildCraftList);
+    $('#enchantingTab').onclick = () => switchTab('enchanting', buildEnchantList);
+    $('#smithingTab').onclick = () => switchTab('smithing', buildSmithList);
+    $('#contactTab').onclick = () => switchTab('contact');
+    function switchToAlchTab() { switchTab('alch', buildAlchList); }
     // Initial alch build (optional; or lazy on tab)
-    buildAlchList();
     // New: Real-time price alerts (poll every 5 mins)
     let previousPrices = {}; // Store previous high prices
     watchlist.forEach(id => previousPrices[id] = latest.data[id]?.high || 0); // Initial
@@ -1773,7 +2112,26 @@ function popoutChart(){
       latest = newLatest; // Update global
       buildWatchlist(); // Refresh watchlist
       buildAlchList();
+      buildSetsList();
+      buildCraftList();
+      buildEnchantList();
+      buildSmithList();
     }, 300000); // 5 mins
+    // Active Traders (using OSRS online players as proxy)
+    async function updateActiveTraders() {
+      try {
+        const response = await fetch('https://oldschool.runescape.com/');
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const playerCount = doc.querySelector('.player-count')?.textContent.trim() || 'N/A';
+        $('#activeTraders').textContent = `Active Traders (Week): ~${playerCount}`;
+      } catch (e) {
+        $('#activeTraders').textContent = 'Active Traders (Week): N/A';
+      }
+    }
+    updateActiveTraders();
+    setInterval(updateActiveTraders, 3600000); // Update hourly
   }catch(e){
     console.error(e);
     $("#status").textContent="Error: "+e.message;
