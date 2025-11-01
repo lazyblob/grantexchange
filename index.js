@@ -6,25 +6,31 @@ const port = process.env.PORT || 8080;
 
 app.get('/', async (req, res) => {
   try {
-    console.log('Request received');
+    console.log('Request received. Loading credentials...');
     const credentials = {
       client_email: process.env.GA_CLIENT_EMAIL,
       private_key: process.env.GA_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     };
+    console.log('Credentials: email ok?', !!credentials.client_email, 'key ok?', !!credentials.private_key);
+
+    console.log('Initializing GA client...');
     const client = new BetaAnalyticsDataClient({ credentials });
-    console.log('GA Client initialized');
+    console.log('GA Client ok.');
 
     const PROPERTY_ID = process.env.PROPERTY_ID;
+    console.log('Property ID:', PROPERTY_ID);
     const [response] = await client.runReport({
       property: `properties/${PROPERTY_ID}`,
-      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-      metrics: [{ name: 'totalUsers' }],  // Counts all unique visitors (no double-counting)
+      dateRanges: [{ startDate: '1daysAgo', endDate: 'today' }],  // Shorter for testing
+      metrics: [{ name: 'totalUsers' }],
     });
+    console.log('Response rows:', response.rows?.length || 0);
     const totalUsers = response.rows?.[0]?.metricValues?.[0]?.value || '0';
     console.log('Total Users:', totalUsers);
     res.send(totalUsers);
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error Message:', error.message);
+    console.error('Full Error:', error);
     res.send('0');
   }
 });
