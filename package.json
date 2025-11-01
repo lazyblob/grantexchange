@@ -1,0 +1,14 @@
+{
+  "name": "get-active-users",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@google-analytics/data": "^4.0.1"
+  }
+}
