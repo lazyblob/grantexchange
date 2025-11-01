@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "@google-analytics/data": "^4.0.1"
+    "@google-analytics/data": "^4.0.1",
+    "node-cache": "^5.1.2"  // Added for caching
   }
 }
