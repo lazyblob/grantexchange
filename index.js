@@ -1,6 +1,6 @@
 const express = require('express');
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
-const NodeCache = require('node-cache'); // Add this for caching
+const NodeCache = require('node-cache');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -33,7 +33,7 @@ app.get('/', async (req, res) => {
     const [response] = await client.runReport({
       property: `properties/${PROPERTY_ID}`,
       dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-      metrics: [{ name: 'activeUsers' }],  // Changed to activeUsers for engaged users
+      metrics: [{ name: 'activeUsers' }],  // Changed to activeUsers to match GA4 "Active users"
     });
     console.log('Response rows:', response.rows?.length || 0);
     const activeUsers = response.rows?.[0]?.metricValues?.[0]?.value || '0';
