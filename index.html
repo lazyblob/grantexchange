@@ -1,268 +1,1123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Grant Exchange</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Grant Exchange • OSRS GE Chart</title>
 <link rel="icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f0b08;color:#eee5cf;font-family:system-ui,sans-serif;height:100vh;display:flex;flex-direction:column}
-.header{background:#1e1810;border-bottom:2px solid #6a4f2b;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-h1{font-size:28px;color:#f39c12;font-weight:900}
-.version{background:#2b2110;padding:4px 10px;border-radius:20px;border:1px solid #6a4f2b;font-size:13px}
-.mode button{background:#2b2110;border:1px solid #6a4f2b;color:#eee5cf;padding:8px 16px;border-radius:10px;font-weight:bold;cursor:pointer}
-.mode button.active{background:#f39c12;color:#000}
-.main{flex:1;background:#1e1810;margin:12px;border:1px solid #6a4f2b;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-.top{padding:16px;display:grid;grid-template-columns:110px 1fr 340px;gap:16px;align-items:center}
-.imgbox{width:110px;height:110px;background:#111;border:2px solid #6a4f2b;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.imgbox img{max-width:90%;max-height:90%;image-rendering:pixelated}
-#query{width:100%;background:#2b2110;border:2px solid #6a4f2b;color:#eee5cf;padding:14px 18px;border-radius:12px;font-size:18px}
-#query:focus{border-color:#f39c12;outline:none}
-.prices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.price{background:#2b2110;border:1px solid #6a4f2b;border-radius:12px;padding:12px;text-align:center}
-.price div{font-size:13px;color:#cbbf99;text-transform:uppercase}
-.price strong{font-size:24px;font-weight:900}
-.price.buy strong{color:#2ecc71}
-.price.sell strong{color:#e74c3c}
-.controls{padding:0 16px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.tabs button,.tool{background:#2b2110;border:1px solid #6a4f2b;color:#eee5cf;padding:8px 14px;border-radius:10px;font-weight:600;text-transform:uppercase;font-size:13px;cursor:pointer}
-.tabs button.active,.tool.active{background:#f39c12;color:#000;box-shadow:0 0 12px rgba(243,156,18,.4)}
-.chart{flex:1;background:#111;position:relative}
-canvas{width:100%;height:100%}
-#tip{position:absolute;background:rgba(0,0,0,0.9);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;pointer-events:none;display:none;z-index:100;border:1px solid #444}
-.legend{padding:12px;display:flex;gap:20px;font-size:14px;justify-content:center}
-.legend span{display:flex;align-items:center;gap:6px}
-.legend span::before{content:"";width:16px;height:4px;border-radius:2px}
-.legend .low::before{background:#e74c3c}
-.legend .high::before{background:#2ecc71}
-.suggest{position:absolute;top:100%;left:16px;right:16px;background:#2b2110;border:1px solid #6a4f2b;border-radius:12px;max-height:300px;overflow-y:auto;z-index:10;display:none}
-.suggest div{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:12px}
-.suggest div:hover{background:#3a2f17}
-.suggest img{width:32px;height:32px}
+:root{
+  --bg:#0e0c0a;
+  --card:#1a1612;
+  --edge:#4a3a22;
+  --gold:#d4af37;
+  --orange:#f39c12;
+  --ink:#f0e6d2;
+  --muted:#a0876a;
+  --low:#e74c3c;
+  --high:#2ecc71;
+  --accent:#f1c40f;
+  --tenkan:#0094ff;
+  --kijun:#ff3399;
+  --chikou:#00ff00;
+  --cloud-bull:rgba(46,204,113,0.35);
+  --cloud-bear:rgba(231,76,60,0.35);
+  --vp-bar:rgba(255,255,255,0.18);
+  --vp-poc:#f1c40f;
+}
+* {box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Segoe UI,Inter,system-ui,Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+/* Layout */
+.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px); display:grid; grid-template-columns:1fr; gap:16px; align-items:start}
+.header{grid-column:1 / -1;display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center}
+/* Branding */
+h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
+.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;
+       padding:2px 8px;color:var(--muted);background:#20190e}
+.small{font-size:12px;color:var(--muted)}
+/* Cards */
+.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+      border:1px solid var(--edge);border-radius:16px;padding:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.left{display:flex;flex-direction:column}
+.hr{border:none;border-top:1px solid var(--edge);margin:10px 0}
+/* Main grid: image / search / stats */
+.grid{display:grid;grid-template-columns:240px 1fr 260px;
+      gap:14px;align-items:center}
+.imgbox{
+  width:240px;height:240px;border:1px solid var(--edge);
+  border-radius:14px;background:#22180b;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)
+}
+.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+/* Search */
+.label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
+.sbar{display:flex;gap:10px;margin-top:2px;position:relative}
+.sbar input{
+  flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink);
+  border-radius:14px;padding:16px;font-size:20px;outline:none;
+  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s
+}
+.sbar input:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.sbar button{
+  background:#2b2212;border:1px solid var(--edge);color:var(--gold);
+  border-radius:12px;padding:12px 16px;cursor:pointer;font-size:15px;
+  text-transform:uppercase;letter-spacing:.5px;transition:box-shadow .18s,border-color .18s
+}
+.sbar button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px;
+         max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
+.suggest::-webkit-scrollbar {width:8px; background:var(--panel); }
+.suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
+.suggest div{display:flex;align-items:center;gap:6px;
+             padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
+.suggest div:hover{background:#2d220f}
+.suggest img{width:20px;height:20px;image-rendering:pixelated}
+/* Stats */
+.title{font-size:15px;letter-spacing:.3px;
+       text-transform:uppercase;margin-bottom:4px}
+.title.low{color:var(--low-color)}
+.title.high{color:var(--high-color)}
+.big-buy{font-size:36px;font-weight:900;color:var(--low-color)}
+.big-sell{font-size:36px;font-weight:900;color:var(--high-color)}
+.kv{display:flex;justify-content:space-between;margin:5px 0}
+.kv strong.spread{font-size:24px;animation: rainbow 5s linear infinite;}
+.kv .price-adjust{display:flex;align-items:center;gap:5px;border:1px solid var(--edge);padding:8px;border-radius:8px;background:#2b2212}
+.kv .price-adjust button{padding:0 5px;font-size:24px;font-weight:bold;color:var(--gold);background:transparent;border:none;cursor:pointer;}
+.kv .price-adjust.low button{color:var(--low-color)}
+.kv .price-adjust.high button{color:var(--high-color)}
+.kv .price-adjust span{font-size:24px;font-weight:bold}
+.kv .price-adjust.low span{color:var(--low-color)}
+.kv .price-adjust.high span{color:var(--high-color)}
+.kv .price-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
+.kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
+/* Tabs + Tools */
+.viewtabs, .mode-pill {display:flex;gap:6px;}
+.viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge);
+                 color:var(--ink);border-radius:10px;padding:6px 10px;
+                 cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+.viewtabs button.active, .mode-pill button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
+.viewtabs button:focus, .mode-pill button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+.tools{display:flex;gap:6px;align-items:center;margin-top:6px}
+.tools button{background:#2b2212;border:1px solid var(--edge);
+              color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
+              text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+.tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
+.tools button:focus{border-color:var(--orange);
+                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+/* Chart */
+.chartWrap{position:relative}
+.chart{
+  width:100%;height:500px;
+  background:repeating-linear-gradient(to bottom,
+             rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
+             transparent 1px,transparent 24px),#181208;
+  border:1px solid var(--edge);border-radius:12px
+}
+.chart-tip{
+  position:absolute;display:none;background:rgba(0,0,0,.85);
+  color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;
+  pointer-events:none;white-space:nowrap;border:1px solid #000
+}
+.legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
+.legend .sell::before{content:"";display:inline-block;width:14px;height:3px;
+                      background:var(--low-color);margin-right:6px;border-radius:2px}
+.legend .buy::before{content:"";display:inline-block;width:14px;height:3px;
+                     background:var(--high-color);margin-right:6px;border-radius:2px}
+/* Refresh button glow */
+.refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
+.btn-refresh{
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
+  text-transform:uppercase;letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease
+}
+.btn-refresh:hover{filter:brightness(1.05);
+                   transform:translateY(-1px);
+                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-refresh:active{transform:translateY(0);
+                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-refresh.loading {
+  animation: pulse-rs 1.5s infinite;
+}
+@keyframes pulse-rs {
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+}
+/* Sidebar (tighter columns + name header per slot) */
+.side{display:flex;flex-direction:column;gap:12px}
+.side .card{display:flex;flex-direction:column}
+.side h3{margin:0 0 10px 0;font-size:18px;font-weight:900;color:var(--orange)}
+.filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.switch{position:relative;display:inline-block;width:46px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+        background:#5a4630;border:1px solid var(--edge);
+        transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;
+               left:3px;top:2px;background:white;border-radius:50%;
+               transition:.2s}
+.switch input:checked + .slider{background:#275a30}
+.switch input:checked + .slider:before{transform:translateX(21px)}
+.head{
+  display:grid;grid-template-columns:22px 1fr 80px 80px;
+  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px;
+  border-bottom:1px solid var(--edge)
+}
+.sort-arrow { font-size: 10px; margin-left: 4px; }
+.tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
+.tb::-webkit-scrollbar {width:8px; background:var(--panel);}
+.tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
+.row{
+  display:grid;grid-template-columns:22px 1fr 80px 80px;
+  gap:6px;align-items:center;background:#231b0d;
+  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px
+}
+.row.long-price{min-height:70px}
+.row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
+.sym{font-weight:700;font-size:15px;white-space:nowrap;
+     overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
+.last{color:var(--gold)}
+.delta{color:var(--low-color)}
+.vol{color:var(--high-color)}
+.up{color:var(--high-color)} .down{color:var(--low-color)}
+.btn-add{display:inline-flex;align-items:center;justify-content:center;
+         width:26px;height:26px;border-radius:8px;
+         border:1px solid #1c4022;background:#1f4d28;
+         color:#c8f0cf;font-weight:900;cursor:pointer}
+.btn-add::before{content:"+";font-size:16px;line-height:1}
+/* Mode pill */
+.mode-pill{display:flex;gap:6px;}
+.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted);
+             padding:6px 10px;cursor:pointer;font-weight:700;
+             text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
+/* Help */
+.help{line-height:1.45;color:#dacda9}
+.help ul{margin:6px 0 0 18px;padding:0}
+/* Watchlist button */
+.btn-watch{
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
+  text-transform:uppercase;letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease;
+}
+.btn-watch:hover{filter:brightness(1.05);
+                   transform:translateY(-1px);
+                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:active{transform:translateY(0);
+                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
+/* Rainbow spread */
+@keyframes rainbow {
+  0% {border-color: #ff0000;}
+  14% {border-color: #ff7f00;}
+  28% {border-color: #ffff00;}
+  42% {border-color: #00ff00;}
+  57% {border-color: #00ffff;}
+  71% {border-color: #0000ff;}
+  85% {border-color: #8b00ff;}
+  100% {border-color: #ff0000;}
+}
+.sbar {
+  position: relative; /* Anchor dropdown to this container */
+}
+.suggest { /* Matches your existing class */
+  position: absolute;
+  left: 0;
+  top: 100%; /* Drops directly below the input */
+  width: 100%; /* Matches search bar width */
+  z-index: 10;
+  background: #231b0d; /* Matches your theme */
+  border: 1px solid var(--edge);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  overflow: auto;
+  max-height: 200px; /* Optional: scroll if many results */
+}
+/* Suggestion box */
+.suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
+.suggest-box img{width:100px;height:100px;image-rendering:pixelated}
+.suggest-box .details{flex:1}
+.suggest-box .name{font-weight:700;color:var(--orange)}
+.suggest-box .prices{display:flex;gap:20px}
+.suggest-box .price label{color:var(--muted);font-size:12px}
+.suggest-box .price strong{display:block;font-size:16px}
+.suggest-box .buy strong{color:var(--low-color)}
+.suggest-box .sell strong{color:var(--high-color)}
+.suggest-box .margin strong{color:var(--gold)}
+.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
+                        border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
+                        text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
+.suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
+.suggest-box .kv span{margin-right:5px}
+/* Category select */
+select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-radius:14px;padding:8px;font-size:16px;outline:none;width:100%;margin-bottom:8px;transition:box-shadow .18s,border-color .18s}
+select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+/* Loading animation */
+.loading { animation: pulse-rs 1.5s infinite; }
+@keyframes pulse-rs {
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+}
+/* Small chart */
+.small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
+/* Card-like for small chart */
+.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+      border:1px solid var(--edge);border-radius:16px;padding:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
+/* Loader overlay */
+#loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+  color: var(--ink);
+  font-size: 18px;
+}
+.loader-wheel {
+  border: 8px solid var(--edge);
+  border-top: 8px solid var(--orange);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Tabs for bottom section */
+.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color:var(--orange); }
+.help-tab-content { display: none; }
+.help-tab-content.active { display: block; }
+/* Alch table (tighter) */
+.alch-tb, .sets-tb, .craft-tb, .enchant-tb, .smith-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
+.alch-tb::-webkit-scrollbar, .sets-tb::-webkit-scrollbar, .craft-tb::-webkit-scrollbar, .enchant-tb::-webkit-scrollbar, .smith-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
+.alch-tb::-webkit-scrollbar-thumb, .sets-tb::-webkit-scrollbar-thumb, .craft-tb::-webkit-scrollbar-thumb, .enchant-tb::-webkit-scrollbar-thumb, .smith-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { display: grid; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
+.alch-row { grid-template-columns: 40px 1fr 120px 120px 120px 140px; }
+.sets-row { grid-template-columns: 1fr 120px 120px 120px 1fr; } /* Added column for pieces */
+.craft-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.enchant-row { grid-template-columns: 40px 1fr 80px 1fr 1fr 80px 120px; }
+.smith-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.alch-row img, .sets-row img, .craft-row img, .enchant-row img, .smith-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
+.alch-sym, .sets-sym, .craft-sym, .enchant-sym, .smith-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.alch-buy, .alch-nat, .alch-value, .alch-profit, .sets-buy, .sets-sell, .sets-profit, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
+.alch-profit.positive, .sets-profit.positive, .craft-profit.positive, .enchant-profit.positive, .smith-profit.positive { color: var(--high-color); }
+.alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
+/* Desktop scaling */
+@media (min-width: 769px) {
+  html {
+    transform: scale(0.8); /* Scale everything to 80% */
+    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
+    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
+    height: 125%; /* Same for height */
+  }
+}
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  .wrap {
+    grid-template-columns: 1fr; /* Stack sidebar below main content */
+    padding: 0 8px; /* Compact padding */
+    gap: 10px; /* Reduced gap for modern, tight layout */
+    max-width: 100%;
+    margin: 10px auto;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 8px; /* Smaller gaps */
+    align-items: start; /* Top align */
+  }
+  .imgbox {
+    grid-column: 1;
+    grid-row: 1;
+    width: 80px; /* Smaller image to compact */
+    height: 80px;
+    margin: 0; /* Left align, no margin */
+    justify-self: start;
+    order: 1;
+  }
+  .imgbox img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: pointer; /* Clickable for item search focus */
+  }
+  .grid > div:nth-child(2) { /* Search/profit right of image, top row */
+    grid-column: 1;
+    grid-row: 2;
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter */
+  }
+  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
+    grid-column: 1;
+    grid-row: 3;
+    order: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter gaps between rows/columns */
+    background: #231b0d; /* Dark bg for panel feel */
+    border: 1px solid var(--edge); /* Border for definition */
+    border-radius: 10px; /* Rounded */
+    padding: 4px; /* Reduced inner padding */
+  }
+  .label {
+    font-size: 16px; /* Smaller label */
+    margin: 0;
+  }
+  .sbar input {
+    font-size: 14px; /* Smaller input */
+    padding: 8px;
+  }
+  .kv {
+    display: flex;
+    flex-direction: row; /* Keep row for better space use */
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0; /* Even tighter margins */
+    font-size: 12px; /* Smaller font for info */
+  }
+  .kv span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .kv strong {
+    flex: 1;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px; /* Slightly larger for numbers */
+  }
+  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin {
+    font-size: 12px; /* Compact text */
+  }
+  #spreadMargin {
+    text-align: left;
+    margin: 2px 0;
+  }
+  .small {
+    font-size: 10px; /* Smaller buy limit info */
+  }
+  .title {
+    font-size: 12px; /* Smaller titles */
+    margin: 0; /* No margins for tight fit */
+    text-align: left; /* Left align for flow */
+  }
+  .price-adjust {
+    flex-direction: row; /* Arrows on sides of value, same line */
+    align-items: center;
+    gap: 2px; /* Very tight gaps between arrows and input */
+    border: none; /* Remove inner borders if too busy */
+    background: transparent; /* Clean look */
+    justify-content: flex-start; /* Left align */
+  }
+  .price-input, .buy-limit-input {
+    flex: 1;
+    font-size: 14px; /* Smaller text size for values */
+    text-align: right; /* Right align numbers */
+    width: auto; /* Auto width to fit */
+    max-width: none; /* Remove max-width to handle long numbers */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .price-adjust button {
+    font-size: 16px; /* Smaller arrows */
+    padding: 0 4px;
+    min-width: 24px;
+  }
+  .chart {
+    height: 280px; /* Slightly shorter for compact view */
+  }
+  .side {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */
+    gap: 8px;
+  }
+  .side .suggest-box, .side .card-like {
+    grid-column: span 1; /* Each takes half */
+    padding: 8px; /* Narrower padding */
+    max-width: 100%; /* Fit to mobile */
+  }
+  .side .card-like {
+    order: -1;
+  }
+  .side .card:nth-child(3) { /* Watchlist card full width */
+    grid-column: 1 / -1; /* Span both columns for full width */
+    padding: 8px; /* Narrower */
+  }
+  .suggest-box .item {
+    flex-direction: column; /* Stack for narrow fit */
+    gap: 4px;
+    padding: 6px;
+  }
+  .suggest-box img {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+  }
+  .suggest-box .details {
+    text-align: center;
+  }
+  .suggest-box .prices {
+    justify-content: center;
+    gap: 10px;
+  }
+  .suggest-box .price strong {
+    font-size: 14px;
+  }
+  .suggest-box .next-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .card-like {
+    padding: 8px;
+  }
+  .card-like h3 {
+    font-size: 14px;
+  }
+  .small-chart {
+    height: 200px;
+  }
+  .tb {
+    max-height: 350px; /* Slightly shorter */
+  }
+  .head {
+    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */
+    font-size: 10px;
+    gap: 4px;
+    padding: 4px 6px;
+  }
+  .row {
+    grid-template-columns: 20px 1fr 50px 50px;
+    padding: 6px;
+    gap: 4px;
+    min-height: 30px;
+  }
+  .row.long-price {
+    min-height: 50px;
+  }
+  .sym {
+    font-size: 12px;
+  }
+  .delta, .vol {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head {
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+    gap: 4px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row {
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+    gap: 4px;
+    padding: 6px;
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
+/* Themed Up/Down Arrows */
+.price-adjust button {
+  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+  border: 2px solid var(--edge); /* Thicker border for emphasis */
+  border-radius: 12px; /* More rounded */
+  padding: 2px 8px; /* Smaller padding */
+  font-size: 18px; /* Slightly smaller text/symbols */
+  font-weight: 900; /* Max bold */
+  color: var(--gold); /* Gold base, overridden for low/high */
+  cursor: pointer;
+  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+  line-height: 1; /* Tight line height */
+  min-width: 32px; /* Smaller minimum width */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.price-adjust button.down::before {
+  content: "▽"; /* Tip-only down arrow (no tail) */
+}
+.price-adjust button.up::before {
+  content: "△"; /* Tip-only up arrow (no tail) */
+}
+.price-adjust button {
+  content: ""; /* Clear original text */
+}
+.price-adjust button:hover {
+  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+  transform: translateY(-2px); /* More lift */
+  filter: brightness(1.1); /* Brighter on hover */
+}
+.price-adjust button:active {
+  transform: translateY(0); /* Press down effect */
+  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.price-adjust.low button {
+  color: var(--low-color); /* Red for low arrows */
+}
+.price-adjust.high button {
+  color: var(--high-color); /* Green for high arrows */
+}
+/* Themed Color Selectors */
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #2b2212; /* Dark panel bg */
+  border: 1px solid var(--edge); /* Edge border */
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: var(--muted); /* Muted label text */
+}
+.color-picker input[type="color"] {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none;
+  width: 24px; /* Small square */
+  height: 24px;
+  border: none; /* No border */
+  background: transparent; /* Transparent bg */
+  cursor: pointer;
+}
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker input[type="color"]::-webkit-color-swatch {
+  border: 1px solid var(--edge); /* Theme border */
+  border-radius: 4px; /* Rounded */
+}
+.color-picker input[type="color"]::-moz-color-swatch {
+  border: 1px solid var(--edge); /* Firefox compat */
+  border-radius: 4px;
+}
+@keyframes glow {
+  from { box-shadow: 0 0 5px #00ff00; }
+  to { box-shadow: 0 0 15px #00ff00; }
+}
+  h1 { font-size: 20px; }
+  h3 { font-size: 16px; }
+  .label { font-size: 20px; }
+  .help { font-size: 14px; }
+  .chart { height: 200px; }
+  .tb { max-height: 200px; }
+  .small-chart { height: 120px; }
+  .suggest { width: 100%; }
+  .head {
+    grid-template-columns: 22px 1fr 60px 60px;
+    font-size: 10px;
+  }
+  .row {
+    grid-template-columns: 22px 1fr 60px 60px;
+    padding: 8px;
+    gap: 4px;
+  }
+  .sym {
+    font-size: 13px;
+  }
+  .last, .delta, .pct, .vol {
+    font-size: 12px;
+  }
+  .alch-tb .head {
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  .alch-row {
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+    gap: 6px;
+    padding: 8px 8px;
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+    font-size: 12px;
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div style="display:flex;align-items:center;gap:14px">
-    <h1>Grant Exchange</h1>
-    <div class="version">v4.0</div>
-  </div>
-  <div class="mode">
-    <button id="f2p" class="active">F2P</button>
-    <button id="members">Members</button>
-  </div>
-</div>
-
-<div class="main">
-  <div class="top">
-    <div class="imgbox"><img id="img" src="" alt=""></div>
-    <div style="position:relative">
-      <input id="query" placeholder="Search any item...">
-      <div id="suggest" class="suggest"></div>
+  <div class="container">
+    <div class="header">
+      <h1>Grant Exchange</h1>
+      <div class="version">
+        v3.7
+      </div>
+    </div>
+    <div class="mode-switch">
+      <button id="f2pBtn" class="active">F2P</button>
+      <button id="membersBtn">Members</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search any item...">
+      <div id="suggestions" class="suggestions"></div>
     </div>
     <div class="prices">
-      <div class="price buy"><div>BUY PRICE</div><strong id="buy">--</strong></div>
-      <div class="price sell"><div>SELL PRICE</div><strong id="sell">--</strong></div>
+      <div class="price-card buy">
+        <div class="price-label">Buy Price</div>
+        <div class="price-value" id="buyPrice">--</div>
+      </div>
+      <div class="price-card sell">
+        <div class="price-label">Sell Price</div>
+        <div class="price-value" id="sellPrice">--</div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="tabs">
+        <button class="tab-btn active" data-timeframe="1D">1D</button>
+        <button class="tab-btn" data-timeframe="1W">1W</button>
+        <button class="tab-btn" data-timeframe="1M">1M</button>
+        <button class="tab-btn" data-timeframe="6M">6M</button>
+        <button class="tab-btn" data-timeframe="1Y">1Y</button>
+        <button class="tab-btn" data-timeframe="ALL">All</button>
+      </div>
+      <div class="tools">
+        <button id="zoomIn">Zoom +</button>
+        <button id="zoomOut">Zoom -</button>
+        <button id="lineChart" class="active">Line</button>
+        <button id="barChart">Dots</button>
+        <button id="vpToggle">VP</button>
+        <button id="ichiToggle">Ichimoku</button>
+        <button id="refreshBtn">Refresh</button>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="priceChart"></canvas>
+      <div id="tooltip" class="tooltip"></div>
+    </div>
+    <div class="legend">
+      <span class="low">Low Price</span>
+      <span class="high">High Price</span>
     </div>
   </div>
+  <script>
+    const API_BASE = 'https://prices.runescape.wiki/api/v1/osrs';
+    let currentItem = null;
+    let chartData = null;
+    let isMembers = false;
+    let currentTimeframe = '1D';
+    let vpEnabled = false;
+    let ichiEnabled = false;
+    let chartType = 'line';
 
-  <div class="controls">
-    <div class="tabs">
-      <button data-t="day" class="active">1D</button>
-      <button data-t="week">1W</button>
-      <button data-t="month">1M</button>
-      <button data-t="6month">6M</button>
-      <button data-t="year">1Y</button>
-      <button data-t="all">ALL</button>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="tool" id="zin">Zoom +</button>
-      <button class="tool" id="zout">Zoom -</button>
-      <button class="tool active" id="line">Line</button>
-      <button class="tool" id="dots">Dots</button>
-      <button class="tool" id="vp">VP</button>
-      <button class="tool" id="ichi">Ichimoku</button>
-      <button class="tool" id="refresh">Refresh</button>
-    </div>
-  </div>
+    // Load mapping for item IDs
+    async function loadMapping() {
+      try {
+        const response = await fetch(`${API_BASE}/mapping`);
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to load mapping:', error);
+        return [];
+      }
+    }
 
-  <div class="chart">
-    <canvas id="c"></canvas>
-    <div id="tip"></div>
-  </div>
+    // Get item ID by name
+    async function getItemId(name) {
+      const mapping = await loadMapping();
+      const item = mapping.find(item => item.name.toLowerCase() === name.toLowerCase());
+      return item ? item.id : null;
+    }
 
-  <div class="legend">
-    <span class="low">Low Price</span>
-    <span class="high">High Price</span>
-  </div>
-</div>
+    // Load latest prices
+    async function loadLatestPrices(id) {
+      try {
+        const response = await fetch(`${API_BASE}/latest`);
+        const data = await response.json();
+        const itemData = data.data[id];
+        if (itemData) {
+          document.getElementById('buyPrice').textContent = formatPrice(itemData.low || itemData.avgLowPrice);
+          document.getElementById('sellPrice').textContent = formatPrice(itemData.high || itemData.avgHighPrice);
+        }
+      } catch (error) {
+        console.error('Failed to load prices:', error);
+      }
+    }
 
-<script>
-const API = "https://prices.runescape.wiki/api/v1/osrs";
-let map = [], latest = null, item = null;
-let data = [], timeframe = "day", zoom = 1.8, mode = "line", showVP = false, showIchi = false;
-let members = false;
+    // Load time series data
+    async function loadTimeSeries(id, timeframe) {
+      const steps = {
+        '1D': '1h',
+        '1W': '6h',
+        '1M': '24h',
+        '6M': '24h',
+        '1Y': '24h',
+        'ALL': '24h'
+      };
+      try {
+        const response = await fetch(`${API_BASE}/timeseries?timestep=${steps[timeframe]}&id=${id}`);
+        const data = await response.json();
+        return processData(data.data || []);
+      } catch (error) {
+        console.error('Failed to load time series:', error);
+        return [];
+      }
+    }
 
-const c = document.getElementById("c"), ctx = c.getContext("2d");
-const tip = document.getElementById("tip");
+    // Process time series data
+    function processData(data) {
+      return data.map(point => ({
+        timestamp: new Date(point.timestamp * 1000),
+        low: point.avgLowPrice || point.low,
+        high: point.avgHighPrice || point.high,
+        volume: point.lowPriceVolume || point.highPriceVolume || point.volume || 0
+      })).filter(point => point.low !== null || point.high !== null);
+    }
 
-async function get(u){try{const r=await fetch(u,{cache:"force-cache"});return r.ok?await r.json():null}catch(e){return null}}
+    // Format price
+    function formatPrice(price) {
+      if (price === null || price === undefined) return '--';
+      return price.toLocaleString();
+    }
 
-const loadMap = ()=>get(API+"/mapping");
-const loadLatest = ()=>get(API+"/latest");
-const loadTS = (step,id)=>get(API+`/timeseries?timestep=${step}&id=${id}`);
+    // Draw chart
+    function drawChart(canvas, data, timeframe) {
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-function img(id){
-  const i = map.find(x=>x.id==id);
-  return i?`https://oldschool.runescape.wiki/images/${i.name.replace(/ /g,"_")}.png`:"https://oldschool.runescape.wiki/images/Question_mark.png";
-}
+      const width = canvas.width / window.devicePixelRatio;
+      const height = canvas.height / window.devicePixelRatio;
+      ctx.clearRect(0, 0, width, height);
 
-function series(ts){
-  if(!ts?.data) return [];
-  return ts.data.map(d=>({
-    t:+d.timestamp*1000,
-    l:d.avgLowPrice??d.low??null,
-    h:d.avgHighPrice??d.high??null,
-    v:d.lowPriceVolume??d.highPriceVolume??d.volume??0
-  })).filter(d=>d.l!==null||d.h!==null);
-}
+      if (data.length === 0) return;
 
-function draw(){
-  if(!data.length) return;
-  const W=c.width,H=c.height;
-  const L=70,R=110,T=30,B=60;
-  const w=W-L-R,h=H-T-B;
-  const vH=h*0.22,pH=h-vH;
+      // Find min/max
+      const prices = data.flatMap(d => [d.low, d.high]).filter(p => p !== null);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const minVolume = Math.min(...data.map(d => d.volume));
+      const maxVolume = Math.max(...data.map(d => d.volume));
 
-  const n=data.length;
-  const win=Math.max(10,Math.floor(n/zoom));
-  const s=Math.max(0,Math.min(n-win,Math.floor(offset)));
-  const e=s+win;
+      const padding = 40;
+      const chartHeight = height - padding * 2;
+      const chartWidth = width - padding * 2;
 
-  const slice=a=>a.slice(s,e);
-  const t=slice(data.map(d=>d.t));
-  const l=slice(data.map(d=>d.l));
-  const h=slice(data.map(d=>d.h));
-  const v=slice(data.map(d=>d.v));
+      // Draw grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
 
-  const prices=[...l,...h].filter(x=>x!==null);
-  const min=Math.min(...prices),max=Math.max(...prices);
-  const vMax=Math.max(...v,1);
+      // Draw price lines
+      ctx.strokeStyle = '#e74c3c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let first = true;
+      data.forEach((point, index) => {
+        if (point.low === null) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const y = padding + chartHeight - ((point.low - minPrice) / (maxPrice - minPrice)) * chartHeight;
+        if (first) {
+          ctx.moveTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
 
-  ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle = '#2ecc71';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      first = true;
+      data.forEach((point, index) => {
+        if (point.high === null) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const y = padding + chartHeight - ((point.high - minPrice) / (maxPrice - minPrice)) * chartHeight;
+        if (first) {
+          ctx.moveTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
 
-  // Grid
-  ctx.strokeStyle="#ffffff0a";
-  for(let i=0;i<=6;i++){
-    const y=T+pH*i/6;
-    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();
-  }
+      // Draw volume bars
+      const volumeHeight = chartHeight * 0.2;
+      data.forEach((point, index) => {
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const barWidth = chartWidth / data.length;
+        const barHeight = ((point.volume - minVolume) / (maxVolume - minVolume)) * volumeHeight;
+        ctx.fillStyle = 'rgba(46, 204, 113, 0.6)';
+        ctx.fillRect(x - barWidth / 2, height - padding - barHeight, barWidth, barHeight);
+      });
 
-  const step=w/Math.max(1,t.length-1);
+      // Labels
+      ctx.fillStyle = '#f0e6d2';
+      ctx.font = '12px Arial';
+      data.forEach((point, index) => {
+        if (index % Math.floor(data.length / 5) !== 0) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const dateStr = point.timestamp.toLocaleDateString();
+        ctx.fillText(dateStr, x - 20, height - 10);
+      });
 
-  // Price lines
-  line(l,"#e74c3c",mode==="line"?3:0);
-  line(h,"#2ecc71",mode==="line"?3:0);
-  if(mode==="dot"){dots(l,"#e74c3c");dots(h,"#2ecc71");}
+      // Y axis labels
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        const price = maxPrice - (i / 5) * (maxPrice - minPrice);
+        ctx.fillText(formatPrice(price), 5, y + 5);
+      }
+    }
 
-  // Volume
-  v.forEach((vv,i)=>{
-    const x=L+i*step;
-    const bh=(vv/vMax)*vH;
-    ctx.fillStyle=vv>(v[i-1]||0)?"#2ecc71":"#e74c3c";
-    ctx.globalAlpha=0.6;
-    ctx.fillRect(x-step*0.4,H-B,step*0.8,-bh);
-    ctx.globalAlpha=1;
-  });
+    // Tooltip
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const index = Math.round(((x - 40) / (canvas.width - 80)) * (chartData.length - 1));
+      if (index >= 0 && index < chartData.length) {
+        const point = chartData[index];
+        tooltip.style.display = 'block';
+        tooltip.style.left = e.clientX + 10 + 'px';
+        tooltip.style.top = e.clientY - 10 + 'px';
+        tooltip.innerHTML = `
+          <div><strong>${point.timestamp.toLocaleDateString()}</strong></div>
+          <div>Low: ${formatPrice(point.low)}</div>
+          <div>High: ${formatPrice(point.high)}</div>
+          <div>Volume: ${point.volume.toLocaleString()}</div>
+        `;
+      }
+    });
 
-  // Y labels
-  ctx.fillStyle="#fff";ctx.font="bold 14px Arial";
-  for(let i=0;i<=6;i++){
-    const y=T+pH*i/6;
-    const val=Math.round(max-(max-min)*i/6);
-    ctx.fillText(val.toLocaleString(),10,y+5);
-  }
-}
+    canvas.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
 
-function line(arr,col,w=2){
-  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
-  let s=false;
-  arr.forEach((v,i)=>{
-    if(v===null){s=false;return}
-    const x=70+i*step;
-    const y=30+pH-(v-min)/(max-min)*pH;
-    s?ctx.lineTo(x,y):ctx.moveTo(x,y);s=true;
-  });
-  ctx.stroke();
-}
-function dots(arr,col){
-  ctx.fillStyle=col;
-  arr.forEach((v,i)=>{
-    if(v===null)return;
-    const x=70+i*step;
-    const y=30+pH-(v-min)/(max-min)*pH;
-    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
-  });
-}
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        document.querySelector('.tab-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        currentTimeframe = btn.dataset.timeframe;
+        if (currentItem) {
+          await updateChart(currentItem);
+        }
+      });
+    });
 
-async function load(id){
-  const i = map.find(x=>x.id==id);
-  if(!i) return;
-  document.getElementById("query").value = i.name;
-  document.getElementById("img").src = img(id);
+    // Tool buttons
+    document.getElementById('zoomIn').addEventListener('click', () => {
+      zoomLevel = Math.max(1, zoomLevel - 0.2);
+      drawChart(canvas, chartData, currentTimeframe);
+    });
 
-  latest = await loadLatest();
-  const d = latest?.data?.[id];
-  document.getElementById("buy").textContent = d?(d.low??d.avgLowPrice).toLocaleString()+" gp":"--";
-  document.getElementById("sell").textContent = d?(d.high??d.avgHighPrice).toLocaleString()+" gp":"--";
+    document.getElementById('zoomOut').addEventListener('click', () => {
+      zoomLevel = Math.min(5, zoomLevel + 0.2);
+      drawChart(canvas, chartData, currentTimeframe);
+    });
 
-  const step = timeframe==="day"?"1h":timeframe==="week"?"6h":"24h";
-  const ts = await loadTS(step,id);
-  data = series(ts)||[];
-  draw();
-}
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
 
-// Search
-document.getElementById("query").oninput = async e=>{
-  const q=e.target.value.toLowerCase().trim();
-  const s=document.getElementById("suggest");
-  s.innerHTML="";
-  if(q.length<2){s.style.display="none";return}
-  const matches = map.filter(i=>(members||!i.members)&&i.name.toLowerCase().includes(q)).slice(0,12);
-  s.innerHTML = matches.map(i=>`<div data-id="${i.id}"><img src="${img(i.id)}" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'"><span>${i.name}</span></div>`).join("");
-  s.style.display="block";
-};
-document.getElementById("suggest").onclick=e=>{
-  const id=e.target.closest("[data-id]")?.dataset.id;
-  if(id) load(id);
-};
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.toLowerCase();
+      if (query.length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
 
-// Controls
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelector(".tabs .active")?.classList.remove("active");b.classList.add("active");timeframe=b.dataset.t;if(item)load(item.id)});
-document.getElementById("zin").onclick=()=>{zoom=Math.min(10,zoom*1.3);draw();}
-document.getElementById("zout").onclick=()=>{zoom=Math.max(1,zoom/1.3);draw();}
-document.getElementById("line").onclick=()=>{mode="line";document.getElementById("line").classList.add("active");document.getElementById("dots").classList.remove("active");draw();}
-document.getElementById("dots").onclick=()=>{mode="dot";document.getElementById("dots").classList.add("active");document.getElementById("line").classList.remove("active");draw();}
-document.getElementById("f2p").onclick=()=>{members=false;document.getElementById("f2p").classList.add("active");document.getElementById("members").classList.remove("active");if(item)load(item.id);}
-document.getElementById("members").onclick=()=>{members=true;document.getElementById("members").classList.add("active");document.getElementById("f2p").classList.remove("active");if(item)load(item.id);}
+      try {
+        const mapping = await loadMapping();
+        const filtered = mapping.filter(item => 
+          item.name.toLowerCase().includes(query) && (!isMembers || item.members !== true)
+        ).slice(0, 10);
 
-// Init
-(async()=>{
-  map = await loadMap();
-  const g = map.find(x=>x.name.toLowerCase().includes("gilded scimitar"));
-  if(g) load(g.id);
+        suggestions.innerHTML = filtered.map(item => `
+          <div class="suggestion" data-id="${item.id}">
+            <img src="https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}.png" alt="${item.name}" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'">
+            <span>${item.name}</span>
+          </div>
+        `).join('');
+        suggestions.style.display = filtered.length ? 'block' : 'none';
+      } catch (error) {
+        console.error('Search error:', error);
+      }
+    });
 
-  function r(){
-    c.width = c.offsetWidth * devicePixelRatio;
-    c.height = c.offsetHeight * devicePixelRatio;
-    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-    if(data.length) draw();
-  }
-  r();
-  window.onresize=r;
-})();
-</script>
+    suggestions.addEventListener('click', (e) => {
+      if (e.target.dataset.id) {
+        const id = e.target.dataset.id;
+        searchInput.value = e.target.textContent.trim();
+        suggestions.style.display = 'none';
+        updateItem(id);
+      }
+    });
+
+    // Update item
+    async function updateItem(id) {
+      currentItem = id;
+      await loadLatestPrices(id);
+      const data = await loadTimeSeries(id, currentTimeframe);
+      chartData = data;
+      drawChart(canvas, data, currentTimeframe);
+    }
+
+    // F2P/Members toggle
+    document.getElementById('f2pBtn').addEventListener('click', () => {
+      isMembers = false;
+      document.getElementById('f2pBtn').classList.add('active');
+      document.getElementById('membersBtn').classList.remove('active');
+      if (currentItem) updateItem(currentItem);
+    });
+
+    document.getElementById('membersBtn').addEventListener('click', () => {
+      isMembers = true;
+      document.getElementById('membersBtn').addEventListner('active');
+      document.getElementById('f2pBtn').classList.remove('active');
+      if (currentItem) updateItem(currentItem);
+    });
+
+    // Load default item
+    (async () => {
+      const mapping = await loadMapping();
+      const defaultItem = mapping.find(item => item.name.toLowerCase() === 'gilded scimitar');
+      if (defaultItem) {
+        await updateItem(defaultItem.id);
+      }
+    })();
+
+    // Chart type toggle (line/dots)
+    document.getElementById('lineChart').addEventListener('click', () => {
+      chartType = 'line';
+      document.getElementById('lineChart').classList.add('active');
+      document.getElementById('barChart').classList.remove('active');
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    document.getElementById('barChart').addEventListener('click', () => {
+      chartType = 'bar';
+      document.getElementById('barChart').classList.add('active');
+      document.getElementById('lineChart').classList.remove('active');
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    // VP and Ichimoku toggles (placeholder for now, can be expanded)
+    document.getElementById('vpToggle').addEventListener('click', () => {
+      vpEnabled = !vpEnabled;
+      document.getElementById('vpToggle').classList.toggle('active');
+      // Implement VP drawing here if needed
+    });
+
+    document.getElementById('ichiToggle').addEventListener('click', () => {
+      ichiEnabled = !ichiEnabled;
+      document.getElementById('ichiToggle').classList.toggle('active');
+      // Implement Ichimoku drawing here if needed
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      if (currentItem) updateItem(currentItem);
+    });
+  </script>
 </body>
 </html>
