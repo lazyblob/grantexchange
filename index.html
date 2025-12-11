@@ -1,640 +1,414 @@
-```html
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
-<title>OSRS Grand Exchange Chart Tool</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange prices with indicators like Volume Profile and Ichimoku.">
-<meta name="keywords" content="OSRS Grand Exchange, OSRS GE, OSRS flipping tool, RuneScape Grand Exchange, OSRS price checker, Grand Exchange OSRS">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://grantexchange.net/">
-<!-- Open Graph -->
-<meta property="og:title" content="OSRS Grand Exchange Chart Tool">
-<meta property="og:description" content="Advanced charting tool for OSRS Grand Exchange prices with indicators like Volume Profile and Ichimoku.">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<meta property="og:url" content="https://grantexchange.net/">
-<meta property="og:type" content="website">
-<!-- Favicon -->
-<link rel="icon" type="image/png" sizes="48x48" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<!-- Twitter Cards -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OSRS Grand Exchange Chart Tool">
-<meta name="twitter:description" content="Advanced charting tool for OSRS Grand Exchange prices with indicators like Volume Profile and Ichimoku.">
-<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-43YM2RCX1R');
-</script>
-<!-- CSS -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Grant Exchange • OSRS GE Chart</title>
+<meta name="description" content="Professional OSRS Grand Exchange charting with Volume Profile & Ichimoku Cloud"/>
 <style>
 :root{
-  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
-  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
-  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
-  --teal: #00ffff; --cloud-bull: rgba(0,255,0,0.2); --cloud-bear: rgba(255,0,0,0.2);
-  --tenkan-color: #00bfff; --kijun-color: #ff69b4; --chikou-color: #32cd32; --senkou-fill-bull: rgba(0,128,0,0.3); --senkou-fill-bear: rgba(139,0,0,0.3);
-  --vp-bar: rgba(200,200,200,0.5); --vp-highlight: rgba(0,255,255,0.7);
+  --bg:#0e0c0a;
+  --card:#1a1612;
+  --edge:#4a3a22;
+  --gold:#d4af37;
+  --orange:#f39c12;
+  --ink:#f0e6d2;
+  --muted:#a0876a;
+  --low:#e74c3c;
+  --high:#2ecc71;
+  --accent:#f1c40f;
+  --tenkan:#0094ff;
+  --kijun:#ff3399;
+  --chikou:#00ff00;
+  --cloud-bull:rgba(46,204,113,0.25);
+  --cloud-bear:rgba(231,76,60,0.25);
+  --vp-bar:rgba(255,255,255,0.15);
+  --vp-poc:#f1c40f;
 }
-* {box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a;
-  color:var(--ink);
-  font-family:Segoe UI,Inter,system-ui,Arial;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1400px;margin:0 auto;padding:12px;display:flex;flex-direction:column;height:100vh;gap:12px}
+.header{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
+.badge{background:var(--card);border:1px solid var(--edge);padding:4px 10px;border-radius:20px;font-size:13px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.top{display:grid;grid-template-columns:100px 1fr 300px;gap:16px;align-items:center}
+.imgbox{width:100px;height:100px;background:var(--card);border:2px solid var(--edge);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.imgbox img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated}
+.search{position:relative}
+#query{width:100%;background:var(--card);border:2px solid var(--edge);color:var(--ink);padding:14px 16px;border-radius:12px;font-size:18px;outline:none}
+#query:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,156,18,0.2)}
+.suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--edge);border-radius:12px;max-height:300px;overflow:auto;z-index:10;margin-top:4px;display:none}
+.suggest div{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.suggest div:hover{background:#2a2419}
+.suggest img{width:24px;height:24px}
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.price-box{background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:10px;text-align:center}
+.price-box label{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:0.5px}
+.price-box strong{font-size:22px;font-weight:900;color:var(--gold)}
+.price-box.low strong{color:var(--low)}
+.price-box.high strong{color:var(--high)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center}
+.viewtabs button,.toolbtn{
+  background:var(--card);border:1px solid var(--edge);color:var(--ink);
+  padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;text-transform:uppercase;font-size:13px;
+  transition:all 0.2s
 }
-/* Layout */
-.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px); display:grid; grid-template-columns:1fr; gap:16px; align-items:start}
-.header{grid-column:1 / -1;display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center}
-/* Branding */
-h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
-.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px; padding:2px 8px;color:var(--muted);background:#20190e}
-.small{font-size:12px;color:var(--muted)}
-/* Cards */
-.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); border:1px solid var(--edge);border-radius:16px;padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.28)}
-.left{display:flex;flex-direction:column}
-/* Main grid: image / search / stats */
-.grid{display:grid;grid-template-columns:120px 1fr 260px; gap:14px;align-items:center}
-.imgbox{width:120px;height:120px;border:1px solid var(--edge); border-radius:14px;background:#22180b; display:flex;align-items:center;justify-content:center; box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)}
-.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
-/* Search */
-.label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
-.sbar{display:flex;gap:10px;margin-top:2px;position:relative}
-.sbar input{flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink); border-radius:14px;padding:16px;font-size:20px;outline:none; box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s}
-.sbar input:focus{border-color:var(--orange); box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px; max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
-.suggest::-webkit-scrollbar {width:8px; background:var(--panel);}
-.suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.suggest div{display:flex;align-items:center;gap:6px; padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
-.suggest div:hover{background:#2d220f}
-.suggest img{width:20px;height:20px;image-rendering:pixelated}
-/* Stats */
-.title{font-size:15px;letter-spacing:.3px; text-transform:uppercase;margin-bottom:4px}
-.title.low{color:var(--low-color)}
-.title.high{color:var(--high-color)}
-.kv{display:flex;justify-content:space-between;margin:5px 0}
-.kv strong.spread{font-size:24px;animation: rainbow 5s linear infinite;}
-.kv .price-adjust{display:flex;align-items:center;gap:5px;border:1px solid var(--edge);padding:8px;border-radius:8px;background:#2b2212}
-.kv .price-adjust button{padding:0 5px;font-size:24px;font-weight:bold;color:var(--gold);background:transparent;border:none;cursor:pointer;}
-.kv .price-adjust.low button{color:var(--low-color)}
-.kv .price-adjust.high button{color:var(--high-color)}
-.kv .price-adjust span{font-size:24px;font-weight:bold}
-.kv .price-adjust.low span{color:var(--low-color)}
-.kv .price-adjust.high span{color:var(--high-color)}
-.kv .price-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
-.kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
-/* Tabs + Tools */
-.viewtabs, .tools {display:flex;gap:6px; flex-wrap:wrap;}
-.viewtabs button, .tools button{background:#2b2212;border:1px solid var(--edge); color:var(--ink);border-radius:10px;padding:6px 10px; cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
-.viewtabs button.active, .tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-/* Chart */
-.chartWrap{position:relative}
-.chart{width:100%;height:700px; background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.06),rgba(255,255,255,0.06) 1px, transparent 1px,transparent 24px),#181208; border:1px solid var(--edge);border-radius:12px}
-.chart-tip{position:absolute;display:none;background:rgba(0,0,0,.85); color:#fff;padding:6px 8px;border-radius:6px;font-size:14px; pointer-events:none;white-space:nowrap;border:1px solid #000}
-.legend{display:flex;gap:12px;font-size:14px;margin-top:6px;color:var(--muted)}
-.legend .sell::before{content:"";display:inline-block;width:14px;height:3px; background:var(--low-color);margin-right:6px;border-radius:2px}
-.legend .buy::before{content:"";display:inline-block;width:14px;height:3px; background:var(--high-color);margin-right:6px;border-radius:2px}
-/* Refresh button */
-.refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
-.btn-refresh{padding:12px 20px;border-radius:18px;border:2px solid var(--edge); background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; text-transform:uppercase;letter-spacing:.5px; box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); transition:transform .08s ease,filter .12s ease,box-shadow .12s ease}
-.btn-refresh:hover{filter:brightness(1.05); transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-/* Key Info Section */
-.key-info {display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; margin-top:20px;}
-.key-item {background:#231b0d; border:1px solid var(--edge); border-radius:10px; padding:8px; text-align:center;}
-.key-item label {color:var(--muted); font-size:12px; display:block;}
-.key-item strong {color:var(--gold); font-size:16px;}
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .grid {grid-template-columns:1fr;}
-  .imgbox {width:80px;height:80px;}
-  .chart {height:400px;}
-  .viewtabs button, .tools button {padding:4px 8px; font-size:12px;}
-  .chart-tip {font-size:12px;}
-  .legend {font-size:12px;}
+.viewtabs button.active,.toolbtn.active,.toolbtn:hover{
+  background:#3a2f17;border-color:var(--orange);color:var(--orange);box-shadow:0 0 12px rgba(243,156,18,0.4)
+}
+.chartWrap{position:relative;height:calc(100vh - 280px);min-height:500px}
+#chart{width:100%;height:100%;border-radius:12px;background:#111}
+#tip{
+  position:absolute;padding:8px 12px;background:rgba(0,0,0,0.9);color:white;
+  border-radius:8px;font-size:13px;pointer-events:none;z-index:100;
+  border:1px solid #444;box-shadow:0 4px 12px rgba(0,0,0,0.6)
+}
+.legend{display:flex;gap:20px;margin-top:8px;font-size:14px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend span::before{content:"";width:16px;height:4px;border-radius:2px}
+.legend .low::before{background:var(--low)}
+.legend .high::before{background:var(--high)}
+.actions{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.btn-refresh{
+  background:linear-gradient(145deg,#3a2f17,#2a2210);
+  border:2px solid var(--edge);color:var(--gold);padding:12px 24px;
+  border-radius:16px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+  cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5)
+}
+.btn-refresh:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.6)}
+@media (max-width:768px){
+  .top{grid-template-columns:80px 1fr}
+  .prices{grid-template-columns:1fr}
+  .chartWrap{height:calc(100vh - 320px)}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange Chart</h1><span class="badge">v2.0 MVP</span></div>
-    <div id="status" class="small">Ready</div>
+    <div><h1>Grant Exchange</h1> <span class="badge">v3.0 Final</span></div>
+    <div id="status" style="font-size:14px;color:var(--muted)">Ready</div>
   </div>
-  <!-- Main panel -->
-  <div class="card left">
-    <div class="grid">
-      <!-- Small item image -->
-      <div class="imgbox"><img id="itemImg" alt="Item"/></div>
-      <!-- Search column -->
-      <div>
-        <div class="label">What item?</div>
-        <div class="sbar">
-          <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
-          <div id="suggestBox" class="suggest" style="display:none"></div>
+
+  <div class="card">
+    <div class="top">
+      <div class="imgbox"><img id="itemImg" src="" alt=""/></div>
+      <div class="search">
+        <input id="query" placeholder="Search item..." autocomplete="off"/>
+        <div id="suggestBox" class="suggest"></div>
+      </div>
+      <div class="prices">
+        <div class="price-box low">
+          <label>Buy Price</label>
+          <strong id="buyPrice">—</strong>
         </div>
-        <div class="kv" style="margin-top:4px"><span>Expected Flip Profit</span><strong id="flipProfit" style="color:var(--gold);font-size:20px">—</strong></div>
-        <div class="kv" style="margin-top:12px"><span>Capital Required</span><strong id="capitalRequired" style="color:var(--gold);font-size:20px">—</strong></div>
-        <div class="small" id="buyLimitInfo"></div>
-      </div>
-      <!-- Smart prices -->
-      <div>
-        <div class="title low">Smart Low Buy (Offer)</div>
-        <div class="kv price-adjust low"><button onclick="adjustPrice('buy', -1)">↓</button><input id="smartBuyInput" class="price-input" type="text" value="—" onchange="updateSmartBuyFromInput()" /><button onclick="adjustPrice('buy', 1)">↑</button></div>
-        <div class="title high" style="margin-top:10px">Smart High Sell (List)</div>
-        <div class="kv price-adjust high"><button onclick="adjustPrice('sell', -1)">↓</button><input id="smartSellInput" class="price-input" type="text" value="—" onchange="updateSmartSellFromInput()" /><button onclick="adjustPrice('sell', 1)">↑</button></div>
-        <div class="title" style="margin-top:10px">Buy Limit</div>
-        <div class="kv price-adjust"><button onclick="adjustBuyLimit(-1)">↓</button><input id="buyLimitDisplay" class="buy-limit-input" type="text" value="—" onchange="updateBuyLimitFromInput()" /><button onclick="adjustBuyLimit(1)">↑</button></div>
+        <div class="price-box high">
+          <label>Sell Price</label>
+          <strong id="sellPrice">—</strong>
+        </div>
       </div>
     </div>
-    <div class="refreshRow">
+
+    <div class="controls">
       <div class="viewtabs">
-        <button data-view="day" class="active">1 Day</button>
-        <button data-view="week">1 Week</button>
-        <button data-view="month">1 Month</button>
-        <button data-view="6month">6 Months</button>
-        <button data-view="year">1 Year</button>
-        <button data-view="all">All Time</button>
+        <button data-view="day" class="active">1D</button>
+        <button data-view="week">1W</button>
+        <button data-view="month">1M</button>
+        <button data-view="6month">6M</button>
+        <button data-view="year">1Y</button>
+        <button data-view="all">All</button>
       </div>
-      <div class="tools">
-        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
-        <span class="small" style="margin-left:10px">Mode:</span>
-        <button id="lineMode" class="active">Line</button>
-        <button id="dotMode">Scatter</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="toolbtn" id="zIn">Zoom +</button>
+        <button class="toolbtn" id="zOut">Zoom -</button>
+        <button class="toolbtn active" id="lineMode">Line</button>
+        <button class="toolbtn" id="dotMode">Dots</button>
+        <button class="toolbtn" id="toggleVP">VP</button>
+        <button class="toolbtn" id="toggleIchimoku">Ichimoku</button>
+        <button class="btn-refresh" id="refreshBtn">Refresh</button>
       </div>
     </div>
+
     <div class="chartWrap">
-      <canvas id="chart" class="chart" width="980" height="700"></canvas>
-      <div id="tip" class="chart-tip"></div>
+      <canvas id="chart"></canvas>
+      <div id="tip"></div>
     </div>
-    <div class="legend"><span class="sell">Low Price</span><span class="buy">High Price</span></div>
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <button id="toggleVP" class="tools button">Toggle Volume Profile</button>
-      <button id="toggleIchimoku" class="tools button">Toggle Ichimoku</button>
-      <button id="refreshBtn" class="btn-refresh">Refresh Data</button>
-    </div>
-    <div class="key-info">
-      <div class="key-item"><label>Buy Price</label><strong id="buyPrice">—</strong></div>
-      <div class="key-item"><label>Sell Price</label><strong id="sellPrice">—</strong></div>
-      <div class="key-item"><label>Volume</label><strong id="volume">—</strong></div>
-      <div class="key-item"><label>Limit</label><strong id="limit">—</strong></div>
-      <div class="key-item"><label>Tax</label><strong id="tax">—</strong></div>
-      <div class="key-item"><label>Margin</label><strong id="margin">—</strong></div>
-      <div class="key-item"><label>ROI</label><strong id="roi">—</strong></div>
-      <div class="key-item"><label>Potential Profit</label><strong id="potentialProfit">—</strong></div>
+
+    <div class="legend">
+      <span class="low">Low Price</span>
+      <span class="high">High Price</span>
     </div>
   </div>
 </div>
+
 <script>
-/* ========== Constants & API ========== */
 const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping=[], latest=null, volumes=null, selected=null;
-let currentSeries=null, view="day", zoom=1.5, offset=0, drawMode="line";
-let showVP = false, showIchimoku = false;
-let adjustedBuy = null, adjustedSell = null, buyLimit = 0;
-const buyLimits = {}; // Cached buy limits
-/* ---------- Utilities ---------- */
-const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
-const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
-const abbreviateNumber = (num) => {
-  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
-  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
-  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
-  return num.toLocaleString();
-};
-async function jget(url){ const r=await fetch(url, {cache: "default"}); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
-const loadMapping=()=>jget(API+"/mapping");
-const loadLatest =()=>jget(API+"/latest");
-const loadVolumes=()=>jget(API+"/volumes");
-const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
-function bigIconUrl(id){ return `./images/${id}.png`; }
-function suggestPrices(low, high) {
-  if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
-  const spread = high - low;
-  let buyMargin = Math.max(1, Math.floor(spread * 0.1));
-  let sellMargin = Math.max(1, Math.floor(spread * 0.1));
-  const buyMin = Math.max(1, low - buyMargin);
-  const buyMax = low;
-  let sellMin = high;
-  let sellMax = Math.max(1, high + sellMargin);
-  const tax = 0.01;
-  const minSell = Math.ceil(buyMax / (1 - tax)) + 1;
-  sellMin = Math.max(sellMin, minSell);
-  sellMax = Math.max(sellMax, minSell + Math.max(2, Math.floor(sellMargin / 2)));
-  return { buyMin, buyMax, sellMin, sellMax };
-}
-/* Map backend timeseries to arrays */
+let series=null, view="day", zoom=1.8, offset=0, mode="line";
+let showVP=false, showIchi=false;
+
+async function fetchJSON(url){const r=await fetch(url,{cache:"force-cache"});return r.json()}
+const loadMapping=()=>fetchJSON(API+"/mapping");
+const loadLatest=()=>fetchJSON(API+"/latest");
+const loadVolumes=()=>fetchJSON(API+"/volumes");
+const loadTS=(step,id)=>fetchJSON(API+`/timeseries?timestep=${step}&id=${id}`);
+
+function fmt(n){return n==null?"—":n.toLocaleString()+" gp"}
+function icon(id){return `./images/${id}.png`}
+
 function seriesFromTS(ts){
-  const src = ts?.data || [];
-  const rows = src.map(r=>({
-    t: Number(r.timestamp ?? r.ts ?? r.time),
-    lo: r.avgLowPrice ?? r.low ?? null,
-    hi: r.avgHighPrice ?? r.high ?? null,
-    vol: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? null
-  })).filter(r=>r.t && (r.lo!=null || r.hi!=null)).sort((a,b)=>a.t-b.t);
-  return {
-    labels: rows.map(r=>r.t),
-    low: rows.map(r=>r.lo),
-    high: rows.map(r=>r.hi),
-    vol: rows.map(r=>r.vol ?? 0),
-    close: rows.map(r=>(r.lo + r.hi)/2 || r.hi || r.lo) // Avg for indicators
+  const d=ts?.data||[];
+  const rows=d.map(r=>({
+    t:+r.timestamp,
+    l:r.avgLowPrice??r.low,
+    h:r.avgHighPrice??r.high,
+    v:r.lowPriceVolume??r.highPriceVolume??r.volume??0
+  })).filter(r=>r.t && (r.l||r.h)).sort((a,b)=>a.t-b.t);
+  return{
+    t:rows.map(r=>r.t),
+    low:rows.map(r=>r.l),
+    high:rows.map(r=>r.h),
+    vol:rows.map(r=>r.v),
+    close:rows.map(r=>(r.l+r.h)/2)
   };
 }
-/* ========== Chart (with volume bars, VP, Ichimoku) ========== */
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-const tip = document.getElementById("tip");
-function ypx(v, vmin, vmax, y0, h){ if(vmin===vmax) return y0+h/2; const p=(v-vmin)/(vmax-vmin); return y0 + (1-p)*h; }
-function linearRegression(x, y) {
-  const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-  const meanX = sumX / n;
-  const meanY = sumY / n;
-  const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
-  const intercept = meanY - slope * meanX;
-  return { slope, intercept };
-}
-function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode){
-  const c = can;
-  const W=c.width, H=c.height;
-  const x0=60, y0=30, w=W-x0-14, h=H-y0-42;
-  const volHeight = h * 0.2; // 20% for volume bars
-  const priceHeight = h - volHeight;
-  context.clearRect(0,0,W,H);
-  if(!series || !series.labels?.length){ return; }
-  // Windowing
-  const n = series.labels.length;
-  const win = Math.max(12, Math.floor(n/z));
-  const start = Math.max(0,Math.min(n-win, Math.floor(off)));
-  const end = start + win;
-  const L = series.labels.slice(start,end);
-  const LO = series.low.slice(start,end);
-  const HI = series.high.slice(start,end);
-  const VO = series.vol.slice(start,end);
-  const CLOSE = series.close.slice(start,end);
-  // Value domain
-  const vals = [...LO, ...HI].filter(v=>v!=null);
-  if(!vals.length) return;
-  let vmin = Math.min(...vals), vmax = Math.max(...vals);
-  if(vmin===vmax){ vmin-=1; vmax+=1; }
-  const volMax = Math.max(...VO) || 1;
-  // Axes (price top, volume bottom)
-  context.strokeStyle="#000"; context.globalAlpha=0.5;
-  context.beginPath(); context.moveTo(x0,y0); context.lineTo(x0,y0+priceHeight); context.lineTo(x0+w,y0+priceHeight); context.stroke();
-  context.beginPath(); context.moveTo(x0,y0+priceHeight+10); context.lineTo(x0,y0+h); context.lineTo(x0+w,y0+h); context.stroke();
-  context.globalAlpha=1;
-  // Grid
-  const lines=5;
-  for(let i=0;i<=lines;i++){
-    const y=y0 + (priceHeight*i/lines);
-    context.strokeStyle="rgba(255,255,255,0.06)";
-    context.beginPath(); context.moveTo(x0,y); context.lineTo(x0+w,y); context.stroke();
+
+const canvas=document.getElementById("chart");
+const ctx=canvas.getContext("2d");
+const tip=$("#tip");
+
+function draw(){
+  if(!series) return;
+  const W=canvas.width, H=canvas.height;
+  const padL=70, padR=100, padT=30, padB=60;
+  const w=W-padL-padR, h=H-padT-padB;
+  const volH=h*0.2;
+  const priceH=h-volH;
+
+  const n=series.t.length;
+  const win=Math.max(10,Math.floor(n/zoom));
+  const start=Math.max(0,Math.min(n-win,Math.floor(offset)));
+  const end=start+win;
+
+  const t=series.t.slice(start,end);
+  const low=series.low.slice(start,end);
+  const high=series.high.slice(start,end);
+  const vol=series.vol.slice(start,end);
+  const close=series.close.slice(start,end);
+
+  const prices=[...low,...high].filter(x=>x!==null);
+  const vmin=Math.min(...prices), vmax=Math.max(...prices);
+  const volMax=Math.max(...vol,1);
+
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle="rgba(255,255,255,0.08)";
+  for(let i=0;i<=6;i++){
+    const y=padT + (priceH*i/6);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
   }
-  const stepX = w / Math.max(1,(L.length-1));
-  // Draw low/high series
-  function drawSeries(arr, color, mode, y0Offset = y0, hOffset = priceHeight){
-    context.strokeStyle=color;
-    context.fillStyle=color;
-    if(mode==="line"){
-      context.beginPath();
-      let started = false;
-      for(let i=0;i<arr.length;i++){
-        const v=arr[i]; if(v==null) { started = false; continue; }
-        const x=x0 + i*stepX;
-        const y=ypx(v, vmin, vmax, y0Offset, hOffset);
-        if (!started) { context.moveTo(x,y); started = true; } else context.lineTo(x,y);
-      }
-      context.lineWidth=2; context.stroke();
-    }else{
-      for(let i=0;i<arr.length;i++){
-        const v=arr[i]; if(v==null) continue;
-        const x=x0 + i*stepX;
-        const y=ypx(v, vmin, vmax, y0Offset, hOffset);
-        context.beginPath(); context.arc(x,y,3,0,Math.PI*2); context.fill();
-      }
+
+  const stepX=w/Math.max(1,t.length-1);
+
+  // Volume Profile (right side)
+  if(showVP){
+    const bins=35;
+    const binH=priceH/bins;
+    const profile=new Array(bins).fill(0);
+    let poc=0, maxV=0;
+    for(let i=0;i<low.length;i++){
+      const p=(low[i]+high[i])/2;
+      if(!p) continue;
+      const bin=Math.min(bins-1,Math.floor((p-vmin)/(vmax-vmin)*bins));
+      profile[bin]+=vol[i];
+      if(profile[bin]>maxV){maxV=profile[bin];poc=bin;}
     }
+    ctx.fillStyle="var(--vp-bar)";
+    for(let i=0;i<bins;i++){
+      const barW=(profile[i]/maxV)*80;
+      const y=padT + i*binH;
+      ctx.fillRect(W-padR-80, y, barW, binH-1);
+    }
+    // POC line
+    ctx.strokeStyle="var(--vp-poc)";
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.moveTo(padL, padT+poc*binH+binH/2);
+    ctx.lineTo(W-padR-80, padT+poc*binH+binH/2);
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
-  drawSeries(LO, 'var(--low-color)', mode);
-  drawSeries(HI, 'var(--high-color)', mode);
-  // Dotted prediction lines
-  drawPrediction(LO, 'var(--low-color)');
-  drawPrediction(HI, 'var(--high-color)');
-  function drawPrediction(arr, color) {
-    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
-    if (nonNull.length < 2) return;
-    const xVals = nonNull.map(({i}) => i);
-    const yVals = nonNull.map(({v}) => v);
-    const { slope, intercept } = linearRegression(xVals, yVals);
-    context.save();
-    context.setLineDash([6,6]);
-    context.strokeStyle = color;
-    context.beginPath();
-    const startX = x0;
-    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, priceHeight);
-    const endX = x0 + (arr.length - 1) * stepX + stepX * 0.2;
-    const endY = ypx(slope * (arr.length - 1 + (arr.length * 0.2)) + intercept, vmin, vmax, y0, priceHeight);
-    context.moveTo(startX, startY);
-    context.lineTo(endX, endY);
-    context.stroke();
-    context.restore();
+
+  // Ichimoku
+  if(showIchi){
+    const p=getPeriods(view);
+    const ten=hl(close,p.tenkan);
+    const kij=hl(close,p.kijun);
+    const senB=hl(close,p.senkou);
+    const senA=ten.map((t,i)=>t!==null&&kij[i]!==null?(t+kij[i])/2:null);
+    const chikou=[...new Array(p.kijun).fill(null),...close.slice(0,-p.kijun)];
+
+    line(ten,"var(--tenkan)",2);
+    line(kij,"var(--kijun)",2);
+    line(chikou,"var(--chikou)",2);
+
+    // Cloud
+    ctx.globalAlpha=0.25;
+    for(let i=p.kijun;i<close.length;i++){
+      const a=senA[i-p.kijun], b=senB[i-p.kijun];
+      if(a===null||b===null) continue;
+      const x=padL+(i-start)*stepX;
+      const ya=padT+priceH-(a-vmin)/(vmax-vmin)*priceH;
+      yb=padT+priceH-(b-vmin)/(vmax-vmin)*priceH;
+      ctx.fillStyle = a>b ? "var(--cloud-bull)" : "var(--cloud-bear)";
+      ctx.fillRect(x-2, Math.min(ya,yb), 4, Math.abs(ya-yb));
+    }
+    ctx.globalAlpha=1;
   }
-  // Volume bars (bottom panel)
-  context.fillStyle = "#fff"; context.font="bold 12px Segoe UI, Arial";
-  for(let i=0;i<VO.length;i++){
-    const vol = VO[i];
-    const prevVol = i > 0 ? VO[i-1] : vol;
-    const color = vol > prevVol ? 'var(--high-color)' : 'var(--low-color)';
-    const x = x0 + i*stepX - (stepX/2); // Center bar
-    const barH = (vol / volMax) * volHeight;
-    context.fillStyle = color;
-    context.fillRect(x, y0 + h - barH, stepX * 0.8, barH); // 80% width for spacing
+
+  // Price lines
+  line(low,"var(--low)",mode==="line"?3:0);
+  line(high,"var(--high)",mode==="line"?3:0);
+  if(mode==="dot"){
+    dots(low,"var(--low)");
+    dots(high,"var(--high)");
   }
-  // Y labels (price) - larger font
-  context.fillStyle="#fff"; context.font="bold 16px Segoe UI, Arial";
-  for(let i=0;i<=lines;i++){
-    const y=y0 + (priceHeight*i/lines);
-    const v = Math.round(vmax - (vmax-vmin)*i/lines);
-    context.fillText(abbreviateNumber(v), 6, y-4);
+
+  // Volume bars
+  vol.forEach((v,i)=>{
+    const x=padL+i*stepX;
+    const hBar=(v/volMax)*volH;
+    ctx.fillStyle = v>vol[i-1]||i===0 ? "var(--high)" : "var(--low)";
+    ctx.fillRect(x-stepX*0.4, H-padB, stepX*0.8, -hBar);
+  });
+
+  // Y axis labels
+  ctx.fillStyle="#fff";
+  ctx.font="bold 14px Arial";
+  for(let i=0;i<=6;i++){
+    const y=padT + priceH*i/6;
+    const val=Math.round(vmax - (vmax-vmin)*i/6);
+    ctx.fillText(val.toLocaleString(), 10, y+5);
   }
-  // X labels - larger font, adjust for long views
-  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
-  const numLabels = 6;
-  const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
-  for(let i=0; i < L.length; i += labelStep){
-    const date = new Date(L[i]*1000);
-    const dateStr = (view === 'day' || view === 'week') ? date.toLocaleDateString() : date.getFullYear().toString();
-    const x = x0 + i*stepX;
-    context.fillText(dateStr, x - 20, H - 10);
+  ctx.font="12px Arial";
+  const step=Math.max(1,Math.floor(t.length/8));
+  for(let i=0;i<t.length;i+=step){
+    const x=padL+i*stepX;
+    const d=new Date(t[i]*1000);
+    const txt = view==="day"||view==="week" ? d.toLocaleDateString() : d.getFullYear();
+    ctx.fillText(txt, x-15, H-10);
   }
-  // Tooltip - larger font
-  c.onmousemove = (ev)=>{
-    const rect=c.getBoundingClientRect();
-    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
-    if(mx<x0 || mx>x0+w || my<y0 || my>y0+h){ tip.style.display="none"; return; }
-    const idx=Math.max(0,Math.min(L.length-1, Math.round((mx-x0)/stepX)));
-    const t=L[idx]*1000;
-    const lo=LO[idx], hi=HI[idx], vol=VO[idx]||0;
+
+  // tooltip
+  canvas.onmousemove=e=>{
+    const r=canvas.getBoundingClientRect();
+    mx=e.clientX-r.left;
+    if(mx<padL||mx>W-padR) return tip.style.display="none";
+    const i=Math.round((mx-padL)/stepX)+start;
+    if(i<0||i>=t.length) return tip.style.display="none";
     tip.style.display="block";
-    tip.style.left = (mx+12)+"px";
-    tip.style.top = (my-10)+"px";
-    tip.innerHTML = `<strong>${new Date(t).toLocaleString()}</strong><br/>Low: ${fmtGp(lo)}<br/>High: ${fmtGp(hi)}<br/>Vol: ${fmtNum(vol)}`;
+    tip.style.left=e.clientX+10+"px";
+    tip.style.top=e.clientY-40+"px";
+    tip.innerHTML=`<strong>${new Date(t[i]*1000).toLocaleString()}</strong><br>
+                    Low: ${fmt(low[i])}<br>High: ${fmt(high[i])}<br>Vol: ${(vol[i]||0).toLocaleString()}`;
   };
-  c.onmouseleave = () => tip.style.display="none";
-  // Indicators
-  if (showVP) drawVolumeProfile(LO, HI, VO, context, x0 + w + 10, y0, priceHeight, vmin, vmax); // Right side as in TradingView
-  if (showIchimoku) drawIchimoku(CLOSE, context, x0, y0, w, priceHeight, stepX, vmin, vmax, end - start);
-}
-// Volume Profile Indicator - horizontal bars on right, with POC line
-function drawVolumeProfile(lows, highs, vols, context, x0, y0, h, vmin, vmax) {
-  const bins = 30; // More bins for detail
-  const binSize = (vmax - vmin) / bins;
-  const profile = new Array(bins).fill(0);
-  let pocBin = 0, maxVol = 0;
-  for (let i = 0; i < lows.length; i++) {
-    const avgPrice = (lows[i] + highs[i]) / 2;
-    if (avgPrice == null) continue;
-    const binIdx = Math.min(bins - 1, Math.floor((avgPrice - vmin) / binSize));
-    profile[binIdx] += vols[i] || 0;
-    if (profile[binIdx] > maxVol) { maxVol = profile[binIdx]; pocBin = binIdx; }
+  canvas.onmouseleave=()=>tip.style.display="none";
+
+  function line(data,color,w=2){
+    ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
+    let start=false;
+    data.forEach((v,i)=>{
+      if(v===null){start=false;return}
+      const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
+      start?ctx.lineTo(x,y):ctx.moveTo(x,y); start=true;
+    });
+    ctx.stroke();
   }
-  context.fillStyle = 'var(--vp-bar)';
-  for (let i = 0; i < bins; i++) {
-    const binVol = profile[i];
-    const barW = (binVol / maxVol) * 80; // Wider max
-    const y = y0 + (i * (h / bins)); // Top-down
-    context.fillRect(x0, y, barW, h / bins - 1);
-    if (binVol > maxVol * 0.7) {
-      context.fillStyle = 'var(--vp-highlight)';
-      context.fillRect(x0, y, barW, h / bins - 1);
-      context.fillStyle = 'var(--vp-bar)';
-    }
+  function dots(data,color){
+    ctx.fillStyle=color;
+    data.forEach((v,i)=>{
+      if(v===null)return;
+      const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
+      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
+    });
   }
-  // POC line across chart
-  const pocPrice = vmin + (pocBin + 0.5) * binSize;
-  const pocY = ypx(pocPrice, vmin, vmax, y0, h);
-  context.strokeStyle = 'var(--accent)';
-  context.setLineDash([4,4]);
-  context.beginPath();
-  context.moveTo(x0 - w - 10, pocY);
-  context.lineTo(x0, pocY);
-  context.stroke();
-  context.setLineDash([]);
-}
-// Ichimoku Indicator - enhanced colors/trails/cloud like TradingView
-function drawIchimoku(closes, context, x0, y0, w, h, stepX, vmin, vmax) {
-  const periods = getIchimokuPeriods(view);
-  const tenkan = calculateHL(closes, periods.tenkan);
-  const kijun = calculateHL(closes, periods.kijun);
-  const chikou = [...new Array(periods.kijun).fill(null), ...closes.slice(0, -periods.kijun)]; // Shift forward for display
-  const senkouA = [];
-  const senkouB = calculateHL(closes, periods.senkou);
-  for (let i = 0; i < closes.length; i++) {
-    senkouA[i] = (tenkan[i] + kijun[i]) / 2;
+  function hl(arr,p){
+    return arr.map((_,i)=>{
+      const s=Math.max(0,i-p+1), e=i+1;
+      if(e-s<p) return null;
+      const slice=arr.slice(s,e);
+      return (Math.max(...slice)+Math.min(...slice))/2;
+    });
   }
-  // Project Senkou A/B forward
-  const projStart = closes.length - periods.kijun;
-  for (let i = 0; i < periods.kijun; i++) {
-    senkouA.push(senkouA[projStart - 1 + i] || senkouA[senkouA.length - 1]);
-    senkouB.push(senkouB[projStart - 1 + i] || senkouB[senkouB.length - 1]);
-  }
-  drawSeries(tenkan, 'var(--tenkan-color)', 'line', y0, h, context); // Blue
-  drawSeries(kijun, 'var(--kijun-color)', 'line', y0, h, context); // Pink
-  drawSeries(chikou, 'var(--chikou-color)', 'line', y0, h, context); // Green
-  // Cloud with trails
-  context.globalAlpha = 0.3;
-  context.beginPath();
-  let bullPath = new Path2D();
-  let bearPath = new Path2D();
-  for (let i = periods.kijun; i < closes.length; i++) {
-    const sa = senkouA[i];
-    const sb = senkouB[i - periods.kijun + periods.kijun]; // Align
-    if (sa == null || sb == null) continue;
-    const x = x0 + (i - periods.kijun) * stepX;
-    const ya = ypx(sa, vmin, vmax, y0, h);
-    const yb = ypx(sb, vmin, vmax, y0, h);
-    if (sa > sb) {
-      bullPath.moveTo(x, ya);
-      bullPath.lineTo(x, yb);
-    } else {
-      bearPath.moveTo(x, ya);
-      bearPath.lineTo(x, yb);
-    }
-  }
-  context.fillStyle = 'var(--senkou-fill-bull)';
-  context.fill(bullPath);
-  context.fillStyle = 'var(--senkou-fill-bear)';
-  context.fill(bearPath);
-  context.globalAlpha = 1;
-}
-function getIchimokuPeriods(view) {
-  switch (view) {
-    case 'day': return {tenkan:9, kijun:26, senkou:52};
-    case 'week': return {tenkan:9*6, kijun:26*6, senkou:52*6};
-    case 'month': case '6month': case 'year': case 'all': return {tenkan:9*24, kijun:26*24, senkou:52*24}; // Daily scale for long views
+  function getPeriods(v){
+    if(v==="day") return {tenkan:9,kijun:26,senkou:52};
+    if(v==="week") return {tenkan:9*6,kijun:26*6,senkou:52*6};
+    return {tenkan:9*24,kijun:26*24,senkou:52*24};
   }
 }
-function calculateHL(closes, period) {
-  return closes.map((_, i) => {
-    const slice = closes.slice(Math.max(0, i - period + 1), i + 1);
-    if (slice.length < period) return null;
-    const high = Math.max(...slice);
-    const low = Math.min(...slice);
-    return (high + low) / 2;
-  });
+
+async function loadItem(item){
+  selected=item;
+  $("#query").value=item.name;
+  $("#itemImg").src=icon(item.id);
+  latest=await loadLatest();
+  volumes=await loadVolumes();
+  const d=latest.data[item.id];
+  $("#buyPrice").textContent=fmt(d?.low??d?.avgLowPrice);
+  $("#sellPrice").textContent=fmt(d?.high??d?.avgHighPrice);
+
+  const step=view==="day"?"1h":view==="week"?"6h":"24h";
+  const ts=await loadTS(step,item.id);
+  series=seriesFromTS(ts);
+  zoom=view==="day"?6:view==="week"?2:1;
+  offset=series.t.length-Math.floor(series.t.length/zoom);
+  draw();
 }
-function drawSeries(arr, color, mode, y0, h, context = ctx){
-  context.strokeStyle=color;
-  context.fillStyle=color;
-  if(mode==="line"){
-    context.beginPath();
-    let started = false;
-    for(let i=0;i<arr.length;i++){
-      const v=arr[i]; if(v==null) { started = false; continue; }
-      const x=x0 + i*stepX;
-      const y=ypx(v, vmin, vmax, y0, h);
-      if (!started) { context.moveTo(x,y); started = true; } else context.lineTo(x,y);
-    }
-    context.lineWidth=2; context.stroke();
-  }else{
-    for(let i=0;i<arr.length;i++){
-      const v=arr[i]; if(v==null) continue;
-      const x=x0 + i*stepX;
-      const y=ypx(v, vmin, vmax, y0, h);
-      context.beginPath(); context.arc(x,y,3,0,Math.PI*2); context.fill();
-    }
+
+document.querySelectorAll(".viewtabs button").forEach(b=>b.onclick=()=>{
+  document.querySelector(".viewtabs .active")?.classList.remove("active");
+  b.classList.add("active");
+  view=b.dataset.view;
+  if(selected) loadItem(selected);
+});
+$("#zIn").onclick=()=>{zoom=Math.min(10,zoom*1.3);draw()};
+$("#zOut").onclick=()=>{zoom=Math.max(1,zoom/1.3);draw()};
+$("#lineMode").onclick=()=>{mode="line";$("#lineMode").classList.add("active");$("#dotMode").classList.remove("active");draw()};
+$("#dotMode").onclick=()=>{mode="dot";$("#dotMode").classList.add("active");$("#lineMode").classList.remove("active");draw()};
+$("#toggleVP").onclick=()=>{showVP=!showVP;$("#toggleVP").classList.toggle("active");draw()};
+$("#toggleIchimoku").onclick=()=>{showIchi=!showIchi;$("#toggleIchimoku").classList.toggle("active");draw()};
+$("#refreshBtn").onclick=async()=>{latest=await loadLatest();volumes=await loadVolumes();if(selected)loadItem(selected)};
+
+// search
+$("#query").oninput=e=>{
+  const q=e.target.value.toLowerCase().trim();
+  const box=$("#suggestBox");
+  if(!q){box.style.display="none";return}
+  const matches=mapping.filter(i=>i.name.toLowerCase().includes(q)).slice(0,15);
+  box.innerHTML=matches.map(i=>`<div data-id="${i.id}"><img src="${icon(i.id)}">${i.name}</div>`).join("");
+  box.style.display=matches.length?"block":"none";
+};
+$("#suggestBox").onclick=e=>{
+  const id=e.target.closest("[data-id]")?.dataset.id;
+  if(id){
+    const item=mapping.find(x=>x.id==id);
+    if(item){$("#suggestBox").style.display="none";loadItem(item)}
   }
-}
-/* ---------- Item selection ---------- */
-async function getBuyLimit(id) {
-  if (buyLimits[id]) return buyLimits[id];
-  try {
-    const res = await fetch(`./items-json/${id}.json`);
-    const data = await res.json();
-    buyLimits[id] = data.buy_limit;
-    return buyLimits[id];
-  } catch (e) {
-    return null;
-  }
-}
-async function setItem(m){
-  selected=m; $("#query").value=m.name;
-  const img=$("#itemImg");
-  img.src=bigIconUrl(m.id);
-  img.alt = m.name;
-  img.onerror=()=>{ img.onerror=null; img.src=wikiIconUrl(m.name); };
-  latest = await loadLatest();
-  volumes= await loadVolumes();
-  const node=latest.data[String(m.id)];
-  const lo=node?.low ?? node?.avgLowPrice ?? null;
-  const hi=node?.high ?? node?.avgHighPrice ?? null;
-  let rec=suggestPrices(lo,hi);
-  adjustedBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
-  adjustedSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
-  buyLimit = await getBuyLimit(m.id) || 10000;
-  $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
-  $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
-  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
-  updateFlipProfit();
-  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
-  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
-  let step = '24h'; // Default to daily for all
-  if (view === 'day') step = '1h';
-  else if (view === 'week') step = '6h';
-  const ts = await loadTS(step, m.id);
-  currentSeries = seriesFromTS(ts);
-  zoom = view === 'day' ? 6 : view === 'week' ? 1.5 : 1; // Adjust zoom for longer views
-  offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom);
-  drawChart(currentSeries);
-  // Update key info
-  $("#buyPrice").textContent = fmtGp(lo);
-  $("#sellPrice").textContent = fmtGp(hi);
-  $("#volume").textContent = fmtNum(volumes.data[m.id] || 0);
-  $("#limit").textContent = fmtNum(buyLimit);
-  const tax = Math.min(5000000, Math.floor(hi * 0.01));
-  $("#tax").textContent = fmtGp(tax);
-  const margin = hi - lo;
-  $("#margin").textContent = fmtGp(margin);
-  const roi = lo ? ((margin - tax) / lo * 100).toFixed(2) + '%' : '—';
-  $("#roi").textContent = roi;
-  const potentialProfit = (margin - tax) * buyLimit;
-  $("#potentialProfit").textContent = fmtGp(potentialProfit);
-}
-function updateSmartBuyFromInput(){ adjustedBuy = parseInt($("#smartBuyInput").value.replace(/,/g, '')) || null; $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—"; $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—"; updateFlipProfit(); }
-function updateSmartSellFromInput(){ adjustedSell = parseInt($("#smartSellInput").value.replace(/,/g, '')) || null; $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—"; updateFlipProfit(); }
-function adjustPrice(type, delta){
-  if (type === 'buy') { adjustedBuy = (adjustedBuy || 0) + delta; $("#smartBuyInput").value = adjustedBuy.toLocaleString(); $("#capitalRequired").textContent = fmtGp(adjustedBuy * buyLimit); }
-  else if (type === 'sell') { adjustedSell = (adjustedSell || 0) + delta; $("#smartSellInput").value = adjustedSell.toLocaleString(); }
-  updateFlipProfit();
-}
-function adjustBuyLimit(delta){ buyLimit += delta; if (buyLimit < 1) buyLimit = 1; $("#buyLimitDisplay").value = buyLimit.toLocaleString(); $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`; $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—"; updateFlipProfit(); }
-function updateBuyLimitFromInput(){ buyLimit = parseInt($("#buyLimitDisplay").value.replace(/,/g, '')) || 10000; $("#buyLimitDisplay").value = buyLimit.toLocaleString(); $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`; $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—"; updateFlipProfit(); }
-function updateFlipProfit(){
-  if (adjustedBuy && adjustedSell && buyLimit) {
-    const profitPerItem = adjustedSell - adjustedBuy - Math.min(5000000, Math.floor(adjustedSell * 0.01));
-    const totalProfit = profitPerItem * Math.min(buyLimit, 100);
-    $("#flipProfit").textContent = fmtGp(totalProfit);
-  } else {
-    $("#flipProfit").textContent = "—";
-  }
-}
-/* ---------- Boot ---------- */
-(async function boot(){
-  mapping = await loadMapping();
-  // Autocomplete
-  const sb=$("#suggestBox");
-  $("#query").addEventListener("input", ()=>{
-    const q=$("#query").value.trim().toLowerCase();
-    if(!q){ sb.style.display="none"; sb.innerHTML=""; return; }
-    const list=mapping.filter(x=> x.name.toLowerCase().includes(q)).slice(0,20);
-    sb.innerHTML=list.map(x=>`<div data-id="${x.id}">${x.name}</div>`).join("");
-    sb.style.display=list.length?"block":"none";
-  });
-  sb.addEventListener("click", (e)=>{
-    const id=e.target?.dataset?.id;
-    if(!id) return;
-    const m=mapping.find(x=>String(x.id)===String(id));
-    if(m){ sb.style.display="none"; setItem(m); }
-  });
-  // View buttons
-  document.querySelectorAll(".viewtabs button").forEach(b=>{
-    b.onclick=()=>{
-      document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      view=b.dataset.view;
-      if(selected) setItem(selected);
-    }
-  });
-  // Chart tools
-  $("#zIn").onclick = ()=>{ zoom=Math.min(8, zoom*1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
-  $("#zOut").onclick= ()=>{ zoom=Math.max(1, zoom/1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
-  $("#lineMode").onclick=()=>{ drawMode="line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); drawChart(currentSeries); };
-  $("#dotMode").onclick =()=>{ drawMode="dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); drawChart(currentSeries); };
-  // Indicator toggles
-  $("#toggleVP").onclick = () => { showVP = !showVP; $("#toggleVP").classList.toggle("active"); drawChart(currentSeries); };
-  $("#toggleIchimoku").onclick = () => { showIchimoku = !showIchimoku; $("#toggleIchimoku").classList.toggle("active"); drawChart(currentSeries); };
-  // Refresh
-  $("#refreshBtn").onclick=async ()=>{
-    latest = await loadLatest();
-    volumes = await loadVolumes();
-    if(selected) await setItem(selected);
-  };
-  // Initial load
-  latest = await loadLatest();
-  volumes = await loadVolumes();
-  const defaultItem = mapping.find(x=>x.name.toLowerCase()==="gilded scimitar");
-  if(defaultItem) setItem(defaultItem);
+};
+
+// init
+(async()=>{
+  mapping=await loadMapping();
+  const gilded=mapping.find(x=>x.name.toLowerCase().includes("gilded scimitar"));
+  if(gilded) loadItem(gilded);
+  canvas.width=canvas.offsetWidth*devicePixelRatio;
+  canvas.height=canvas.offsetHeight*devicePixelRatio;
+  window.onresize=()=>location.reload();
+  draw();
 })();
 </script>
 </body>
 </html>
-```
