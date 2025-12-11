@@ -2,64 +2,36 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Grant Exchange • OSRS GE Chart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.8"/>
 <link rel="icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <style>
-:root{
-  --bg:#0e0c0a;--card:#1a1612;--edge:#4a3a22;--gold:#d4af37;--orange:#f39c12;
-  --ink:#f0e6d2;--muted:#a0876a;--low:#e74c3c;--high:#2ecc71;--accent:#f1c40f;
-  --tenkan:#0094ff;--kijun:#ff3399;--chikou:#00ff00;
-  --cloud-bull:rgba(46,204,113,0.35);--cloud-bear:rgba(231,76,60,0.35);
-  --vp-bar:rgba(255,255,255,0.18);--vp-poc:#f1c40f;
-}
+:root{--bg:#0e0c0a;--card:#1a1612;--edge:#4a3a22;--gold:#d4af37;--orange:#f39c12;--ink:#f0e6d2;--low:#e74c3c;--high:#2ecc71;--accent:#f1c40f}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-.wrap{max-width:1400px;margin:0 auto;padding:12px;display:flex;flex-direction:column;height:100vh;gap:12px}
-.header{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--card);border:1px solid var(--edge);border-radius:12px;
-  padding:12px 20px;
-}
-.logo{display:flex;align-items:center;gap:12px}
-h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
-.badge{background:#2a2210;border:1px solid var(--edge);padding:4px 10px;border-radius:20px;font-size:13px;color:var(--muted)}
-.mode-switch{display:flex;gap:8px}
-.mode-switch button,.viewtabs button,.toolbtn{
-  background:var(--card);border:1px solid var(--edge);color:var(--ink);
-  padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;
-  text-transform:uppercase;font-size:13px;transition:all .2s;
-}
-.mode-switch button.active,.viewtabs button.active,.toolbtn.active,.toolbtn:hover{
-  background:#3a2f17;border-color:var(--orange);color:var(--orange);
-  box-shadow:0 0 12px rgba(243,156,18,0.4);
-}
-.card{background:var(--card);border:1px solid var(--edge);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.5);flex:1;display:flex;flex-direction:column}
-.top{display:grid;grid-template-columns:100px 1fr 300px;gap:16px;align-items:center;margin-bottom:12px}
-.imgbox{width:100px;height:100px;background:var(--card);border:2px solid var(--edge);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.imgbox img{width:85%;height:85%;object-fit:contain;image-rendering:pixelated}
-.search{position:relative}
-#query{width:100%;background:var(--card);border:2px solid var(--edge);color:var(--ink);padding:14px 16px;border-radius:12px;font-size:18px;outline:none}
-#query:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,156,18,0.2)}
-.suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--edge);border-radius:12px;max-height:320px;overflow:auto;z-index:10;margin-top:4px;display:none;box-shadow:0 8px 20px rgba(0,0,0,0.6)}
-.suggest div{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid #333}
-.suggest div:hover{background:#2a2419}
-.suggest img{width:28px;height:28px;image-rendering:pixelated}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif;height:100vh;display:flex;flex-direction:column}
+.header{background:var(--card);border-bottom:1px solid var(--edge);padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:28px;color:var(--orange);font-weight:900}
+.badge{background:#2a2210;border:1px solid var(--edge);padding:4px 10px;border-radius:20px;font-size:13px}
+.mode{display:flex;gap:8px}
+.mode button{background:var(--card);border:1px solid var(--edge);color:var(--ink);padding:8px 14px;border-radius:10px;font-weight:600}
+.mode button.active{background:#3a2f17;border-color:var(--orange);color:var(--orange);box-shadow:0 0 12px rgba(243,156,18,.4)}
+.main{flex:1;background:var(--card);margin:12px;border:1px solid var(--edge);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.top{padding:16px;display:grid;grid-template-columns:110px 1fr 320px;gap:16px;align-items:center}
+.imgbox{width:110px;height:110px;background:#111;border:2px solid var(--edge);border-radius:14px;overflow:hidden}
+.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+#query{width:100%;background:var(--card);border:2px solid var(--edge);color:var(--ink);padding:14px 18px;border-radius:12px;font-size:18px}
+#query:focus{border-color:var(--orange);outline:none}
 .prices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.price-box{background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:10px;text-align:center}
-.price-box label{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:0.5px}
-.price-box strong{font-size:22px;font-weight:900;color:var(--gold)}
-.price-box.low strong{color:var(--low)}
-.price-box.high strong{color:var(--high)}
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center;justify-content:space-between}
-.chartWrap{position:relative;flex:1;min-height:500px}
-#chart{width:100%;height:100%;border-radius:12px;background:#111}
-#tip{
-  position:absolute;padding:8px 12px;background:rgba(0,0,0,0.9);color:#fff;
-  border-radius:8px;font-size:13px;pointer-events:none;z-index:100;
-  border:1px solid #444;box-shadow:0 4px 12px rgba(0,0,0,0.6)
-}
-.legend{display:flex;gap:20px;margin-top:8px;font-size:14px}
+.price{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:12px;text-align:center}
+.price strong{font-size:24px;font-weight:900;color:var(--gold)}
+.price.low strong{color:var(--low)}
+.price.high strong{color:var(--high)}
+.controls{padding:0 16px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.tabs button,.tool{background:var(--card);border:1px solid var(--edge);color:var(--ink);padding:8px 14px;border-radius:10px;font-weight:600;text-transform:uppercase;font-size:13px;cursor:pointer}
+.tabs button.active,.tool.active{background:#3a2f17;border-color:var(--orange);color:var(--orange);box-shadow:0 0 12px rgba(243,156,18,.4)}
+.chart{flex:1;background:#111;position:relative}
+#tip{position:absolute;background:rgba(0,0,0,.9);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;pointer-events:none;display:none;z-index:100;border:1px solid #444}
+.legend{padding:12px;display:flex;gap:20px;font-size:14px}
 .legend span{display:flex;align-items:center;gap:6px}
 .legend span::before{content:"";width:16px;height:4px;border-radius:2px}
 .legend .low::before{background:var(--low)}
@@ -67,366 +39,287 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="header">
-    <div class="logo">
-      <h1>Grant Exchange</h1>
-      <span class="badge">v3.5</span>
-    </div>
-    <div class="mode-switch">
-      <button id="f2pBtn" class="active">F2P</button>
-      <button id="membersBtn">Members</button>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px">
+    <h1>Grant Exchange</h1>
+    <div class="badge">v3.6</div>
+  </div>
+  <div class="mode">
+    <button id="f2p" class="active">F2P</button>
+    <button id="members">Members</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="top">
+    <div class="imgbox"><img id="img" src="" alt=""/></div>
+    <input id="query" placeholder="Search any item..."/>
+    <div class="prices">
+      <div class="price low"><div>BUY PRICE</div><strong id="buy">—</strong></div>
+      <div class="price high"><div>SELL PRICE</div><strong id="sell">—</strong></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="top">
-      <div class="imgbox"><img id="itemImg" src="" alt=""/></div>
-      <div class="search">
-        <input id="query" placeholder="Search item..." autocomplete="off"/>
-        <div id="suggestBox" class="suggest"></div>
-      </div>
-      <div class="prices">
-        <div class="price-box low">
-          <label>Buy Price</label>
-          <strong id="buyPrice">—</strong>
-        </div>
-        <div class="price-box high">
-          <label>Sell Price</label>
-          <strong id="sellPrice">—</strong>
-        </div>
-      </div>
+  <div class="controls">
+    <div class="tabs">
+      <button data-v="day" class="active">1D</button>
+      <button data-v="week">1W</button>
+      <button data-v="month">1M</button>
+      <button data-v="6month">6M</button>
+      <button data-v="year">1Y</button>
+      <button data-v="all">ALL</button>
     </div>
+    <div style="display:flex;gap:8px">
+      <button class="tool" id="zin">Zoom +</button>
+      < class="tool" id="zout">Zoom -</button>
+      < class="tool active" id="line">Line</button>
+      < class="tool" id="dots">Dots</button>
+      < class="tool" id="vp">VP</button>
+      < class="tool" id="ichi">Ichimoku</button>
+      < class="tool" id="refresh">Refresh</button>
+    </div>
+  </div>
 
-    <div class="controls">
-      <div class="viewtabs">
-        <button data-view="day" class="active">1D</button>
-        <button data-view="week">1W</button>
-        <button data-view="month">1M</button>
-        <button data-view="6month">6M</button>
-        <button data-view="year">1Y</button>
-        <button data-view="all">All</button>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="toolbtn" id="zIn">Zoom +</button>
-        <button class="toolbtn" id="zOut">Zoom -</button>
-        <button class="toolbtn active" id="lineMode">Line</button>
-        <button class="toolbtn" id="dotMode">Dots</button>
-        <button class="toolbtn" id="toggleVP">VP</button>
-        <button class="toolbtn" id="toggleIchimoku">Ichimoku</button>
-        <button class="toolbtn" id="refreshBtn">Refresh</button>
-      </div>
-    </div>
+  <div class="chart">
+    <canvas id="c"></canvas>
+    <div id="tip"></div>
+  </div>
 
-    <div class="chartWrap">
-      <canvas id="chart"></canvas>
-      <div id="tip"></div>
-    </div>
-
-    <div class="legend">
-      <span class="low">Low Price</span>
-      <span class="high">High Price</span>
-    </div>
+  <div class="legend">
+    <span class="low">Low Price</span>
+    <span class="high">High Price</span>
   </div>
 </div>
 
 <script>
-const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
-let mapping = [], latest = null, volumes = null, selected = null;
-let series = null, view = "day", zoom = 1.8, offset = 0, mode = "line";
-let showVP = false, showIchi = false;
-let isMembers = false;
+let map = [], latest = null, vol = null, item = null;
+let data = null, view = "day", zoom = 1.8, mode = "line", vpOn = false, ichiOn = false;
+let members = false;
 
-// Safe fetch
-async function fetchJSON(url) {
-  try {
-    const r = await fetch(url, { cache: "force-cache" });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch (e) { console.error(e); return null; }
+const c = document.getElementById("c"), ctx = c.getContext("2d");
+const tip = document.getElementById("tip");
+
+async function get(url){try{const r=await fetch(url,{cache:"force-cache"});return r.ok?await r.json():null}catch(e){return null}}
+
+const loadMap = ()=>get(API+"/mapping");
+const loadLatest = ()=>get(API+"/latest");
+const loadVol = ()=>get(API+"/volumes");
+const loadTS = (step,id)=>get(API+`/timeseries?timestep=${step}&id=${id}`);
+
+function img(id){
+  const i = map.find(x=>x.id==id);
+  return i ? `https://oldschool.runescape.wiki/images/${i.name.replace(/ /g,"_")}.png` : "";
 }
 
-const loadMapping = () => fetchJSON(API + "/mapping");
-const loadLatest = () => fetchJSON(API + "/latest");
-const loadVolumes = () => fetchJSON(API + "/volumes");
-const loadTS = (step, id) => fetchJSON(API + `/timeseries?timestep=${step}&id=${id}`);
-
-// Fixed image URL that always works
-function icon(id) {
-  const item = mapping.find(i => i.id == id);
-  if (!item) return "https://oldschool.runescape.wiki/images/Question_mark.png";
-  return `https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}.png`;
+function series(ts){
+  if(!ts?.data) return null;
+  const rows = ts.data.map(r=>({
+    t:+r.timestamp,
+    l:r.avgLowPrice??r.low??null,
+    h:r.avgHighPrice??r.high??null,
+    v:r.lowPriceVolume??r.highPriceVolume??r.volume??0
+  })).filter(r=>r.l!==null||r.h!==null).sort((a,b)=>a.t-b.t);
+  return{
+    t:rows.map(r=>r.t),
+    l:rows.map(r=>r.l),
+    h:rows.map(r=>r.h),
+    v:rows.map(r=>r.v),
+    c:rows.map(r=>(r.l+r.h)/2)
+  }
 }
 
-function fmt(n) { return n == null ? "—" : n.toLocaleString() + " gp"; }
+function draw(){
+  if(!data||!data.t.length) return;
+  const W=c.width, H=c.height;
+  const L=70, R=110, T=20, B=60;
+  const w=W-L-R, h=H-T-B;
+  const vH=h*0.22, pH=h-vH;
 
-function seriesFromTS(ts) {
-  if (!ts?.data?.length) return null;
-  const rows = ts.data.map(r => ({
-    t: Number(r.timestamp),
-    l: r.avgLowPrice ?? r.low ?? null,
-    h: r.avgHighPrice ?? r.high ?? null,
-    v: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? 0
-  })).filter(r => r.t && (r.l !== null || r.h !== null)).sort((a, b) => a.t - b.t);
+  const n=data.t.length;
+  const win=Math.max(10,Math.floor(n/zoom));
+  const s=Math.max(0,Math.min(n-win,Math.floor(offset)));
+  const e=s+win;
 
-  return {
-    t: rows.map(r => r.t),
-    low: rows.map(r => r.l),
-    high: rows.map(r => r.h),
-    vol: rows.map(r => r.v),
-    close: rows.map(r => (r.l + r.h) / 2)
-  };
-}
+  const slice = (arr)=>arr.slice(s,e);
+  const t=slice(data.t), l=slice(data.l), h=slice(data.h), v=slice(data.v), cl=slice(data.c);
 
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-const tip = $("#tip");
-let vmin = 0, vmax = 0, stepX = 0;
+  const prices=[...l,...h].filter(x=>x!==null);
+  const min=Math.min(...prices), max=Math.max(...prices);
+  const vMax=Math.max(...v,1);
 
-function draw() {
-  if (!series || !series.t.length) return;
+  ctx.clearRect(0,0,W,H);
 
-  const W = canvas.width, H = canvas.height;
-  const padL = 70, padR = 110, padT = 30, padB = 60;
-  const w = W - padL - padR, h = H - padT - padB;
-  const volH = h * 0.22;
-  const priceH = h - volH;
-
-  const n = series.t.length;
-  const win = Math.max(10, Math.floor(n / zoom));
-  const start = Math.max(0, Math.min(n - win, Math.floor(offset)));
-  const end = start + win;
-
-  const t = series.t.slice(start, end);
-  const low = series.low.slice(start, end);
-  const high = series.high.slice(start, end);
-  const vol = series.vol.slice(start, end);
-  const close = series.close.slice(start, end);
-
-  const prices = [...low, ...high].filter(v => v !== null);
-  if (!prices.length) return;
-  vmin = Math.min(...prices), vmax = Math.max(...prices);
-  const volMax = Math.max(...vol, 1);
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Grid
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
-  for (let i = 0; i <= 6; i++) {
-    const y = padT + priceH * i / 6;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+  // grid
+  ctx.strokeStyle="#ffffff0a";
+  for(let i=0;i<=6;i++){
+    const y=T + pH*i/6;
+    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();
   }
 
-  stepX = w / Math.max(1, t.length - 1);
+  const step=w/Math.max(1,t.length-1);
 
-  // Volume Profile
-  if (showVP) {
-    const bins = 40;
-    const binH = priceH / bins;
-    const profile = new Array(bins).fill(0);
-    let maxV = 0, poc = 0;
-    for (let i = 0; i < low.length; i++) {
-      const p = (low[i] + high[i]) / 2;
-      if (p === null) continue;
-      const bin = Math.min(bins - 1, Math.floor((p - vmin) / (vmax - vmin) * bins));
-      profile[bin] += vol[i];
-      if (profile[bin] > maxV) { maxV = profile[bin]; poc = bin; }
+  // VP
+  if(vpOn){
+    const bins=40, binH=pH/bins;
+    const prof=new Array(bins).fill(0);
+    let poc=0, mx=0;
+    for(let i=0;i<l.length;i++){
+      const p=(l[i]+h[i])/2;
+      if(p===null) continue;
+      const bin=Math.min(bins-1,Math.floor((p-min)/(max-min)*bins));
+      prof[bin]+=v[i];
+      if(prof[bin]>mx){mx=prof[bin];poc=bin;}
     }
-    ctx.fillStyle = "var(--vp-bar)";
-    for (let i = 0; i < bins; i++) {
-      const barW = (profile[i] / maxV) * 90;
-      const y = padT + i * binH;
-      ctx.fillRect(W - padR - 90, y, barW, binH - 1);
+    ctx.fillStyle="rgba(255,255,255,0.18)";
+    for(let i=0;i<bins;i++){
+      const bw=(prof[i]/mx)*90;
+      ctx.fillRect(W-R-90, T+i*binH, bw, binH-1);
     }
-    ctx.strokeStyle = "var(--vp-poc)";
-    ctx.lineWidth = 2; ctx.setLineDash([6,4]);
-    ctx.beginPath();
-    ctx.moveTo(padL, padT + poc * binH + binH / 2);
-    ctx.lineTo(W - padR - 90, padT + poc * binH + binH / 2);
-    ctx.stroke();
+    ctx.strokeStyle="#f1c40f";ctx.lineWidth=2;ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.moveTo(L,T+poc*binH+binH/2);ctx.lineTo(W-R-90,T+poc*binH+binH/2);ctx.stroke();
     ctx.setLineDash([]);
   }
 
-  // Ichimoku Cloud
-  if (showIchi) {
-    const p = getPeriods(view);
-    const ten = hl(close, p.tenkan);
-    const kij = hl(close, p.kijun);
-    const senB = hl(close, p.senkou);
-    const senA = ten.map((t, i) => t !== null && kij[i] !== null ? (t + kij[i]) / 2 : null);
-
-    line(ten, "var(--tenkan)", 2.5);
-    line(kij, "var(--kijun)", 2.5);
-
-    ctx.globalAlpha = 0.35;
-    for (let i = p.kijun; i < close.length; i++) {
-      const a = senA[i - p.kijun], b = senB[i - p.kijun];
-      if (a === null || b === null) continue;
-      const x = padL + (i - start) * stepX;
-      const ya = padT + priceH - (a - vmin) / (vmax - vmin) * priceH;
-      const yb = padT + priceH - (b - vmin) / (vmax - vmin) * priceH;
-      ctx.fillStyle = a >= b ? "var(--cloud-bull)" : "var(--cloud-bear)";
-      ctx.fillRect(x - stepX / 2, Math.min(ya, yb), stepX, Math.abs(ya - yb));
+  // Ichimoku
+  if(ichiOn){
+    const p = view==="day"?{t:9,k:26,s:52}:view==="week"?{t:54,k:156,s:312}:{t:216,k:624,s:1248};
+    const ten=hl(cl,p.t), kij=hl(cl,p.k), senB=hl(cl,p.s);
+    const senA=ten.map((x,i)=>x!==null&&kij[i]!==null?(x+kij[i])/2:null);
+    line(ten,"#0094ff",2.5);
+    line(kij,"#ff3399",2.5);
+    ctx.globalAlpha=0.35;
+    for(let i=p.k;i<cl.length;i++){
+      const a=senA[i-p.k], b=senB[i-p.k];
+      if(a===null||b===null) continue;
+      const x=L+(i-s)*step;
+      const ya=T+pH-(a-min)/(max-min)*pH;
+      const yb=T+pH-(b-min)/(max-min)*pH;
+      ctx.fillStyle = a>=b ? "rgba(46,204,113,0.35)" : "rgba(231,76,60,0.35)";
+      ctx.fillRect(x-step/2, Math.min(ya,yb), step, Math.abs(ya-yb));
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha=1;
   }
 
-  // Price lines
-  line(low, "var(--low)", mode === "line" ? 3 : 0);
-  line(high, "var(--high)", mode === "line" ? 3 : 0);
-  if (mode === "dot") {
-    dots(low, "var(--low)");
-    dots(high, "var(--high)");
-  }
+  // price
+  line(l,"var(--low)",mode==="line"?3:0);
+  line(h,"var(--high)",mode==="line"?3:0);
+  if(mode==="dot") {dots(l,"var(--low)");dots(h,"var(--high)");}
 
-  // Volume
-  vol.forEach((v, i) => {
-    const x = padL + i * stepX;
-    const hBar = (v / volMax) * volH;
-    ctx.fillStyle = v > (vol[i - 1] || 0) ? "var(--high)" : "var(--low)";
-    ctx.globalAlpha = 0.6;
-    ctx.fillRect(x - stepX * 0.4, H - padB, stepX * 0.8, -hBar);
-    ctx.globalAlpha = 1;
+  // volume
+  v.forEach((vv,i)=>{
+    const x=L+i*step;
+    const bh=(vv/vMax)*vH;
+    ctx.fillStyle = vv>(v[i-1]||0) ? "var(--high)" : "var(--low)";
+    ctx.globalAlpha=0.6;
+    ctx.fillRect(x-step*0.4, H-B, step*0.8, -bh);
+    ctx.globalAlpha=1;
   });
 
-  // Labels
-  ctx.fillStyle = "#fff"; ctx.font = "bold 14px Arial";
-  for (let i = 0; i <= 6; i++) {
-    const y = padT + priceH * i / 6;
-    const val = Math.round(vmax - (vmax - vmin) * i / 6);
-    ctx.fillText(val.toLocaleString(), 10, y + 5);
+  // Y labels
+  ctx.fillStyle="#fff";ctx.font="bold 14px Arial";
+  for(let i=0;i<=6;i++){
+    const y=T + pH*i/6;
+    const val=Math.round(max - (max-min)*i/6);
+    ctx.fillText(val.toLocaleString(), 12, y+5);
   }
-  ctx.font = "12px Arial";
-  const numLabels = 8;
-  for (let i = 0; i < numLabels; i++) {
-    const idx = Math.round(i * (t.length - 1) / (numLabels - 1));
-    const x = padL + idx * stepX;
-    const d = new Date(t[idx] * 1000);
-    const txt = view === "day" || view === "week" ? d.toLocaleDateString() : d.getFullYear();
-    ctx.fillText(txt, x - 20, H - 12);
-  }
-
-  // Tooltip
-  canvas.onmousemove = e => {
-    const r = canvas.getBoundingClientRect();
-    const mx = e.clientX - r.left;
-    if (mx < padL || mx > W - padR) return tip.style.display = "none";
-    const i = Math.round((mx - padL) / stepX) + start;
-    if (i < 0 || i >= t.length) return;
-    tip.style.display = "block";
-    tip.style.left = e.clientX + 12 + "px";
-    tip.style.top = e.clientY - 40 + "px";
-    tip.innerHTML = `<strong>${new Date(t[i] * 1000).toLocaleString()}</strong><br>
-                     Low: ${fmt(low[i])}<br>High: ${fmt(high[i])}<br>Vol: ${(vol[i] || 0).toLocaleString()}`;
-  };
-  canvas.onmouseleave = () => tip.style.display = "none";
 }
 
-function line(data, color, w = 2) {
-  ctx.strokeStyle = color; ctx.lineWidth = w; ctx.beginPath();
-  let s = false;
-  data.forEach((v, i) => {
-    if (v === null) { s = false; return; }
-    const x = padL + i * stepX;
-    const y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
-    s ? ctx.lineTo(x, y) : ctx.moveTo(x, y); s = true;
+function line(arr,col,w=2){
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
+  let start=false;
+  arr.forEach((v,i)=>{
+    if(v===null){start=false;return}
+    const x=70+i*stepX;
+    const y=30+priceH-(v-vmin)/(vmax-vmin)*priceH;
+    start?ctx.lineTo(x,y):ctx.moveTo(x,y);start=true;
   });
   ctx.stroke();
 }
-function dots(data, color) {
-  ctx.fillStyle = color;
-  data.forEach((v, i) => {
-    if (v === null) return;
-    const x = padL + i * stepX;
-    const y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
-    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+function dots(arr,col){
+  ctx.fillStyle=col;
+  arr.forEach((v,i)=>{
+    if(v===null)return;
+    const x=70+i*stepX;
+    const y=30+priceH-(v-vmin)/(vmax-vmin)*priceH;
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
   });
 }
-function hl(arr, p) {
-  return arr.map((_, i) => {
-    const s = Math.max(0, i - p + 1);
-    if (i - s + 1 < p) return null;
-    const slice = arr.slice(s, i + 1);
-    return (Math.max(...slice) + Math.min(...slice)) / 2;
+function hl(arr,p){
+  return arr.map((_,i)=>{
+    const s=Math.max(0,i-p+1);
+    if(i-s+1<p) return null;
+    const sl=arr.slice(s,i+1);
+    return (Math.max(...sl)+Math.min(...sl))/2;
   });
-}
-function getPeriods(v) {
-  if (v === "day") return { tenkan: 9, kijun: 26, senkou: 52 };
-  if (v === "week") return { tenkan: 9 * 6, kijun: 26 * 6, senkou: 52 * 6 };
-  return { tenkan: 9 * 24, kijun: 26 * 24, senkou: 52 * 24 };
 }
 
-async function loadItem(item) {
-  selected = item;
-  $("#query").value = item.name;
-  $("#itemImg").src = icon(item.id);
+async function load(id){
+  item = map.find(x=>x.id==id);
+  document.getElementById("query").value = item.name;
+  document.getElementById("img").src = img(id);
 
   latest = await loadLatest();
   volumes = await loadVolumes();
-  const d = latest?.data?.[item.id];
-  if (d) {
-    $("#buyPrice").textContent = fmt(d.low ?? d.avgLowPrice);
-    $("#sellPrice").textContent = fmt(d.high ?? d.avgHighPrice);
-  }
+  const d = latest?.data?.[id];
+  $("#buy").textContent = fmt(d?.low??d?.avgLowPrice);
+  $("#sell").textContent = fmt(d?.high??d?.avgHighPrice);
 
-  const step = view === "day" ? "1h" : view === "week" ? "6h" : "24h";
-  const ts = await loadTS(step, item.id);
+  const step = view==="day"?"1h":view==="week"?"6h":"24h";
+  const ts = await loadTS(step,id);
   series = seriesFromTS(ts);
-  if (!series) return;
-
-  zoom = view === "day" ? 6 : view === "week" ? 2 : 1;
-  offset = series.t.length - Math.floor(series.t.length / zoom);
-  draw();
+  if(series){
+    zoom = view==="day"?6:view==="week"?2:1;
+    offset = series.t.length - Math.floor(series.t.length/zoom);
+    draw();
+  }
 }
 
-// F2P / Members
-$("#f2pBtn").onclick = () => { isMembers = false; $("#f2pBtn").classList.add("active"); $("#membersBtn").classList.remove("active"); if (selected) loadItem(selected); };
-$("#membersBtn").onclick = () => { isMembers = true; $("#membersBtn").classList.add("active"); $("#f2pBtn").classList.remove("active"); if (selected) loadItem(selected); };
-
-// Controls
-document.querySelectorAll(".viewtabs button").forEach(b => b.onclick = () => {
-  document.querySelector(".viewtabs .active")?.classList.remove("active");
-  b.classList.add("active");
-  view = b.dataset.view;
-  if (selected) loadItem(selected);
+// Events
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=e=>{
+  document.querySelector(".tabs .active")?.classList.remove("active");
+  e.target.classList.add("active");
+  view=e.target.dataset.v;
+  if(item) load(item.id);
 });
-$("#zIn").onclick = () => { zoom = Math.min(12, zoom * 1.3); draw(); };
-$("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.3); draw(); };
-$("#lineMode").onclick = () => { mode = "line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); draw(); };
-$("#dotMode").onclick = () => { mode = "dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); draw(); };
-$("#toggleVP").onclick = () => { showVP = !showVP; $("#toggleVP").classList.toggle("active"); draw(); };
-$("#toggleIchimoku").onclick = () => { showIchi = !showIchi; $("#toggleIchimoku").classList.toggle("active"); draw(); };
-$("#refreshBtn").onclick = async () => { latest = await loadLatest(); volumes = await loadVolumes(); if (selected) loadItem(selected); };
+document.getElementById("zin").onclick=()=>{zoom=Math.min(12,zoom*1.3);draw();}
+document.getElementById("zout").onclick=()=>{zoom=Math.max(1,zoom/1.3);draw();}
+document.getElementById("line").onclick=()=>{mode="line";$("#line").classList.add("active");$("#dots").classList.remove("active");draw();}
+document.getElementById("dots").onclick=()=>{mode="dot";$("#dots").classList.add("active");$("#line").classList.remove("active");draw();}
+document.getElementById("vp").onclick=()=>{vpOn=!vpOn;$("#vp").classList.toggle("active");draw();}
+document.getElementById("ichi").onclick=()=>{ichiOn=!ichiOn;$("#ichi").classList.toggle("active");draw();}
+document.getElementById("refresh").onclick=async()=>{await loadLatest();await loadVolumes();if(item)load(item.id);}
+document.getElementById("f2p").onclick=()=>{members=false;document.getElementById("f2p").classList.add("active");document.getElementById("members").classList.remove("active");}
+document.getElementById("members").onclick=()=>{members=true;document.getElementById("members").classList.add("active");document.getElementById("f2p").classList.remove("active");}
 
 // Search
-$("#query").oninput = e => {
-  const q = e.target.value.toLowerCase().trim();
-  const box = $("#suggestBox");
-  if (!q) { box.style.display = "none"; return; }
-  const matches = mapping.filter(i => (isMembers || !i.members) && i.name.toLowerCase().includes(q)).slice(0, 15);
-  box.innerHTML = matches.map(i => `<div data-id="${i.id}"><img src="${icon(i.id)}" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'">${i.name}</div>`).join("");
-  box.style.display = matches.length ? "block" : "none";
-};
-$("#suggestBox").onclick = e => {
-  const id = e.target.closest("[data-id]")?.dataset.id;
-  if (id) {
-    const item = mapping.find(x => x.id == id);
-    if (item) { $("#suggestBox").style.display = "none"; loadItem(item); }
-  }
+document.getElementById("query").oninput=e=>{
+  const q=e.target.value.toLowerCase().trim();
+  const box=document.createElement("div");
+  box.style.cssText="position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--edge);border-radius:12px;max-height:320px;overflow:auto;z-index:10;margin-top:4px;display:none";
+  document.querySelector(".search").appendChild(box);
+  if(!q){box.style.display="none";return}
+  const matches=map.filter(i=>(members||!i.members)&&i.name.toLowerCase().includes(q)).slice(0,15);
+  box.innerHTML=matches.map(i=>`<div style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:12px" data-id="${i.id}">
+    <img src="${img(i.id)}" style="width:28px;height:28px" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'">${i.name}</div>`).join("");
+  box.style.display="block";
+  box.onclick=e=>{const id=e.target.closest("[data-id]")?.dataset.id;if(id)load(id);}
 };
 
 // Init
-(async () => {
-  mapping = await loadMapping();
-  const gilded = mapping.find(x => x.name.toLowerCase().includes("gilded scimitar"));
-  if (gilded) loadItem(gilded);
+(async()=>{
+  map = await loadMap();
+  const g = map.find(x=>x.name.toLowerCase().includes("gilded scimitar"));
+  if(g) load(g.id);
 
-  canvas.width = canvas.offsetWidth * devicePixelRatio;
-  canvas.height = canvas.offsetHeight * devicePixelRatio;
-  ctx.scale(devicePixelRatio, devicePixelRatio);
-
-  window.onresize = () => location.reload();
+  function resize(){
+    c.width = c.offsetWidth * devicePixelRatio;
+    c.height = c.offsetHeight * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    if(series) draw();
+  }
+  resize();
+  window.onresize = resize;
 })();
 </script>
 </body>
