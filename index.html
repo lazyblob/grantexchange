@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Grant Exchange • OSRS GE Chart</title>
+<link rel="icon" type="image/png" sizes="48x48" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <meta name="description" content="Professional OSRS Grand Exchange charting with Volume Profile & Ichimoku Cloud"/>
 <style>
 :root{
@@ -30,7 +31,7 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 .wrap{max-width:1400px;margin:0 auto;padding:12px;display:flex;flex-direction:column;height:100vh;gap:12px}
 .header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:8px 0;background:var(--card);border:1px solid var(--edge);border-radius:12px;
+  background:var(--card);border:1px solid var(--edge);border-radius:12px;
   padding:12px 20px;
 }
 .logo{display:flex;align-items:center;gap:12px}
@@ -52,7 +53,7 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
 .imgbox img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated}
 .search{position:relative}
 #query{width:100%;background:var(--card);border:2px solid var(--edge);color:var(--ink);padding:14px 16px;border-radius:12px;font-size:18px;outline:none}
-#query:focus{border-color:var(--orange);box-shadow:0 0 0 0 3px rgba(243,156,18,0.2)}
+#query:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,156,18,0.2)}
 .suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--edge);border-radius:12px;max-height:300px;overflow:auto;z-index:10;margin-top:4px;display:none}
 .suggest div{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px}
 .suggest div:hover{background:#2a2419}
@@ -88,7 +89,7 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
   <div class="header">
     <div class="logo">
       <h1>Grant Exchange</h1>
-      <span class="badge">v3.2</span>
+      <span class="badge">v3.3</span>
     </div>
     <div class="mode-switch">
       <button id="f2pBtn" class="active">F2P</button>
@@ -131,7 +132,7 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
         <button class="toolbtn" id="dotMode">Dots</button>
         <button class="toolbtn" id="toggleVP">VP</button>
         <button class="toolbtn" id="toggleIchimoku">Ichimoku</button>
-        <button class="btn-refresh" id="refreshBtn">Refresh</button>
+        <button class="toolbtn" id="refreshBtn">Refresh</button>
       </div>
     </div>
 
@@ -155,14 +156,13 @@ let series = null, view = "day", zoom = 1.8, offset = 0, mode = "line";
 let showVP = false, showIchi = false;
 let isMembers = false;
 
-// Fetch with error handling
 async function fetchJSON(url) {
   try {
     const r = await fetch(url, { cache: "force-cache" });
-    if (!r.ok) throw new Error("API down");
+    if (!r.ok) throw new Error("Network error");
     return await r.json();
   } catch (e) {
-    console.error(e);
+    console.error("Fetch failed:", e);
     return null;
   }
 }
@@ -173,12 +173,12 @@ const loadVolumes = () => fetchJSON(API + "/volumes");
 const loadTS = (step, id) => fetchJSON(API + `/timeseries?timestep=${step}&id=${id}`);
 
 function fmt(n) { return n == null ? "—" : n.toLocaleString() + " gp"; }
-function icon(id) { return `./images/${id}.png`; }
+function icon(id) { return `https://oldschool.runescape.wiki/images/${id}.png`; }
 
 function seriesFromTS(ts) {
-  if (!ts || !ts.data) return null;
+  if (!ts || !Array.isArray(ts.data)) return null;
   const rows = ts.data.map(r => ({
-    t: +r.timestamp,
+    t: Number(r.timestamp),
     l: r.avgLowPrice ?? r.low ?? null,
     h: r.avgHighPrice ?? r.high ?? null,
     v: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? 0
@@ -196,9 +196,11 @@ function seriesFromTS(ts) {
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = $("#tip");
+let vmin = 0, vmax = 0, stepX = 0; // Global for line/dots
 
 function draw() {
   if (!series || !series.t.length) return;
+
   const W = canvas.width, H = canvas.height;
   const padL = 70, padR = 110, padT = 30, padB = 60;
   const w = W - padL - padR, h = H - padT - padB;
@@ -218,10 +220,10 @@ function draw() {
 
   const prices = [...low, ...high].filter(v => v !== null);
   if (!prices.length) return;
-  const vmin = Math.min(...prices), vmax = Math.max(...prices);
+  vmin = Math.min(...prices), vmax = Math.max(...prices);
   const volMax = Math.max(...vol, 1);
 
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H);
 
   // Grid
   ctx.strokeStyle = "rgba(255,255,255,0.08)";
@@ -230,7 +232,7 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
   }
 
-  const stepX = w / Math.max(1, t.length - 1);
+  stepX = w / Math.max(1, t.length - 1);
 
   // Volume Profile
   if (showVP) {
@@ -251,7 +253,6 @@ function draw() {
       const y = padT + i * binH;
       ctx.fillRect(W - padR - 90, y, barW, binH - 1);
     }
-    // POC
     ctx.strokeStyle = "var(--vp-poc)";
     ctx.lineWidth = 2; ctx.setLineDash([6,4]);
     ctx.beginPath();
@@ -261,7 +262,7 @@ function draw() {
     ctx.setLineDash([]);
   }
 
-  // Ichimoku
+  // Ichimoku Cloud
   if (showIchi) {
     const p = getPeriods(view);
     const ten = hl(close, p.tenkan);
@@ -274,7 +275,7 @@ function draw() {
     line(kij, "var(--kijun)", 2.5);
     line(chikou, "var(--chikou)", 2);
 
-    ctx.globalAlpha = 0.globalAlpha;
+    ctx.globalAlpha = 0.32;
     for (let i = p.kijun; i < close.length; i++) {
       const a = senA[i - p.kijun], b = senB[i - p.kijun];
       if (a === null || b === null) continue;
@@ -345,7 +346,8 @@ function line(data, color, w = 2) {
   let s = false;
   data.forEach((v, i) => {
     if (v === null) { s = false; return; }
-    const x = padL + i * stepX, y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
+    const x = padL + i * stepX;
+    const y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
     s ? ctx.lineTo(x, y) : ctx.moveTo(x, y); s = true;
   });
   ctx.stroke();
@@ -354,7 +356,8 @@ function dots(data, color) {
   ctx.fillStyle = color;
   data.forEach((v, i) => {
     if (v === null) return;
-    const x = padL + i * stepX, y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
+    const x = padL + i * stepX;
+    const y = padT + priceH - (v - vmin) / (vmax - vmin) * priceH;
     ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
   });
 }
@@ -367,7 +370,6 @@ function hl(arr, p) {
   });
 }
 function getPeriods(v) {
-  {
   if (v === "day") return { tenkan: 9, kijun: 26, senkou: 52 };
   if (v === "week") return { tenkan: 9 * 6, kijun: 26 * 6, senkou: 52 * 6 };
   return { tenkan: 9 * 24, kijun: 26 * 24, senkou: 52 * 24 };
@@ -390,7 +392,10 @@ async function loadItem(item) {
   const step = view === "day" ? "1h" : view === "week" ? "6h" : "24h";
   const ts = await loadTS(step, item.id);
   series = seriesFromTS(ts);
-  if (!series) return;
+  if (!series) {
+    console.error("No data for item", item.id);
+    return;
+  }
 
   zoom = view === "day" ? 6 : view === "week" ? 2 : 1;
   offset = series.t.length - Math.floor(series.t.length / zoom);
