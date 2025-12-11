@@ -36,6 +36,7 @@
   --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
   --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
   --teal: #00ffff; --cloud-bull: rgba(0,255,0,0.2); --cloud-bear: rgba(255,0,0,0.2);
+  --tenkan-color: #00bfff; --kijun-color: #ff69b4; --chikou-color: #32cd32; --senkou-fill-bull: rgba(0,128,0,0.3); --senkou-fill-bear: rgba(139,0,0,0.3);
 }
 * {box-sizing:border-box}
 html,body{height:100%}
@@ -88,7 +89,7 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .kv .price-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
 .kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
 /* Tabs + Tools */
-.viewtabs, .tools {display:flex;gap:6px;}
+.viewtabs, .tools {display:flex;gap:6px; flex-wrap:wrap;}
 .viewtabs button, .tools button{background:#2b2212;border:1px solid var(--edge); color:var(--ink);border-radius:10px;padding:6px 10px; cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
 .viewtabs button.active, .tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
 /* Chart */
@@ -147,9 +148,12 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
     </div>
     <div class="refreshRow">
       <div class="viewtabs">
-        <button data-view="day" class="active">Day</button>
-        <button data-view="week">Week</button>
-        <button data-view="month">Month</button>
+        <button data-view="day" class="active">1 Day</button>
+        <button data-view="week">1 Week</button>
+        <button data-view="month">1 Month</button>
+        <button data-view="6month">6 Months</button>
+        <button data-view="year">1 Year</button>
+        <button data-view="all">All Time</button>
       </div>
       <div class="tools">
         <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
@@ -345,12 +349,13 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const v = Math.round(vmax - (vmax-vmin)*i/lines);
     context.fillText(abbreviateNumber(v), 6, y-4);
   }
-  // X labels - larger font
+  // X labels - larger font, adjust for long views
   context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
   const numLabels = 6;
   const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
   for(let i=0; i < L.length; i += labelStep){
-    const dateStr = new Date(L[i]*1000).toLocaleDateString();
+    const date = new Date(L[i]*1000);
+    const dateStr = (view === 'day' || view === 'week') ? date.toLocaleDateString() : date.getFullYear().toString();
     const x = x0 + i*stepX;
     context.fillText(dateStr, x - 20, H - 10);
   }
@@ -369,74 +374,85 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   };
   c.onmouseleave = () => tip.style.display="none";
   // Indicators
-  if (showVP) drawVolumeProfile(LO, HI, VO, context, x0 - 60, y0, priceHeight, vmin, vmax); // Moved to left side for better visibility
+  if (showVP) drawVolumeProfile(LO, HI, VO, context, x0 + w + 10, y0, priceHeight, vmin, vmax); // Right side as in TradingView
   if (showIchimoku) drawIchimoku(CLOSE, context, x0, y0, w, priceHeight, stepX, vmin, vmax, end - start);
 }
-// Volume Profile Indicator - ensure horizontal bars, moved to left
+// Volume Profile Indicator - horizontal bars on right, with POC line
 function drawVolumeProfile(lows, highs, vols, context, x0, y0, h, vmin, vmax) {
-  const bins = 20; // Number of price bins
+  const bins = 30; // More bins for detail
   const binSize = (vmax - vmin) / bins;
   const profile = new Array(bins).fill(0);
+  let pocBin = 0, maxVol = 0;
   for (let i = 0; i < lows.length; i++) {
     const avgPrice = (lows[i] + highs[i]) / 2;
     if (avgPrice == null) continue;
     const binIdx = Math.min(bins - 1, Math.floor((avgPrice - vmin) / binSize));
     profile[binIdx] += vols[i] || 0;
+    if (profile[binIdx] > maxVol) { maxVol = profile[binIdx]; pocBin = binIdx; }
   }
-  const maxVol = Math.max(...profile) || 1;
   context.fillStyle = 'var(--muted)';
   for (let i = 0; i < bins; i++) {
     const binVol = profile[i];
-    const barW = (binVol / maxVol) * 50; // Max width 50px, horizontal
-    const y = y0 + (i * (h / bins)); // Top-down for clarity
-    context.fillRect(x0, y, barW, h / bins - 1); // Horizontal bar
-    if (binVol > maxVol * 0.7) { // Highlight high-volume nodes
+    const barW = (binVol / maxVol) * 80; // Wider max
+    const y = y0 + (i * (h / bins)); // Top-down
+    context.fillRect(x0, y, barW, h / bins - 1);
+    if (binVol > maxVol * 0.7) {
       context.fillStyle = 'var(--teal)';
       context.fillRect(x0, y, barW, h / bins - 1);
-      context.fillStyle = 'var(--muted)'; // Reset
+      context.fillStyle = 'var(--muted)';
     }
   }
+  // POC line across chart
+  const pocPrice = vmin + (pocBin + 0.5) * binSize;
+  const pocY = ypx(pocPrice, vmin, vmax, y0, h);
+  context.strokeStyle = 'var(--accent)';
+  context.setLineDash([4,4]);
+  context.beginPath();
+  context.moveTo(x0 - w - 10, pocY);
+  context.lineTo(x0, pocY);
+  context.stroke();
+  context.setLineDash([]);
 }
-// Ichimoku Indicator
+// Ichimoku Indicator - enhanced colors/trails/cloud like TradingView
 function drawIchimoku(closes, context, x0, y0, w, h, stepX, vmin, vmax) {
-  const periods = getIchimokuPeriods(view); // Adapt: {tenkan:9, kijun:26, senkou:52}
+  const periods = getIchimokuPeriods(view);
   const tenkan = calculateHL(closes, periods.tenkan);
   const kijun = calculateHL(closes, periods.kijun);
-  const chikou = closes.slice(0, -periods.kijun).concat(new Array(periods.kijun).fill(null)); // Shift back
+  const chikou = [...new Array(periods.kijun).fill(null), ...closes.slice(0, -periods.kijun)]; // Shift forward for display
   const senkouA = [];
   const senkouB = calculateHL(closes, periods.senkou);
   for (let i = 0; i < closes.length; i++) {
     senkouA[i] = (tenkan[i] + kijun[i]) / 2;
   }
   // Project Senkou A/B forward
-  const projStart = closes.length;
+  const projStart = closes.length - periods.kijun;
   for (let i = 0; i < periods.kijun; i++) {
-    senkouA.push(senkouA[projStart - 1]);
-    senkouB.push(senkouB[projStart - 1 - periods.kijun + i] || senkouB[senkouB.length - 1]);
+    senkouA.push(senkouA[projStart - 1 + i] || senkouA[senkouA.length - 1]);
+    senkouB.push(senkouB[projStart - 1 + i] || senkouB[senkouB.length - 1]);
   }
-  drawSeries(tenkan, '#00ffff', 'line', y0, h, context); // Tenkan cyan
-  drawSeries(kijun, '#ff0000', 'line', y0, h, context); // Kijun red
-  drawSeries(chikou, '#ffff00', 'line', y0, h, context); // Chikou yellow
-  // Cloud
-  for (let i = 0; i < closes.length; i++) {
-    const sa = senkouA[i + periods.kijun]; // Projected
-    const sb = senkouB[i];
+  drawSeries(tenkan, 'var(--tenkan-color)', 'line', y0, h, context); // Blue
+  drawSeries(kijun, 'var(--kijun-color)', 'line', y0, h, context); // Pink
+  drawSeries(chikou, 'var(--chikou-color)', 'line', y0, h, context); // Green
+  // Cloud with trails
+  context.globalAlpha = 0.3;
+  for (let i = periods.kijun; i < closes.length; i++) {
+    const sa = senkouA[i];
+    const sb = senkouB[i - periods.kijun + periods.kijun]; // Align
     if (sa == null || sb == null) continue;
-    const x = x0 + i * stepX;
+    const x = x0 + (i - periods.kijun) * stepX;
     const ya = ypx(sa, vmin, vmax, y0, h);
     const yb = ypx(sb, vmin, vmax, y0, h);
-    context.beginPath();
-    context.moveTo(x, ya);
-    context.lineTo(x, yb);
-    context.strokeStyle = sa > sb ? 'var(--cloud-bull)' : 'var(--cloud-bear)';
-    context.lineWidth = Math.abs(ya - yb);
-    context.stroke();
+    context.fillStyle = sa > sb ? 'var(--senkou-fill-bull)' : 'var(--senkou-fill-bear)';
+    context.fillRect(x - stepX / 2, Math.min(ya, yb), stepX, Math.abs(ya - yb));
   }
+  context.globalAlpha = 1;
 }
 function getIchimokuPeriods(view) {
-  return view === 'day' ? {tenkan:9, kijun:26, senkou:52} : // Hours
-         view === 'week' ? {tenkan:9*6, kijun:26*6, senkou:52*6} : // 6h intervals
-         {tenkan:9*24, kijun:26*24, senkou:52*24}; // Days
+  switch (view) {
+    case 'day': return {tenkan:9, kijun:26, senkou:52};
+    case 'week': return {tenkan:9*6, kijun:26*6, senkou:52*6};
+    case 'month': case '6month': case 'year': case 'all': return {tenkan:9*24, kijun:26*24, senkou:52*24}; // Daily scale for long views
+  }
 }
 function calculateHL(closes, period) {
   return closes.map((_, i) => {
@@ -502,13 +518,14 @@ async function setItem(m){
   updateFlipProfit();
   $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
   $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
-  const step = (view==="day"?"1h":view==="week"?"6h":view==="month"?"24h":"24h");
+  let step = '24h'; // Default to daily for all
+  if (view === 'day') step = '1h';
+  else if (view === 'week') step = '6h';
+  else if (view === 'month') step = '24h';
   const ts = await loadTS(step, m.id);
   currentSeries = seriesFromTS(ts);
-  if(view === "day") zoom = 6;
-  else if(view === "month") zoom = 1;
-  else zoom = 1.5;
-  offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
+  zoom = view === 'day' ? 6 : view === 'week' ? 1.5 : 1; // Adjust zoom for longer views
+  offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom);
   drawChart(currentSeries);
 }
 function updateSmartBuyFromInput(){ adjustedBuy = parseInt($("#smartBuyInput").value.replace(/,/g, '')) || null; $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—"; $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—"; updateFlipProfit(); }
