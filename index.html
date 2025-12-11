@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -37,6 +38,7 @@
   --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
   --teal: #00ffff; --cloud-bull: rgba(0,255,0,0.2); --cloud-bear: rgba(255,0,0,0.2);
   --tenkan-color: #00bfff; --kijun-color: #ff69b4; --chikou-color: #32cd32; --senkou-fill-bull: rgba(0,128,0,0.3); --senkou-fill-bear: rgba(139,0,0,0.3);
+  --vp-bar: rgba(200,200,200,0.5); --vp-highlight: rgba(0,255,255,0.7);
 }
 * {box-sizing:border-box}
 html,body{height:100%}
@@ -103,6 +105,11 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
 .btn-refresh{padding:12px 20px;border-radius:18px;border:2px solid var(--edge); background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; text-transform:uppercase;letter-spacing:.5px; box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); transition:transform .08s ease,filter .12s ease,box-shadow .12s ease}
 .btn-refresh:hover{filter:brightness(1.05); transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+/* Key Info Section */
+.key-info {display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; margin-top:20px;}
+.key-item {background:#231b0d; border:1px solid var(--edge); border-radius:10px; padding:8px; text-align:center;}
+.key-item label {color:var(--muted); font-size:12px; display:block;}
+.key-item strong {color:var(--gold); font-size:16px;}
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .grid {grid-template-columns:1fr;}
@@ -171,6 +178,16 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
       <button id="toggleVP" class="tools button">Toggle Volume Profile</button>
       <button id="toggleIchimoku" class="tools button">Toggle Ichimoku</button>
       <button id="refreshBtn" class="btn-refresh">Refresh Data</button>
+    </div>
+    <div class="key-info">
+      <div class="key-item"><label>Buy Price</label><strong id="buyPrice">—</strong></div>
+      <div class="key-item"><label>Sell Price</label><strong id="sellPrice">—</strong></div>
+      <div class="key-item"><label>Volume</label><strong id="volume">—</strong></div>
+      <div class="key-item"><label>Limit</label><strong id="limit">—</strong></div>
+      <div class="key-item"><label>Tax</label><strong id="tax">—</strong></div>
+      <div class="key-item"><label>Margin</label><strong id="margin">—</strong></div>
+      <div class="key-item"><label>ROI</label><strong id="roi">—</strong></div>
+      <div class="key-item"><label>Potential Profit</label><strong id="potentialProfit">—</strong></div>
     </div>
   </div>
 </div>
@@ -390,16 +407,16 @@ function drawVolumeProfile(lows, highs, vols, context, x0, y0, h, vmin, vmax) {
     profile[binIdx] += vols[i] || 0;
     if (profile[binIdx] > maxVol) { maxVol = profile[binIdx]; pocBin = binIdx; }
   }
-  context.fillStyle = 'var(--muted)';
+  context.fillStyle = 'var(--vp-bar)';
   for (let i = 0; i < bins; i++) {
     const binVol = profile[i];
     const barW = (binVol / maxVol) * 80; // Wider max
     const y = y0 + (i * (h / bins)); // Top-down
     context.fillRect(x0, y, barW, h / bins - 1);
     if (binVol > maxVol * 0.7) {
-      context.fillStyle = 'var(--teal)';
+      context.fillStyle = 'var(--vp-highlight)';
       context.fillRect(x0, y, barW, h / bins - 1);
-      context.fillStyle = 'var(--muted)';
+      context.fillStyle = 'var(--vp-bar)';
     }
   }
   // POC line across chart
@@ -435,6 +452,9 @@ function drawIchimoku(closes, context, x0, y0, w, h, stepX, vmin, vmax) {
   drawSeries(chikou, 'var(--chikou-color)', 'line', y0, h, context); // Green
   // Cloud with trails
   context.globalAlpha = 0.3;
+  context.beginPath();
+  let bullPath = new Path2D();
+  let bearPath = new Path2D();
   for (let i = periods.kijun; i < closes.length; i++) {
     const sa = senkouA[i];
     const sb = senkouB[i - periods.kijun + periods.kijun]; // Align
@@ -442,9 +462,18 @@ function drawIchimoku(closes, context, x0, y0, w, h, stepX, vmin, vmax) {
     const x = x0 + (i - periods.kijun) * stepX;
     const ya = ypx(sa, vmin, vmax, y0, h);
     const yb = ypx(sb, vmin, vmax, y0, h);
-    context.fillStyle = sa > sb ? 'var(--senkou-fill-bull)' : 'var(--senkou-fill-bear)';
-    context.fillRect(x - stepX / 2, Math.min(ya, yb), stepX, Math.abs(ya - yb));
+    if (sa > sb) {
+      bullPath.moveTo(x, ya);
+      bullPath.lineTo(x, yb);
+    } else {
+      bearPath.moveTo(x, ya);
+      bearPath.lineTo(x, yb);
+    }
   }
+  context.fillStyle = 'var(--senkou-fill-bull)';
+  context.fill(bullPath);
+  context.fillStyle = 'var(--senkou-fill-bear)';
+  context.fill(bearPath);
   context.globalAlpha = 1;
 }
 function getIchimokuPeriods(view) {
@@ -521,12 +550,24 @@ async function setItem(m){
   let step = '24h'; // Default to daily for all
   if (view === 'day') step = '1h';
   else if (view === 'week') step = '6h';
-  else if (view === 'month') step = '24h';
   const ts = await loadTS(step, m.id);
   currentSeries = seriesFromTS(ts);
   zoom = view === 'day' ? 6 : view === 'week' ? 1.5 : 1; // Adjust zoom for longer views
   offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom);
   drawChart(currentSeries);
+  // Update key info
+  $("#buyPrice").textContent = fmtGp(lo);
+  $("#sellPrice").textContent = fmtGp(hi);
+  $("#volume").textContent = fmtNum(volumes.data[m.id] || 0);
+  $("#limit").textContent = fmtNum(buyLimit);
+  const tax = Math.min(5000000, Math.floor(hi * 0.01));
+  $("#tax").textContent = fmtGp(tax);
+  const margin = hi - lo;
+  $("#margin").textContent = fmtGp(margin);
+  const roi = lo ? ((margin - tax) / lo * 100).toFixed(2) + '%' : '—';
+  $("#roi").textContent = roi;
+  const potentialProfit = (margin - tax) * buyLimit;
+  $("#potentialProfit").textContent = fmtGp(potentialProfit);
 }
 function updateSmartBuyFromInput(){ adjustedBuy = parseInt($("#smartBuyInput").value.replace(/,/g, '')) || null; $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—"; $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—"; updateFlipProfit(); }
 function updateSmartSellFromInput(){ adjustedSell = parseInt($("#smartSellInput").value.replace(/,/g, '')) || null; $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—"; updateFlipProfit(); }
@@ -596,3 +637,4 @@ function updateFlipProfit(){
 </script>
 </body>
 </html>
+```
