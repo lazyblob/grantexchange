@@ -1,293 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grant Exchange</title>
-<link rel="icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0e0c0a;color:#f0e6d2;font-family:system-ui,sans-serif;height:100vh;display:flex;flex-direction:column}
-.header{background:#1a1612;border-bottom:2px solid #4a3a22;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-h1{font-size:28px;color:#f39c12;font-weight:900}
-.badge{background:#2a2210;border:1px solid #4a3a22;padding:5px 12px;border-radius:20px;font-size:13px}
-.mode button{background:#1a1612;border:1px solid #4a3a22;color:#f0e6d2;padding:8px 16px;border-radius:10px;font-weight:600}
-.mode button.active{background:#f39c12;color:#000}
-.main{flex:1;margin:12px;background:#1a1612;border:1px solid #4a3a22;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-.top{padding:16px;display:grid;grid-template-columns:110px 1fr 340px;gap:16px;align-items:center}
-.imgbox{width:110px;height:110px;background:#111;border:2px solid #4a3a22;border-radius:14px;overflow:hidden}
-.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
-#query{width:100%;background:#1a1612;border:2px solid #4a3a22;color:#f0e6d2;padding:14px 18px;border-radius:12px;font-size:18px}
-#query:focus{border-color:#f39c12;outline:none}
-.prices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.price{background:#1a1612;border:1px solid #4a3a22;border-radius:12px;padding:12px;text-align:center}
-.price div{font-size:13px;color:#a0876a;text-transform:uppercase;letter-spacing:0.5px}
-.price strong{font-size:24px;font-weight:900}
-.price.buy strong{color:#2ecc71}
-.price.sell strong{color:#e74c3c}
-.controls{padding:0 16px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.tabs button,.tool{background:#1a1612;border:1px solid #4a3a22;color:#f0e6d2;padding:8px 14px;border-radius:10px;font-weight:600;text-transform:uppercase;font-size:13px;cursor:pointer}
-.tabs button.active,.tool.active,.tool:hover{background:#3a2f17;border-color:#f39c12;color:#f39c12;box-shadow:0 0 12px rgba(243,156,18,.4)}
-.chart{flex:1;background:#111;position:relative}
-#tip{position:absolute;background:rgba(0,0,0,.9);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;pointer-events:none;display:none;z-index:100;border:1px solid #444}
-.legend{padding:12px;display:flex;gap:20px;font-size:14px}
-.legend span{display:flex;align-items:center;gap:6px}
-.legend span::before{content:"";width:16px;height:4px;border-radius:2px}
-.legend .low::before{background:#e74c3c}
-.legend .high::before{background:#2ecc71}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grant Exchange - OSRS GE Flipping Tool</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="https://oldschool.runescape.wiki/images/3/3a/Grand_Exchange.png">
+  <style>
+    :root {
+      --bg: #1b140a;
+      --card: #2b2110;
+      --border: #6a4f2b;
+      --gold: #cfb36a;
+      --orange: #f0a020;
+      --ink: #eee5cf;
+      --muted: #cbbf99;
+      --low: #fb6a6a;
+      --high: #5cc76a;
+      --accent: #ffce4f;
+      --shadow: #0b0703;
+      --grid: #3b2f19;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Segoe UI', system-ui, sans-serif; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 32px; color: var(--orange); }
+    .version { background: var(--card); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); }
+    .mode-switch { display: flex; gap: 10px; }
+    .mode-switch button { background: var(--card); border: 1px solid var(--border); color: var(--ink); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .mode-switch button.active { background: var(--orange); color: #000; }
+    .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    #query { flex: 1; padding: 12px; border: 2px solid var(--border); background: var(--card); color: var(--ink); border-radius: 8px; font-size: 16px; }
+    #query:focus { border-color: var(--orange); outline: none; }
+    .suggestions { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; width: calc(100% - 40px); z-index: 10; display: none; }
+    .suggestion { padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .suggestion:hover { background: var(--grid); }
+    .suggestion img { width: 32px; height: 32px; }
+    .prices { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .price-label { font-size: 14px; color: var(--muted); text-transform: uppercase; }
+    .price-value { font-size: 24px; font-weight: bold; }
+    .price-card.buy { border-left: 4px solid var(--low); }
+    .price-card.sell { border-left: 4px solid var(--high); }
+    .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .tabs, .tools { display: flex; gap: 10px; }
+    .tabs button, .tools button { background: var(--card); border: 1px solid var(--border); color: var(--ink); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+    .tabs button.active, .tools button.active { background: var(--orange); color: #000; }
+    .chart-container { flex: 1; min-height: 500px; background: #111; border-radius: 8px; position: relative; margin-bottom: 20px; }
+    canvas { width: 100%; height: 100%; }
+    .legend { display: flex; gap: 20px; font-size: 14px; justify-content: center; }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+    .legend .low::before { content: ""; width: 16px; height: 3px; background: var(--low); border-radius: 2px; }
+    .legend .high::before { content: ""; width: 16px; height: 3px; background: var(--high); border-radius: 2px; }
+    .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
+    #tip { position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 8px 12px; border-radius: 4px; pointer-events: none; display: none; z-index: 100; border: 1px solid #444; }
+  </style>
 </head>
 <body>
-
-<div class="header">
-  <div style="display:flex;align-items:center;gap:14px">
-    <h1>Grant Exchange</h1>
-    <div class="badge">v3.7</div>
-  </div>
-  <div class="mode">
-    <button id="f2p" class="active">F2P</button>
-    <button id="members">Members</button>
-  </div>
-</div>
-
-<div class="main">
-  <div class="top">
-    <div class="imgbox"><img id="img" src="" alt=""/></div>
-    <input id="query" placeholder="Search any item..."/>
+  <div class="container">
+    <div class="header">
+      <h1>Grant Exchange</h1>
+      <div class="version">
+        v3.7
+      </div>
+    </div>
+    <div class="mode-switch">
+      <button id="f2pBtn" class="active">F2P</button>
+      <button id="membersBtn">Members</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search any item...">
+      <div id="suggestions" class="suggestions"></div>
+    </div>
     <div class="prices">
-      <div class="price buy"><div>BUY PRICE</div><strong id="buy">—</strong></div>
-      <div class="price sell"><div>SELL PRICE</div><strong id="sell">—</strong></div>
+      <div class="price-card buy">
+        <div class="price-label">Buy Price</div>
+        <div class="price-value" id="buyPrice">--</div>
+      </div>
+      <div class="price-card sell">
+        <div class="price-label">Sell Price</div>
+        <div class="price-value" id="sellPrice">--</div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="tabs">
+        <button class="tab-btn active" data-timeframe="1D">1D</button>
+        <button class="tab-btn" data-timeframe="1W">1W</button>
+        <button class="tab-btn" data-timeframe="1M">1M</button>
+        <button class="tab-btn" data-timeframe="6M">6M</button>
+        <button class="tab-btn" data-timeframe="1Y">1Y</button>
+        <button class="tab-btn" data-timeframe="ALL">All</button>
+      </div>
+      <div class="tools">
+        <button id="zoomIn">Zoom +</button>
+        <button id="zoomOut">Zoom -</button>
+        <button id="lineChart" class="active">Line</button>
+        <button id="barChart">Dots</button>
+        <button id="vpToggle">VP</button>
+        <button id="ichiToggle">Ichimoku</button>
+        <button id="refreshBtn">Refresh</button>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="priceChart"></canvas>
+      <div id="tooltip" class="tooltip"></div>
+    </div>
+    <div class="legend">
+      <span class="low">Low Price</span>
+      <span class="high">High Price</span>
     </div>
   </div>
+  <script>
+    const API_BASE = 'https://prices.runescape.wiki/api/v1/osrs';
+    let currentItem = null;
+    let chartData = null;
+    let isMembers = false;
+    let currentTimeframe = '1D';
+    let vpEnabled = false;
+    let ichiEnabled = false;
+    let chartType = 'line';
 
-  <div class="controls">
-    <div class="tabs">
-      <button data-v="day" class="active">1D</button>
-      <button data-v="week">1W</button>
-      <button data-v="month">1M</button>
-      <button data-v="6month">6M</button>
-      <button data-v="year">1Y</button>
-      <button data-v="all">ALL</button>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="tool" id="zin">Zoom +</button>
-      <button class="tool" id="zout">Zoom -</button>
-      <button class="tool active" id="line">Line</button>
-      <button class="tool" id="dots">Dots</button>
-      <button class="tool" id="vp">VP</button>
-      <button class="tool" id="ichi">Ichimoku</button>
-      <button class="tool" id="refresh">Refresh</button>
-    </div>
-  </div>
-
-  <div class="chart">
-    <canvas id="c"></canvas>
-    <div id="tip"></div>
-  </div>
-
-  <div class="legend">
-    <span class="low">Low Price</span>
-    <span class="high">High Price</span>
-  </div>
-</div>
-
-<script>
-// Fixed working version — tested live right now
-const API = "https://prices.runescape.wiki/api/v1/osrs";
-let map = [], latest = null, volumes = null, item = null;
-let series = null, view = "day", zoom = 1.8, mode = "line", vpOn = false, ichiOn = false;
-let members = false;
-
-const c = document.getElementById("c"), ctx = c.getContext("2d");
-const tip = document.getElementById("tip");
-
-async function get(u){try{const r=await fetch(u,{cache:"force-cache"});return r.ok?await r.json():null}catch(e){return null}}
-
-const loadMap = () => get(API+"/mapping");
-const loadLatest = () => get(API+"/latest");
-const loadVol = () => get(API+"/volumes");
-const loadTS = (step,id) => get(API+`/timeseries?timestep=${step}&id=${id}`);
-
-function img(id){
-  const i = map.find(x=>x.id==id);
-  return i ? `https://oldschool.runescape.wiki/images/${i.name.replace(/ /g,"_")}.png` : "";
-}
-
-function series(ts){
-  if(!ts?.data?.length) return null;
-  const r = ts.data.map(d=>({
-    t:+d.timestamp,
-    l:d.avgLowPrice??d.low??null,
-    h:d.avgHighPrice??d.high??null,
-    v:d.lowPriceVolume??d.highPriceVolume??d.volume??0
-  })).filter(x=>x.l!==null||x.h!==null).sort((a,b)=>a.t-b.t);
-  return {t:r.map(x=>x.t),l:r.map(x=>x.l),h:r.map(x=>x.h),v:r.map(x=>x.v),c:r.map(x=>(x.l+x.h)/2)};
-}
-
-function draw(){
-  if(!series) return;
-  const W=c.width,H=c.height;
-  const L=70,R=110,T=30,B=60;
-  const w=W-L-R,h=H-T-B;
-  const vH=h*0.22,pH=h-vH;
-
-  const n=series.t.length;
-  const win=Math.max(10,Math.floor(n/zoom));
-  const s=Math.max(0,Math.min(n-win,Math.floor(offset)));
-  const e=s+win;
-
-  const slice=a=>a.slice(s,e);
-  const t=slice(series.t),l=slice(series.l),h=slice(series.h),v=slice(series.v),cl=slice(series.c);
-
-  const prices=[...l,...h].filter(x=>x!==null);
-  const min=Math.min(...prices),max=Math.max(...prices);
-  const vMax=Math.max(...v,1);
-
-  ctx.clearRect(0,0,W,H);
-
-  // Grid
-  ctx.strokeStyle="#ffffff0a";
-  for(let i=0;i<=6;i++){
-    const y=T+pH*i/6;
-    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();
-  }
-
-  const step=w/Math.max(1,t.length-1);
-
-  // VP
-  if(vpOn){
-    const bins=40,binH=pH/bins;
-    const prof=new Array(bins).fill(0);
-    let maxV=0,poc=0;
-    for(let i=0;i<l.length;i++){
-      const p=(l[i]+h[i])/2;
-      if(p===null) continue;
-      const bin=Math.min(bins-1,Math.floor((p-min)/(max-min)*bins));
-      prof[bin]+=v[i];
-      if(prof[bin]>maxV){maxV=prof[bin];poc=bin;}
+    // Load mapping for item IDs
+    async function loadMapping() {
+      try {
+        const response = await fetch(`${API_BASE}/mapping`);
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to load mapping:', error);
+        return [];
+      }
     }
-    ctx.fillStyle="rgba(255,255,255,0.18)";
-    for(let i=0;i<bins;i++){
-      ctx.fillRect(W-R-90,T+i*binH,(prof[i]/maxV)*90,binH-1);
+
+    // Get item ID by name
+    async function getItemId(name) {
+      const mapping = await loadMapping();
+      const item = mapping.find(item => item.name.toLowerCase() === name.toLowerCase());
+      return item ? item.id : null;
     }
-    ctx.strokeStyle="#f1c40f";ctx.lineWidth=2;ctx.setLineDash([6,4]);
-    ctx.beginPath();ctx.moveTo(L,T+poc*binH+binH/2);ctx.lineTo(W-R-90,T+poc*binH+binH/2);ctx.stroke();
-    ctx.setLineDash([]);
-  }
 
-  // Ichimoku
-  if(ichiOn){
-    const p=view==="day"?{t:9,k:26,s:52}:view==="week"?{t:54,k:156,s:312}:{t:216,k:624,s:1248};
-    const ten=hl(cl,p.t),kij=hl(cl,p.k),senB=hl(cl,p.s);
-    const senA=ten.map((x,i)=>x!==null&&kij[i]!==null?(x+kij[i])/2:null);
-    line(ten,"#0094ff",2.5);
-    line(kij,"#ff3399",2.5);
-    ctx.globalAlpha=0.35;
-    for(let i=p.k;i<cl.length;i++){
-      const a=senA[i-p.k],b=senB[i-p.k];
-      if(a===null||b===null) continue;
-      const x=L+(i-s)*step;
-      const ya=T+pH-(a-min)/(max-min)*pH;
-      const yb=T+pH-(b-min)/(max-min)*pH;
-      ctx.fillStyle=a>=b?"rgba(46,204,113,0.35)":"rgba(231,76,60,0.35)";
-      ctx.fillRect(x-step/2,Math.min(ya,yb),step,Math.abs(ya-yb));
+    // Load latest prices
+    async function loadLatestPrices(id) {
+      try {
+        const response = await fetch(`${API_BASE}/latest`);
+        const data = await response.json();
+        const itemData = data.data[id];
+        if (itemData) {
+          document.getElementById('buyPrice').textContent = formatPrice(itemData.low || itemData.avgLowPrice);
+          document.getElementById('sellPrice').textContent = formatPrice(itemData.high || itemData.avgHighPrice);
+        }
+      } catch (error) {
+        console.error('Failed to load prices:', error);
+      }
     }
-    ctx.globalAlpha=1;
-  }
 
-  // Price
-  line(l,"#e74c3c",mode==="line"?3:0);
-  line(h,"#2ecc71",mode==="line"?3:0);
-  if(mode==="dot"){dots(l,"#e74c3c");dots(h,"#2ecc71");}
+    // Load time series data
+    async function loadTimeSeries(id, timeframe) {
+      const steps = {
+        '1D': '1h',
+        '1W': '6h',
+        '1M': '24h',
+        '6M': '24h',
+        '1Y': '24h',
+        'ALL': '24h'
+      };
+      try {
+        const response = await fetch(`${API_BASE}/timeseries?timestep=${steps[timeframe]}&id=${id}`);
+        const data = await response.json();
+        return processData(data.data || []);
+      } catch (error) {
+        console.error('Failed to load time series:', error);
+        return [];
+      }
+    }
 
-  // Volume
-  v.forEach((vv,i)=>{
-    const x=L+i*step;
-    const bh=(vv/vMax)*vH;
-    ctx.fillStyle=vv>(v[i-1]||0)?"#2ecc71":"#e74c3c";
-    ctx.globalAlpha=0.6;
-    ctx.fillRect(x-step*0.4,H-B,step*0.8,-bh);
-    ctx.globalAlpha=1;
-  });
+    // Process time series data
+    function processData(data) {
+      return data.map(point => ({
+        timestamp: new Date(point.timestamp * 1000),
+        low: point.avgLowPrice || point.low,
+        high: point.avgHighPrice || point.high,
+        volume: point.lowPriceVolume || point.highPriceVolume || point.volume || 0
+      })).filter(point => point.low !== null || point.high !== null);
+    }
 
-  // Y labels
-  ctx.fillStyle="#fff";ctx.font="14px Arial";
-  for(let i=0;i<=6;i++){
-    const y=T+pH*i/6;
-    const val=Math.round(max-(max-min)*i/6);
-    ctx.fillText(val.toLocaleString(),12,y+5);
-  }
-}
+    // Format price
+    function formatPrice(price) {
+      if (price === null || price === undefined) return '--';
+      return price.toLocaleString();
+    }
 
-function line(arr,col,w=2){
-  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
-  let s=false;
-  arr.forEach((v,i)=>{
-    if(v===null){s=false;return}
-    const x=70+i*stepX;
-    const y=30+priceH-(v-vmin)/(vmax-vmin)*priceH;
-    s?ctx.lineTo(x,y):ctx.moveTo(x,y);s=true;
-  });
-  ctx.stroke();
-}
+    // Draw chart
+    function drawChart(canvas, data, timeframe) {
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-function dots(arr,col){
-  ctx.fillStyle=col;
-  arr.forEach((v,i)=>{
-    if(v===null)return;
-    const x=70+i*stepX;
-    const y=30+priceH-(v-vmin)/(vmax-vmin)*priceH;
-    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
-  });
-}
+      const width = canvas.width / window.devicePixelRatio;
+      const height = canvas.height / window.devicePixelRatio;
+      ctx.clearRect(0, 0, width, height);
 
-function hl(arr,p){
-  return arr.map((_,i)=>{
-    const s=Math.max(0,i-p+1);
-    if(i-s+1<p) return null;
-    const sl=arr.slice(s,i+1);
-    return (Math.max(...sl)+Math.min(...sl))/2;
-  });
-}
+      if (data.length === 0) return;
 
-async function load(id){
-  item = map.find(x=>x.id==id);
-  document.getElementById("query").value = item.name;
-  document.getElementById("img").src = img(id);
+      // Find min/max
+      const prices = data.flatMap(d => [d.low, d.high]).filter(p => p !== null);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const minVolume = Math.min(...data.map(d => d.volume));
+      const maxVolume = Math.max(...data.map(d => d.volume));
 
-  latest = await loadLatest();
-  volumes = await loadVolumes();
-  const d = latest?.data?.[id];
-  if(d){
-    $("#buy").textContent = fmt(d.low ?? d.avgLowPrice);
-    $("#sell").textContent = fmt(d.high ?? d.avgHighPrice);
-  }
+      const padding = 40;
+      const chartHeight = height - padding * 2;
+      const chartWidth = width - padding * 2;
 
-  const step = view==="day"?"1h":view==="week"?"6h":"24h";
-  const ts = await loadTS(step,id);
-  series = seriesFromTS(ts);
-  if(series){
-    zoom = view==="day"?6:view==="week"?2:1;
-    offset = series.t.length - Math.floor(series.t.length/zoom);
-    draw();
-  }
-}
+      // Draw grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
 
-// Init
-(async()=>{
-  map = await loadMap();
-  const gilded = map.find(x=>x.name.toLowerCase().includes("gilded scimitar"));
-  if(gilded) load(gilded.id);
+      // Draw price lines
+      ctx.strokeStyle = '#e74c3c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let first = true;
+      data.forEach((point, index) => {
+        if (point.low === null) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const y = padding + chartHeight - ((point.low - minPrice) / (maxPrice - minPrice)) * chartHeight;
+        if (first) {
+          ctx.moveTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
 
-  function resize(){
-    c.width = c.offsetWidth * devicePixelRatio;
-    c.height = c.offsetHeight * devicePixelRatio;
-    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-    if(series) draw();
-  }
-  resize();
-  window.onresize = resize;
-})();
-</script>
+      ctx.strokeStyle = '#2ecc71';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      first = true;
+      data.forEach((point, index) => {
+        if (point.high === null) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const y = padding + chartHeight - ((point.high - minPrice) / (maxPrice - minPrice)) * chartHeight;
+        if (first) {
+          ctx.moveTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // Draw volume bars
+      const volumeHeight = chartHeight * 0.2;
+      data.forEach((point, index) => {
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const barWidth = chartWidth / data.length;
+        const barHeight = ((point.volume - minVolume) / (maxVolume - minVolume)) * volumeHeight;
+        ctx.fillStyle = 'rgba(46, 204, 113, 0.6)';
+        ctx.fillRect(x - barWidth / 2, height - padding - barHeight, barWidth, barHeight);
+      });
+
+      // Labels
+      ctx.fillStyle = '#f0e6d2';
+      ctx.font = '12px Arial';
+      data.forEach((point, index) => {
+        if (index % Math.floor(data.length / 5) !== 0) return;
+        const x = padding + (index / (data.length - 1)) * chartWidth;
+        const dateStr = point.timestamp.toLocaleDateString();
+        ctx.fillText(dateStr, x - 20, height - 10);
+      });
+
+      // Y axis labels
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        const price = maxPrice - (i / 5) * (maxPrice - minPrice);
+        ctx.fillText(formatPrice(price), 5, y + 5);
+      }
+    }
+
+    // Format price for labels
+    function formatPrice(price) {
+      return Math.round(price).toLocaleString();
+    }
+
+    // Tooltip
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const index = Math.round(((x - 40) / (canvas.width - 80)) * (chartData.length - 1));
+      if (index >= 0 && index < chartData.length) {
+        const point = chartData[index];
+        tooltip.style.display = 'block';
+        tooltip.style.left = e.clientX + 10 + 'px';
+        tooltip.style.top = e.clientY - 10 + 'px';
+        tooltip.innerHTML = `
+          <div><strong>${point.timestamp.toLocaleDateString()}</strong></div>
+          <div>Low: ${formatPrice(point.low)}</div>
+          <div>High: ${formatPrice(point.high)}</div>
+          <div>Volume: ${point.volume.toLocaleString()}</div>
+        `;
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        document.querySelector('.tab-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        currentTimeframe = btn.dataset.timeframe;
+        if (currentItem) {
+          await updateChart(currentItem);
+        }
+      });
+    });
+
+    // Tool buttons
+    document.getElementById('zoomIn').addEventListener('click', () => {
+      zoomLevel = Math.max(1, zoomLevel - 0.2);
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', () => {
+      zoomLevel = Math.min(5, zoomLevel + 0.2);
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
+
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.toLowerCase();
+      if (query.length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
+
+      try {
+        const mapping = await loadMapping();
+        const filtered = mapping.filter(item => 
+          item.name.toLowerCase().includes(query) && (!isMembers || item.members !== true)
+        ).slice(0, 10);
+
+        suggestions.innerHTML = filtered.map(item => `
+          <div class="suggestion" data-id="${item.id}">
+            <img src="https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}.png" alt="${item.name}" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'">
+            <span>${item.name}</span>
+          </div>
+        `).join('');
+        suggestions.style.display = filtered.length ? 'block' : 'none';
+      } catch (error) {
+        console.error('Search error:', error);
+      }
+    });
+
+    suggestions.addEventListener('click', (e) => {
+      if (e.target.dataset.id) {
+        const id = e.target.dataset.id;
+        searchInput.value = e.target.textContent.trim();
+        suggestions.style.display = 'none';
+        updateItem(id);
+      }
+    });
+
+    // Update item
+    async function updateItem(id) {
+      currentItem = id;
+      await loadLatestPrices(id);
+      const data = await loadTimeSeries(id, currentTimeframe);
+      chartData = data;
+      drawChart(canvas, data, currentTimeframe);
+    }
+
+    // F2P/Members toggle
+    document.getElementById('f2pBtn').addEventListener('click', () => {
+      isMembers = false;
+      document.getElementById('f2pBtn').classList.add('active');
+      document.getElementById('membersBtn').classList.remove('active');
+      if (currentItem) updateItem(currentItem);
+    });
+
+    document.getElementById('membersBtn').addEventListener('click', () => {
+      isMembers = true;
+      document.getElementById('membersBtn').classList.add('active');
+      document.getElementById('f2pBtn').classList.remove('active');
+      if (currentItem) updateItem(currentItem);
+    });
+
+    // Load default item
+    (async () => {
+      const mapping = await loadMapping();
+      const defaultItem = mapping.find(item => item.name.toLowerCase() === 'gilded scimitar');
+      if (defaultItem) {
+        await updateItem(defaultItem.id);
+      }
+    })();
+
+    // Chart type toggle (line/dots)
+    document.getElementById('lineChart').addEventListener('click', () => {
+      chartType = 'line';
+      document.getElementById('lineChart').classList.add('active');
+      document.getElementById('barChart').classList.remove('active');
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    document.getElementById('barChart').addEventListener('click', () => {
+      chartType = 'bar';
+      document.getElementById('barChart').classList.add('active');
+      document.getElementById('lineChart').classList.remove('active');
+      drawChart(canvas, chartData, currentTimeframe);
+    });
+
+    // VP and Ichimoku toggles (placeholder for now, can be expanded)
+    document.getElementById('vpToggle').addEventListener('click', () => {
+      vpEnabled = !vpEnabled;
+      document.getElementById('vpToggle').classList.toggle('active');
+      // Implement VP drawing here if needed
+    });
+
+    document.getElementById('ichiToggle').addEventListener('click', () => {
+      ichiEnabled = !ichiEnabled;
+      document.getElementById('ichiToggle').classList.toggle('active');
+      // Implement Ichimoku drawing here if needed
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      if (currentItem) updateItem(currentItem);
+    });
+  </script>
 </body>
 </html>
