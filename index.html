@@ -800,7 +800,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v1.7.7</span> <span class="badge">OSRS GE Prices</span><span id="activeTraders" class="small">Active Traders (Week): Loading...</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v1.7.8</span> <span class="badge">OSRS GE Prices</span>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -1404,7 +1404,7 @@ async function getAlchValue(id) {
 }
 async function setItem(m){
   selected=m; $("#query").value=m.name;
-  document.title = `${m.name} Live Prices, Graphs, Historical Data - (OSRS) GE - Grant Exchange`;
+  document.title = `${m.name} Live Prices, Graphs, Historical Data (OSRS) GE Flip Tool`;
   const img=$("#itemImg");
   img.src=bigIconUrl(m.id);
   img.alt = m.name; // e.g., "Gilded scimitar"
@@ -2117,23 +2117,9 @@ function popoutChart(){
       buildEnchantList();
       buildSmithList();
     }, 300000); // 5 mins
-    // Active Traders (using OSRS online players as proxy)
-    async function updateActiveTraders() {
-      try {
-        const response = await fetch('https://get-active-users-633484897839.us-central1.run.app');
-        const data = await response.text(); // Or .json() if JSON
-        const users = parseInt(data) || 'N/A'; // Parse number; adjust if JSON (e.g., data.users)
-        $('#activeTraders').textContent = `Active Traders (Week): ~${users}`;
-      } catch (e) {
-        $('#activeTraders').textContent = 'Active Traders (Week): N/A';
-      }
-    }
-    updateActiveTraders();
-    setInterval(updateActiveTraders, 86400000); // Update daily
-  }catch(e){
+  } catch (e) {
     console.error(e);
-    $("#status").textContent="Error: "+e.message;
-    $("#status").classList.add("status-error");
+    $("#status").textContent = "Error";
   }
 })();
 </script>
