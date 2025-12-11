@@ -20,9 +20,9 @@
   --tenkan:#0094ff;
   --kijun:#ff3399;
   --chikou:#00ff00;
-  --cloud-bull:rgba(46,204,113,0.25);
-  --cloud-bear:rgba(231,76,60,0.25);
-  --vp-bar:rgba(255,255,255,0.15);
+  --cloud-bull:rgba(46,204,113,0.28);
+  --cloud-bear:rgba(231,76,60,0.28);
+  --vp-bar:rgba(255,255,255,0.18);
   --vp-poc:#f1c40f;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -48,19 +48,21 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
 .price-box strong{font-size:22px;font-weight:900;color:var(--gold)}
 .price-box.low strong{color:var(--low)}
 .price-box.high strong{color:var(--high)}
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center;justify-content:space-between}
 .viewtabs button,.toolbtn{
   background:var(--card);border:1px solid var(--edge);color:var(--ink);
   padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;text-transform:uppercase;font-size:13px;
-  transition:all 0.2s
+  transition:all .2s
 }
 .viewtabs button.active,.toolbtn.active,.toolbtn:hover{
   background:#3a2f17;border-color:var(--orange);color:var(--orange);box-shadow:0 0 12px rgba(243,156,18,0.4)
 }
-.chartWrap{position:relative;height:calc(100vh - 280px);min-height:500px}
+.mode-switch{display:flex;gap:8px}
+.mode-switch button.active{background:var(--orange);color:#000}
+.chartWrap{position:relative;height:calc(100vh - 280px);min-height:520px}
 #chart{width:100%;height:100%;border-radius:12px;background:#111}
 #tip{
-  position:absolute;padding:8px 12px;background:rgba(0,0,0,0.9);color:white;
+  position:absolute;padding:8px 12px;background:rgba(0,0,0,0.9);color:#fff;
   border-radius:8px;font-size:13px;pointer-events:none;z-index:100;
   border:1px solid #444;box-shadow:0 4px 12px rgba(0,0,0,0.6)
 }
@@ -69,26 +71,22 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
 .legend span::before{content:"";width:16px;height:4px;border-radius:2px}
 .legend .low::before{background:var(--low)}
 .legend .high::before{background:var(--high)}
-.actions{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
-.btn-refresh{
-  background:linear-gradient(145deg,#3a2f17,#2a2210);
-  border:2px solid var(--edge);color:var(--gold);padding:12px 24px;
-  border-radius:16px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
-  cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5)
-}
-.btn-refresh:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.6)}
 @media (max-width:768px){
   .top{grid-template-columns:80px 1fr}
   .prices{grid-template-columns:1fr}
-  .chartWrap{height:calc(100vh - 320px)}
+  .controls{flex-direction:column;align-items:stretch}
+  .chartWrap{height:calc(100vh - 340px)}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1>Grant Exchange</h1> <span class="badge">v3.0 Final</span></div>
-    <div id="status" style="font-size:14px;color:var(--muted)">Ready</div>
+    <div><h1>Grant Exchange</h1> <span class="badge">v3.1</span></div>
+    <div class="mode-switch">
+      <button id="f2pBtn" class="active">F2P</button>
+      <button id="membersBtn">Members</button>
+    </div>
   </div>
 
   <div class="card">
@@ -119,14 +117,14 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
         <button data-view="year">1Y</button>
         <button data-view="all">All</button>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px">
+      <div style="display:flex;gap:8px">
         <button class="toolbtn" id="zIn">Zoom +</button>
         <button class="toolbtn" id="zOut">Zoom -</button>
         <button class="toolbtn active" id="lineMode">Line</button>
         <button class="toolbtn" id="dotMode">Dots</button>
         <button class="toolbtn" id="toggleVP">VP</button>
         <button class="toolbtn" id="toggleIchimoku">Ichimoku</button>
-        <button class="btn-refresh" id="refreshBtn">Refresh</button>
+        <button class="toolbtn btn-refresh" id="refreshBtn">Refresh</button>
       </div>
     </div>
 
@@ -148,8 +146,13 @@ const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping=[], latest=null, volumes=null, selected=null;
 let series=null, view="day", zoom=1.8, offset=0, mode="line";
 let showVP=false, showIchi=false;
+let isMembers = false;
 
-async function fetchJSON(url){const r=await fetch(url,{cache:"force-cache"});return r.json()}
+async function fetchJSON(url){
+  const r=await fetch(url,{cache:"force-cache"});
+  if(!r.ok) throw new Error("API error");
+  return r.json();
+}
 const loadMapping=()=>fetchJSON(API+"/mapping");
 const loadLatest=()=>fetchJSON(API+"/latest");
 const loadVolumes=()=>fetchJSON(API+"/volumes");
@@ -159,8 +162,7 @@ function fmt(n){return n==null?"—":n.toLocaleString()+" gp"}
 function icon(id){return `./images/${id}.png`}
 
 function seriesFromTS(ts){
-  const d=ts?.data||[];
-  const rows=d.map(r=>({
+  const rows=(ts?.data||[]).map(r=>({
     t:+r.timestamp,
     l:r.avgLowPrice??r.low,
     h:r.avgHighPrice??r.high,
@@ -180,11 +182,11 @@ const ctx=canvas.getContext("2d");
 const tip=$("#tip");
 
 function draw(){
-  if(!series) return;
+  if(!series||!series.t.length) return;
   const W=canvas.width, H=canvas.height;
-  const padL=70, padR=100, padT=30, padB=60;
+  const padL=70, padR=110, padT=30, padB=60;
   const w=W-padL-padR, h=H-padT-padB;
-  const volH=h*0.2;
+  const volH=h*0.22;
   const priceH=h-volH;
 
   const n=series.t.length;
@@ -198,51 +200,52 @@ function draw(){
   const vol=series.vol.slice(start,end);
   const close=series.close.slice(start,end);
 
-  const prices=[...low,...high].filter(x=>x!==null);
+  const prices=[...low,...high].filter(v=>v!==null);
+  if(!prices.length) return;
   const vmin=Math.min(...prices), vmax=Math.max(...prices);
   const volMax=Math.max(...vol,1);
 
   ctx.clearRect(0,0,W,H);
 
-  // grid
+  // Grid
   ctx.strokeStyle="rgba(255,255,255,0.08)";
   for(let i=0;i<=6;i++){
-    const y=padT + (priceH*i/6);
+    const y=padT + priceH*i/6;
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
   }
 
   const stepX=w/Math.max(1,t.length-1);
 
-  // Volume Profile (right side)
+  // Volume Profile (right)
   if(showVP){
-    const bins=35;
+    const bins=40;
     const binH=priceH/bins;
     const profile=new Array(bins).fill(0);
-    let poc=0, maxV=0;
+    let maxV=0, poc=0;
     for(let i=0;i<low.length;i++){
       const p=(low[i]+high[i])/2;
-      if(!p) continue;
+      if(p===null) continue;
       const bin=Math.min(bins-1,Math.floor((p-vmin)/(vmax-vmin)*bins));
       profile[bin]+=vol[i];
       if(profile[bin]>maxV){maxV=profile[bin];poc=bin;}
     }
     ctx.fillStyle="var(--vp-bar)";
     for(let i=0;i<bins;i++){
-      const barW=(profile[i]/maxV)*80;
+      const barW=(profile[i]/maxV)*90;
       const y=padT + i*binH;
-      ctx.fillRect(W-padR-80, y, barW, binH-1);
+      ctx.fillRect(W-padR-90, y, barW, binH-1);
     }
     // POC line
     ctx.strokeStyle="var(--vp-poc)";
-    ctx.setLineDash([5,5]);
+    ctx.lineWidth=2; ctx.setLineDash([6,4]);
     ctx.beginPath();
     ctx.moveTo(padL, padT+poc*binH+binH/2);
-    ctx.lineTo(W-padR-80, padT+poc*binH+binH/2);
+    ctx.lineTo(W-padR-90, padT+poc*binH+binH/2);
     ctx.stroke();
     ctx.setLineDash([]);
   }
 
-  // Ichimoku
+  // Ichimoku Cloud
   if(showIchi){
     const p=getPeriods(view);
     const ten=hl(close,p.tenkan);
@@ -251,20 +254,21 @@ function draw(){
     const senA=ten.map((t,i)=>t!==null&&kij[i]!==null?(t+kij[i])/2:null);
     const chikou=[...new Array(p.kijun).fill(null),...close.slice(0,-p.kijun)];
 
-    line(ten,"var(--tenkan)",2);
-    line(kij,"var(--kijun)",2);
+    line(ten,"var(--tenkan)",2.5);
+    line(kij,"var(--kijun)",2.5);
     line(chikou,"var(--chikou)",2);
 
-    // Cloud
-    ctx.globalAlpha=0.25;
-    for(let i=p.kijun;i<close.length;i++){
+    // Cloud fill
+    ctx.globalAlpha=0.28;
+    const minI=Math.max(0,p.kijun);
+    for(let i=minI;i<close.length;i++){
       const a=senA[i-p.kijun], b=senB[i-p.kijun];
       if(a===null||b===null) continue;
       const x=padL+(i-start)*stepX;
       const ya=padT+priceH-(a-vmin)/(vmax-vmin)*priceH;
-      yb=padT+priceH-(b-vmin)/(vmax-vmin)*priceH;
-      ctx.fillStyle = a>b ? "var(--cloud-bull)" : "var(--cloud-bear)";
-      ctx.fillRect(x-2, Math.min(ya,yb), 4, Math.abs(ya-yb));
+      const yb=padT+priceH-(b-vmin)/(vmax-vmin)*priceH;
+      ctx.fillStyle = a>=b ? "var(--cloud-bull)" : "var(--cloud-bear)";
+      ctx.fillRect(x-stepX/2, Math.min(ya,yb), stepX, Math.abs(ya-yb));
     }
     ctx.globalAlpha=1;
   }
@@ -281,79 +285,84 @@ function draw(){
   vol.forEach((v,i)=>{
     const x=padL+i*stepX;
     const hBar=(v/volMax)*volH;
-    ctx.fillStyle = v>vol[i-1]||i===0 ? "var(--high)" : "var(--low)";
+    ctx.fillStyle = v>(vol[i-1]||0) ? "var(--high)" : "var(--low)";
+    ctx.globalAlpha=0.6;
     ctx.fillRect(x-stepX*0.4, H-padB, stepX*0.8, -hBar);
+    ctx.globalAlpha=1;
   });
 
-  // Y axis labels
-  ctx.fillStyle="#fff";
-  ctx.font="bold 14px Arial";
+  // Y labels
+  ctx.fillStyle="#fff"; ctx.font="bold 14px Arial";
   for(let i=0;i<=6;i++){
     const y=padT + priceH*i/6;
     const val=Math.round(vmax - (vmax-vmin)*i/6);
-    ctx.fillText(val.toLocaleString(), 10, y+5);
-  }
-  ctx.font="12px Arial";
-  const step=Math.max(1,Math.floor(t.length/8));
-  for(let i=0;i<t.length;i+=step){
-    const x=padL+i*stepX;
-    const d=new Date(t[i]*1000);
-    const txt = view==="day"||view==="week" ? d.toLocaleDateString() : d.getFullYear();
-    ctx.fillText(txt, x-15, H-10);
+    ctx.fillText(val.toLocaleString(), 8, y+5);
   }
 
-  // tooltip
+  // X labels
+  ctx.font="12px Arial";
+  const lbls=Math.min(8, t.length);
+  for(let i=0;i<lbls;i++){
+    const idx=Math.round(i*(t.length-1)/(lbls-1));
+    const x=padL+idx*stepX;
+    const d=new Date(t[idx]*1000);
+    const txt=view==="day"||view==="week"?d.toLocaleDateString():d.getFullYear();
+    ctx.fillText(txt, x-20, H-12);
+  }
+
+  // Tooltip
   canvas.onmousemove=e=>{
     const r=canvas.getBoundingClientRect();
-    mx=e.clientX-r.left;
+    const mx=e.clientX-r.left;
     if(mx<padL||mx>W-padR) return tip.style.display="none";
     const i=Math.round((mx-padL)/stepX)+start;
-    if(i<0||i>=t.length) return tip.style.display="none";
+    if(i<0||i>=t.length) return;
     tip.style.display="block";
-    tip.style.left=e.clientX+10+"px";
+    tip.style.left=e.clientX+12+"px";
     tip.style.top=e.clientY-40+"px";
     tip.innerHTML=`<strong>${new Date(t[i]*1000).toLocaleString()}</strong><br>
                     Low: ${fmt(low[i])}<br>High: ${fmt(high[i])}<br>Vol: ${(vol[i]||0).toLocaleString()}`;
   };
   canvas.onmouseleave=()=>tip.style.display="none";
+}
 
-  function line(data,color,w=2){
-    ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
-    let start=false;
-    data.forEach((v,i)=>{
-      if(v===null){start=false;return}
-      const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
-      start?ctx.lineTo(x,y):ctx.moveTo(x,y); start=true;
-    });
-    ctx.stroke();
-  }
-  function dots(data,color){
-    ctx.fillStyle=color;
-    data.forEach((v,i)=>{
-      if(v===null)return;
-      const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
-      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
-    });
-  }
-  function hl(arr,p){
-    return arr.map((_,i)=>{
-      const s=Math.max(0,i-p+1), e=i+1;
-      if(e-s<p) return null;
-      const slice=arr.slice(s,e);
-      return (Math.max(...slice)+Math.min(...slice))/2;
-    });
-  }
-  function getPeriods(v){
-    if(v==="day") return {tenkan:9,kijun:26,senkou:52};
-    if(v==="week") return {tenkan:9*6,kijun:26*6,senkou:52*6};
-    return {tenkan:9*24,kijun:26*24,senkou:52*24};
-  }
+function line(data,color,w=2){
+  ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
+  let s=false;
+  data.forEach((v,i)=>{
+    if(v===null){s=false;return}
+    const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
+    s?ctx.lineTo(x,y):ctx.moveTo(x,y); s=true;
+  });
+  ctx.stroke();
+}
+function dots(data,color){
+  ctx.fillStyle=color;
+  data.forEach((v,i)=>{
+    if(v===null)return;
+    const x=padL+i*stepX, y=padT+priceH-(v-vmin)/(vmax-vmin)*priceH;
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
+  });
+}
+function hl(arr,p){
+  return arr.map((_,i)=>{
+    const s=Math.max(0,i-p+1);
+    if(i-s+1<p) return null;
+    const slice=arr.slice(s,i+1);
+    return (Math.max(...slice)+Math.min(...slice))/2;
+  });
+}
+function getPeriods(v){
+  if(v==="day") return {tenkan:9,kijun:26,senkou:52};
+  if(v==="week") return {tenkan:9*6,kijun:26*6,senkou:52*6};
+  return {tenkan:9*24,kijun:26*24,senkou:52*24};
 }
 
 async function loadItem(item){
   selected=item;
   $("#query").value=item.name;
   $("#itemImg").src=icon(item.id);
+  $("#itemImg").onerror=()=>{this.src="https://oldschool.runescape.wiki/images/Question_mark.png"};
   latest=await loadLatest();
   volumes=await loadVolumes();
   const d=latest.data[item.id];
@@ -368,13 +377,20 @@ async function loadItem(item){
   draw();
 }
 
+// F2P / Members filter
+$("#f2pBtn").onclick=()=>{isMembers=false;$("#f2pBtn").classList.add("active");$("#membersBtn").classList.remove("active");if(selected)loadItem(selected);}
+$("#membersBtn").onclick=()=>{isMembers=true;$("#membersBtn").classList.add("active");$("#f2pBtn").classList.remove("active");if(selected)loadItem(selected);}
+
+// View buttons
 document.querySelectorAll(".viewtabs button").forEach(b=>b.onclick=()=>{
   document.querySelector(".viewtabs .active")?.classList.remove("active");
   b.classList.add("active");
   view=b.dataset.view;
   if(selected) loadItem(selected);
 });
-$("#zIn").onclick=()=>{zoom=Math.min(10,zoom*1.3);draw()};
+
+// Tools
+$("#zIn").onclick=()=>{zoom=Math.min(12,zoom*1.3);draw()};
 $("#zOut").onclick=()=>{zoom=Math.max(1,zoom/1.3);draw()};
 $("#lineMode").onclick=()=>{mode="line";$("#lineMode").classList.add("active");$("#dotMode").classList.remove("active");draw()};
 $("#dotMode").onclick=()=>{mode="dot";$("#dotMode").classList.add("active");$("#lineMode").classList.remove("active");draw()};
@@ -382,12 +398,12 @@ $("#toggleVP").onclick=()=>{showVP=!showVP;$("#toggleVP").classList.toggle("acti
 $("#toggleIchimoku").onclick=()=>{showIchi=!showIchi;$("#toggleIchimoku").classList.toggle("active");draw()};
 $("#refreshBtn").onclick=async()=>{latest=await loadLatest();volumes=await loadVolumes();if(selected)loadItem(selected)};
 
-// search
+// Search
 $("#query").oninput=e=>{
   const q=e.target.value.toLowerCase().trim();
   const box=$("#suggestBox");
   if(!q){box.style.display="none";return}
-  const matches=mapping.filter(i=>i.name.toLowerCase().includes(q)).slice(0,15);
+  const matches=mapping.filter(i=>(isMembers||i.members===false)&&i.name.toLowerCase().includes(q)).slice(0,15);
   box.innerHTML=matches.map(i=>`<div data-id="${i.id}"><img src="${icon(i.id)}">${i.name}</div>`).join("");
   box.style.display=matches.length?"block":"none";
 };
@@ -399,7 +415,7 @@ $("#suggestBox").onclick=e=>{
   }
 };
 
-// init
+// Init
 (async()=>{
   mapping=await loadMapping();
   const gilded=mapping.find(x=>x.name.toLowerCase().includes("gilded scimitar"));
@@ -407,7 +423,6 @@ $("#suggestBox").onclick=e=>{
   canvas.width=canvas.offsetWidth*devicePixelRatio;
   canvas.height=canvas.offsetHeight*devicePixelRatio;
   window.onresize=()=>location.reload();
-  draw();
 })();
 </script>
 </body>
