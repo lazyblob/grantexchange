@@ -58,8 +58,8 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); border:1px solid var(--edge);border-radius:16px;padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .left{display:flex;flex-direction:column}
 /* Main grid: image / search / stats */
-.grid{display:grid;grid-template-columns:240px 1fr 260px; gap:14px;align-items:center}
-.imgbox{width:240px;height:240px;border:1px solid var(--edge); border-radius:14px;background:#22180b; display:flex;align-items:center;justify-content:center; box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)}
+.grid{display:grid;grid-template-columns:120px 1fr 260px; gap:14px;align-items:center}
+.imgbox{width:120px;height:120px;border:1px solid var(--edge); border-radius:14px;background:#22180b; display:flex;align-items:center;justify-content:center; box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)}
 .imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 /* Search */
 .label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
@@ -93,9 +93,9 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .viewtabs button.active, .tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
 /* Chart */
 .chartWrap{position:relative}
-.chart{width:100%;height:700px; background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px, transparent 1px,transparent 24px),#181208; border:1px solid var(--edge);border-radius:12px}
-.chart-tip{position:absolute;display:none;background:rgba(0,0,0,.85); color:#fff;padding:6px 8px;border-radius:6px;font-size:12px; pointer-events:none;white-space:nowrap;border:1px solid #000}
-.legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
+.chart{width:100%;height:700px; background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.06),rgba(255,255,255,0.06) 1px, transparent 1px,transparent 24px),#181208; border:1px solid var(--edge);border-radius:12px}
+.chart-tip{position:absolute;display:none;background:rgba(0,0,0,.85); color:#fff;padding:6px 8px;border-radius:6px;font-size:14px; pointer-events:none;white-space:nowrap;border:1px solid #000}
+.legend{display:flex;gap:12px;font-size:14px;margin-top:6px;color:var(--muted)}
 .legend .sell::before{content:"";display:inline-block;width:14px;height:3px; background:var(--low-color);margin-right:6px;border-radius:2px}
 .legend .buy::before{content:"";display:inline-block;width:14px;height:3px; background:var(--high-color);margin-right:6px;border-radius:2px}
 /* Refresh button */
@@ -108,6 +108,8 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   .imgbox {width:80px;height:80px;}
   .chart {height:400px;}
   .viewtabs button, .tools button {padding:4px 8px; font-size:12px;}
+  .chart-tip {font-size:12px;}
+  .legend {font-size:12px;}
 }
 </style>
 </head>
@@ -120,7 +122,7 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   <!-- Main panel -->
   <div class="card left">
     <div class="grid">
-      <!-- Large item image -->
+      <!-- Small item image -->
       <div class="imgbox"><img id="itemImg" alt="Item"/></div>
       <!-- Search column -->
       <div>
@@ -284,11 +286,12 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.fillStyle=color;
     if(mode==="line"){
       context.beginPath();
+      let started = false;
       for(let i=0;i<arr.length;i++){
-        const v=arr[i]; if(v==null) continue;
+        const v=arr[i]; if(v==null) { started = false; continue; }
         const x=x0 + i*stepX;
         const y=ypx(v, vmin, vmax, y0Offset, hOffset);
-        if(i===0) context.moveTo(x,y); else context.lineTo(x,y);
+        if (!started) { context.moveTo(x,y); started = true; } else context.lineTo(x,y);
       }
       context.lineWidth=2; context.stroke();
     }else{
@@ -335,15 +338,15 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.fillStyle = color;
     context.fillRect(x, y0 + h - barH, stepX * 0.8, barH); // 80% width for spacing
   }
-  // Y labels (price)
-  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
+  // Y labels (price) - larger font
+  context.fillStyle="#fff"; context.font="bold 16px Segoe UI, Arial";
   for(let i=0;i<=lines;i++){
     const y=y0 + (priceHeight*i/lines);
     const v = Math.round(vmax - (vmax-vmin)*i/lines);
     context.fillText(abbreviateNumber(v), 6, y-4);
   }
-  // X labels
-  context.fillStyle="#fff"; context.font="bold 12px Segoe UI, Arial";
+  // X labels - larger font
+  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
   const numLabels = 6;
   const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
   for(let i=0; i < L.length; i += labelStep){
@@ -351,7 +354,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const x = x0 + i*stepX;
     context.fillText(dateStr, x - 20, H - 10);
   }
-  // Tooltip
+  // Tooltip - larger font
   c.onmousemove = (ev)=>{
     const rect=c.getBoundingClientRect();
     const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
@@ -366,10 +369,10 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   };
   c.onmouseleave = () => tip.style.display="none";
   // Indicators
-  if (showVP) drawVolumeProfile(LO, HI, VO, context, x0 + w + 10, y0, priceHeight, vmin, vmax); // Right side
+  if (showVP) drawVolumeProfile(LO, HI, VO, context, x0 - 60, y0, priceHeight, vmin, vmax); // Moved to left side for better visibility
   if (showIchimoku) drawIchimoku(CLOSE, context, x0, y0, w, priceHeight, stepX, vmin, vmax, end - start);
 }
-// Volume Profile Indicator
+// Volume Profile Indicator - ensure horizontal bars, moved to left
 function drawVolumeProfile(lows, highs, vols, context, x0, y0, h, vmin, vmax) {
   const bins = 20; // Number of price bins
   const binSize = (vmax - vmin) / bins;
@@ -384,12 +387,12 @@ function drawVolumeProfile(lows, highs, vols, context, x0, y0, h, vmin, vmax) {
   context.fillStyle = 'var(--muted)';
   for (let i = 0; i < bins; i++) {
     const binVol = profile[i];
-    const barW = (binVol / maxVol) * 50; // Max width 50px
-    const y = y0 + h - ((i + 1) * (h / bins)); // Bottom-up
-    context.fillRect(x0, y, barW, h / bins);
+    const barW = (binVol / maxVol) * 50; // Max width 50px, horizontal
+    const y = y0 + (i * (h / bins)); // Top-down for clarity
+    context.fillRect(x0, y, barW, h / bins - 1); // Horizontal bar
     if (binVol > maxVol * 0.7) { // Highlight high-volume nodes
       context.fillStyle = 'var(--teal)';
-      context.fillRect(x0, y, barW, h / bins);
+      context.fillRect(x0, y, barW, h / bins - 1);
       context.fillStyle = 'var(--muted)'; // Reset
     }
   }
