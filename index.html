@@ -800,7 +800,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v1.7.8</span> <span class="badge">OSRS GE Prices</span>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v1.7.8</span> <span class="badge">OSRS GE Prices</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -1404,7 +1404,7 @@ async function getAlchValue(id) {
 }
 async function setItem(m){
   selected=m; $("#query").value=m.name;
-  document.title = `${m.name} Live Prices, Graphs, Historical Data (OSRS) GE Flip Tool`;
+  document.title = `${m.name} Live Prices, Graphs, Historical Data - (OSRS) GE - Flipping Tool`;
   const img=$("#itemImg");
   img.src=bigIconUrl(m.id);
   img.alt = m.name; // e.g., "Gilded scimitar"
@@ -2117,10 +2117,6 @@ function popoutChart(){
       buildEnchantList();
       buildSmithList();
     }, 300000); // 5 mins
-  } catch (e) {
-    console.error(e);
-    $("#status").textContent = "Error";
-  }
 })();
 </script>
 </body>
