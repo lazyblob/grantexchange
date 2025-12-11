@@ -2117,6 +2117,10 @@ function popoutChart(){
       buildEnchantList();
       buildSmithList();
     }, 300000); // 5 mins
+  } catch (e) {
+    console.error('Boot error:', e);
+    try { $("#status").textContent = "Error"; } catch (_) {}
+  }
 })();
 </script>
 </body>
