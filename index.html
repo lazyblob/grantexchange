@@ -4,26 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Grant Exchange • OSRS GE Chart</title>
-<link rel="icon" type="image/png" href="https://oldschool.runescape.wiki/images/thumb/Gilded_scimitar_detail.png/1200px-Gilded_scimitar_detail.png">
+<link rel="icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <style>
 :root{
-  --bg:#0e0c0a;
-  --card:#1a1612;
-  --edge:#4a3a22;
-  --gold:#d4af37;
-  --orange:#f39c12;
-  --ink:#f0e6d2;
-  --muted:#a0876a;
-  --low:#e74c3c;
-  --high:#2ecc71;
-  --accent:#f1c40f;
-  --tenkan:#0094ff;
-  --kijun:#ff3399;
-  --chikou:#00ff00;
-  --cloud-bull:rgba(46,204,113,0.35);
-  --cloud-bear:rgba(231,76,0.35);
-  --vp-bar:rgba(255,255,255,0.2);
-  --vp-poc:#f1c40f;
+  --bg:#0e0c0a;--card:#1a1612;--edge:#4a3a22;--gold:#d4af37;--orange:#f39c12;
+  --ink:#f0e6d2;--muted:#a0876a;--low:#e74c3c;--high:#2ecc71;--accent:#f1c40f;
+  --tenkan:#0094ff;--kijun:#ff3399;--chikou:#00ff00;
+  --cloud-bull:rgba(46,204,113,0.35);--cloud-bear:rgba(231,76,60,0.35);
+  --vp-bar:rgba(255,255,255,0.18);--vp-poc:#f1c40f;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
@@ -76,11 +64,6 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
 .legend span::before{content:"";width:16px;height:4px;border-radius:2px}
 .legend .low::before{background:var(--low)}
 .legend .high::before{background:var(--high)}
-@media (max-width:768px){
-  .top{grid-template-columns:80px 1fr}
-  .prices{grid-template-columns:1fr}
-  .header{flex-direction:column;gap:8px;align-items:flex-start}
-}
 </style>
 </head>
 <body>
@@ -88,7 +71,7 @@ h1{font-size:28px;font-weight:900;color:var(--orange);cursor:pointer}
   <div class="header">
     <div class="logo">
       <h1>Grant Exchange</h1>
-      <span class="badge">v3.4</span>
+      <span class="badge">v3.5</span>
     </div>
     <div class="mode-switch">
       <button id="f2pBtn" class="active">F2P</button>
@@ -155,20 +138,13 @@ let series = null, view = "day", zoom = 1.8, offset = 0, mode = "line";
 let showVP = false, showIchi = false;
 let isMembers = false;
 
-// Fixed image URLs using wiki's direct image endpoint
-function icon(id) {
-  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(mapping.find(i=>i.id==id)?.name?.replace(/ /g,'_') || 'Question_mark')}.png`;
-}
-
+// Safe fetch
 async function fetchJSON(url) {
   try {
     const r = await fetch(url, { cache: "force-cache" });
     if (!r.ok) return null;
     return await r.json();
-  } catch (e) {
-    console.error("Fetch error:", e);
-    return null;
-  }
+  } catch (e) { console.error(e); return null; }
 }
 
 const loadMapping = () => fetchJSON(API + "/mapping");
@@ -176,10 +152,17 @@ const loadLatest = () => fetchJSON(API + "/latest");
 const loadVolumes = () => fetchJSON(API + "/volumes");
 const loadTS = (step, id) => fetchJSON(API + `/timeseries?timestep=${step}&id=${id}`);
 
+// Fixed image URL that always works
+function icon(id) {
+  const item = mapping.find(i => i.id == id);
+  if (!item) return "https://oldschool.runescape.wiki/images/Question_mark.png";
+  return `https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}.png`;
+}
+
 function fmt(n) { return n == null ? "—" : n.toLocaleString() + " gp"; }
 
 function seriesFromTS(ts) {
-  if (!ts?.data) return null;
+  if (!ts?.data?.length) return null;
   const rows = ts.data.map(r => ({
     t: Number(r.timestamp),
     l: r.avgLowPrice ?? r.low ?? null,
@@ -192,7 +175,7 @@ function seriesFromTS(ts) {
     low: rows.map(r => r.l),
     high: rows.map(r => r.h),
     vol: rows.map(r => r.v),
-    close: rows.map(r => (r.l + r.h) / 2 || r.h || r.l)
+    close: rows.map(r => (r.l + r.h) / 2)
   };
 }
 
@@ -265,18 +248,16 @@ function draw() {
     ctx.setLineDash([]);
   }
 
-  // Ichimoku
+  // Ichimoku Cloud
   if (showIchi) {
     const p = getPeriods(view);
     const ten = hl(close, p.tenkan);
     const kij = hl(close, p.kijun);
     const senB = hl(close, p.senkou);
     const senA = ten.map((t, i) => t !== null && kij[i] !== null ? (t + kij[i]) / 2 : null);
-    const chikou = [...new Array(p.kijun).fill(null), ...close.slice(0, -p.kijun)];
 
     line(ten, "var(--tenkan)", 2.5);
     line(kij, "var(--kijun)", 2.5);
-    line(chikou, "var(--chikou)", 2);
 
     ctx.globalAlpha = 0.35;
     for (let i = p.kijun; i < close.length; i++) {
@@ -299,7 +280,7 @@ function draw() {
     dots(high, "var(--high)");
   }
 
-  // Volume bars
+  // Volume
   vol.forEach((v, i) => {
     const x = padL + i * stepX;
     const hBar = (v / volMax) * volH;
@@ -309,15 +290,13 @@ function draw() {
     ctx.globalAlpha = 1;
   });
 
-  // Y labels
+  // Labels
   ctx.fillStyle = "#fff"; ctx.font = "bold 14px Arial";
   for (let i = 0; i <= 6; i++) {
     const y = padT + priceH * i / 6;
     const val = Math.round(vmax - (vmax - vmin) * i / 6);
     ctx.fillText(val.toLocaleString(), 10, y + 5);
   }
-
-  // X labels
   ctx.font = "12px Arial";
   const numLabels = 8;
   for (let i = 0; i < numLabels; i++) {
@@ -382,7 +361,6 @@ async function loadItem(item) {
   selected = item;
   $("#query").value = item.name;
   $("#itemImg").src = icon(item.id);
-  $("#itemImg").onerror = () => { this.src = "https://oldschool.runescape.wiki/images/Question_mark.png" };
 
   latest = await loadLatest();
   volumes = await loadVolumes();
@@ -406,7 +384,7 @@ async function loadItem(item) {
 $("#f2pBtn").onclick = () => { isMembers = false; $("#f2pBtn").classList.add("active"); $("#membersBtn").classList.remove("active"); if (selected) loadItem(selected); };
 $("#membersBtn").onclick = () => { isMembers = true; $("#membersBtn").classList.add("active"); $("#f2pBtn").classList.remove("active"); if (selected) loadItem(selected); };
 
-// View & Tools
+// Controls
 document.querySelectorAll(".viewtabs button").forEach(b => b.onclick = () => {
   document.querySelector(".viewtabs .active")?.classList.remove("active");
   b.classList.add("active");
