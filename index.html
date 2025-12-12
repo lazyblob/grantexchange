@@ -82,7 +82,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; }
-.chart { width: 100%; height: 600px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
+.chart { width: 100%; height: 600px; background: var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
 .legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); }
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
@@ -93,7 +93,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
 .mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .key-info h2 { margin: 0 0 10px; font-size: 18px; color: var(--gold); }
-.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 20px; }
+.info-grid { display: grid; grid-template-columns: auto auto; gap: 8px 20px; }
 .info-grid div { font-size: 14px; }
 .info-grid div:nth-child(odd) { color: var(--muted); text-align: right; }
 .info-grid div:nth-child(even) { font-weight: bold; }
@@ -161,18 +161,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <span>High: <span></span></span>
     </div>
     <div class="hr"></div>
-    <div id="indicatorsSection" class="key-info">
-      <h2>Active Indicators</h2>
-      <div id="indicatorsList"></div>
-    </div>
     <div class="key-info">
       <h2>Key Info</h2>
       <div class="info-grid">
         <div>Buy Price</div><div id="keyBuyPrice">—</div>
         <div>Sell Price</div><div id="keySellPrice">—</div>
-        <div>Last Price</div><div id="keyLastPrice">—</div>
-        <div>Period Change</div><div id="keyPeriodChange">—</div>
-        <div>Change %</div><div id="keyChangePct">—</div>
         <div>Volume</div><div id="keyVolume">—</div>
         <div>Limit</div><div id="keyLimit">—</div>
         <div>Tax</div><div id="keyTax">—</div>
@@ -184,7 +177,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
   </div>
 </div>
 <script>
-// Code from previous response
 const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
@@ -376,23 +368,20 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   }
   const stepX = w / Math.max(1, (L.length - 1));
   function drawPriceBars(loArr, hiArr) {
-  const barWidth = Math.max(2, stepX * 0.8);
-  for (let i = 0; i < loArr.length; i++) {
-    const lo = loArr[i], hi = hiArr[i];
-    if (lo == null || hi == null) continue;
-    const x = x0 + i * stepX;
-    const yLo = ypx(lo, vmin, vmax, y0, h);
-    const yHi = ypx(hi, vmin, vmax, y0, h);
-    const color = lo < hi ? getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim() : getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
-    context.strokeStyle = color;
-    context.beginPath();
-    context.moveTo(x, Math.min(yLo, yHi));
-    context.lineTo(x, Math.max(yLo, yHi));
-    context.lineWidth = barWidth;
-    context.stroke();
+    const barWidth = stepX * 0.6;
+    const highColor = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
+    const lowColor = getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
+    for (let i = 0; i < loArr.length; i++) {
+      const lo = loArr[i], hi = hiArr[i];
+      if (lo == null || hi == null) continue;
+      const x = x0 + i * stepX;
+      const yLo = ypx(lo, vmin, vmax, y0, h);
+      const yHi = ypx(hi, vmin, vmax, y0, h);
+      context.fillStyle = lo < hi ? highColor : lowColor;
+      context.fillRect(x - barWidth / 2, Math.min(yLo, yHi), barWidth, Math.abs(yLo - yHi));
+    }
   }
-}
-function drawSeries(arr, color, mode) {
+  function drawSeries(arr, color, mode) {
     context.strokeStyle = color;
     context.fillStyle = color;
     if (mode === "line") {
@@ -420,13 +409,16 @@ function drawSeries(arr, color, mode) {
   drawPriceBars(LO, HI);
   // Draw volume bars always at bottom
   const maxVol = Math.max(...VO, 1); // avoid division by zero
+  const highColor = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
+  const lowColor = getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
   for (let i = 0; i < VO.length; i++) {
     const v = VO[i];
     if (v == null) continue;
     const x = x0 + i * stepX - stepX / 4;
     const width = stepX / 2;
     const height = (v / maxVol) * h_vol;
-    context.fillStyle = '#aaa';
+    const color = (i > 0 && HI[i] > HI[i-1]) ? highColor : lowColor;
+    context.fillStyle = color;
     context.fillRect(x, y0_vol + h_vol - height, width, height);
   }
   if (vpActive) {
@@ -435,10 +427,16 @@ function drawSeries(arr, color, mode) {
     const numBins = 50;
     const binSize = (vmax - vmin) / numBins;
     const bins = Array(numBins).fill(0);
+    let maxBinIndex = 0;
+    let maxBinVol = 0;
     for (let i = 0; i < mid.length; i++) {
       const p = mid[i];
       const binIndex = Math.min(numBins - 1, Math.floor((p - vmin) / binSize));
       bins[binIndex] += VO[i];
+      if (bins[binIndex] > maxBinVol) {
+        maxBinVol = bins[binIndex];
+        maxBinIndex = binIndex;
+      }
     }
     const maxBin = Math.max(...bins);
     for (let i = 0; i < numBins; i++) {
@@ -449,8 +447,18 @@ function drawSeries(arr, color, mode) {
       const binH = (h / (vmax - vmin)) * binSize * 1.2; // slightly overlap for better look
       const binW = (binVol / maxBin) * 200;
       context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-      context.fillRect(x0 + w + 10 - binW, y - binH / 2, binW, binH);
+      context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
     }
+    // Draw horizontal line for highest volume (POC)
+    const pocY = ypx(vmin + (maxBinIndex + 0.5) * binSize, vmin, vmax, y0, h);
+    context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
+    context.lineWidth = 2;
+    context.setLineDash([5, 5]);
+    context.beginPath();
+    context.moveTo(x0, pocY);
+    context.lineTo(x0 + w, pocY);
+    context.stroke();
+    context.setLineDash([]);
   }
   if (ichiActive) {
     const ichi = calculateIchimoku({low: LO, high: HI, labels: L});
@@ -469,6 +477,27 @@ function drawSeries(arr, color, mode) {
     drawSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim(), "line");
     drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
   }
+  function drawPrediction(arr, color) {
+    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
+    if (nonNull.length < 2) return;
+    const xVals = nonNull.map(({i}) => i);
+    const yVals = nonNull.map(({v}) => v);
+    const { slope, intercept } = linearRegression(xVals, yVals);
+    context.save();
+    context.setLineDash([6, 6]);
+    context.strokeStyle = color;
+    context.beginPath();
+    const startX = x0;
+    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
+    const endX = x0 + (arr.length - 1) * stepX + stepX * 0.2;
+    const endY = ypx(slope * (arr.length - 1 + (arr.length * 0.2)) + intercept, vmin, vmax, y0, h);
+    context.moveTo(startX, startY);
+    context.lineTo(endX, endY);
+    context.stroke();
+    context.restore();
+  }
+  drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
+  drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
@@ -492,7 +521,7 @@ function drawSeries(arr, color, mode) {
   c.onmouseup = () => isDragging = false;
   c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
   c.onmousemove = (ev) => {
-    const rect = c.getBoundingRect();
+    const rect = c.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     if (isDragging) {
       const dx = ev.clientX - startX;
@@ -642,12 +671,6 @@ async function setItem(m) {
     $("#status").textContent = "Error";
   }
 })();
-function updateIndicators() {
-  const list = $("#indicatorsList");
-  list.innerHTML = '';
-  if (vpActive) list.innerHTML += '<div><strong>Volume Profile:</strong> Horizontal bars showing volume at price levels.</div>';
-  if (ichiActive) list.innerHTML += '<div><strong>Ichimoku Cloud:</strong> Trend indicator with cloud for support/resistance.</div>';
-}
 </script>
 </body>
 </html>
