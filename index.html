@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -23,26 +22,26 @@
 <meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-43YM2RCX1R');
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-43YM2RCX1R');
 </script>
 <style>
 :root {
-  --bg: #1b140a;
-  --panel: #2b2110;
-  --edge: #6a4f2b;
-  --gold: #cfb36a;
-  --orange: #f0a020;
-  --ink: #eee5cf;
-  --muted: #cbbf99;
-  --low-color: #fb6a6a;
-  --high-color: #5cc76a;
-  --grid: #3b2f19;
-  --accent: #ffce4f;
-  --shadow: #0b0703;
-  --teal: #00ffff;
+--bg: #1b140a;
+--panel: #2b2110;
+--edge: #6a4f2b;
+--gold: #cfb36a;
+--orange: #f0a020;
+--ink: #eee5cf;
+--muted: #cbbf99;
+--low-color: #fb6a6a;
+--high-color: #5cc76a;
+--grid: #3b2f19;
+--accent: #ffce4f;
+--shadow: #0b0703;
+--teal: #00ffff;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -103,10 +102,10 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
 .btn-refresh:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5); }
 .btn-refresh:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5); }
 .btn-refresh.loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs { 
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
+@keyframes pulse-rs {
+0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
 }
 /* Sidebar (tighter columns + name header per slot) */
 .side{display:flex;flex-direction:column;gap:12px}
@@ -115,91 +114,91 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
 .filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .switch{position:relative;display:inline-block;width:46px;height:24px}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0; 
-  background:#5a4630;border:1px solid var(--edge); 
-  transition:.2s;border-radius:999px}
-.slider:before{position:absolute;content:"";height:18px;width:18px; 
-  left:3px;top:2px;background:white;border-radius:50%; 
-  transition:.2s}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+background:#5a4630;border:1px solid var(--edge);
+transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;
+left:3px;top:2px;background:white;border-radius:50%;
+transition:.2s}
 .switch input:checked + .slider{background:#275a30}
 .switch input:checked + .slider:before{transform:translateX(21px)}
-.head{ 
-  display:grid;grid-template-columns:22px 1fr 80px 80px; 
-  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px; 
-  border-bottom:1px solid var(--edge) 
+.head{
+display:grid;grid-template-columns:22px 1fr 80px 80px;
+gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px;
+border-bottom:1px solid var(--edge)
 }
 .sort-arrow { font-size: 10px; margin-left: 4px; }
 .tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
 .tb::-webkit-scrollbar {width:8px; background:var(--panel);}
 .tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.row{ 
-  display:grid;grid-template-columns:22px 1fr 80px 80px; 
-  gap:6px;align-items:center;background:#231b0d; 
-  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px 
+.row{
+display:grid;grid-template-columns:22px 1fr 80px 80px;
+gap:6px;align-items:center;background:#231b0d;
+border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px
 }
 .row.long-price{min-height:70px}
 .row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
-.sym{font-weight:700;font-size:15px;white-space:nowrap; 
-  overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.sym{font-weight:700;font-size:15px;white-space:nowrap;
+overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
 .last{color:var(--gold)}
 .delta{color:var(--low-color)}
 .vol{color:var(--high-color)}
 .up{color:var(--buy)}
 .down{color:var(--sell)}
-.btn-add{display:inline-flex;align-items:center;justify-content:center; 
-  width:26px;height:26px;border-radius:8px; 
-  border:1px solid #1c4022;background:#1f4d28; 
-  color:#c8f0cf;font-weight:900;cursor:pointer}
+.btn-add{display:inline-flex;align-items:center;justify-content:center;
+width:26px;height:26px;border-radius:8px;
+border:1px solid #1c4022;background:#1f4d28;
+color:#c8f0cf;font-weight:900;cursor:pointer}
 .btn-add::before{content:"+";font-size:16px;line-height:1}
 /* Mode pill */
 .mode-pill{display:flex;gap:6px;}
-.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted); 
-  padding:6px 10px;cursor:pointer;font-weight:700; 
-  text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
+.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted);
+padding:6px 10px;cursor:pointer;font-weight:700;
+text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
 /* Help */
 .help{line-height:1.45;color:#dacda9}
 .help ul{margin:6px 0 0 18px;padding:0}
 /* Watchlist button */
-.btn-watch{ 
-  padding:12px 20px;border-radius:18px;border:2px solid var(--edge); 
-  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); 
-  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; 
-  text-transform:uppercase;letter-spacing:.5px; 
-  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); 
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease; 
+.btn-watch{
+padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
+background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
+color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
+text-transform:uppercase;letter-spacing:.5px;
+box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
+transition:transform .08s ease,filter .12s ease,box-shadow .12s ease;
 }
-.btn-watch:hover{filter:brightness(1.05); 
-  transform:translateY(-1px); 
-  box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-watch:active{transform:translateY(0); 
-  box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:hover{filter:brightness(1.05);
+transform:translateY(-1px);
+box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:active{transform:translateY(0);
+box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
 .btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
 /* Rainbow spread */
-@keyframes rainbow { 
-  0% {border-color: #ff0000;} 
-  14% {border-color: #ff7f00;} 
-  28% {border-color: #ffff00;} 
-  42% {border-color: #00ff00;} 
-  57% {border-color: #00ffff;} 
-  71% {border-color: #0000ff;} 
-  85% {border-color: #8b00ff;} 
-  100% {border-color: #ff0000;} 
+@keyframes rainbow {
+0% {border-color: #ff0000;}
+14% {border-color: #ff7f00;}
+28% {border-color: #ffff00;}
+42% {border-color: #00ff00;}
+57% {border-color: #00ffff;}
+71% {border-color: #0000ff;}
+85% {border-color: #8b00ff;}
+100% {border-color: #ff0000;}
 }
-.sbar { 
-  position: relative; /* Anchor dropdown to this container */ 
+.sbar {
+position: relative; /* Anchor dropdown to this container */
 }
-.suggest { /* Matches your existing class */ 
-  position: absolute; 
-  left: 0; 
-  top: 100%; /* Drops directly below the input */ 
-  width: 100%; /* Matches search bar width */ 
-  z-index: 10; 
-  background: #231b0d; /* Matches your theme */ 
-  border: 1px solid var(--edge); 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-  overflow: auto; 
-  max-height: 200px; /* Optional: scroll if many results */ 
+.suggest { /* Matches your existing class */
+position: absolute;
+left: 0;
+top: 100%; /* Drops directly below the input */
+width: 100%; /* Matches search bar width */
+z-index: 10;
+background: #231b0d; /* Matches your theme */
+border: 1px solid var(--edge);
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+overflow: auto;
+max-height: 200px; /* Optional: scroll if many results */
 }
 /* Suggestion box */
 .suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
@@ -212,9 +211,9 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
 .suggest-box .buy strong{color:var(--low-color)}
 .suggest-box .sell strong{color:var(--high-color)}
 .suggest-box .margin strong{color:var(--gold)}
-.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold); 
-  border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold; 
-  text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
+.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
+border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
+text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
 .suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
 .suggest-box .kv span{margin-right:5px}
 /* Category select */
@@ -222,46 +221,46 @@ select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-r
 select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 /* Loading animation */
 .loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs { 
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
+@keyframes pulse-rs {
+0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
 }
 /* Small chart */
 .small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
 /* Card-like for small chart */
-.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); 
-  border:1px solid var(--edge);border-radius:16px;padding:12px; 
-  box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+border:1px solid var(--edge);border-radius:16px;padding:12px;
+box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
 /* Loader overlay */
-#loader-overlay { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: rgba(0, 0, 0, 0.8); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  z-index: 1000; 
-  flex-direction: column; 
-  color: var(--ink); 
-  font-size: 18px; 
+#loader-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.8);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+flex-direction: column;
+color: var(--ink);
+font-size: 18px;
 }
-.loader-wheel { 
-  border: 8px solid var(--edge); 
-  border-top: 8px solid var(--orange); 
-  border-radius: 50%; 
-  width: 60px; 
-  height: 60px; 
-  animation: spin 2s linear infinite; 
-  margin-bottom: 20px; 
+.loader-wheel {
+border: 8px solid var(--edge);
+border-top: 8px solid var(--orange);
+border-radius: 50%;
+width: 60px;
+height: 60px;
+animation: spin 2s linear infinite;
+margin-bottom: 20px;
 }
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
 }
 /* Tabs for bottom section */
 .help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -286,2701 +285,2701 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 .alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
 /* Desktop scaling */
 @media (min-width: 769px) {
-  html { 
-    transform: scale(0.8); /* Scale everything to 80% */ 
-    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */ 
-    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */ 
-    height: 125%; /* Same for height */ 
-  }
+html {
+transform: scale(0.8); /* Scale everything to 80% */
+transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
+width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
+height: 125%; /* Same for height */
+}
 }
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  body { 
-    overflow-x: hidden; 
-  }
-  .wrap { 
-    grid-template-columns: 1fr; /* Stack sidebar below main content */ 
-    padding: 0 8px; /* Compact padding */ 
-    gap: 10px; /* Reduced gap for modern, tight layout */ 
-  }
-  .grid { 
-    display: grid; 
-    grid-template-columns: 1fr; 
-    grid-template-rows: auto auto auto; 
-    gap: 8px; /* Smaller gaps */ 
-    align-items: start; /* Top align */ 
-  }
-  .imgbox { 
-    grid-column: 1; 
-    grid-row: 1; 
-    width: 80px; /* Smaller image to compact */ 
-    height: 80px; 
-    margin: 0; /* Left align, no margin */ 
-    justify-self: start; 
-    order: 1; 
-  }
-  .imgbox img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; 
-    cursor: pointer; /* Clickable for item search focus */ 
-  }
-  .grid > div:nth-child(2) { /* Search/profit right of image, top row */ 
-    grid-column: 1; 
-    grid-row: 2; 
-    order: 2; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 2px; /* Tighter */ 
-  }
-  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */ 
-    grid-column: 1; 
-    grid-row: 3; 
-    order: 3; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 2px; /* Tighter gaps between rows/columns */ 
-    background: #231b0d; /* Dark bg for panel feel */ 
-    border: 1px solid var(--edge); /* Border for definition */ 
-    border-radius: 10px; /* Rounded */ 
-    padding: 4px; /* Reduced inner padding */ 
-  }
-  .label { 
-    font-size: 16px; /* Smaller label */ 
-    margin: 0; 
-  }
-  .sbar input { 
-    font-size: 14px; /* Smaller input */ 
-    padding: 8px; 
-  }
-  .kv { 
-    display: flex; 
-    flex-direction: row; /* Keep row for better space use */ 
-    justify-content: space-between; 
-    align-items: center; 
-    margin: 2px 0; /* Even tighter margins */ 
-    font-size: 12px; /* Smaller font for info */ 
-  }
-  .kv span { 
-    flex: 1; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .kv strong { 
-    flex: 1; 
-    text-align: right; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    font-size: 14px; /* Slightly larger for numbers */ 
-  }
-  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin { 
-    font-size: 12px; /* Compact text */ 
-  }
-  #spreadMargin { 
-    text-align: left; 
-    margin: 2px 0; 
-  }
-  .small { 
-    font-size: 10px; /* Smaller buy limit info */ 
-  }
-  .title { 
-    font-size: 12px; /* Smaller titles */ 
-    margin: 0; /* No margins for tight fit */ 
-    text-align: left; /* Left align for flow */ 
-  }
-  .price-adjust { 
-    flex-direction: row; /* Arrows on sides of value, same line */ 
-    align-items: center; 
-    gap: 2px; /* Very tight gaps between arrows and input */ 
-    border: none; /* Remove inner borders if too busy */ 
-    background: transparent; /* Clean look */ 
-    justify-content: flex-start; /* Left align */ 
-  }
-  .price-input, .buy-limit-input { 
-    flex: 1; 
-    font-size: 14px; /* Smaller text size for values */ 
-    text-align: right; /* Right align numbers */ 
-    width: auto; /* Auto width to fit */ 
-    max-width: none; /* Remove max-width to handle long numbers */ 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .price-adjust button { 
-    font-size: 16px; /* Smaller arrows */ 
-    padding: 0 4px; 
-    min-width: 24px; 
-  }
-  .chart { 
-    height: 280px; /* Slightly shorter for compact view */ 
-  }
-  .side { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */ 
-    gap: 8px; 
-  }
-  .side .suggest-box, .side .card-like { 
-    grid-column: span 1; /* Each takes half */ 
-    padding: 8px; /* Narrower padding */ 
-    max-width: 100%; /* Fit to mobile */ 
-  }
-  .side .card-like { 
-    order: -1; 
-  }
-  .side .card:nth-child(3) { /* Watchlist card full width */ 
-    grid-column: 1 / -1; /* Span both columns for full width */ 
-    padding: 8px; /* Narrower */ 
-  }
-  .suggest-box .item { 
-    flex-direction: column; /* Stack for narrow fit */ 
-    gap: 4px; 
-    padding: 6px; 
-  }
-  .suggest-box img { 
-    width: 60px; 
-    height: 60px; 
-    margin: 0 auto; 
-  }
-  .suggest-box .details { 
-    text-align: center; 
-  }
-  .suggest-box .prices { 
-    justify-content: center; 
-    gap: 10px; 
-  }
-  .suggest-box .price strong { 
-    font-size: 14px; 
-  }
-  .suggest-box .next-btn { 
-    font-size: 12px; 
-    padding: 4px 8px; 
-  }
-  .card-like { 
-    padding: 8px; 
-  }
-  .card-like h3 { 
-    font-size: 14px; 
-  }
-  .small-chart { 
-    height: 200px; 
-  }
-  .tb { 
-    max-height: 350px; /* Slightly shorter */ 
-  }
-  .head { 
-    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */ 
-    font-size: 10px; 
-    gap: 4px; 
-    padding: 4px 6px; 
-  }
-  .row { 
-    grid-template-columns: 20px 1fr 50px 50px; 
-    padding: 6px; 
-    gap: 4px; 
-    min-height: 30px; 
-  }
-  .row.long-price { 
-    min-height: 50px; 
-  }
-  .sym { 
-    font-size: 12px; 
-  }
-  .delta, .vol { 
-    font-size: 10px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head { 
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
-    gap: 4px; 
-    padding: 4px 6px; 
-    font-size: 10px; 
-  }
-  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { 
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
-    gap: 4px; 
-    padding: 6px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { 
-    font-size: 10px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+body {
+overflow-x: hidden;
+}
+.wrap {
+grid-template-columns: 1fr; /* Stack sidebar below main content */
+padding: 0 8px; /* Compact padding */
+gap: 10px; /* Reduced gap for modern, tight layout */
+}
+.grid {
+display: grid;
+grid-template-columns: 1fr;
+grid-template-rows: auto auto auto;
+gap: 8px; /* Smaller gaps */
+align-items: start; /* Top align */
+}
+.imgbox {
+grid-column: 1;
+grid-row: 1;
+width: 80px; /* Smaller image to compact */
+height: 80px;
+margin: 0; /* Left align, no margin */
+justify-self: start;
+order: 1;
+}
+.imgbox img {
+width: 100%;
+height: 100%;
+object-fit: contain;
+cursor: pointer; /* Clickable for item search focus */
+}
+.grid > div:nth-child(2) { /* Search/profit right of image, top row */
+grid-column: 1;
+grid-row: 2;
+order: 2;
+display: flex;
+flex-direction: column;
+gap: 2px; /* Tighter */
+}
+.grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
+grid-column: 1;
+grid-row: 3;
+order: 3;
+display: flex;
+flex-direction: column;
+gap: 2px; /* Tighter gaps between rows/columns */
+background: #231b0d; /* Dark bg for panel feel */
+border: 1px solid var(--edge); /* Border for definition */
+border-radius: 10px; /* Rounded */
+padding: 4px; /* Reduced inner padding */
+}
+.label {
+font-size: 16px; /* Smaller label */
+margin: 0;
+}
+.sbar input {
+font-size: 14px; /* Smaller input */
+padding: 8px;
+}
+.kv {
+display: flex;
+flex-direction: row; /* Keep row for better space use */
+justify-content: space-between;
+align-items: center;
+margin: 2px 0; /* Even tighter margins */
+font-size: 12px; /* Smaller font for info */
+}
+.kv span {
+flex: 1;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.kv strong {
+flex: 1;
+text-align: right;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+font-size: 14px; /* Slightly larger for numbers */
+}
+#flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin {
+font-size: 12px; /* Compact text */
+}
+#spreadMargin {
+text-align: left;
+margin: 2px 0;
+}
+.small {
+font-size: 10px; /* Smaller buy limit info */
+}
+.title {
+font-size: 12px; /* Smaller titles */
+margin: 0; /* No margins for tight fit */
+text-align: left; /* Left align for flow */
+}
+.price-adjust {
+flex-direction: row; /* Arrows on sides of value, same line */
+align-items: center;
+gap: 2px; /* Very tight gaps between arrows and input */
+border: none; /* Remove inner borders if too busy */
+background: transparent; /* Clean look */
+justify-content: flex-start; /* Left align */
+}
+.price-input, .buy-limit-input {
+flex: 1;
+font-size: 14px; /* Smaller text size for values */
+text-align: right; /* Right align numbers */
+width: auto; /* Auto width to fit */
+max-width: none; /* Remove max-width to handle long numbers */
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.price-adjust button {
+font-size: 16px; /* Smaller arrows */
+padding: 0 4px;
+min-width: 24px;
+}
+.chart {
+height: 280px; /* Slightly shorter for compact view */
+}
+.side {
+display: grid;
+grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */
+gap: 8px;
+}
+.side .suggest-box, .side .card-like {
+grid-column: span 1; /* Each takes half */
+padding: 8px; /* Narrower padding */
+max-width: 100%; /* Fit to mobile */
+}
+.side .card-like {
+order: -1;
+}
+.side .card:nth-child(3) { /* Watchlist card full width */
+grid-column: 1 / -1; /* Span both columns for full width */
+padding: 8px; /* Narrower */
+}
+.suggest-box .item {
+flex-direction: column; /* Stack for narrow fit */
+gap: 4px;
+padding: 6px;
+}
+.suggest-box img {
+width: 60px;
+height: 60px;
+margin: 0 auto;
+}
+.suggest-box .details {
+text-align: center;
+}
+.suggest-box .prices {
+justify-content: center;
+gap: 10px;
+}
+.suggest-box .price strong {
+font-size: 14px;
+}
+.suggest-box .next-btn {
+font-size: 12px;
+padding: 4px 8px;
+}
+.card-like {
+padding: 8px;
+}
+.card-like h3 {
+font-size: 14px;
+}
+.small-chart {
+height: 200px;
+}
+.tb {
+max-height: 350px; /* Slightly shorter */
+}
+.head {
+grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */
+font-size: 10px;
+gap: 4px;
+padding: 4px 6px;
+}
+.row {
+grid-template-columns: 20px 1fr 50px 50px;
+padding: 6px;
+gap: 4px;
+min-height: 30px;
+}
+.row.long-price {
+min-height: 50px;
+}
+.sym {
+font-size: 12px;
+}
+.delta, .vol {
+font-size: 10px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head {
+grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+gap: 4px;
+padding: 4px 6px;
+font-size: 10px;
+}
+.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row {
+grid-template-columns: 30px 1fr 50px 50px 50px 60px;
+gap: 4px;
+padding: 6px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit {
+font-size: 10px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+.help-tabs button { padding: 6px 10px; font-size: 12px; }
+.side h3 { font-size: 16px; }
+.suggest-box .item { padding: 5px; gap: 5px; }
+.suggest-box img { width: 80px; height: 80px; }
+.suggest-box .name { font-size: 14px; }
+.suggest-box .prices { gap: 10px; }
+.suggest-box .price label { font-size: 10px; }
+.suggest-box .price strong { font-size: 14px; }
+.next-btn { padding: 6px 10px; font-size: 14px; }
+.card-like h3 { font-size: 16px; }
+.card { padding: 8px; }
+select { padding: 6px; font-size: 14px; }
+.help h2 { font-size: 18px; }
+.help p { font-size: 12px; }
+.help ul { margin: 4px 0 0 14px; }
+.kv { margin: 2px 0; }
+.kv strong { font-size: 18px; }
+.spread-margin { font-size: 16px; }
+#chart, #historicalChart { width: 100% !important; }
+.chartWrap { overflow-x: hidden; }
 }
 /* Themed Up/Down Arrows */
-.price-adjust button { 
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer; 
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.price-adjust button {
+background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+border: 2px solid var(--edge); /* Thicker border for emphasis */
+border-radius: 12px; /* More rounded */
+padding: 2px 8px; /* Smaller padding */
+font-size: 18px; /* Slightly smaller text/symbols */
+font-weight: 900; /* Max bold */
+color: var(--gold); /* Gold base, overridden for low/high */
+cursor: pointer;
+transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+line-height: 1; /* Tight line height */
+min-width: 32px; /* Smaller minimum width */
+display: flex;
+align-items: center;
+justify-content: center;
 }
-.price-adjust button.down::before { 
-  content: "▽"; /* Tip-only down arrow (no tail) */ 
+.price-adjust button.down::before {
+content: "▽"; /* Tip-only down arrow (no tail) */
 }
-.price-adjust button.up::before { 
-  content: "△"; /* Tip-only up arrow (no tail) */ 
+.price-adjust button.up::before {
+content: "△"; /* Tip-only up arrow (no tail) */
 }
-.price-adjust button { 
-  content: ""; /* Clear original text */ 
+.price-adjust button {
+content: ""; /* Clear original text */
 }
-.price-adjust button:hover { 
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-  transform: translateY(-2px); /* More lift */ 
-  filter: brightness(1.1); /* Brighter on hover */ 
+.price-adjust button:hover {
+box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
+transform: translateY(-2px); /* More lift */
+filter: brightness(1.1); /* Brighter on hover */
 }
-.price-adjust button:active { 
-  transform: translateY(0); /* Press down effect */ 
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+.price-adjust button:active {
+transform: translateY(0); /* Press down effect */
+box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
 }
-.price-adjust.low button { 
-  color: var(--low-color); /* Red for low arrows */ 
+.price-adjust.low button {
+color: var(--low-color); /* Red for low arrows */
 }
-.price-adjust.high button { 
-  color: var(--high-color); /* Green for high arrows */ 
+.price-adjust.high button {
+color: var(--high-color); /* Green for high arrows */
 }
 /* Themed Color Selectors */
-.color-picker { 
-  display: flex; 
-  align-items: center; 
-  gap: 4px; 
-  background: #2b2212; /* Dark panel bg */ 
-  border: 1px solid var(--edge); /* Edge border */ 
-  border-radius: 8px; 
-  padding: 4px 8px; 
-  color: var(--muted); /* Muted label text */ 
+.color-picker {
+display: flex;
+align-items: center;
+gap: 4px;
+background: #2b2212; /* Dark panel bg */
+border: 1px solid var(--edge); /* Edge border */
+border-radius: 8px;
+padding: 4px 8px;
+color: var(--muted); /* Muted label text */
 }
-.color-picker input[type="color"] { 
-  -webkit-appearance: none; /* Remove default styling */ 
-  appearance: none; 
-  width: 24px; /* Small square */ 
-  height: 24px; 
-  border: none; /* No border */ 
-  background: transparent; /* Transparent bg */ 
-  cursor: pointer; 
+.color-picker input[type="color"] {
+-webkit-appearance: none; /* Remove default styling */
+appearance: none;
+width: 24px; /* Small square */
+height: 24px;
+border: none; /* No border */
+background: transparent; /* Transparent bg */
+cursor: pointer;
 }
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-  padding: 0; 
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+padding: 0;
 }
-.color-picker input[type="color"]::-webkit-color-swatch { 
-  border: 1px solid var(--edge); /* Theme border */ 
-  border-radius: 4px; /* Rounded */ 
+.color-picker input[type="color"]::-webkit-color-swatch {
+border: 1px solid var(--edge); /* Theme border */
+border-radius: 4px; /* Rounded */
 }
-.color-picker input[type="color"]::-moz-color-swatch { 
-  border: 1px solid var(--edge); /* Firefox compat */ 
-  border-radius: 4px; 
+.color-picker input[type="color"]::-moz-color-swatch {
+border: 1px solid var(--edge); /* Firefox compat */
+border-radius: 4px;
 }
-@keyframes glow { 
-  from { box-shadow: 0 0 5px #00ff00; } 
-  to { box-shadow: 0 0 15px #00ff00; } 
+@keyframes glow {
+from { box-shadow: 0 0 5px #00ff00; }
+to { box-shadow: 0 0 15px #00ff00; }
 }
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    font-size: 10px; 
-  }
-  .row { 
-    grid-template-columns: 22px 1fr 60px 60px; 
-    padding: 8px; 
-    gap: 4px; 
-  }
-  .sym { 
-    font-size: 13px; 
-  }
-  .last, .delta, .pct, .vol { 
-    font-size: 12px; 
-  }
-  .alch-tb .head { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 6px 8px; 
-    font-size: 10px; 
-  }
-  .alch-row { 
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
-    gap: 6px; 
-    padding: 8px 8px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
-    font-size: 12px; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12
+h1 { font-size: 20px; }
+h3 { font-size: 16px; }
+.label { font-size: 20px; }
+.help { font-size: 14px; }
+.chart { height: 200px; }
+.tb { max-height: 200px; }
+.small-chart { height: 120px; }
+.suggest { width: 100%; }
+.head {
+grid-template-columns: 22px 1fr 60px 60px;
+font-size: 10px;
+}
+.row {
+grid-template-columns: 22px 1fr 60px 60px;
+padding: 8px;
+gap: 4px;
+}
+.sym {
+font-size: 13px;
+}
+.last, .delta, .pct, .vol {
+font-size: 12px;
+}
+.alch-tb .head {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 6px 8px;
+font-size: 10px;
+}
+.alch-row {
+grid-template-columns: 32px 1fr 60px 60px 60px 70px;
+gap: 6px;
+padding: 8px 8px;
+}
+.alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
+font-size: 12px;
+}
+.sbar { gap: 5px; }
+.sbar input { padding: 12px; font-size: 16px; }
+.sbar button { padding: 8px 12px; font-size: 14px; }
+.viewtabs, .mode-pill { gap: 3px; }
+.viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+.tools { gap: 3px; }
+.tools button { padding: 3px 6px; font-size: 12px; }
+.refreshRow { gap: 5px; }
+.btn-refresh, .btn-watch { padding: 8px 12
