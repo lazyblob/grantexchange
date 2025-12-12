@@ -2,141 +2,114 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Grant Exchange • OSRS GE Chart</title>
-<link rel="icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
+<title>Grant Exchange - OSRS Charting Tool</title>
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with indicators like Ichimoku Cloud, Volume Profile, and Volume. Analyze trends from 1 day to 5 years.">
+<meta name="keywords" content="OSRS Grand Exchange, OSRS GE, RuneScape Grand Exchange, OSRS charting, OSRS price charts, OSRS indicators, Ichimoku Cloud OSRS, Volume Profile OSRS">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://grantexchange.net/">
+<!-- Open Graph -->
+<meta property="og:title" content="Grant Exchange - OSRS Charting Tool">
+<meta property="og:description" content="Advanced charting tool for OSRS Grand Exchange items with indicators like Ichimoku Cloud, Volume Profile, and Volume. Analyze trends from 1 day to 5 years.">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<meta property="og:url" content="https://grantexchange.net/">
+<meta property="og:type" content="website">
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="48x48" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grant Exchange - OSRS Charting Tool">
+<meta name="twitter:description" content="Advanced charting tool for OSRS Grand Exchange items with indicators like Ichimoku Cloud, Volume Profile, and Volume. Analyze trends from 1 day to 5 years.">
+<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<!-- Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-43YM2RCX1R');
+</script>
+<!-- CSS -->
 <style>
 :root{
-  --bg:#0e0c0a;
-  --card:#1a1612;
-  --edge:#4a3a22;
-  --gold:#d4af37;
-  --orange:#f39c12;
-  --ink:#f0e6d2;
-  --muted:#a0876a;
-  --low:#e74c3c;
-  --high:#2ecc71;
-  --accent:#f1c40f;
-  --tenkan:#0094ff;
-  --kijun:#ff3399;
-  --chikou:#00ff00;
-  --cloud-bull:rgba(46,204,113,0.35);
-  --cloud-bear:rgba(231,76,60,0.35);
-  --vp-bar:rgba(255,255,255,0.18);
-  --vp-poc:#f1c40f;
+  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
+  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
+  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
+  --teal: #00ffff;
 }
 * {box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0;
-  background:var(--bg);
+  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a;
   color:var(--ink);
   font-family:Segoe UI,Inter,system-ui,Arial;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
 /* Layout */
-.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px); display:grid; grid-template-columns:1fr; gap:16px; align-items:start}
-.header{grid-column:1 / -1;display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center}
+.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px);
+  display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.header{grid-column:1 / -1;display:grid;
+  grid-template-columns:1fr auto auto;gap:12px;align-items:center}
 /* Branding */
 h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
 .badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;
-       padding:2px 8px;color:var(--muted);background:#20190e}
+  padding:2px 8px;color:var(--muted);background:#20190e}
 .small{font-size:12px;color:var(--muted)}
+.status-error{color:#ffb4b4}
 /* Cards */
 .card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
-      border:1px solid var(--edge);border-radius:16px;padding:12px;
-      box-shadow:0 6px 18px rgba(0,0,0,.28)}
+  border:1px solid var(--edge);border-radius:16px;padding:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .left{display:flex;flex-direction:column}
 .hr{border:none;border-top:1px solid var(--edge);margin:10px 0}
-/* Main grid: image / search / stats */
-.grid{display:grid;grid-template-columns:240px 1fr 260px;
-      gap:14px;align-items:center}
-.imgbox{
-  width:240px;height:240px;border:1px solid var(--edge);
-  border-radius:14px;background:#22180b;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25)
-}
-.imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 /* Search */
 .label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
 .sbar{display:flex;gap:10px;margin-top:2px;position:relative}
 .sbar input{
   flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink);
   border-radius:14px;padding:16px;font-size:20px;outline:none;
-  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s
-}
+  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s }
 .sbar input:focus{border-color:var(--orange);
-                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-.sbar button{
-  background:#2b2212;border:1px solid var(--edge);color:var(--gold);
-  border-radius:12px;padding:12px 16px;cursor:pointer;font-size:15px;
-  text-transform:uppercase;letter-spacing:.5px;transition:box-shadow .18s,border-color .18s
-}
-.sbar button:focus{border-color:var(--orange);
-                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 .suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px;
-         max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
-.suggest::-webkit-scrollbar {width:8px; background:var(--panel); }
+  max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
+.suggest::-webkit-scrollbar {width:8px; background:var(--panel);}
 .suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
 .suggest div{display:flex;align-items:center;gap:6px;
-             padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
+  padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
 .suggest div:hover{background:#2d220f}
 .suggest img{width:20px;height:20px;image-rendering:pixelated}
-/* Stats */
-.title{font-size:15px;letter-spacing:.3px;
-       text-transform:uppercase;margin-bottom:4px}
-.title.low{color:var(--low-color)}
-.title.high{color:var(--high-color)}
-.big-buy{font-size:36px;font-weight:900;color:var(--low-color)}
-.big-sell{font-size:36px;font-weight:900;color:var(--high-color)}
-.kv{display:flex;justify-content:space-between;margin:5px 0}
-.kv strong.spread{font-size:24px;animation: rainbow 5s linear infinite;}
-.kv .price-adjust{display:flex;align-items:center;gap:5px;border:1px solid var(--edge);padding:8px;border-radius:8px;background:#2b2212}
-.kv .price-adjust button{padding:0 5px;font-size:24px;font-weight:bold;color:var(--gold);background:transparent;border:none;cursor:pointer;}
-.kv .price-adjust.low button{color:var(--low-color)}
-.kv .price-adjust.high button{color:var(--high-color)}
-.kv .price-adjust span{font-size:24px;font-weight:bold}
-.kv .price-adjust.low span{color:var(--low-color)}
-.kv .price-adjust.high span{color:var(--high-color)}
-.kv .price-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
-.kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
 /* Tabs + Tools */
 .viewtabs, .mode-pill {display:flex;gap:6px;}
 .viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge);
-                 color:var(--ink);border-radius:10px;padding:6px 10px;
-                 cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+  color:var(--ink);border-radius:10px;padding:6px 10px;
+  cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
 .viewtabs button.active, .mode-pill button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-.viewtabs button:focus, .mode-pill button:focus{border-color:var(--orange);
-                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 .tools{display:flex;gap:6px;align-items:center;margin-top:6px}
 .tools button{background:#2b2212;border:1px solid var(--edge);
-              color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
-              text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
+  color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
+  text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
 .tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-.tools button:focus{border-color:var(--orange);
-                  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 /* Chart */
-.chartWrap{position:relative}
+.chartWrap{position:relative;height: calc(100vh - 200px)} /* Full height minus header/search */
 .chart{
-  width:100%;height:500px;
+  width:100%;height:100%;
   background:repeating-linear-gradient(to bottom,
-             rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
-             transparent 1px,transparent 24px),#181208;
-  border:1px solid var(--edge);border-radius:12px
-}
+    rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
+    transparent 1px,transparent 24px),#181208;
+  border:1px solid var(--edge);border-radius:12px }
 .chart-tip{
   position:absolute;display:none;background:rgba(0,0,0,.85);
   color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;
-  pointer-events:none;white-space:nowrap;border:1px solid #000
-}
+  pointer-events:none;white-space:nowrap;border:1px solid #000 }
 .legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
 .legend .sell::before{content:"";display:inline-block;width:14px;height:3px;
-                      background:var(--low-color);margin-right:6px;border-radius:2px}
+  background:var(--low-color);margin-right:6px;border-radius:2px}
 .legend .buy::before{content:"";display:inline-block;width:14px;height:3px;
-                     background:var(--high-color);margin-right:6px;border-radius:2px}
-/* Refresh button glow */
+  background:var(--high-color);margin-right:6px;border-radius:2px}
+/* Refresh button */
 .refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
 .btn-refresh{
   padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
@@ -144,13 +117,12 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
   text-transform:uppercase;letter-spacing:.5px;
   box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease
-}
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease }
 .btn-refresh:hover{filter:brightness(1.05);
-                   transform:translateY(-1px);
-                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
 .btn-refresh:active{transform:translateY(0);
-                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+  box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
 .btn-refresh.loading {
   animation: pulse-rs 1.5s infinite;
 }
@@ -159,965 +131,384 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
   100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
 }
-/* Sidebar (tighter columns + name header per slot) */
-.side{display:flex;flex-direction:column;gap:12px}
-.side .card{display:flex;flex-direction:column}
-.side h3{margin:0 0 10px 0;font-size:18px;font-weight:900;color:var(--orange)}
-.filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.switch{position:relative;display:inline-block;width:46px;height:24px}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
-        background:#5a4630;border:1px solid var(--edge);
-        transition:.2s;border-radius:999px}
-.slider:before{position:absolute;content:"";height:18px;width:18px;
-               left:3px;top:2px;background:white;border-radius:50%;
-               transition:.2s}
-.switch input:checked + .slider{background:#275a30}
-.switch input:checked + .slider:before{transform:translateX(21px)}
-.head{
-  display:grid;grid-template-columns:22px 1fr 80px 80px;
-  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px;
-  border-bottom:1px solid var(--edge)
-}
-.sort-arrow { font-size: 10px; margin-left: 4px; }
-.tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
-.tb::-webkit-scrollbar {width:8px; background:var(--panel);}
-.tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.row{
-  display:grid;grid-template-columns:22px 1fr 80px 80px;
-  gap:6px;align-items:center;background:#231b0d;
-  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px
-}
-.row.long-price{min-height:70px}
-.row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
-.sym{font-weight:700;font-size:15px;white-space:nowrap;
-     overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-.last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
-.last{color:var(--gold)}
-.delta{color:var(--low-color)}
-.vol{color:var(--high-color)}
-.up{color:var(--high-color)} .down{color:var(--low-color)}
-.btn-add{display:inline-flex;align-items:center;justify-content:center;
-         width:26px;height:26px;border-radius:8px;
-         border:1px solid #1c4022;background:#1f4d28;
-         color:#c8f0cf;font-weight:900;cursor:pointer}
-.btn-add::before{content:"+";font-size:16px;line-height:1}
-/* Mode pill */
-.mode-pill{display:flex;gap:6px;}
-.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted);
-             padding:6px 10px;cursor:pointer;font-weight:700;
-             text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
-/* Help */
-.help{line-height:1.45;color:#dacda9}
-.help ul{margin:6px 0 0 18px;padding:0}
-/* Watchlist button */
-.btn-watch{
-  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
-  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
-  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
-  text-transform:uppercase;letter-spacing:.5px;
-  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease;
-}
-.btn-watch:hover{filter:brightness(1.05);
-                   transform:translateY(-1px);
-                   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-watch:active{transform:translateY(0);
-                    box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
-/* Rainbow spread */
-@keyframes rainbow {
-  0% {border-color: #ff0000;}
-  14% {border-color: #ff7f00;}
-  28% {border-color: #ffff00;}
-  42% {border-color: #00ff00;}
-  57% {border-color: #00ffff;}
-  71% {border-color: #0000ff;}
-  85% {border-color: #8b00ff;}
-  100% {border-color: #ff0000;}
-}
-.sbar {
-  position: relative; /* Anchor dropdown to this container */
-}
-.suggest { /* Matches your existing class */
-  position: absolute;
-  left: 0;
-  top: 100%; /* Drops directly below the input */
-  width: 100%; /* Matches search bar width */
-  z-index: 10;
-  background: #231b0d; /* Matches your theme */
-  border: 1px solid var(--edge);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  overflow: auto;
-  max-height: 200px; /* Optional: scroll if many results */
-}
-/* Suggestion box */
-.suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
-.suggest-box img{width:100px;height:100px;image-rendering:pixelated}
-.suggest-box .details{flex:1}
-.suggest-box .name{font-weight:700;color:var(--orange)}
-.suggest-box .prices{display:flex;gap:20px}
-.suggest-box .price label{color:var(--muted);font-size:12px}
-.suggest-box .price strong{display:block;font-size:16px}
-.suggest-box .buy strong{color:var(--low-color)}
-.suggest-box .sell strong{color:var(--high-color)}
-.suggest-box .margin strong{color:var(--gold)}
-.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
-                        border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
-                        text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
-.suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
-.suggest-box .kv span{margin-right:5px}
-/* Category select */
-select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-radius:14px;padding:8px;font-size:16px;outline:none;width:100%;margin-bottom:8px;transition:box-shadow .18s,border-color .18s}
-select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-/* Loading animation */
-.loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs {
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
-}
-/* Small chart */
-.small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
-/* Card-like for small chart */
-.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
-      border:1px solid var(--edge);border-radius:16px;padding:12px;
-      box-shadow:0 6px 18px rgba(0,0,0,.28)}
-.spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
-/* Loader overlay */
-#loader-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  flex-direction: column;
-  color: var(--ink);
-  font-size: 18px;
-}
-.loader-wheel {
-  border: 8px solid var(--edge);
-  border-top: 8px solid var(--orange);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 2s linear infinite;
-  margin-bottom: 20px;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-/* Tabs for bottom section */
-.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-.help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color:var(--orange); }
-.help-tab-content { display: none; }
-.help-tab-content.active { display: block; }
-/* Alch table (tighter) */
-.alch-tb, .sets-tb, .craft-tb, .enchant-tb, .smith-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
-.alch-tb::-webkit-scrollbar, .sets-tb::-webkit-scrollbar, .craft-tb::-webkit-scrollbar, .enchant-tb::-webkit-scrollbar, .smith-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
-.alch-tb::-webkit-scrollbar-thumb, .sets-tb::-webkit-scrollbar-thumb, .craft-tb::-webkit-scrollbar-thumb, .enchant-tb::-webkit-scrollbar-thumb, .smith-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
-.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { display: grid; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
-.alch-row { grid-template-columns: 40px 1fr 120px 120px 120px 140px; }
-.sets-row { grid-template-columns: 1fr 120px 120px 120px 1fr; } /* Added column for pieces */
-.craft-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
-.enchant-row { grid-template-columns: 40px 1fr 80px 1fr 1fr 80px 120px; }
-.smith-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
-.alch-row img, .sets-row img, .craft-row img, .enchant-row img, .smith-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
-.alch-sym, .sets-sym, .craft-sym, .enchant-sym, .smith-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.alch-buy, .alch-nat, .alch-value, .alch-profit, .sets-buy, .sets-sell, .sets-profit, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
-.alch-profit.positive, .sets-profit.positive, .craft-profit.positive, .enchant-profit.positive, .smith-profit.positive { color: var(--high-color); }
-.alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
-/* Desktop scaling */
-@media (min-width: 769px) {
-  html {
-    transform: scale(0.8); /* Scale everything to 80% */
-    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
-    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
-    height: 125%; /* Same for height */
-  }
-}
-/* Mobile Responsiveness */
+/* Mobile */
 @media (max-width: 768px) {
-  body {
-    overflow-x: hidden;
-  }
-  .wrap {
-    grid-template-columns: 1fr; /* Stack sidebar below main content */
-    padding: 0 8px; /* Compact padding */
-    gap: 10px; /* Reduced gap for modern, tight layout */
-    max-width: 100%;
-    margin: 10px auto;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 8px; /* Smaller gaps */
-    align-items: start; /* Top align */
-  }
-  .imgbox {
-    grid-column: 1;
-    grid-row: 1;
-    width: 80px; /* Smaller image to compact */
-    height: 80px;
-    margin: 0; /* Left align, no margin */
-    justify-self: start;
-    order: 1;
-  }
-  .imgbox img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    cursor: pointer; /* Clickable for item search focus */
-  }
-  .grid > div:nth-child(2) { /* Search/profit right of image, top row */
-    grid-column: 1;
-    grid-row: 2;
-    order: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 2px; /* Tighter */
-  }
-  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
-    grid-column: 1;
-    grid-row: 3;
-    order: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 2px; /* Tighter gaps between rows/columns */
-    background: #231b0d; /* Dark bg for panel feel */
-    border: 1px solid var(--edge); /* Border for definition */
-    border-radius: 10px; /* Rounded */
-    padding: 4px; /* Reduced inner padding */
-  }
-  .label {
-    font-size: 16px; /* Smaller label */
-    margin: 0;
-  }
-  .sbar input {
-    font-size: 14px; /* Smaller input */
-    padding: 8px;
-  }
-  .kv {
-    display: flex;
-    flex-direction: row; /* Keep row for better space use */
-    justify-content: space-between;
-    align-items: center;
-    margin: 2px 0; /* Even tighter margins */
-    font-size: 12px; /* Smaller font for info */
-  }
-  .kv span {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .kv strong {
-    flex: 1;
-    text-align: right;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 14px; /* Slightly larger for numbers */
-  }
-  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin {
-    font-size: 12px; /* Compact text */
-  }
-  #spreadMargin {
-    text-align: left;
-    margin: 2px 0;
-  }
-  .small {
-    font-size: 10px; /* Smaller buy limit info */
-  }
-  .title {
-    font-size: 12px; /* Smaller titles */
-    margin: 0; /* No margins for tight fit */
-    text-align: left; /* Left align for flow */
-  }
-  .price-adjust {
-    flex-direction: row; /* Arrows on sides of value, same line */
-    align-items: center;
-    gap: 2px; /* Very tight gaps between arrows and input */
-    border: none; /* Remove inner borders if too busy */
-    background: transparent; /* Clean look */
-    justify-content: flex-start; /* Left align */
-  }
-  .price-input, .buy-limit-input {
-    flex: 1;
-    font-size: 14px; /* Smaller text size for values */
-    text-align: right; /* Right align numbers */
-    width: auto; /* Auto width to fit */
-    max-width: none; /* Remove max-width to handle long numbers */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .price-adjust button {
-    font-size: 16px; /* Smaller arrows */
-    padding: 0 4px;
-    min-width: 24px;
-  }
-  .chart {
-    height: 280px; /* Slightly shorter for compact view */
-  }
-  .side {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */
-    gap: 8px;
-  }
-  .side .suggest-box, .side .card-like {
-    grid-column: span 1; /* Each takes half */
-    padding: 8px; /* Narrower padding */
-    max-width: 100%; /* Fit to mobile */
-  }
-  .side .card-like {
-    order: -1;
-  }
-  .side .card:nth-child(3) { /* Watchlist card full width */
-    grid-column: 1 / -1; /* Span both columns for full width */
-    padding: 8px; /* Narrower */
-  }
-  .suggest-box .item {
-    flex-direction: column; /* Stack for narrow fit */
-    gap: 4px;
-    padding: 6px;
-  }
-  .suggest-box img {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto;
-  }
-  .suggest-box .details {
-    text-align: center;
-  }
-  .suggest-box .prices {
-    justify-content: center;
-    gap: 10px;
-  }
-  .suggest-box .price strong {
-    font-size: 14px;
-  }
-  .suggest-box .next-btn {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  .card-like {
-    padding: 8px;
-  }
-  .card-like h3 {
-    font-size: 14px;
-  }
-  .small-chart {
-    height: 200px;
-  }
-  .tb {
-    max-height: 350px; /* Slightly shorter */
-  }
-  .head {
-    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */
-    font-size: 10px;
-    gap: 4px;
-    padding: 4px 6px;
-  }
-  .row {
-    grid-template-columns: 20px 1fr 50px 50px;
-    padding: 6px;
-    gap: 4px;
-    min-height: 30px;
-  }
-  .row.long-price {
-    min-height: 50px;
-  }
-  .sym {
-    font-size: 12px;
-  }
-  .delta, .vol {
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head {
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
-    gap: 4px;
-    padding: 4px 6px;
-    font-size: 10px;
-  }
-  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row {
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px;
-    gap: 4px;
-    padding: 6px;
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit {
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
-/* Themed Up/Down Arrows */
-.price-adjust button {
-  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-  border: 2px solid var(--edge); /* Thicker border for emphasis */
-  border-radius: 12px; /* More rounded */
-  padding: 2px 8px; /* Smaller padding */
-  font-size: 18px; /* Slightly smaller text/symbols */
-  font-weight: 900; /* Max bold */
-  color: var(--gold); /* Gold base, overridden for low/high */
-  cursor: pointer;
-  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-  line-height: 1; /* Tight line height */
-  min-width: 32px; /* Smaller minimum width */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .wrap {padding: 0 8px; gap: 10px;}
+  .label {font-size: 20px;}
+  .sbar input {font-size: 16px; padding: 12px;}
+  .viewtabs button {padding: 4px 8px; font-size: 12px;}
+  .tools button {padding: 3px 6px; font-size: 12px;}
+  .refreshRow {gap: 5px;}
+  .btn-refresh {padding: 8px 12px; font-size: 14px;}
+  .chartWrap {height: calc(100vh - 150px);}
 }
-.price-adjust button.down::before {
-  content: "▽"; /* Tip-only down arrow (no tail) */
-}
-.price-adjust button.up::before {
-  content: "△"; /* Tip-only up arrow (no tail) */
-}
-.price-adjust button {
-  content: ""; /* Clear original text */
-}
-.price-adjust button:hover {
-  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */
-  transform: translateY(-2px); /* More lift */
-  filter: brightness(1.1); /* Brighter on hover */
-}
-.price-adjust button:active {
-  transform: translateY(0); /* Press down effect */
-  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3);
-}
-.price-adjust.low button {
-  color: var(--low-color); /* Red for low arrows */
-}
-.price-adjust.high button {
-  color: var(--high-color); /* Green for high arrows */
-}
-/* Themed Color Selectors */
-.color-picker {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #2b2212; /* Dark panel bg */
-  border: 1px solid var(--edge); /* Edge border */
-  border-radius: 8px;
-  padding: 4px 8px;
-  color: var(--muted); /* Muted label text */
-}
-.color-picker input[type="color"] {
-  -webkit-appearance: none; /* Remove default styling */
-  appearance: none;
-  width: 24px; /* Small square */
-  height: 24px;
-  border: none; /* No border */
-  background: transparent; /* Transparent bg */
-  cursor: pointer;
-}
-.color-picker input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-.color-picker input[type="color"]::-webkit-color-swatch {
-  border: 1px solid var(--edge); /* Theme border */
-  border-radius: 4px; /* Rounded */
-}
-.color-picker input[type="color"]::-moz-color-swatch {
-  border: 1px solid var(--edge); /* Firefox compat */
-  border-radius: 4px;
-}
-@keyframes glow {
-  from { box-shadow: 0 0 5px #00ff00; }
-  to { box-shadow: 0 0 15px #00ff00; }
-}
-  h1 { font-size: 20px; }
-  h3 { font-size: 16px; }
-  .label { font-size: 20px; }
-  .help { font-size: 14px; }
-  .chart { height: 200px; }
-  .tb { max-height: 200px; }
-  .small-chart { height: 120px; }
-  .suggest { width: 100%; }
-  .head {
-    grid-template-columns: 22px 1fr 60px 60px;
-    font-size: 10px;
-  }
-  .row {
-    grid-template-columns: 22px 1fr 60px 60px;
-    padding: 8px;
-    gap: 4px;
-  }
-  .sym {
-    font-size: 13px;
-  }
-  .last, .delta, .pct, .vol {
-    font-size: 12px;
-  }
-  .alch-tb .head {
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
-    gap: 6px;
-    padding: 6px 8px;
-    font-size: 10px;
-  }
-  .alch-row {
-    grid-template-columns: 32px 1fr 60px 60px 60px 70px;
-    gap: 6px;
-    padding: 8px 8px;
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit {
-    font-size: 12px;
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 14px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Grant Exchange</h1>
-      <div class="version">
-        v3.7
+<div class="wrap">
+  <div class="header">
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0</span> <span class="badge">OSRS Charts</span></div>
+    <div id="status" class="small">Ready</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="mode-pill" id="modePill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
       </div>
-    </div>
-    <div class="mode-switch">
-      <button id="f2pBtn" class="active">F2P</button>
-      <button id="membersBtn">Members</button>
-    </div>
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search any item...">
-      <div id="suggestions" class="suggestions"></div>
-    </div>
-    <div class="prices">
-      <div class="price-card buy">
-        <div class="price-label">Buy Price</div>
-        <div class="price-value" id="buyPrice">--</div>
-      </div>
-      <div class="price-card sell">
-        <div class="price-label">Sell Price</div>
-        <div class="price-value" id="sellPrice">--</div>
-      </div>
-    </div>
-    <div class="controls">
-      <div class="tabs">
-        <button class="tab-btn active" data-timeframe="1D">1D</button>
-        <button class="tab-btn" data-timeframe="1W">1W</button>
-        <button class="tab-btn" data-timeframe="1M">1M</button>
-        <button class="tab-btn" data-timeframe="6M">6M</button>
-        <button class="tab-btn" data-timeframe="1Y">1Y</button>
-        <button class="tab-btn" data-timeframe="ALL">All</button>
-      </div>
-      <div class="tools">
-        <button id="zoomIn">Zoom +</button>
-        <button id="zoomOut">Zoom -</button>
-        <button id="lineChart" class="active">Line</button>
-        <button id="barChart">Dots</button>
-        <button id="vpToggle">VP</button>
-        <button id="ichiToggle">Ichimoku</button>
-        <button id="refreshBtn">Refresh</button>
-      </div>
-    </div>
-    <div class="chart-container">
-      <canvas id="priceChart"></canvas>
-      <div id="tooltip" class="tooltip"></div>
-    </div>
-    <div class="legend">
-      <span class="low">Low Price</span>
-      <span class="high">High Price</span>
     </div>
   </div>
-  <script>
-    const API_BASE = 'https://prices.runescape.wiki/api/v1/osrs';
-    let currentItem = null;
-    let chartData = null;
-    let isMembers = false;
-    let currentTimeframe = '1D';
-    let vpEnabled = false;
-    let ichiEnabled = false;
-    let chartType = 'line';
+  <!-- Main panel: Search + Chart -->
+  <div class="card left">
+    <div class="label">Item</div>
+    <div class="sbar">
+      <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
+      <div id="suggestBox" class="suggest" style="display:none"></div>
+    </div>
+    <div class="refreshRow">
+      <div class="viewtabs">
+        <button data-view="1d" class="active">1D</button>
+        <button data-view="1w">1W</button>
+        <button data-view="1m">1M</button>
+        <button data-view="6m">6M</button>
+        <button data-view="1y">1Y</button>
+        <button data-view="5y">5Y</button>
+        <button data-view="all">All</button>
+      </div>
+      <div class="tools">
+        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">-</button>
+        <span class="small" style="margin-left:10px">Mode:</span>
+        <button id="lineMode" class="active">Line</button>
+        <button id="dotMode">Scatter</button>
+        <span class="small" style="margin-left:10px">Indicators:</span>
+        <select id="indicatorSelect">
+          <option value="ichimoku">Ichimoku Cloud</option>
+          <option value="vp">Volume Profile</option>
+          <option value="volume">Volume</option>
+        </select>
+        <button id="addIndicator">Add</button>
+      </div>
+    </div>
+    <div class="chartWrap">
+      <canvas id="chart" class="chart"></canvas>
+      <div id="tip" class="chart-tip"></div>
+    </div>
+    <div class="legend"><span class="sell">Low (Buy)</span><span class="buy">High (Sell)</span></div>
+    <button id="refreshBtn" class="btn-refresh">Refresh Data</button>
+  </div>
+</div>
+<!-- SCRIPT -->
+<script>
+/* Constants & API */
+const $ = s => document.querySelector(s);
+const API = "https://prices.runescape.wiki/api/v1/osrs";
+let mapping=[], latest=null, volumes=null, selected=null;
+let currentSeries=null, view="1d", zoom=1.5, offset=0, drawMode="line";
+let membersOn=false;
+let enabledIndicators = [];
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
 
-    // Load mapping for item IDs
-    async function loadMapping() {
-      try {
-        const response = await fetch(`${API_BASE}/mapping`);
-        return await response.json();
-      } catch (error) {
-        console.error('Failed to load mapping:', error);
-        return [];
+/* Utilities */
+const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
+const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
+const abbreviateNumber = (num) => {
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+  return num.toLocaleString();
+};
+async function jget(url){ const r=await fetch(url, {cache: "default"}); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
+const loadMapping=()=>jget(API+"/mapping");
+const loadLatest =()=>jget(API+"/latest");
+const loadVolumes=()=>jget(API+"/volumes");
+const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
+function bigIconUrl(id){ return `./images/${id}.png`; }
+function seriesFromTS(ts){
+  const src = ts?.data || [];
+  const rows = src.map(r=>({
+    t: Number(r.timestamp ?? r.ts ?? r.time),
+    lo: r.avgLowPrice ?? r.low ?? null,
+    hi: r.avgHighPrice ?? r.high ?? null,
+    vol: (r.lowPriceVolume ?? 0) + (r.highPriceVolume ?? 0) ?? r.volume ?? null
+  })).filter(r=>r.t && (r.lo!=null || r.hi!=null)).sort((a,b)=>a.t-b.t);
+  return { labels: rows.map(r=>r.t), low: rows.map(r=>r.lo), high: rows.map(r=>r.hi), vol: rows.map(r=>r.vol ?? 0) };
+}
+
+/* Ichimoku Calculation */
+function calculateIchimoku(series) {
+  const highs = series.high;
+  const lows = series.low;
+  const closes = highs.map((h, i) => (h + lows[i]) / 2); // Approx close
+  const getPeriodHigh = (period, index) => Math.max(...highs.slice(index - period + 1, index + 1));
+  const getPeriodLow = (period, index) => Math.min(...lows.slice(index - period + 1, index + 1));
+  const tenkan = [], kijun = [], senkouA = [], senkouB = [], chikou = [];
+  for (let i = 0; i < highs.length; i++) {
+    if (i >= 8) tenkan.push((getPeriodHigh(9, i) + getPeriodLow(9, i)) / 2);
+    if (i >= 25) kijun.push((getPeriodHigh(26, i) + getPeriodLow(26, i)) / 2);
+    if (i >= 51) senkouB.push((getPeriodHigh(52, i) + getPeriodLow(52, i)) / 2);
+    if (tenkan.length > 0 && kijun.length > 0) senkouA.push((tenkan[tenkan.length - 1] + kijun[kijun.length - 1]) / 2);
+    if (i >= 25) chikou.push(closes[i - 25] ?? null); else chikou.push(null);
+  }
+  // Shift senkou A/B ahead by 26
+  const shift = Array(26).fill(null);
+  return { tenkan, kijun, senkouA: [...shift, ...senkouA], senkouB: [...shift, ...senkouB], chikou };
+}
+
+/* Volume Profile Calculation */
+function calculateVP(series, bins = 50) {
+  const prices = series.low.map((lo, i) => (lo + series.high[i]) / 2).filter(p => p != null);
+  const vols = series.vol.filter(v => v > 0);
+  if (prices.length === 0) return { bins: [], maxVol: 0 };
+  const minP = Math.min(...prices), maxP = Math.max(...prices);
+  const binSize = (maxP - minP) / bins;
+  const vpBins = Array(bins).fill(0);
+  prices.forEach((p, i) => {
+    const binIndex = Math.min(bins - 1, Math.floor((p - minP) / binSize));
+    vpBins[binIndex] += vols[i] || 0;
+  });
+  const maxVol = Math.max(...vpBins);
+  return { bins: vpBins, minP, binSize, maxVol };
+}
+
+/* Enhanced Draw Chart with Indicators */
+function ypx(v, vmin, vmax, y0, h){ if(vmin===vmax) return y0+h/2; const p=(v-vmin)/(vmax-vmin); return y0 + (1-p)*h; }
+function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode){
+  const c = can; const W=c.width, H=c.height;
+  let x0=60, y0=30, w=W-x0-14, h=H-y0-42;
+  const hasVolume = enabledIndicators.includes('volume');
+  const hasVP = enabledIndicators.includes('vp');
+  if (hasVolume) h *= 0.8; // Bottom 20% for volume
+  if (hasVP) w *= 0.8; // Right 20% for VP
+  context.clearRect(0,0,W,H);
+  if(!series || !series.labels?.length) return;
+  // Windowing
+  const n = series.labels.length;
+  const win = Math.max(12, Math.floor(n/z));
+  const start = Math.max(0,Math.min(n-win, Math.floor(off)));
+  const end = start + win;
+  const L = series.labels.slice(start,end);
+  const LO = series.low.slice(start,end);
+  const HI = series.high.slice(start,end);
+  const VO = series.vol.slice(start,end);
+  const vals = [...LO, ...HI].filter(v=>v!=null);
+  if(!vals.length) return;
+  let vmin = Math.min(...vals), vmax = Math.max(...vals);
+  if(vmin===vmax){ vmin-=1; vmax+=1; }
+  // Axes
+  context.strokeStyle="#000"; context.globalAlpha=0.5;
+  context.beginPath(); context.moveTo(x0,y0); context.lineTo(x0,y0+h); context.lineTo(x0+w,y0+h); context.stroke();
+  context.globalAlpha=1;
+  // Grid
+  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
+  const lines=5;
+  for(let i=0;i<=lines;i++){
+    const y=y0 + (h*i/lines);
+    context.strokeStyle="rgba(255,255,255,0.06)";
+    context.beginPath(); context.moveTo(x0,y); context.lineTo(x0+w,y); context.stroke();
+  }
+  const stepX = w / Math.max(1,(L.length-1));
+  // Draw series
+  function drawSeries(arr, color, mode){
+    context.strokeStyle=color; context.fillStyle=color;
+    if(mode==="line"){
+      context.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const v=arr[i]; if(v==null) continue;
+        const x=x0 + i*stepX;
+        const y=ypx(v, vmin, vmax, y0, h);
+        if(i===0) context.moveTo(x,y); else context.lineTo(x,y);
+      }
+      context.lineWidth=2; context.stroke();
+    }else{
+      for(let i=0;i<arr.length;i++){
+        const v=arr[i]; if(v==null) continue;
+        const x=x0 + i*stepX;
+        const y=ypx(v, vmin, vmax, y0, h);
+        context.beginPath(); context.arc(x,y,3,0,Math.PI*2); context.fill();
       }
     }
-
-    // Get item ID by name
-    async function getItemId(name) {
-      const mapping = await loadMapping();
-      const item = mapping.find(item => item.name.toLowerCase() === name.toLowerCase());
-      return item ? item.id : null;
+  }
+  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), mode);
+  drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), mode);
+  // Buy/Sell lines (horizontal at current low/high)
+  const currentLo = latest.data[selected.id]?.low ?? 0;
+  const currentHi = latest.data[selected.id]?.high ?? 0;
+  if (currentLo) {
+    context.strokeStyle = '--low-color'; context.setLineDash([5,5]);
+    const yLo = ypx(currentLo, vmin, vmax, y0, h);
+    context.beginPath(); context.moveTo(x0, yLo); context.lineTo(x0+w, yLo); context.stroke();
+    context.setLineDash([]);
+  }
+  if (currentHi) {
+    context.strokeStyle = '--high-color'; context.setLineDash([5,5]);
+    const yHi = ypx(currentHi, vmin, vmax, y0, h);
+    context.beginPath(); context.moveTo(x0, yHi); context.lineTo(x0+w, yHi); context.stroke();
+    context.setLineDash([]);
+  }
+  // Indicators
+  if (enabledIndicators.includes('ichimoku')) {
+    const ichi = calculateIchimoku({high: series.high, low: series.low}); // Full series for calc
+    const tenkanSlice = ichi.tenkan.slice(start, end);
+    const kijunSlice = ichi.kijun.slice(start, end);
+    const senkouASlice = ichi.senkouA.slice(start, end);
+    const senkouBSlice = ichi.senkouB.slice(start, end);
+    const chikouSlice = ichi.chikou.slice(start, end);
+    drawSeries(tenkanSlice, '#00FFFF', 'line'); // Cyan
+    drawSeries(kijunSlice, '#FF00FF', 'line'); // Magenta
+    drawSeries(chikouSlice, '#FFFF00', 'line'); // Yellow
+    // Cloud fill
+    for (let i = 0; i < senkouASlice.length - 1; i++) {
+      const a1 = senkouASlice[i], b1 = senkouBSlice[i];
+      const a2 = senkouASlice[i+1], b2 = senkouBSlice[i+1];
+      if (a1 == null || b1 == null || a2 == null || b2 == null) continue;
+      context.beginPath();
+      const x1 = x0 + i * stepX, x2 = x0 + (i+1) * stepX;
+      const ya1 = ypx(a1, vmin, vmax, y0, h), yb1 = ypx(b1, vmin, vmax, y0, h);
+      const ya2 = ypx(a2, vmin, vmax, y0, h), yb2 = ypx(b2, vmin, vmax, y0, h);
+      context.moveTo(x1, ya1); context.lineTo(x2, ya2);
+      context.lineTo(x2, yb2); context.lineTo(x1, yb1); context.closePath();
+      context.fillStyle = a1 > b1 ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'; // Green/Red cloud
+      context.fill();
     }
-
-    // Load latest prices
-    async function loadLatestPrices(id) {
-      try {
-        const response = await fetch(`${API_BASE}/latest`);
-        const data = await response.json();
-        const itemData = data.data[id];
-        if (itemData) {
-          document.getElementById('buyPrice').textContent = formatPrice(itemData.low || itemData.avgLowPrice);
-          document.getElementById('sellPrice').textContent = formatPrice(itemData.high || itemData.avgHighPrice);
-        }
-      } catch (error) {
-        console.error('Failed to load prices:', error);
-      }
+    drawSeries(senkouASlice, '#00FF00', 'line'); // Green
+    drawSeries(senkouBSlice, '#FF0000', 'line'); // Red
+  }
+  if (hasVolume) {
+    const volY0 = y0 + h + 20; const volH = H - volY0 - 42;
+    const maxVol = Math.max(...VO);
+    context.strokeStyle="#000"; context.globalAlpha=0.5;
+    context.beginPath(); context.moveTo(x0, volY0); context.lineTo(x0, volY0 + volH); context.lineTo(x0+w, volY0 + volH); context.stroke();
+    context.globalAlpha=1;
+    for (let i = 0; i < VO.length; i++) {
+      const vol = VO[i];
+      const barHeight = (vol / maxVol) * volH;
+      const x = x0 + i * stepX - stepX / 4; // Center bar
+      context.fillStyle = '#888888';
+      context.fillRect(x, volY0 + volH - barHeight, stepX / 2, barHeight);
     }
-
-    // Load time series data
-    async function loadTimeSeries(id, timeframe) {
-      const steps = {
-        '1D': '1h',
-        '1W': '6h',
-        '1M': '24h',
-        '6M': '24h',
-        '1Y': '24h',
-        'ALL': '24h'
-      };
-      try {
-        const response = await fetch(`${API_BASE}/timeseries?timestep=${steps[timeframe]}&id=${id}`);
-        const data = await response.json();
-        return processData(data.data || []);
-      } catch (error) {
-        console.error('Failed to load time series:', error);
-        return [];
-      }
+  }
+  if (hasVP) {
+    const vpX0 = x0 + w + 20; const vpW = W - vpX0 - 14;
+    const vp = calculateVP({low: LO, high: HI, vol: VO});
+    context.strokeStyle="#000"; context.globalAlpha=0.5;
+    context.beginPath(); context.moveTo(vpX0, y0); context.lineTo(vpX0 + vpW, y0); context.lineTo(vpX0 + vpW, y0 + h); context.stroke();
+    context.globalAlpha=1;
+    const binHeight = h / vp.bins.length;
+    for (let i = 0; i < vp.bins.length; i++) {
+      const vol = vp.bins[i];
+      const barWidth = (vol / vp.maxVol) * vpW;
+      const y = y0 + i * binHeight;
+      context.fillStyle = '#888888';
+      context.fillRect(vpX0, y, barWidth, binHeight);
     }
+  }
+  // Y labels
+  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
+  for(let i=0;i<=lines;i++){
+    const y=y0 + (h*i/lines);
+    const v = Math.round(vmax - (vmax-vmin)*i/lines);
+    context.fillText(abbreviateNumber(v), 6, y-4);
+  }
+  // X labels
+  context.fillStyle="#fff"; context.font="bold 12px Segoe UI, Arial";
+  const numLabels = 6;
+  const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
+  for(let i=0; i < L.length; i += labelStep){
+    const dateStr = new Date(L[i]*1000).toLocaleDateString();
+    const x = x0 + i*stepX;
+    context.fillText(dateStr, x - 20, H - 10);
+  }
+  // Hover tooltip
+  c.onmousemove = (ev)=>{
+    const rect=c.getBoundingClientRect();
+    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
+    if(mx<x0 || mx>x0+w || my<y0 || my>y0+h){ tip.style.display="none"; return; }
+    const idx=Math.max(0,Math.min(L.length-1, Math.round((mx-x0)/stepX)));
+    const t=L[idx]*1000;
+    const lo=LO[idx], hi=HI[idx], vol=VO[idx]||0;
+    tip.style.display="block";
+    tip.style.left = (mx+12)+"px";
+    tip.style.top = (my-10)+"px";
+    tip.innerHTML = `<strong>${new Date(t).toLocaleString()}</strong><br/>
+      Low: ${fmtGp(lo)}<br/>
+      High: ${fmtGp(hi)}<br/>
+      Vol: ${fmtNum(vol)}`;
+  };
+  c.onmouseleave = () => tip.style.display="none";
+}
 
-    // Process time series data
-    function processData(data) {
-      return data.map(point => ({
-        timestamp: new Date(point.timestamp * 1000),
-        low: point.avgLowPrice || point.low,
-        high: point.avgHighPrice || point.high,
-        volume: point.lowPriceVolume || point.highPriceVolume || point.volume || 0
-      })).filter(point => point.low !== null || point.high !== null);
+/* Set Item */
+async function setItem(m){
+  selected=m; $("#query").value=m.name;
+  document.title = `${m.name} Chart - Grant Exchange`;
+  $("#status").textContent="Loading…";
+  latest = await loadLatest();
+  volumes= await loadVolumes();
+  const stepMap = {"1d":"5m", "1w":"1h", "1m":"6h", "6m":"6h", "1y":"24h", "5y":"24h", "all":"24h"};
+  const ts = await loadTS(stepMap[view], m.id);
+  currentSeries = seriesFromTS(ts);
+  if (view === "1d") zoom = 6; else zoom = 1.5;
+  offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom);
+  drawChart(currentSeries);
+  $("#status").textContent="Ready";
+}
+
+/* Boot */
+(async function boot(){
+  mapping = await loadMapping();
+  let watchKey = membersOn ? 'watchlist_members' : 'watchlist_f2p';
+  // Autocomplete
+  const sb=$("#suggestBox");
+  $("#query").addEventListener("input", ()=>{
+    const q=$("#query").value.trim().toLowerCase();
+    if(!q){ sb.style.display="none"; sb.innerHTML=""; return; }
+    const list=mapping.filter(x=> (!membersOn && x.members ? false : true) && x.name.toLowerCase().includes(q)).slice(0,20);
+    sb.innerHTML=list.map(x=>`<div data-id="${x.id}">${x.name}</div>`).join("");
+    sb.style.display=list.length?"block":"none";
+  });
+  sb.addEventListener("click", (e)=>{
+    const id=e.target?.dataset?.id;
+    if(!id) return;
+    const m=mapping.find(x=>String(x.id)===String(id));
+    if(m){ sb.style.display="none"; setItem(m); }
+  });
+  // View buttons
+  document.querySelectorAll(".viewtabs button").forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      view=b.dataset.view;
+      if(selected) setItem(selected);
     }
-
-    // Format price
-    function formatPrice(price) {
-      if (price === null || price === undefined) return '--';
-      return price.toLocaleString();
-    }
-
-    // Draw chart
-    function drawChart(canvas, data, timeframe) {
-      const ctx = canvas.getContext('2d');
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-      const width = canvas.width / window.devicePixelRatio;
-      const height = canvas.height / window.devicePixelRatio;
-      ctx.clearRect(0, 0, width, height);
-
-      if (data.length === 0) return;
-
-      // Find min/max
-      const prices = data.flatMap(d => [d.low, d.high]).filter(p => p !== null);
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const minVolume = Math.min(...data.map(d => d.volume));
-      const maxVolume = Math.max(...data.map(d => d.volume));
-
-      const padding = 40;
-      const chartHeight = height - padding * 2;
-      const chartWidth = width - padding * 2;
-
-      // Draw grid
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 5; i++) {
-        const y = padding + (chartHeight / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(width - padding, y);
-        ctx.stroke();
-      }
-
-      // Draw price lines
-      ctx.strokeStyle = '#e74c3c';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      let first = true;
-      data.forEach((point, index) => {
-        if (point.low === null) return;
-        const x = padding + (index / (data.length - 1)) * chartWidth;
-        const y = padding + chartHeight - ((point.low - minPrice) / (maxPrice - minPrice)) * chartHeight;
-        if (first) {
-          ctx.moveTo(x, y);
-          first = false;
-        } else {
-          ctx.lineTo(x, y);
-        }
-      });
-      ctx.stroke();
-
-      ctx.strokeStyle = '#2ecc71';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      first = true;
-      data.forEach((point, index) => {
-        if (point.high === null) return;
-        const x = padding + (index / (data.length - 1)) * chartWidth;
-        const y = padding + chartHeight - ((point.high - minPrice) / (maxPrice - minPrice)) * chartHeight;
-        if (first) {
-          ctx.moveTo(x, y);
-          first = false;
-        } else {
-          ctx.lineTo(x, y);
-        }
-      });
-      ctx.stroke();
-
-      // Draw volume bars
-      const volumeHeight = chartHeight * 0.2;
-      data.forEach((point, index) => {
-        const x = padding + (index / (data.length - 1)) * chartWidth;
-        const barWidth = chartWidth / data.length;
-        const barHeight = ((point.volume - minVolume) / (maxVolume - minVolume)) * volumeHeight;
-        ctx.fillStyle = 'rgba(46, 204, 113, 0.6)';
-        ctx.fillRect(x - barWidth / 2, height - padding - barHeight, barWidth, barHeight);
-      });
-
-      // Labels
-      ctx.fillStyle = '#f0e6d2';
-      ctx.font = '12px Arial';
-      data.forEach((point, index) => {
-        if (index % Math.floor(data.length / 5) !== 0) return;
-        const x = padding + (index / (data.length - 1)) * chartWidth;
-        const dateStr = point.timestamp.toLocaleDateString();
-        ctx.fillText(dateStr, x - 20, height - 10);
-      });
-
-      // Y axis labels
-      for (let i = 0; i <= 5; i++) {
-        const y = padding + (chartHeight / 5) * i;
-        const price = maxPrice - (i / 5) * (maxPrice - minPrice);
-        ctx.fillText(formatPrice(price), 5, y + 5);
-      }
-    }
-
-    // Tooltip
-    canvas.addEventListener('mousemove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const index = Math.round(((x - 40) / (canvas.width - 80)) * (chartData.length - 1));
-      if (index >= 0 && index < chartData.length) {
-        const point = chartData[index];
-        tooltip.style.display = 'block';
-        tooltip.style.left = e.clientX + 10 + 'px';
-        tooltip.style.top = e.clientY - 10 + 'px';
-        tooltip.innerHTML = `
-          <div><strong>${point.timestamp.toLocaleDateString()}</strong></div>
-          <div>Low: ${formatPrice(point.low)}</div>
-          <div>High: ${formatPrice(point.high)}</div>
-          <div>Volume: ${point.volume.toLocaleString()}</div>
-        `;
-      }
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-      tooltip.style.display = 'none';
-    });
-
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        document.querySelector('.tab-btn.active').classList.remove('active');
-        btn.classList.add('active');
-        currentTimeframe = btn.dataset.timeframe;
-        if (currentItem) {
-          await updateChart(currentItem);
-        }
-      });
-    });
-
-    // Tool buttons
-    document.getElementById('zoomIn').addEventListener('click', () => {
-      zoomLevel = Math.max(1, zoomLevel - 0.2);
-      drawChart(canvas, chartData, currentTimeframe);
-    });
-
-    document.getElementById('zoomOut').addEventListener('click', () => {
-      zoomLevel = Math.min(5, zoomLevel + 0.2);
-      drawChart(canvas, chartData, currentTimeframe);
-    });
-
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const suggestions = document.getElementById('suggestions');
-
-    searchInput.addEventListener('input', async () => {
-      const query = searchInput.value.toLowerCase();
-      if (query.length < 2) {
-        suggestions.style.display = 'none';
-        return;
-      }
-
-      try {
-        const mapping = await loadMapping();
-        const filtered = mapping.filter(item => 
-          item.name.toLowerCase().includes(query) && (!isMembers || item.members !== true)
-        ).slice(0, 10);
-
-        suggestions.innerHTML = filtered.map(item => `
-          <div class="suggestion" data-id="${item.id}">
-            <img src="https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}.png" alt="${item.name}" onerror="this.src='https://oldschool.runescape.wiki/images/Question_mark.png'">
-            <span>${item.name}</span>
-          </div>
-        `).join('');
-        suggestions.style.display = filtered.length ? 'block' : 'none';
-      } catch (error) {
-        console.error('Search error:', error);
-      }
-    });
-
-    suggestions.addEventListener('click', (e) => {
-      if (e.target.dataset.id) {
-        const id = e.target.dataset.id;
-        searchInput.value = e.target.textContent.trim();
-        suggestions.style.display = 'none';
-        updateItem(id);
-      }
-    });
-
-    // Update item
-    async function updateItem(id) {
-      currentItem = id;
-      await loadLatestPrices(id);
-      const data = await loadTimeSeries(id, currentTimeframe);
-      chartData = data;
-      drawChart(canvas, data, currentTimeframe);
-    }
-
-    // F2P/Members toggle
-    document.getElementById('f2pBtn').addEventListener('click', () => {
-      isMembers = false;
-      document.getElementById('f2pBtn').classList.add('active');
-      document.getElementById('membersBtn').classList.remove('active');
-      if (currentItem) updateItem(currentItem);
-    });
-
-    document.getElementById('membersBtn').addEventListener('click', () => {
-      isMembers = true;
-      document.getElementById('membersBtn').addEventListner('active');
-      document.getElementById('f2pBtn').classList.remove('active');
-      if (currentItem) updateItem(currentItem);
-    });
-
-    // Load default item
-    (async () => {
-      const mapping = await loadMapping();
-      const defaultItem = mapping.find(item => item.name.toLowerCase() === 'gilded scimitar');
-      if (defaultItem) {
-        await updateItem(defaultItem.id);
-      }
-    })();
-
-    // Chart type toggle (line/dots)
-    document.getElementById('lineChart').addEventListener('click', () => {
-      chartType = 'line';
-      document.getElementById('lineChart').classList.add('active');
-      document.getElementById('barChart').classList.remove('active');
-      drawChart(canvas, chartData, currentTimeframe);
-    });
-
-    document.getElementById('barChart').addEventListener('click', () => {
-      chartType = 'bar';
-      document.getElementById('barChart').classList.add('active');
-      document.getElementById('lineChart').classList.remove('active');
-      drawChart(canvas, chartData, currentTimeframe);
-    });
-
-    // VP and Ichimoku toggles (placeholder for now, can be expanded)
-    document.getElementById('vpToggle').addEventListener('click', () => {
-      vpEnabled = !vpEnabled;
-      document.getElementById('vpToggle').classList.toggle('active');
-      // Implement VP drawing here if needed
-    });
-
-    document.getElementById('ichiToggle').addEventListener('click', () => {
-      ichiEnabled = !ichiEnabled;
-      document.getElementById('ichiToggle').classList.toggle('active');
-      // Implement Ichimoku drawing here if needed
-    });
-
-    document.getElementById('refreshBtn').addEventListener('click', () => {
-      if (currentItem) updateItem(currentItem);
-    });
-  </script>
+  });
+  // Chart tools
+  $("#zIn").onclick = ()=>{ zoom=Math.min(8, zoom*1.25); drawChart(currentSeries); };
+  $("#zOut").onclick= ()=>{ zoom=Math.max(1, zoom/1.25); drawChart(currentSeries); };
+  $("#lineMode").onclick=()=>{ drawMode="line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); drawChart(currentSeries); };
+  $("#dotMode").onclick =()=>{ drawMode="dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); drawChart(currentSeries); };
+  // Mode toggle
+  $("#btnF2P").onclick=()=>{ membersOn=false; $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); if(selected) setItem(selected); };
+  $("#btnMembers").onclick=()=>{ membersOn=true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); if(selected) setItem(selected); };
+  // Add indicator
+  $("#addIndicator").onclick = () => {
+    const ind = $("#indicatorSelect").value;
+    if (!enabledIndicators.includes(ind)) enabledIndicators.push(ind);
+    if (currentSeries) drawChart(currentSeries);
+  };
+  // Refresh
+  $("#refreshBtn").onclick=async ()=>{ 
+    $("#status").textContent="Refreshing…";
+    latest = await loadLatest();
+    volumes = await loadVolumes();
+    if(selected) setItem(selected);
+    $("#status").textContent="Ready";
+  };
+  // Initial
+  latest = await loadLatest();
+  volumes = await loadVolumes();
+  const defaultItem = mapping.find(x=>x.name.toLowerCase()==="gilded scimitar");
+  if(defaultItem) setItem(defaultItem);
+})(); 
+</script>
 </body>
 </html>
