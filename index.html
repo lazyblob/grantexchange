@@ -62,127 +62,36 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
 .card { background: linear-gradient(180deg, #2d220f 0%, #241b0c 100%); border: 1px solid var(--edge); border-radius: 16px; padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.28); }
 .left { display: flex; flex-direction: column; }
 .hr { border: none; border-top: 1px solid var(--edge); margin: 10px 0; }
-.grid { display: grid; grid-template-columns: 240px 1fr 260px; gap: 14px; align-items: center; }
-.imgbox { width: 240px; height: 240px; border: 1px solid var(--edge); border-radius: 14px; background: #22180b; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px #151008, 0 8px 18px rgba(0,0,0,.25); }
-.imgbox img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
-.label { font-size: 26px; color: var(--orange); font-weight: 900; margin-bottom: 0; }
-.sbar { display: flex; gap: 10px; margin-top: 2px; position: relative; }
-.sbar input { flex: 1; background: #1e170c; border: 3px solid var(--edge); color: var(--ink); border-radius: 14px; padding: 16px; font-size: 20px; outline: none; box-shadow: 0 0 0 0 rgba(240,160,32,0); transition: box-shadow .18s, border-color .18s; }
+.top-row { display: flex; align-items: center; gap: 10px; }
+.sbar { flex: 1; position: relative; }
+.sbar input { width: 100%; background: #1e170c; border: 3px solid var(--edge); color: var(--ink); border-radius: 14px; padding: 16px 16px 16px 50px; font-size: 20px; outline: none; box-shadow: 0 0 0 0 rgba(240,160,32,0); transition: box-shadow .18s, border-color .18s; }
 .sbar input:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
-.suggest { margin-top: 6px; border: 1px solid var(--edge); border-radius: 10px; max-height: 360px; overflow: auto; background: #231b0d; position: absolute; z-index: 10; width: calc(100% - 90px); left: 0; }
+#itemIcon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; image-rendering: pixelated; }
+.suggest { margin-top: 6px; border: 1px solid var(--edge); border-radius: 10px; max-height: 360px; overflow: auto; background: #231b0d; position: absolute; z-index: 10; width: 100%; left: 0; }
 .suggest::-webkit-scrollbar { width: 8px; background: var(--panel); }
 .suggest::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
 .suggest div { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid #3e3119; cursor: pointer; word-break: break-word; white-space: normal; word-wrap: break-word; }
 .suggest div:hover { background: #2d220f; }
 .suggest img { width: 20px; height: 20px; image-rendering: pixelated; }
-.title { font-size: 15px; letter-spacing: .3px; text-transform: uppercase; margin-bottom: 4px; }
-.title.low { color: var(--low-color); }
-.title.high { color: var(--high-color); }
-.big-buy { font-size: 36px; font-weight: 900; color: var(--low-color); }
-.big-sell { font-size: 36px; font-weight: 900; color: var(--high-color); }
-.kv { display: flex; justify-content: space-between; margin: 5px 0; }
-.kv strong.spread { font-size: 24px; animation: rainbow 5s linear infinite; }
-.kv .price-adjust { display: flex; align-items: center; gap: 5px; border: 1px solid var(--edge); padding: 8px; border-radius: 8px; background: #2b2212; }
-.kv .price-adjust button { padding: 0 5px; font-size: 24px; font-weight: bold; color: var(--gold); background: transparent; border: none; cursor: pointer; }
-.kv .price-adjust.low button { color: var(--low-color); }
-.kv .price-adjust.high button { color: var(--high-color); }
-.kv .price-adjust span { font-size: 24px; font-weight: bold; }
-.kv .price-adjust.low span { color: var(--low-color); }
-.kv .price-adjust.high span { color: var(--high-color); }
-.kv .price-input { width: 140px; text-align: center; font-size: 24px; background: transparent; border: none; color: var(--gold); }
-.kv .buy-limit-input { width: 140px; text-align: center; font-size: 24px; background: transparent; border: none; color: var(--gold); }
-.viewtabs, .mode-pill { display: flex; gap: 6px; }
-.viewtabs button, .mode-pill button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.viewtabs button.active, .mode-pill button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
-.viewtabs button:focus, .mode-pill button:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
-.tools { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
-.tools button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 5px 9px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.tools button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
-.tools button:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
+.price-box { background: #2b2212; border: 1px solid var(--edge); border-radius: 10px; padding: 8px; text-align: center; min-width: 150px; }
+.price-box.low { color: var(--low-color); }
+.price-box.high { color: var(--high-color); }
+.price-box span { font-size: 24px; font-weight: bold; }
+.toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.toolbar button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.toolbar button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
+.toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
 .chartWrap { position: relative; }
 .chart { width: 100%; height: 500px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, transparent 1px, transparent 24px), #181208; border: 1px solid var(--edge); border-radius: 12px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.85); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px; pointer-events: none; white-space: nowrap; border: 1px solid #000; }
 .legend { display: flex; gap: 12px; font-size: 12px; margin-top: 6px; color: var(--muted); }
-.legend .sell::before { content: ""; display: inline-block; width: 14px; height: 3px; background: var(--low-color); margin-right: 6px; border-radius: 2px; }
-.legend .buy::before { content: ""; display: inline-block; width: 14px; height: 3px; background: var(--high-color); margin-right: 6px; border-radius: 2px; }
-.refreshRow { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
-.btn-refresh { padding: 12px 20px; border-radius: 18px; border: 2px solid var(--edge); background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); color: var(--gold); font-weight: 900; cursor: pointer; font-size: 16px; text-transform: uppercase; letter-spacing: .5px; box-shadow: 0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); transition: transform .08s ease, filter .12s ease, box-shadow .12s ease; }
-.btn-refresh:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5); }
-.btn-refresh:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5); }
-.btn-refresh.loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs { 
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
-}
-/* Sidebar (tighter columns + name header per slot) */
-.side{display:flex;flex-direction:column;gap:12px}
-.side .card{display:flex;flex-direction:column}
-.side h3{margin:0 0 10px 0;font-size:18px;font-weight:900;color:var(--orange)}
-.filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.switch{position:relative;display:inline-block;width:46px;height:24px}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0; 
-  background:#5a4630;border:1px solid var(--edge); 
-  transition:.2s;border-radius:999px}
-.slider:before{position:absolute;content:"";height:18px;width:18px; 
-  left:3px;top:2px;background:white;border-radius:50%; 
-  transition:.2s}
-.switch input:checked + .slider{background:#275a30}
-.switch input:checked + .slider:before{transform:translateX(21px)}
-.head{ 
-  display:grid;grid-template-columns:22px 1fr 80px 80px; 
-  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px; 
-  border-bottom:1px solid var(--edge) 
-}
-.sort-arrow { font-size: 10px; margin-left: 4px; }
-.tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
-.tb::-webkit-scrollbar {width:8px; background:var(--panel);}
-.tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.row{ 
-  display:grid;grid-template-columns:22px 1fr 80px 80px; 
-  gap:6px;align-items:center;background:#231b0d; 
-  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px 
-}
-.row.long-price{min-height:70px}
-.row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
-.sym{font-weight:700;font-size:15px;white-space:nowrap; 
-  overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-.last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
-.last{color:var(--gold)}
-.delta{color:var(--low-color)}
-.vol{color:var(--high-color)}
-.up{color:var(--buy)}
-.down{color:var(--sell)}
-.btn-add{display:inline-flex;align-items:center;justify-content:center; 
-  width:26px;height:26px;border-radius:8px; 
-  border:1px solid #1c4022;background:#1f4d28; 
-  color:#c8f0cf;font-weight:900;cursor:pointer}
-.btn-add::before{content:"+";font-size:16px;line-height:1}
-/* Mode pill */
-.mode-pill{display:flex;gap:6px;}
-.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted); 
-  padding:6px 10px;cursor:pointer;font-weight:700; 
-  text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
-/* Help */
-.help{line-height:1.45;color:#dacda9}
-.help ul{margin:6px 0 0 18px;padding:0}
-/* Watchlist button */
-.btn-watch{ 
-  padding:12px 20px;border-radius:18px;border:2px solid var(--edge); 
-  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); 
-  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; 
-  text-transform:uppercase;letter-spacing:.5px; 
-  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); 
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease; 
-}
-.btn-watch:hover{filter:brightness(1.05); 
-  transform:translateY(-1px); 
-  box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-watch:active{transform:translateY(0); 
-  box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
-/* Rainbow spread */
+.legend span span { width: 10px; height: 10px; display: inline-block; border-radius: 2px; }
+.legend .low span { background: var(--low-color); }
+.legend .high span { background: var(--high-color); }
+.btn-refresh { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--edge); background: #2b2212; color: var(--ink); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.btn-refresh:hover { box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
+.mode-pill button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.mode-pill button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
 @keyframes rainbow { 
   0% {border-color: #ff0000;} 
   14% {border-color: #ff7f00;} 
@@ -193,450 +102,67 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
   85% {border-color: #8b00ff;} 
   100% {border-color: #ff0000;} 
 }
-.sbar { 
-  position: relative; /* Anchor dropdown to this container */ 
-}
-.suggest { /* Matches your existing class */ 
-  position: absolute; 
-  left: 0; 
-  top: 100%; /* Drops directly below the input */ 
-  width: 100%; /* Matches search bar width */ 
-  z-index: 10; 
-  background: #231b0d; /* Matches your theme */ 
-  border: 1px solid var(--edge); 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-  overflow: auto; 
-  max-height: 200px; /* Optional: scroll if many results */ 
-}
-/* Suggestion box */
-.suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
-.suggest-box img{width:100px;height:100px;image-rendering:pixelated}
-.suggest-box .details{flex:1}
-.suggest-box .name{font-weight:700;color:var(--orange)}
-.suggest-box .prices{display:flex;gap:20px}
-.suggest-box .price label{color:var(--muted);font-size:12px}
-.suggest-box .price strong{display:block;font-size:16px}
-.suggest-box .buy strong{color:var(--low-color)}
-.suggest-box .sell strong{color:var(--high-color)}
-.suggest-box .margin strong{color:var(--gold)}
-.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold); 
-  border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold; 
-  text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
-.suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
-.suggest-box .kv span{margin-right:5px}
-/* Category select */
-select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-radius:14px;padding:8px;font-size:16px;outline:none;width:100%;margin-bottom:8px;transition:box-shadow .18s,border-color .18s}
-select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-/* Loading animation */
-.loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs { 
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
-}
-/* Small chart */
-.small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
-/* Card-like for small chart */
-.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); 
-  border:1px solid var(--edge);border-radius:16px;padding:12px; 
-  box-shadow:0 6px 18px rgba(0,0,0,.28)}
-.spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
-/* Loader overlay */
-#loader-overlay { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: rgba(0, 0, 0, 0.8); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  z-index: 1000; 
-  flex-direction: column; 
-  color: var(--ink); 
-  font-size: 18px; 
-}
-.loader-wheel { 
-  border: 8px solid var(--edge); 
-  border-top: 8px solid var(--orange); 
-  border-radius: 50%; 
-  width: 60px; 
-  height: 60px; 
-  animation: spin 2s linear infinite; 
-  margin-bottom: 20px; 
-}
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
-}
-/* Tabs for bottom section */
-.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-.help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color:var(--orange); }
-.help-tab-content { display: none; }
-.help-tab-content.active { display: block; }
-/* Alch table (tighter) */
-.alch-tb, .sets-tb, .craft-tb, .enchant-tb, .smith-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
-.alch-tb::-webkit-scrollbar, .sets-tb::-webkit-scrollbar, .craft-tb::-webkit-scrollbar, .enchant-tb::-webkit-scrollbar, .smith-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
-.alch-tb::-webkit-scrollbar-thumb, .sets-tb::-webkit-scrollbar-thumb, .craft-tb::-webkit-scrollbar-thumb, .enchant-tb::-webkit-scrollbar-thumb, .smith-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
-.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { display: grid; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
-.alch-row { grid-template-columns: 40px 1fr 120px 120px 120px 140px; }
-.sets-row { grid-template-columns: 1fr 120px 120px 120px 1fr; } /* Added column for pieces */
-.craft-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
-.enchant-row { grid-template-columns: 40px 1fr 80px 1fr 1fr 80px 120px; }
-.smith-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
-.alch-row img, .sets-row img, .craft-row img, .enchant-row img, .smith-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
-.alch-sym, .sets-sym, .craft-sym, .enchant-sym, .smith-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.alch-buy, .alch-nat, .alch-value, .alch-profit, .sets-buy, .sets-sell, .sets-profit, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
-.alch-profit.positive, .sets-profit.positive, .craft-profit.positive, .enchant-profit.positive, .smith-profit.positive { color: var(--high-color); }
-.alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
-/* Desktop scaling */
-@media (min-width: 769px) {
-  html { 
-    transform: scale(0.8); /* Scale everything to 80% */ 
-    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */ 
-    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */ 
-    height: 125%; /* Same for height */ 
-  }
-}
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
-  body { 
-    overflow-x: hidden; 
-  }
-  .wrap { 
-    grid-template-columns: 1fr; /* Stack sidebar below main content */ 
-    padding: 0 8px; /* Compact padding */ 
-    gap: 10px; /* Reduced gap for modern, tight layout */ 
-  }
-  .grid { 
-    display: grid; 
-    grid-template-columns: 1fr; 
-    grid-template-rows: auto auto auto; 
-    gap: 8px; /* Smaller gaps */ 
-    align-items: start; /* Top align */ 
-  }
-  .imgbox { 
-    grid-column: 1; 
-    grid-row: 1; 
-    width: 80px; /* Smaller image to compact */ 
-    height: 80px; 
-    margin: 0; /* Left align, no margin */ 
-    justify-self: start; 
-    order: 1; 
-  }
-  .imgbox img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; 
-    cursor: pointer; /* Clickable for item search focus */ 
-  }
-  .grid > div:nth-child(2) { /* Search/profit right of image, top row */ 
-    grid-column: 1; 
-    grid-row: 2; 
-    order: 2; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 2px; /* Tighter */ 
-  }
-  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */ 
-    grid-column: 1; 
-    grid-row: 3; 
-    order: 3; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 2px; /* Tighter gaps between rows/columns */ 
-    background: #231b0d; /* Dark bg for panel feel */ 
-    border: 1px solid var(--edge); /* Border for definition */ 
-    border-radius: 10px; /* Rounded */ 
-    padding: 4px; /* Reduced inner padding */ 
-  }
-  .label { 
-    font-size: 16px; /* Smaller label */ 
-    margin: 0; 
-  }
-  .sbar input { 
-    font-size: 14px; /* Smaller input */ 
-    padding: 8px; 
-  }
-  .kv { 
-    display: flex; 
-    flex-direction: row; /* Keep row for better space use */ 
-    justify-content: space-between; 
-    align-items: center; 
-    margin: 2px 0; /* Even tighter margins */ 
-    font-size: 12px; /* Smaller font for info */ 
-  }
-  .kv span { 
-    flex: 1; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .kv strong { 
-    flex: 1; 
-    text-align: right; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    font-size: 14px; /* Slightly larger for numbers */ 
-  }
-  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin { 
-    font-size: 12px; /* Compact text */ 
-  }
-  #spreadMargin { 
-    text-align: left; 
-    margin: 2px 0; 
-  }
-  .small { 
-    font-size: 10px; /* Smaller buy limit info */ 
-  }
-  .title { 
-    font-size: 12px; /* Smaller titles */ 
-    margin: 0; /* No margins for tight fit */ 
-    text-align: left; /* Left align for flow */ 
-  }
-  .price-adjust { 
-    flex-direction: row; /* Arrows on sides of value, same line */ 
-    align-items: center; 
-    gap: 2px; /* Very tight gaps between arrows and input */ 
-    border: none; /* Remove inner borders if too busy */ 
-    background: transparent; /* Clean look */ 
-    justify-content: flex-start; /* Left align */ 
-  }
-  .price-input, .buy-limit-input { 
-    flex: 1; 
-    font-size: 14px; /* Smaller text size for values */ 
-    text-align: right; /* Right align numbers */ 
-    width: auto; /* Auto width to fit */ 
-    max-width: none; /* Remove max-width to handle long numbers */ 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .price-adjust button { 
-    font-size: 16px; /* Smaller arrows */ 
-    padding: 0 4px; 
-    min-width: 24px; 
-  }
-  .chart { 
-    height: 280px; /* Slightly shorter for compact view */ 
-  }
-  .side { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */ 
-    gap: 8px; 
-  }
-  .side .suggest-box, .side .card-like { 
-    grid-column: span 1; /* Each takes half */ 
-    padding: 8px; /* Narrower padding */ 
-    max-width: 100%; /* Fit to mobile */ 
-  }
-  .side .card-like { 
-    order: -1; 
-  }
-  .side .card:nth-child(3) { /* Watchlist card full width */ 
-    grid-column: 1 / -1; /* Span both columns for full width */ 
-    padding: 8px; /* Narrower */ 
-  }
-  .suggest-box .item { 
-    flex-direction: column; /* Stack for narrow fit */ 
-    gap: 4px; 
-    padding: 6px; 
-  }
-  .suggest-box img { 
-    width: 60px; 
-    height: 60px; 
-    margin: 0 auto; 
-  }
-  .suggest-box .details { 
-    text-align: center; 
-  }
-  .suggest-box .prices { 
-    justify-content: center; 
-    gap: 10px; 
-  }
-  .suggest-box .price strong { 
-    font-size: 14px; 
-  }
-  .suggest-box .next-btn { 
-    font-size: 12px; 
-    padding: 4px 8px; 
-  }
-  .card-like { 
-    padding: 8px; 
-  }
-  .card-like h3 { 
-    font-size: 14px; 
-  }
-  .small-chart { 
-    height: 200px; 
-  }
-  .tb { 
-    max-height: 350px; /* Slightly shorter */ 
-  }
-  .head { 
-    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */ 
-    font-size: 10px; 
-    gap: 4px; 
-    padding: 4px 6px; 
-  }
-  .row { 
-    grid-template-columns: 20px 1fr 50px 50px; 
-    padding: 6px; 
-    gap: 4px; 
-    min-height: 30px; 
-  }
-  .row.long-price { 
-    min-height: 50px; 
-  }
-  .sym { 
-    font-size: 12px; 
-  }
-  .delta, .vol { 
-    font-size: 10px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head { 
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
-    gap: 4px; 
-    padding: 4px 6px; 
-    font-size: 10px; 
-  }
-  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { 
-    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
-    gap: 4px; 
-    padding: 6px; 
-  }
-  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { 
-    font-size: 10px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-  }
-  .sbar { gap: 5px; }
-  .sbar input { padding: 12px; font-size: 16px; }
-  .sbar button { padding: 8px 12px; font-size: 14px; }
-  .viewtabs, .mode-pill { gap: 3px; }
-  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
-  .tools { gap: 3px; }
-  .tools button { padding: 3px 6px; font-size: 12px; }
-  .refreshRow { gap: 5px; }
-  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
-  .help-tabs button { padding: 6px 10px; font-size: 12px; }
-  .side h3 { font-size: 16px; }
-  .suggest-box .item { padding: 5px; gap: 5px; }
-  .suggest-box img { width: 80px; height: 80px; }
-  .suggest-box .name { font-size: 14px; }
-  .suggest-box .prices { gap: 10px; }
-  .suggest-box .price label { font-size: 10px; }
-  .suggest-box .price strong { font-size: 16px; }
-  .next-btn { padding: 6px 10px; font-size: 14px; }
-  .card-like h3 { font-size: 16px; }
-  .card { padding: 8px; }
-  select { padding: 6px; font-size: 14px; }
-  .help h2 { font-size: 18px; }
-  .help p { font-size: 12px; }
-  .help ul { margin: 4px 0 0 14px; }
-  .kv { margin: 2px 0; }
-  .kv strong { font-size: 18px; }
-  .spread-margin { font-size: 16px; }
-  #chart, #historicalChart { width: 100% !important; }
-  .chartWrap { overflow-x: hidden; }
+  .top-row { flex-direction: column; gap: 10px; }
+  .price-box { min-width: 0; width: 100%; }
+  .toolbar { justify-content: center; }
+  .chart { height: 300px; }
 }
 </style>
 </head>
 <body>
-<div id="loader-overlay" style="display:none;">
-  <div class="loader-wheel"></div>
-  Fetching the most recent market data please wait..
-</div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0 Final</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="mode-pill" id="modePill">
-        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-        <button data-mode="members" id="btnMembers">Members</button>
-      </div>
+    <div class="mode-pill">
+      <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+      <button data-mode="members" id="btnMembers">Members</button>
     </div>
   </div>
-  <!-- Main panel -->
   <div class="card left">
-    <div class="grid">
-      <!-- Large item image -->
-      <div class="imgbox"><img id="itemImg" alt="Item"/></div>
-      <!-- Search column -->
-      <div>
-        <div class="label">What item?</div>
-        <div class="sbar">
-          <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
-          <div id="suggestBox" class="suggest" style="display:none"></div>
-        </div>
-        <div class="kv" style="margin-top:4px"><span id="flipProfitLabel">Expected Flip Profit</span><strong id="flipProfit" style="color:var(--gold);font-size:20px">—</strong></div>
-        <div class="kv" style="margin-top:12px"><span>Capital Required</span><strong id="capitalRequired" style="color:var(--gold);font-size:20px">—</strong></div>
-        <div class="small" id="buyLimitInfo"></div>
-        <div id="spreadMargin" class="spread-margin">1h Spread: —</div>
+    <div class="top-row">
+      <div class="sbar">
+        <img id="itemIcon" src="" alt="">
+        <input id="query" placeholder="Search item...">
+        <div id="suggestBox" class="suggest" style="display:none"></div>
       </div>
-      <!-- Smart prices -->
-      <div>
-        <div class="title low">Smart Low Buy (Offer)</div>
-        <div class="kv price-adjust low"><button onclick="adjustPrice('buy', -1)">↓</button><input id="smartBuyInput" class="price-input" type="text" value="—" onchange="updateSmartBuyFromInput()" /><button onclick="adjustPrice('buy', 1)">↑</button></div>
-        <div class="title high" style="margin-top:10px">Smart High Sell (List)</div>
-        <div class="kv price-adjust high"><button onclick="adjustPrice('sell', -1)">↓</button><input id="smartSellInput" class="price-input" type="text" value="—" onchange="updateSmartSellFromInput()" /><button onclick="adjustPrice('sell', 1)">↑</button></div>
-        <div class="title" style="margin-top:10px">Buy Limit</div>
-        <div class="kv price-adjust"><button onclick="adjustBuyLimit(-1)">↓</button><input id="buyLimitDisplay" class="buy-limit-input" type="text" value="—" onchange="updateBuyLimitFromInput()" /><button onclick="adjustBuyLimit(1)">↑</button></div>
-      </div>
+      <div id="buyPrice" class="price-box low">Buy Price<br><span>—</span></div>
+      <div id="sellPrice" class="price-box high">Sell Price<br><span>—</span></div>
     </div>
     <div class="hr"></div>
-    <div class="refreshRow">
-      <div class="viewtabs">
-        <button data-view="day" class="active">Day</button>
-        <button data-view="week">Week</button>
-        <button data-view="month">Month</button>
-      </div>
-      <div class="tools">
-        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
-        <span class="small" style="margin-left:10px">Mode:</span>
-        <button id="lineMode" class="active">Line</button>
-        <button id="dotMode">Scatter</button>
-        <span class="small" style="margin-left:10px">View:</span>
-        <button id="popoutBtn">Popout</button>
-      </div>
+    <div class="toolbar">
+      <button data-view="1d" class="active view-btn">1D</button>
+      <button data-view="1w" class="view-btn">1W</button>
+      <button data-view="1m" class="view-btn">1M</button>
+      <button data-view="6m" class="view-btn">6M</button>
+      <button data-view="1y" class="view-btn">1Y</button>
+      <button data-view="all" class="view-btn">ALL</button>
+      <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
+      <button id="lineMode" class="active">Line</button>
+      <button id="dotMode">Dots</button>
+      <button id="vpMode">VP</button>
+      <button id="ichiMode">Ichimoku</button>
+      <button id="refreshBtn" class="btn-refresh">Refresh</button>
     </div>
     <div class="chartWrap">
       <canvas id="chart" class="chart" width="980" height="500"></canvas>
       <div id="tip" class="chart-tip"></div>
     </div>
-    <div class="legend"><span class="sell">Low (Buy)</span><span class="buy">High (Sell)</span></div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px;">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <label class="color-picker">Low: <input type="color" id="lowColorPicker" value="#fb6a6a"></label>
-        <label class="color-picker">High: <input type="color" id="highColorPicker" value="#5cc76a"></label>
-      </div>
-      <div style="display:flex; gap:10px;">
-        <button id="refreshBtn" class="btn-refresh">Refresh All Data</button>
-      </div>
+    <div class="legend">
+      <span>Low: <span></span></span>
+      <span>High: <span></span></span>
     </div>
-    <div id="itemDesc" class="help" style="margin-top:20px"></div>
   </div>
 </div>
-<!-- SCRIPT -->
 <script>
 // Code from previous response
 const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
-let currentSeries = null, view = "day", zoom = 1.5, offset = 0, drawMode = "line";
+let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
+let vpActive = false, ichiActive = false;
 let membersOn = false;
-let adjustedBuy = null;
-let adjustedSell = null;
-let buyLimit = 0;
-const buyLimits = {};
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
@@ -664,7 +190,7 @@ const loadLatest = () => jget(API + "/latest");
 const loadVolumes = () => jget(API + "/volumes");
 const loadTS = (step, id) => jget(API + `/timeseries?timestep=${step}&id=${id}`);
 function bigIconUrl(id) {
-  return `https://oldschool.runescape.wiki/images/${id}.png`;
+  return `https://oldschool.runescape.wiki/images/${id}.png?${id}`;
 }
 function suggestPrices(low, high) {
   if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
@@ -721,6 +247,30 @@ function linearRegression(x, y) {
   const intercept = meanY - slope * meanX;
   return { slope, intercept };
 }
+function calculateIchimoku(series) {
+  const mid = series.labels.map((_, i) => (series.low[i] + series.high[i]) / 2);
+  const getHigh = (arr, start, end) => Math.max(...arr.slice(Math.max(0, start), end));
+  const getLow = (arr, start, end) => Math.min(...arr.slice(Math.max(0, start), end));
+  const tenkan = Array(mid.length).fill(null);
+  const kijun = Array(mid.length).fill(null);
+  const senkouA = Array(mid.length).fill(null);
+  const senkouB = Array(mid.length).fill(null);
+  const chikou = Array(26).fill(null).concat(mid.slice(0, mid.length - 26)); // shifted back
+  const len = mid.length;
+  for (let i = 8; i < len; i++) {
+    tenkan[i] = (getHigh(mid, i - 8, i + 1) + getLow(mid, i - 8, i + 1)) / 2;
+  }
+  for (let i = 25; i < len; i++) {
+    kijun[i] = (getHigh(mid, i - 25, i + 1) + getLow(mid, i - 25, i + 1)) / 2;
+  }
+  for (let i = 25; i < len; i++) {
+    senkouA[i + 26] = (tenkan[i] + kijun[i]) / 2;
+  }
+  for (let i = 51; i < len; i++) {
+    senkouB[i + 26] = (getHigh(mid, i - 51, i + 1) + getLow(mid, i - 51, i + 1)) / 2;
+  }
+  return { tenkan, kijun, senkouA, senkouB, chikou };
+}
 function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode) {
   const c = can;
   const W = c.width, H = c.height;
@@ -762,7 +312,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
         if (i === 0) context.moveTo(x, y); else context.lineTo(x, y);
       }
       context.lineWidth = 2; context.stroke();
-    } else { // scatter
+    } else if (mode === "dot") { // scatter
       for (let i = 0; i < arr.length; i++) {
         const v = arr[i]; if (v == null) continue;
         const x = x0 + i * stepX;
@@ -771,10 +321,66 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       }
     }
   }
-  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), (mode === "line" ? "line" : "dot"));
-  let highColor = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
-  if (can.id === 'historicalChart') highColor = '#ff69b4';
-  drawSeries(HI, highColor, (mode === "line" ? "line" : "dot"));
+  const h_price = h * 0.8;
+  const h_vol = h * 0.2;
+  const y0_vol = y0 + h_price;
+  if (drawMode === "line") {
+    drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
+    drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), "line");
+  } else if (drawMode === "dot") {
+    drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "dot");
+    drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), "dot");
+    // Draw volume bars
+    const maxVol = Math.max(...VO);
+    for (let i = 0; i < VO.length; i++) {
+      const v = VO[i];
+      if (v == null) continue;
+      const x = x0 + i * stepX - stepX / 4;
+      const width = stepX / 2;
+      const height = (v / maxVol) * h_vol;
+      context.fillStyle = '#fff';
+      context.fillRect(x, y0_vol + h_vol - height, width, height);
+    }
+  }
+  if (vpActive) {
+    const mid = L.map((_, i) => (LO[i] + HI[i]) / 2);
+    const numBins = 20;
+    const binSize = (vmax - vmin) / numBins;
+    const bins = Array(numBins).fill(0);
+    for (let i = 0; i < mid.length; i++) {
+      const p = mid[i];
+      if (p == null) continue;
+      const binIndex = Math.min(numBins - 1, Math.floor((p - vmin) / binSize));
+      bins[binIndex] += VO[i];
+    }
+    const maxBin = Math.max(...bins);
+    for (let i = 0; i < numBins; i++) {
+      const binVol = bins[i];
+      const binCenter = vmin + (i + 0.5) * binSize;
+      const y = ypx(binCenter, vmin, vmax, y0, h);
+      const binH = (h / (vmax - vmin)) * binSize;
+      const binW = (binVol / maxBin) * 100;
+      context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
+    }
+  }
+  if (ichiActive) {
+    const ichi = calculateIchimoku({low: LO, high: HI, labels: L});
+    // Draw cloud
+    for (let i = 0; i < L.length; i++) {
+      if (ichi.senkouA[i] == null || ichi.senkouB[i] == null) continue;
+      const y1 = ypx(ichi.senkouA[i], vmin, vmax, y0, h);
+      const y2 = ypx(ichi.senkouB[i], vmin, vmax, y0, h);
+      const color = ichi.senkouA[i] > ichi.senkouB[i] ? 'rgba(161,216,160,0.2)' : 'rgba(216,160,166,0.2)';
+      context.fillStyle = color;
+      context.fillRect(x0 + i * stepX - stepX / 2, Math.min(y1, y2), stepX, Math.abs(y1 - y2));
+    }
+    drawSeries(ichi.tenkan, getComputedStyle(document.documentElement).getPropertyValue('--ichi-tenkan').trim(), "line");
+    drawSeries(ichi.kijun, getComputedStyle(document.documentElement).getPropertyValue('--ichi-kijun').trim(), "line");
+    drawSeries(ichi.chikou, getComputedStyle(document.documentElement).getPropertyValue('--ichi-chikou').trim(), "line");
+    drawSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim(), "line");
+    drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
+  }
   function drawPrediction(arr, color) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 2) return;
@@ -795,7 +401,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.restore();
   }
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
-  drawPrediction(HI, highColor);
+  drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
   context.fillStyle = "#fff"; context.font = "bold 14px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
@@ -806,12 +412,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   const numLabels = 6;
   const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
   for (let i = 0; i < L.length; i += labelStep) {
-    let dateStr;
-    if (can.id === 'historicalChart') {
-      dateStr = new Date(L[i] * 1000).getFullYear().toString();
-    } else {
-      dateStr = new Date(L[i] * 1000).toLocaleDateString();
-    }
+    const dateStr = new Date(L[i] * 1000).toLocaleDateString();
     const x = x0 + i * stepX;
     context.fillText(dateStr, x - 20, H - 10);
   }
@@ -819,7 +420,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const rect = c.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     if (mx < x0 || mx > x0 + w || my < y0 || my > y0 + h) { tip.style.display = "none"; return; }
-    const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX));
+    const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     const t = L[idx] * 1000;
     const lo = LO[idx], hi = HI[idx], vol = VO[idx] || 0;
     tip.style.display = "block";
@@ -832,181 +433,26 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   };
   c.onmouseleave = () => tip.style.display = "none";
 }
-async function getBuyLimit(id) {
-  if (buyLimits[id]) return buyLimits[id];
-  try {
-    const res = await fetch(`./items-json/${id}.json`);
-    const data = await res.json();
-    buyLimits[id] = data.buy_limit;
-    return buyLimits[id];
-  } catch (e) {
-    console.warn(`Failed to load buy limit for item ${id}:`, e);
-    return null;
-  }
-}
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
-  document.title = `${m.name} Live Prices, Graphs, Historical Data - (OSRS) GE - Flipping Tool`;
-  const img = $("#itemImg");
-  img.src = bigIconUrl(m.id);
-  img.alt = m.name;
-  img.onerror = () => { img.onerror = null; img.src = 'https://oldschool.runescape.wiki/images/Gilded_scimitar.png'; };
+  document.title = `${m.name} - Grant Exchange`;
+  $("#itemIcon").src = bigIconUrl(m.id);
   $("#status").textContent = "Loading latest…";
   latest = await loadLatest();
   volumes = await loadVolumes();
   const node = latest.data[String(m.id)];
   const lo = node?.low ?? node?.avgLowPrice ?? null;
   const hi = node?.high ?? node?.avgHighPrice ?? null;
-  let rec = suggestPrices(lo, hi);
-  adjustedBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
-  adjustedSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
-  buyLimit = await getBuyLimit(m.id) || 10000;
-  $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
-  $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
-  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
-  updateFlipProfit();
-  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
-  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
+  $("#buyPrice span").textContent = fmtGp(lo);
+  $("#sellPrice span").textContent = fmtGp(hi);
   $("#status").textContent = "Loading chart…";
-  const step = (view === "day" ? "1h" : view === "week" ? "6h" : "24h");
+  const step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h");
   const ts = await loadTS(step, m.id);
   currentSeries = seriesFromTS(ts);
-  const tsRecent = await loadTS("5m", m.id);
-  const seriesRecent = seriesFromTS(tsRecent);
-  const recentHighs = seriesRecent.high.filter(v => v != null);
-  const maxRecentHi = recentHighs.length ? Math.max(...recentHighs) : hi || 0;
-  rec.sellMin = Math.min(rec.sellMin, maxRecentHi + Math.floor(maxRecentHi * 0.05));
-  rec.sellMax = Math.min(rec.sellMax, maxRecentHi + Math.floor(maxRecentHi * 0.1));
-  if (view === "day") zoom = 6;
-  else if (view === "month") zoom = 1;
-  else zoom = 1.5;
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
   drawChart(currentSeries);
-  const ts1h = await loadTS("1h", m.id);
-  const series1h = seriesFromTS(ts1h);
-  const lo1h = series1h.low[series1h.low.length - 1] || lo;
-  const hi1h = series1h.high[series1h.high.length - 1] || hi;
-  const spread1h = hi1h - lo1h;
-  $("#spreadMargin").textContent = `1h Spread: ${fmtGp(spread1h)}`;
-  let desc = '';
-  try {
-    const response = await fetch(`https://oldschool.runescape.wiki/api.php?action=query&prop=extracts&exintro&explaintext&redirects=1&titles=${encodeURIComponent(m.name)}&format=json`);
-    const data = await response.json();
-    const page = Object.values(data.query.pages)[0];
-    desc = page.extract || 'No description available.';
-  } catch (e) {
-    desc = 'Failed to load description.';
-  }
-  $("#itemDesc").innerHTML = `<h3>About ${m.name}</h3><p>${desc}</p>`;
   $("#status").textContent = "Ready";
-}
-function updateSmartBuyFromInput() {
-  adjustedBuy = parseInt($("#smartBuyInput").value.replace(/,/g, '')) || null;
-  $("#smartBuyInput").value = adjustedBuy ? adjustedBuy.toLocaleString() : "—";
-  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
-  updateFlipProfit();
-}
-function updateSmartSellFromInput() {
-  adjustedSell = parseInt($("#smartSellInput").value.replace(/,/g, '')) || null;
-  $("#smartSellInput").value = adjustedSell ? adjustedSell.toLocaleString() : "—";
-  updateFlipProfit();
-}
-function adjustPrice(type, delta) {
-  if (type === 'buy') {
-    adjustedBuy = (adjustedBuy || 0) + delta;
-    $("#smartBuyInput").value = adjustedBuy.toLocaleString() + ' gp';
-    $("#capitalRequired").textContent = fmtGp(adjustedBuy * buyLimit);
-  } else if (type === 'sell') {
-    adjustedSell = (adjustedSell || 0) + delta;
-    $("#smartSellInput").value = adjustedSell.toLocaleString() + ' gp';
-  }
-  updateFlipProfit();
-}
-function adjustBuyLimit(delta) {
-  buyLimit += delta;
-  if (buyLimit < 1) buyLimit = 1;
-  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
-  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
-  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
-  updateFlipProfit();
-}
-function updateBuyLimitFromInput() {
-  buyLimit = parseInt($("#buyLimitDisplay").value.replace(/,/g, '')) || 10000;
-  $("#buyLimitDisplay").value = buyLimit.toLocaleString();
-  $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
-  $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
-  updateFlipProfit();
-}
-function updateFlipProfit() {
-  if (adjustedBuy && adjustedSell && buyLimit) {
-    const profitPerItem = adjustedSell - adjustedBuy - Math.min(5000000, Math.floor(adjustedSell * 0.01));
-    const totalProfit = profitPerItem * Math.min(buyLimit, 100);
-    $("#flipProfit").textContent = fmtGp(totalProfit);
-  } else {
-    $("#flipProfit").textContent = "—";
-  }
-}
-function popoutChart() {
-  const popup = window.open('', '_blank', 'width=900,height=600');
-  popup.document.write(`
-    <html>
-    <head><title>Chart Popout</title></head>
-    <body style="margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Inter,system-ui,Arial;">
-    <div style="padding:10px;display:flex;flex-direction:column;height:100%;">
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
-      <div class="viewtabs">
-        <button data-view="day" class="active">Day</button>
-        <button data-view="week">Week</button>
-        <button data-view="month">Month</button>
-      </div>
-      <div class="tools" style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
-        <span class="small" style="margin-left:10px">Mode:</span>
-        <button id="lineMode" class="active">Line</button>
-        <button id="dotMode">Scatter</button>
-      </div>
-    </div>
-    <canvas id="popChart" style="flex:1;background:var(--grid);border:1px solid var(--edge);border-radius:12px;"></canvas>
-    <div class="legend" style="display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)">
-      <span class="sell">Low (Buy)</span><span class="buy">High (Sell)</span>
-    </div>
-    <div id="foot" class="small" style="margin-top:6px"></div>
-    </div>
-    </body>
-    </html>
-  `);
-  popup.document.head.appendChild(document.createElement('style')).textContent = document.querySelector('style').textContent;
-  const popCanvas = popup.document.getElementById('popChart');
-  popCanvas.width = 880;
-  popCanvas.height = 480;
-  const popCtx = popCanvas.getContext('2d');
-  let popSeries = currentSeries;
-  let popView = view;
-  let popZoom = zoom;
-  let popOffset = offset;
-  let popDrawMode = drawMode;
-  function popDraw() {
-    drawChart(popSeries, popCtx, popCanvas, popZoom, popOffset, popDrawMode);
-  }
-  popup.document.querySelectorAll('.viewtabs button').forEach(b=>{
-    b.onclick=async ()=>{ 
-      popup.document.querySelector('.viewtabs button.active').classList.remove("active");
-      b.classList.add("active");
-      popView = b.dataset.view;
-      const step = (popView==="day"?"1h":popView==="week"?"6h":"24h");
-      const ts = await loadTS(step, selected.id);
-      popSeries = seriesFromTS(ts);
-      popZoom = 1.5;
-      popOffset = Math.max(0, (popSeries.labels.length - 60));
-      popDraw();
-    }
-  });
-  popup.document.getElementById("zIn").onclick = ()=>{ popZoom=Math.min(8, popZoom*1.25); popDraw(); };
-  popup.document.getElementById("zOut").onclick= ()=>{ popZoom=Math.max(1, popZoom/1.25); popDraw(); };
-  popup.document.getElementById("lineMode").onclick=()=>{ popDrawMode="line"; popup.document.getElementById("lineMode").classList.add("active"); popup.document.getElementById("dotMode").classList.remove("active"); popDraw(); };
-  popup.document.getElementById("dotMode").onclick =()=>{ popDrawMode="dot"; popup.document.getElementById("dotMode").classList.add("active"); popup.document.getElementById("lineMode").classList.remove("active"); popDraw(); };
-  popDraw();
 }
 (async function boot() {
   try {
@@ -1027,9 +473,9 @@ function popoutChart() {
       const m = mapping.find(x => String(x.id) === String(id));
       if (m) { sb.style.display = "none"; setItem(m); }
     });
-    document.querySelectorAll(".viewtabs button").forEach(b => {
+    document.querySelectorAll(".view-btn").forEach(b => {
       b.onclick = () => {
-        document.querySelectorAll(".viewtabs button").forEach(x => x.classList.remove("active"));
+        document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
         b.classList.add("active");
         view = b.dataset.view;
         if (selected) setItem(selected);
@@ -1037,9 +483,28 @@ function popoutChart() {
     });
     $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
     $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
-    $("#lineMode").onclick = () => { drawMode = "line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); drawChart(currentSeries); };
-    $("#dotMode").onclick = () => { drawMode = "dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); drawChart(currentSeries); };
-    $("#popoutBtn").onclick = () => popoutChart();
+    $("#lineMode").onclick = () => {
+      if ($("#dotMode").classList.contains("active")) $("#dotMode").classList.remove("active");
+      $("#lineMode").classList.add("active");
+      drawMode = "line";
+      drawChart(currentSeries);
+    };
+    $("#dotMode").onclick = () => {
+      if ($("#lineMode").classList.contains("active")) $("#lineMode").classList.remove("active");
+      $("#dotMode").classList.add("active");
+      drawMode = "dot";
+      drawChart(currentSeries);
+    };
+    $("#vpMode").onclick = () => {
+      vpActive = !vpActive;
+      if (vpActive) $("#vpMode").classList.add("active"); else $("#vpMode").classList.remove("active");
+      drawChart(currentSeries);
+    };
+    $("#ichiMode").onclick = () => {
+      ichiActive = !ichiActive;
+      if (ichiActive) $("#ichiMode").classList.add("active"); else $("#ichiMode").classList.remove("active");
+      drawChart(currentSeries);
+    };
     $("#btnF2P").onclick = () => {
       membersOn = false;
       $("#btnF2P").classList.add("active");
@@ -1059,24 +524,6 @@ function popoutChart() {
       if (selected) await setItem(selected);
       $("#status").textContent = "Ready";
     };
-    const lowColorPicker = document.getElementById('lowColorPicker');
-    const highColorPicker = document.getElementById('highColorPicker');
-    const savedLowColor = localStorage.getItem('lowColor') || '#fb6a6a';
-    const savedHighColor = localStorage.getItem('highColor') || '#5cc76a';
-    document.documentElement.style.setProperty('--low-color', savedLowColor);
-    document.documentElement.style.setProperty('--high-color', savedHighColor);
-    lowColorPicker.value = savedLowColor;
-    highColorPicker.value = savedHighColor;
-    lowColorPicker.addEventListener('change', (e) => {
-      document.documentElement.style.setProperty('--low-color', e.target.value);
-      localStorage.setItem('lowColor', e.target.value);
-      if (currentSeries) drawChart(currentSeries);
-    });
-    highColorPicker.addEventListener('change', (e) => {
-      document.documentElement.style.setProperty('--high-color', e.target.value);
-      localStorage.setItem('highColor', e.target.value);
-      if (currentSeries) drawChart(currentSeries);
-    });
     const gildedScimitar = mapping.find(x => x.name.toLowerCase() === "gilded scimitar");
     if (gildedScimitar) setItem(gildedScimitar);
   } catch (e) {
