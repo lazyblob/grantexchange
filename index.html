@@ -30,68 +30,73 @@
 </script>
 <style>
 :root {
-  --bg: #1b140a;
-  --panel: #2b2110;
-  --edge: #6a4f2b;
-  --gold: #cfb36a;
-  --orange: #f0a020;
-  --ink: #eee5cf;
-  --muted: #cbbf99;
-  --low-color: #fb6a6a;
-  --high-color: #5cc76a;
-  --grid: #3b2f19;
-  --accent: #ffce4f;
-  --shadow: #0b0703;
+  --bg: #0d0d0d;
+  --panel: #1a1a1a;
+  --edge: #333333;
+  --gold: #ffd700;
+  --orange: #ff9900;
+  --ink: #ffffff;
+  --muted: #aaaaaa;
+  --low-color: #ff4d4d;
+  --high-color: #4dff4d;
+  --grid: #222222;
+  --accent: #ffff00;
+  --shadow: #000000;
   --teal: #00ffff;
-  --ichi-tenkan: #069af3;
-  --ichi-kijun: #ec2b88;
-  --ichi-chikou: #22b14c;
-  --ichi-senkou-a: #a1d8a0;
-  --ichi-senkou-b: #d8a0a6;
-  --cloud-green: rgba(161,216,160,0.2);
-  --cloud-red: rgba(216,160,166,0.2);
+  --ichi-tenkan: #00bfff;
+  --ichi-kijun: #ff69b4;
+  --ichi-chikou: #32cd32;
+  --ichi-senkou-a: #90ee90;
+  --ichi-senkou-b: #ffb6c1;
+  --cloud-green: rgba(144,238,144,0.2);
+  --cloud-red: rgba(255,182,193,0.2);
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin: 0; background: radial-gradient(1200px 600px at 20% -10%, #2b2210 0%, #1b140a 60%), #1b140a; color: var(--ink); font-family: Segoe UI, Inter, system-ui, Arial; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.wrap { max-width: 1280px; margin: 18px auto; padding: 0 7px; min-height: calc(100vh - 36px); display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
-.header { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; }
-h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-shadow: 0 1px 0 #000; cursor: pointer; }
-.badge { font-size: 12px; border: 1px solid var(--edge); border-radius: 999px; padding: 2px 8px; color: var(--muted); background: #20190e; }
-.small { font-size: 12px; color: var(--muted); }
-.card { background: linear-gradient(180deg, #2d220f 0%, #241b0c 100%); border: 1px solid var(--edge); border-radius: 16px; padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.28); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Segoe UI, Inter, system-ui, Arial; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.wrap { max-width: 1440px; margin: 24px auto; padding: 0 12px; min-height: calc(100vh - 48px); display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-shadow: 0 1px 0 var(--shadow); cursor: pointer; }
+.badge { font-size: 13px; border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px; color: var(--muted); background: var(--panel); }
+.small { font-size: 13px; color: var(--muted); }
+.card { background: linear-gradient(180deg, var(--panel) 0%, #111 100%); border: 1px solid var(--edge); border-radius: 20px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 .left { display: flex; flex-direction: column; }
-.hr { border: none; border-top: 1px solid var(--edge); margin: 10px 0; }
-.top-row { display: flex; align-items: center; gap: 10px; }
+.hr { border: none; border-top: 1px solid var(--edge); margin: 12px 0; }
+.top-row { display: flex; align-items: center; gap: 12px; }
 .sbar { flex: 1; position: relative; }
-.sbar input { width: 100%; background: #1e170c; border: 3px solid var(--edge); color: var(--ink); border-radius: 14px; padding: 16px 16px 16px 50px; font-size: 20px; outline: none; box-shadow: 0 0 0 0 rgba(240,160,32,0); transition: box-shadow .18s, border-color .18s; }
-.sbar input:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
-#itemIcon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; image-rendering: pixelated; }
-.suggest { margin-top: 6px; border: 1px solid var(--edge); border-radius: 10px; max-height: 360px; overflow: auto; background: #231b0d; position: absolute; z-index: 10; width: 100%; left: 0; }
-.suggest::-webkit-scrollbar { width: 8px; background: var(--panel); }
-.suggest::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
-.suggest div { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid #3e3119; cursor: pointer; word-break: break-word; white-space: normal; word-wrap: break-word; }
-.suggest div:hover { background: #2d220f; }
-.suggest img { width: 20px; height: 20px; image-rendering: pixelated; }
-.price-box { background: #2b2212; border: 1px solid var(--edge); border-radius: 10px; padding: 8px; text-align: center; min-width: 150px; }
+.sbar input { width: 100%; background: var(--panel); border: 2px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 14px 14px 14px 48px; font-size: 18px; outline: none; box-shadow: 0 0 0 0 rgba(255,153,0,0); transition: box-shadow .2s, border-color .2s; }
+.sbar input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
+#itemIcon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; image-rendering: pixelated; }
+.suggest { margin-top: 8px; border: 1px solid var(--edge); border-radius: 12px; max-height: 400px; overflow: auto; background: var(--panel); position: absolute; z-index: 10; width: 100%; left: 0; }
+.suggest::-webkit-scrollbar { width: 6px; background: var(--bg); }
+.suggest::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 3px; }
+.suggest div { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--grid); cursor: pointer; word-break: break-word; white-space: normal; word-wrap: break-word; }
+.suggest div:hover { background: #222; }
+.suggest img { width: 24px; height: 24px; image-rendering: pixelated; }
+.price-box { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 10px; text-align: center; min-width: 160px; }
 .price-box.low { color: var(--low-color); }
 .price-box.high { color: var(--high-color); }
-.price-box span { font-size: 24px; font-weight: bold; }
-.toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.toolbar button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.toolbar button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
-.toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240,160,32,0.25); }
+.price-box span { font-size: 22px; font-weight: bold; }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-start; }
+.toolbar button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
+.toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; }
-.chart { width: 100%; height: 500px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, transparent 1px, transparent 24px), #181208; border: 1px solid var(--edge); border-radius: 12px; }
-.chart-tip { position: absolute; display: none; background: rgba(0,0,0,.85); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px; pointer-events: none; white-space: nowrap; border: 1px solid #000; }
-.legend { display: flex; gap: 12px; font-size: 12px; margin-top: 6px; color: var(--muted); }
-.legend span span { width: 10px; height: 10px; display: inline-block; border-radius: 2px; }
+.chart { width: 100%; height: 600px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
+.chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
+.legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); }
+.legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
 .legend .low span { background: var(--low-color); }
 .legend .high span { background: var(--high-color); }
-.btn-refresh { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--edge); background: #2b2212; color: var(--ink); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.btn-refresh:hover { box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
-.mode-pill button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
-.mode-pill button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color: var(--orange); }
+.btn-refresh { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.btn-refresh:hover { box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
+.mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
+.key-info h2 { margin: 0 0 10px; font-size: 18px; color: var(--gold); }
+.info-grid { display: grid; grid-template-columns: auto auto; gap: 8px 20px; }
+.info-grid div { font-size: 14px; }
+.info-grid div:nth-child(odd) { color: var(--muted); text-align: right; }
+.info-grid div:nth-child(even) { font-weight: bold; }
 @keyframes rainbow { 
   0% {border-color: #ff0000;} 
   14% {border-color: #ff7f00;} 
@@ -103,10 +108,12 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
   100% {border-color: #ff0000;} 
 }
 @media (max-width: 768px) {
-  .top-row { flex-direction: column; gap: 10px; }
+  .top-row { flex-direction: column; gap: 12px; }
   .price-box { min-width: 0; width: 100%; }
   .toolbar { justify-content: center; }
-  .chart { height: 300px; }
+  .chart { height: 400px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .info-grid div:nth-child(odd) { text-align: left; }
 }
 </style>
 </head>
@@ -146,17 +153,30 @@ h1 { margin: 0; font-size: 26px; font-weight: 900; color: var(--orange); text-sh
       <button id="refreshBtn" class="btn-refresh">Refresh</button>
     </div>
     <div class="chartWrap">
-      <canvas id="chart" class="chart" width="980" height="500"></canvas>
+      <canvas id="chart" class="chart" width="980" height="600"></canvas>
       <div id="tip" class="chart-tip"></div>
     </div>
     <div class="legend">
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
+    <div class="hr"></div>
+    <div class="key-info">
+      <h2>Key Info</h2>
+      <div class="info-grid">
+        <div>Buy Price</div><div id="keyBuyPrice">—</div>
+        <div>Sell Price</div><div id="keySellPrice">—</div>
+        <div>Volume</div><div id="keyVolume">—</div>
+        <div>Limit</div><div id="keyLimit">—</div>
+        <div>Tax</div><div id="keyTax">—</div>
+        <div>Margin</div><div id="keyMargin">—</div>
+        <div>ROI</div><div id="keyROI">—</div>
+        <div>Potential Profit</div><div id="keyPotProfit">—</div>
+      </div>
+    </div>
   </div>
 </div>
 <script>
-// Code from previous response
 const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
@@ -276,17 +296,28 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   const W = c.width, H = c.height;
   const x0 = 60, y0 = 30, w = W - x0 - 14, h = H - y0 - 42;
   context.clearRect(0, 0, W, H);
-  if (!series || !series.labels?.length) { return; }
+  if (!series || !series.labels?.length) { 
+    context.fillStyle = "#fff"; 
+    context.font = "bold 16px Segoe UI, Arial";
+    context.fillText("No data available", W/2 - 80, H/2); 
+    return; 
+  }
   const n = series.labels.length;
   const win = Math.max(12, Math.floor(n / z));
-  const start = Math.max(0, Math.min(n - win, Math.floor(off)));
+  offset = Math.max(0, Math.min(n - win, offset));
+  const start = offset;
   const end = start + win;
   const L = series.labels.slice(start, end);
   const LO = series.low.slice(start, end);
   const HI = series.high.slice(start, end);
   const VO = (series.vol || []).slice(start, end);
   const vals = [...LO, ...HI].filter(v => v != null);
-  if (!vals.length) return;
+  if (!vals.length) { 
+    context.fillStyle = "#fff"; 
+    context.font = "bold 16px Segoe UI, Arial";
+    context.fillText("No price data", W/2 - 70, H/2); 
+    return; 
+  }
   let vmin = Math.min(...vals), vmax = Math.max(...vals);
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
   context.strokeStyle = "#000"; context.globalAlpha = 0.5;
@@ -371,7 +402,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       if (ichi.senkouA[i] == null || ichi.senkouB[i] == null) continue;
       const y1 = ypx(ichi.senkouA[i], vmin, vmax, y0, h);
       const y2 = ypx(ichi.senkouB[i], vmin, vmax, y0, h);
-      const color = ichi.senkouA[i] > ichi.senkouB[i] ? 'rgba(161,216,160,0.2)' : 'rgba(216,160,166,0.2)';
+      const color = ichi.senkouA[i] > ichi.senkouB[i] ? 'rgba(144,238,144,0.2)' : 'rgba(255,182,193,0.2)';
       context.fillStyle = color;
       context.fillRect(x0 + i * stepX - stepX / 2, Math.min(y1, y2), stepX, Math.abs(y1 - y2));
     }
@@ -416,9 +447,26 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const x = x0 + i * stepX;
     context.fillText(dateStr, x - 20, H - 10);
   }
+  let isDragging = false;
+  let startX = 0;
+  c.onmousedown = (ev) => {
+    isDragging = true;
+    startX = ev.clientX;
+  };
+  c.onmouseup = () => isDragging = false;
+  c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
   c.onmousemove = (ev) => {
     const rect = c.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+    if (isDragging) {
+      const dx = ev.clientX - startX;
+      startX = ev.clientX;
+      const pointWidth = w / (end - start);
+      offset -= dx / pointWidth;
+      offset = Math.max(0, Math.min(n - win, offset));
+      drawChart(series);
+      return;
+    }
     if (mx < x0 || mx > x0 + w || my < y0 || my > y0 + h) { tip.style.display = "none"; return; }
     const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     const t = L[idx] * 1000;
@@ -431,7 +479,13 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       High: ${fmtGp(hi)}<br/>
       Vol: ${fmtNum(vol)}`;
   };
-  c.onmouseleave = () => tip.style.display = "none";
+  c.onwheel = (ev) => {
+    ev.preventDefault();
+    const delta = ev.deltaY < 0 ? 1.25 : 0.8;
+    zoom *= delta;
+    zoom = Math.max(1, Math.min(8, zoom));
+    drawChart(series);
+  };
 }
 async function setItem(m) {
   selected = m;
@@ -452,6 +506,20 @@ async function setItem(m) {
   currentSeries = seriesFromTS(ts);
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
   drawChart(currentSeries);
+  const vol = volumes.data[String(m.id)] || 0;
+  const limit = selected.buy_limit || 0;
+  const tax = hi ? Math.floor(hi * 0.01) : 0;
+  const margin = hi && lo ? hi - lo - tax : 0;
+  const roi = lo ? ((margin / lo) * 100).toFixed(2) + '%' : '0%';
+  const potProfit = margin * limit;
+  $("#keyBuyPrice").textContent = fmtGp(lo);
+  $("#keySellPrice").textContent = fmtGp(hi);
+  $("#keyVolume").textContent = fmtNum(vol);
+  $("#keyLimit").textContent = fmtNum(limit);
+  $("#keyTax").textContent = fmtGp(tax);
+  $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin);
+  $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi;
+  $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit);
   $("#status").textContent = "Ready";
 }
 (async function boot() {
@@ -481,8 +549,8 @@ async function setItem(m) {
         if (selected) setItem(selected);
       }
     });
-    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
-    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom); drawChart(currentSeries); };
+    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries); };
+    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries); };
     $("#lineMode").onclick = () => {
       if ($("#dotMode").classList.contains("active")) $("#dotMode").classList.remove("active");
       $("#lineMode").classList.add("active");
