@@ -187,69 +187,523 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
   70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
   100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
 }
-/* Loader overlay */
-#loader-overlay {
-  position: fixed;
-  top: 0;
+/* Rainbow spread */
+@keyframes rainbow {
+  0% {border-color: #ff0000;}
+  14% {border-color: #ff7f00;}
+  28% {border-color: #ffff00;}
+  42% {border-color: #00ff00;}
+  57% {border-color: #00ffff;}
+  71% {border-color: #0000ff;}
+  85% {border-color: #8b00ff;}
+  100% {border-color: #ff0000;}
+}
+.sbar {
+  position: relative; /* Anchor dropdown to this container */
+}
+.suggest { /* Matches your existing class */
+  position: absolute;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  flex-direction: column;
-  color: var(--ink);
-  font-size: 18px;
+  top: 100%; /* Drops directly below the input */
+  width: 100%; /* Matches search bar width */
+  z-index: 10;
+  background: #231b0d; /* Matches your theme */
+  border: 1px solid var(--edge);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  overflow: auto;
+  max-height: 200px; /* Optional: scroll if many results */
 }
-.loader-wheel {
-  border: 8px solid var(--edge);
-  border-top: 8px solid var(--orange);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 2s linear infinite;
-  margin-bottom: 20px;
+/* Suggestion box */
+.suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
+.suggest-box img{width:100px;height:100px;image-rendering:pixelated}
+.suggest-box .details{flex:1}
+.suggest-box .name{font-weight:700;color:var(--orange)}
+.suggest-box .prices{display:flex;gap:20px}
+.suggest-box .price label{color:var(--muted);font-size:12px}
+.suggest-box .price strong{display:block;font-size:16px}
+.suggest-box .buy strong{color:var(--low-color)}
+.suggest-box .sell strong{color:var(--high-color)}
+.suggest-box .margin strong{color:var(--gold)}
+.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
+  border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
+  text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
+.suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
+.suggest-box .kv span{margin-right:5px}
+/* Category select */
+select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-radius:14px;padding:8px;font-size:16px;outline:none;width:100%;margin-bottom:8px;transition:box-shadow .18s,border-color .18s}
+select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
+/* Loading animation */
+.loading { animation: pulse-rs 1.5s infinite; }
+@keyframes pulse-rs {
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
 }
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Small chart */
+.small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
+/* Card-like for small chart */
+.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
+  border:1px solid var(--edge);border-radius:16px;padding:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
+/* Loader overlay */
+#loader-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(0, 0, 0, 0.8); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 1000; 
+  flex-direction: column; 
+  color: var(--ink); 
+  font-size: 18px; 
+}
+.loader-wheel { 
+  border: 8px solid var(--edge); 
+  border-top: 8px solid var(--orange); 
+  border-radius: 50%; 
+  width: 60px; 
+  height: 60px; 
+  animation: spin 2s linear infinite; 
+  margin-bottom: 20px; 
+}
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+/* Tabs for bottom section */
+.help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.help-tabs button { background: #2b2212; border: 1px solid var(--edge); color: var(--ink); border-radius: 10px; padding: 8px 14px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .18s, border-color .18s; }
+.help-tabs button.active { background: #3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8); border-color:var(--orange); }
+.help-tab-content { display: none; }
+.help-tab-content.active { display: block; }
+/* Alch table (tighter) */
+.alch-tb, .sets-tb, .craft-tb, .enchant-tb, .smith-tb { display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: 500px; }
+.alch-tb::-webkit-scrollbar, .sets-tb::-webkit-scrollbar, .craft-tb::-webkit-scrollbar, .enchant-tb::-webkit-scrollbar, .smith-tb::-webkit-scrollbar { width: 8px; background: var(--panel); }
+.alch-tb::-webkit-scrollbar-thumb, .sets-tb::-webkit-scrollbar-thumb, .craft-tb::-webkit-scrollbar-thumb, .enchant-tb::-webkit-scrollbar-thumb, .smith-tb::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+.alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { display: grid; gap: 12px; align-items: center; background: #231b0d; border: 1px solid var(--edge); border-radius: 10px; padding: 12px 16px; }
+.alch-row { grid-template-columns: 40px 1fr 120px 120px 120px 140px; }
+.sets-row { grid-template-columns: 1fr 120px 120px 120px 1fr; } /* Added column for pieces */
+.craft-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.enchant-row { grid-template-columns: 40px 1fr 80px 1fr 1fr 80px 120px; }
+.smith-row { grid-template-columns: 40px 1fr 80px 80px 120px 120px; }
+.alch-row img, .sets-row img, .craft-row img, .enchant-row img, .smith-row img { width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; }
+.alch-sym, .sets-sym, .craft-sym, .enchant-sym, .smith-sym { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.alch-buy, .alch-nat, .alch-value, .alch-profit, .sets-buy, .sets-sell, .sets-profit, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { font-variant-numeric: tabular-nums; text-align: right; color: var(--gold); }
+.alch-profit.positive, .sets-profit.positive, .craft-profit.positive, .enchant-profit.positive, .smith-profit.positive { color: var(--high-color); }
+.alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
+/* Desktop scaling */
+@media (min-width: 769px) {
+  html {
+    transform: scale(0.8); /* Scale everything to 80% */
+    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
+    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
+    height: 125%; /* Same for height */
+  }
 }
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .wrap {grid-template-columns: 1fr; padding: 0 8px; gap: 10px;}
-  .grid {grid-template-columns: 1fr;}
-  .imgbox {width: 80px; height: 80px; margin: 0;}
-  .label {font-size: 16px; margin: 0;}
-  .sbar input {font-size: 14px; padding: 8px;}
-  .kv {margin: 2px 0; font-size: 12px;}
-  .kv strong {font-size: 14px;}
-  .chart {height: 280px;}
-  .key-info {grid-template-columns: repeat(2, 1fr); gap: 8px;}
-  .key-value {font-size: 18px;}
-  .key-label {font-size: 12px;}
-  .sbar {gap: 5px;}
-  .sbar input {padding: 12px; font-size: 16px;}
-  .viewtabs, .mode-pill {gap: 3px;}
-  .viewtabs button, .mode-pill button {padding: 4px 8px; font-size: 12px;}
-  .tools {gap: 3px;}
-  .tools button {padding: 3px 6px; font-size: 12px;}
-  .refreshRow {gap: 5px;}
-  .btn-refresh {padding: 8px 12px; font-size: 14px;}
-  #chart, #historicalChart {width: 100% !important;}
-  .chartWrap {overflow-x: hidden;}
+  body {
+    overflow-x: hidden;
+  }
+  .wrap {
+    grid-template-columns: 1fr; /* Stack sidebar below main content */
+    padding: 0 8px; /* Compact padding */
+    gap: 10px; /* Reduced gap for modern, tight layout */
+    max-width: 100%;
+    margin: 10px auto;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 8px; /* Smaller gaps */
+    align-items: start; /* Top align */
+  }
+  .imgbox { 
+    grid-column: 1;
+    grid-row: 1;
+    width: 80px; /* Smaller image to compact */
+    height: 80px;
+    margin: 0; /* Left align, no margin */
+    justify-self: start;
+    order: 1;
+  }
+  .imgbox img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+    cursor: pointer; /* Clickable for item search focus */
+  }
+  .grid > div:nth-child(2) { /* Search/profit right of image, top row */
+    grid-column: 1;
+    grid-row: 2;
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter */
+  }
+  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
+    grid-column: 1;
+    grid-row: 3;
+    order: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Tighter gaps between rows/columns */
+    background: #231b0d; /* Dark bg for panel feel */
+    border: 1px solid var(--edge); /* Border for definition */
+    border-radius: 10px; /* Rounded */
+    padding: 4px; /* Reduced inner padding */
+  }
+  .label { 
+    font-size: 16px; /* Smaller label */
+    margin: 0; 
+  }
+  .sbar input { 
+    font-size: 14px; /* Smaller input */
+    padding: 8px; 
+  }
+  .kv { 
+    display: flex; 
+    flex-direction: row; /* Keep row for better space use */
+    justify-content: space-between; 
+    align-items: center; 
+    margin: 2px 0; /* Even tighter margins */
+    font-size: 12px; /* Smaller font for info */
+  }
+  .kv span { 
+    flex: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  .kv strong { 
+    flex: 1; 
+    text-align: right; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    font-size: 14px; /* Slightly larger for numbers */
+  }
+  #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin { 
+    font-size: 12px; /* Compact text */ 
+  }
+  #spreadMargin { 
+    text-align: left; 
+    margin: 2px 0; 
+  }
+  .small { 
+    font-size: 10px; /* Smaller buy limit info */ 
+  }
+  .title { 
+    font-size: 12px; /* Smaller titles */ 
+    margin: 0; /* No margins for tight fit */ 
+    text-align: left; /* Left align for flow */ 
+  }
+  .price-adjust { 
+    flex-direction: row; /* Arrows on sides of value, same line */ 
+    align-items: center; 
+    gap: 2px; /* Very tight gaps between arrows and input */ 
+    border: none; /* Remove inner borders if too busy */ 
+    background: transparent; /* Clean look */ 
+    justify-content: flex-start; /* Left align */ 
+  }
+  .price-input, .buy-limit-input { 
+    flex: 1; 
+    font-size: 14px; /* Smaller text size for values */ 
+    text-align: right; /* Right align numbers */ 
+    width: auto; /* Auto width to fit */ 
+    max-width: none; /* Remove max-width to handle long numbers */ 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  .price-adjust button { 
+    font-size: 16px; /* Smaller arrows */ 
+    padding: 0 4px; 
+    min-width: 24px; 
+  }
+  .chart { 
+    height: 280px; /* Slightly shorter for compact view */ 
+  }
+  .side { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; /* Side-by-side for suggestion and 1-year chart */ 
+    gap: 8px; 
+  }
+  .side .suggest-box, .side .card-like { 
+    grid-column: span 1; /* Each takes half */ 
+    padding: 8px; /* Narrower padding */ 
+    max-width: 100%; /* Fit to mobile */ 
+  }
+  .side .card-like { 
+    order: -1; 
+  }
+  .side .card:nth-child(3) { /* Watchlist card full width */ 
+    grid-column: 1 / -1; /* Span both columns for full width */ 
+    padding: 8px; /* Narrower */ 
+  }
+  .suggest-box .item { 
+    flex-direction: column; /* Stack for narrow fit */ 
+    gap: 4px; 
+    padding: 6px; 
+  }
+  .suggest-box img { 
+    width: 60px; 
+    height: 60px; 
+    margin: 0 auto; 
+  }
+  .suggest-box .details { 
+    text-align: center; 
+  }
+  .suggest-box .prices { 
+    justify-content: center; 
+    gap: 10px; 
+  }
+  .suggest-box .price strong { 
+    font-size: 14px; 
+  }
+  .suggest-box .next-btn { 
+    font-size: 12px; 
+    padding: 4px 8px; 
+  }
+  .card-like { 
+    padding: 8px; 
+  }
+  .card-like h3 { 
+    font-size: 14px; 
+  }
+  .small-chart { 
+    height: 200px; 
+  }
+  .tb { 
+    max-height: 350px; /* Slightly shorter */ 
+  }
+  .head { 
+    grid-template-columns: 20px 1fr 50px 50px; /* Narrower columns for watchlist */ 
+    font-size: 10px; 
+    gap: 4px; 
+    padding: 4px 6px; 
+  }
+  .row { 
+    grid-template-columns: 20px 1fr 50px 50px; 
+    padding: 6px; 
+    gap: 4px; 
+    min-height: 30px; 
+  }
+  .row.long-price { 
+    min-height: 50px; 
+  }
+  .sym { 
+    font-size: 12px; 
+  }
+  .delta, .vol { 
+    font-size: 10px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  .alch-tb .head, .sets-tb .head, .craft-tb .head, .enchant-tb .head, .smith-tb .head { 
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
+    gap: 4px; 
+    padding: 4px 6px; 
+    font-size: 10px; 
+  }
+  .alch-row, .sets-row, .craft-row, .enchant-row, .smith-row { 
+    grid-template-columns: 30px 1fr 50px 50px 50px 60px; 
+    gap: 4px; 
+    padding: 6px; 
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit, .sets-sym, .sets-buy, .sets-sell, .sets-profit, .craft-sym, .craft-level, .craft-exp, .craft-buy, .craft-profit, .enchant-sym, .enchant-level, .enchant-base, .enchant-enchanted, .enchant-runes, .enchant-exp, .enchant-profit, .smith-sym, .smith-bars, .smith-level, .smith-exp, .smith-alch, .smith-profit { 
+    font-size: 10px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
+  /* Themed Up/Down Arrows */
+  .price-adjust button { 
+    background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+    border: 2px solid var(--edge); /* Thicker border for emphasis */
+    border-radius: 12px; /* More rounded */
+    padding: 2px 8px; /* Smaller padding */
+    font-size: 18px; /* Slightly smaller text/symbols */
+    font-weight: 900; /* Max bold */
+    color: var(--gold); /* Gold base, overridden for low/high */
+    cursor: pointer; 
+    transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+    box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+    line-height: 1; /* Tight line height */
+    min-width: 32px; /* Smaller minimum width */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+  }
+  .price-adjust button.down::before { 
+    content: "▽"; /* Tip-only down arrow (no tail) */ 
+  }
+  .price-adjust button.up::before { 
+    content: "△"; /* Tip-only up arrow (no tail) */ 
+  }
+  .price-adjust button { 
+    content: ""; /* Clear original text */ 
+  }
+  .price-adjust button:hover { 
+    box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
+    transform: translateY(-2px); /* More lift */ 
+    filter: brightness(1.1); /* Brighter on hover */ 
+  }
+  .price-adjust button:active { 
+    transform: translateY(0); /* Press down effect */ 
+    box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+  }
+  .price-adjust.low button { 
+    color: var(--low-color); /* Red for low arrows */ 
+  }
+  .price-adjust.high button { 
+    color: var(--high-color); /* Green for high arrows */ 
+  }
+  /* Themed Color Selectors */
+  .color-picker { 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+    background: #2b2212; /* Dark panel bg */ 
+    border: 1px solid var(--edge); /* Edge border */ 
+    border-radius: 8px; 
+    padding: 4px 8px; 
+    color: var(--muted); /* Muted label text */ 
+  }
+  .color-picker input[type="color"] { 
+    -webkit-appearance: none; /* Remove default styling */ 
+    appearance: none; 
+    width: 24px; /* Small square */ 
+    height: 24px; 
+    border: none; /* No border */ 
+    background: transparent; /* Transparent bg */ 
+    cursor: pointer; 
+  }
+  .color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
+    padding: 0; 
+  }
+  .color-picker input[type="color"]::-webkit-color-swatch { 
+    border: 1px solid var(--edge); /* Theme border */ 
+    border-radius: 4px; /* Rounded */ 
+  }
+  .color-picker input[type="color"]::-moz-color-swatch { 
+    border: 1px solid var(--edge); /* Firefox compat */ 
+    border-radius: 4px; 
+  }
+  @keyframes glow { 
+    from { box-shadow: 0 0 5px #00ff00; } 
+    to { box-shadow: 0 0 15px #00ff00; } 
+  }
+  h1 { font-size: 20px; }
+  h3 { font-size: 16px; }
+  .label { font-size: 20px; }
+  .help { font-size: 14px; }
+  .chart { height: 200px; }
+  .tb { max-height: 200px; }
+  .small-chart { height: 120px; }
+  .suggest { width: 100%; }
+  .head { 
+    grid-template-columns: 22px 1fr 60px 60px; 
+    font-size: 10px; 
+  }
+  .row { 
+    grid-template-columns: 22px 1fr 60px 60px; 
+    padding: 8px; 
+    gap: 4px; 
+  }
+  .sym { 
+    font-size: 13px; 
+  }
+  .last, .delta, .pct, .vol { 
+    font-size: 12px; 
+  }
+  .alch-tb .head { 
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
+    gap: 6px; 
+    padding: 6px 8px; 
+    font-size: 10px; 
+  }
+  .alch-row { 
+    grid-template-columns: 32px 1fr 60px 60px 60px 70px; 
+    gap: 6px; 
+    padding: 8px 8px; 
+  }
+  .alch-sym, .alch-value, .alch-buy, .alch-nat, .alch-profit { 
+    font-size: 12px; 
+  }
+  .sbar { gap: 5px; }
+  .sbar input { padding: 12px; font-size: 16px; }
+  .sbar button { padding: 8px 12px; font-size: 14px; }
+  .viewtabs, .mode-pill { gap: 3px; }
+  .viewtabs button, .mode-pill button { padding: 4px 8px; font-size: 12px; }
+  .tools { gap: 3px; }
+  .tools button { padding: 3px 6px; font-size: 12px; }
+  .refreshRow { gap: 5px; }
+  .btn-refresh, .btn-watch { padding: 8px 12px; font-size: 14px; }
+  .help-tabs button { padding: 6px 10px; font-size: 12px; }
+  .side h3 { font-size: 16px; }
+  .suggest-box .item { padding: 5px; gap: 5px; }
+  .suggest-box img { width: 80px; height: 80px; }
+  .suggest-box .name { font-size: 14px; }
+  .suggest-box .prices { gap: 10px; }
+  .suggest-box .price label { font-size: 10px; }
+  .suggest-box .price strong { font-size: 14px; }
+  .next-btn { padding: 6px 10px; font-size: 14px; }
+  .card-like h3 { font-size: 16px; }
+  .card { padding: 8px; }
+  select { padding: 6px; font-size: 14px; }
+  .help h2 { font-size: 18px; }
+  .help p { font-size: 12px; }
+  .help ul { margin: 4px 0 0 14px; }
+  .kv { margin: 2px 0; }
+  .kv strong { font-size: 18px; }
+  .spread-margin { font-size: 16px; }
+  #chart, #historicalChart { width: 100% !important; }
+  .chartWrap { overflow-x: hidden; }
 }
 </style>
 </head>
 <body>
-<div id="loader-overlay" style="display:none;">
-  <div class="loader-wheel"></div>
-  Fetching the most recent market data please wait..
-</div>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.3</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="mode-pill" id="modePill">
@@ -288,13 +742,9 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
     <div class="hr"></div>
     <div class="refreshRow">
       <div class="viewtabs">
-        <button data-view="1d" class="active">1D</button>
-        <button data-view="1w">1W</button>
-        <button data-view="1m">1M</button>
-        <button data-view="6m">6M</button>
-        <button data-view="1y">1Y</button>
-        <button data-view="5y">5Y</button>
-        <button data-view="all">All</button>
+        <button data-view="day" class="active">1D</button>
+        <button data-view="week">1W</button>
+        <button data-view="month">1M</button>
       </div>
       <div class="tools">
         <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
@@ -317,9 +767,192 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
       </div>
       <div style="display:flex; gap:10px;">
         <button id="refreshBtn" class="btn-refresh">Refresh All Data</button>
+        <button id="addWatchBtn" class="btn-watch">Add to Watch</button>
       </div>
     </div>
     <div id="itemDesc" class="help" style="margin-top:20px"></div>
+  </div> <!-- end .card.left -->
+  <!-- Sidebar -->
+  <div class="side">
+    <div class="card suggest-box">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">Smart Flip Suggestion</h3>
+      <div id="smartSuggest" class="item">
+        <!-- Filled by JS -->
+      </div>
+      <div id="suggestProfit" class="kv" style="margin-top:10px"><span>Expected Profit</span><strong style="color:var(--gold);font-size:18px">—</strong></div>
+      <button id="nextSuggest" class="next-btn">Next Suggestion</button>
+    </div>
+    <div class="card card-like">
+      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">1 Year Price Data</h3>
+      <canvas id="historicalChart" width="360" height="144"></canvas>
+    </div>
+    <div class="card">
+      <h3>Watchlist</h3>
+      <select id="categorySelect">
+        <option value="custom">Custom Watchlist</option>
+        <option value="gilded">Gilded Items</option>
+        <option value="runes">Runes</option>
+        <option value="herbs">Herbs</option>
+        <option value="food">Food</option>
+        <option value="armour">Armour</option>
+        <option value="weapons">Weapons</option>
+        <option value="gems">Gems</option>
+        <option value="ores-and-bars">Ores & Bars</option>
+        <option value="charging-items">Charging Items</option>
+        <option value="3rd-age-items">3rd Age Items</option>
+        <option value="potions">Potions</option>
+        <option value="range-armour">Range Armour</option>
+        <option value="melee-armour">Melee Armour</option>
+        <option value="mage-armour">Mage Armour</option>
+        <option value="range-weapons">Range Weapons</option>
+        <option value="melee-weapons">Melee Weapons</option>
+        <option value="mage-weapons">Mage Weapons</option>
+        <option value="ammo">Ammo</option>
+      </select>
+      <!-- Column headers (tighter) -->
+      <div class="head">
+        <div></div>
+        <div id="sortSymbol">Symbol <span class="sort-arrow">▼</span></div>
+        <div class="delta" id="sortBuy">Buy gp <span class="sort-arrow">▼</span></div>
+        <div class="vol" id="sortSell">Sell gp <span class="sort-arrow">▼</span></div>
+      </div>
+      <div id="watch" class="tb"></div>
+    </div>
+  </div>
+  <div class="card left" style="grid-column:1 / -1">
+    <div class="help-tabs">
+      <button id="faqTab" class="active">FAQ</button>
+      <button id="alchTab">High Alch Guide</button>
+      <button id="setsTab">Sets</button>
+      <button id="craftingTab">Crafting</button>
+      <button id="enchantingTab">Enchanting</button>
+      <button id="smithingTab">Smithing</button>
+      <button id="contactTab">Contact</button>
+    </div>
+    <div id="faqContent" class="help-tab-content active">
+      <div class="help" style="margin-top:20px">
+        <h2>Tools for OSRS Grand Exchange and Money Making</h2>
+        <p>Our flipping tool provides real-time prices from the OSRS Grand Exchange to help you maximize gold earnings. Designed for both F2P and Members, it offers market data, buy/sell recommendations, and profit tools to streamline your trades. Search for items, fine-tune prices, and track favorites in the watchlist. Ideal for flipping gems, ores, and more based on trends and volumes—enhance your RuneScape experience with efficient gold strategies. Check our <button onclick="switchToAlchTab()">high alch guide</button> for additional earning tips.</p>
+        <!-- FAQ -->
+        <h2>Common Questions on OSRS GE and Gold Strategies</h2>
+        <h3>How Does Item Flipping Work on the OSRS Grand Exchange?</h3>
+        <p>Item flipping means purchasing low and selling high for profit. Tips include focusing on high-volume goods like runes or gems for quick turnover. Use our tool to view current spreads and aim for solid returns per trade, considering taxes and limits.</p>
+        <ul>
+          <li>High-volume items ensure faster transactions.</li>
+          <li>Check real-time data to identify profitable opportunities.</li>
+          <li>Account for the 1% tax, capped at 5m GP.</li>
+          <li>Adhere to buy limits for accurate capital planning.</li>
+          <li>Analyze charts for optimal timing.</li>
+          <li>Begin with smaller investments in F2P, expand in Members mode.</li>
+        </ul>
+        <h3>F2P vs. Members Mode for OSRS Money Making?</h3>
+        <p>F2P limits to free items, while Members unlocks higher-profit options like herbs. Toggle modes for customized flipping ideas tailored to your playstyle.</p>
+        <h3>Are Profit Estimates Reliable for OSRS Gold Making?</h3>
+        <p>Calculations use live GE data with tax considerations. Markets fluctuate, so refresh often and monitor your watchlist for updates.</p>
+        <h3>How Do Price Alerts Function in the Watchlist?</h3>
+        <p>Alerts highlight changes in high prices over five minutes with borders:</p>
+        <ul>
+          <li>Green glow for +20% or more.</li>
+          <li>Green for +10%.</li>
+          <li>Cyan for +5%.</li>
+          <li>Yellow for -5%.</li>
+          <li>Red for -10%.</li>
+          <li>Dark red for -20%.</li>
+        </ul>
+        <p>These signal short-term shifts; large swings are uncommon for stable items like adamant bars.</p>
+      </div>
+    </div>
+    <div id="alchContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>High Alchemy Profit Guide & Calculator for OSRS</h2>
+        <p>High alch turns items into gold with the alchemy spell, ideal for passive earnings and Magic training. Purchase below alch value on the GE, cast the spell, and pocket the difference minus rune costs. Our calculator highlights top items with current prices for efficient gold farming.</p>
+        <h3>Steps for Profitable High Alch in OSRS</h3>
+        <ul>
+          <li>Use a fire staff to cut rune expenses.</li>
+          <li>Source items and nature runes from the GE.</li>
+          <li>Compute profit: alch value minus buy and rune prices.</li>
+          <li>Target profitable entries; alch safely near banks.</li>
+          <li>F2P shows accessible items; Members expands choices.</li>
+        </ul>
+        <p>Nature Rune Price: <span id="natPrice">Loading...</span></p>
+        <div class="head"> <!-- Header like watchlist -->
+          <div></div>
+          <div>Item</div>
+          <div>Alch Value</div>
+          <div>Buy GP</div>
+          <div>Nat GP</div>
+          <div>Profit/Alch</div>
+        </div>
+        <div id="alchList" class="alch-tb"></div>
+      </div>
+    </div>
+    <div id="setsContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>Armor Sets Profit Calculator for OSRS</h2>
+        <p>Profit by assembling or disassembling sets on the GE, factoring in taxes. This method complements other strategies for steady gold gains.</p>
+        <div class="head">
+          <div>Set</div>
+          <div>Buy Pieces</div>
+          <div>Sell Set</div>
+          <div>Profit (Pack)</div>
+          <div>Pieces</div>
+        </div>
+        <div id="setsList" class="sets-tb"></div>
+      </div>
+    </div>
+    <div id="craftingTabContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>Crafting Profit Guide for OSRS</h2>
+        <p>Craft jewelry from gold bars and gems bought on the GE, then sell for profit after taxes. A reliable approach for skill and gold progression.</p>
+        <div class="head">
+          <div></div>
+          <div>Item</div>
+          <div>Level</div>
+          <div>Exp</div>
+          <div>Buy Cost</div>
+          <div>Profit</div>
+        </div>
+        <div id="craftList" class="craft-tb"></div>
+      </div>
+    </div>
+    <div id="enchantingContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>Enchanting Profit Guide for OSRS</h2>
+        <p>Enchant jewelry using GE-sourced bases and runes, selling enchanted versions post-tax. Boosts Magic while generating income.</p>
+        <div class="head">
+          <div></div>
+          <div>Spell</div>
+          <div>Level</div>
+          <div>Base Item</div>
+          <div>Enchanted</div>
+          <div>Exp</div>
+          <div>Profit</div>
+        </div>
+        <div id="enchantList" class="enchant-tb"></div>
+      </div>
+    </div>
+    <div id="smithingContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>Smithing Profit Guide (Steel to Rune) for OSRS</h2>
+        <p>Smith bars into items for alching or selling, using GE prices. Effective for Smithing levels and gold accumulation.</p>
+        <div class="head">
+          <div></div>
+          <div>Item</div>
+          <div>Bars</div>
+          <div>Level</div>
+          <div>Exp</div>
+          <div>Profit (Alch)</div>
+        </div>
+        <div id="smithList" class="smith-tb"></div>
+      </div>
+    </div>
+    <div id="contactContent" class="help-tab-content">
+      <div class="help" style="margin-top:20px">
+        <h2>Contact Us</h2>
+        <p>Share feature ideas or report issues below.</p>
+        <p>The contact form is temporarily unavailable. Email us at example@email.com for assistance.</p>
+      </div>
+    </div>
   </div>
 </div>
 <!-- SCRIPT -->
@@ -328,16 +961,109 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping=[], latest=null, volumes=null, selected=null;
-let currentSeries=null, view="1d", zoom=1.5, offset=0, drawMode="line";
-let membersOn=false; // F2P by default (false)
-let enabledIndicators = [];
+let currentSeries=null, view="day", zoom=1.5, offset=0, drawMode="line";
+let membersOn=false;
+let watchlist = [];
+let customWatchlist = [];
+let dismissed = [];
+let flipSuggestions = [];
+let suggestIndex = 0;
 let adjustedBuy = null;
 let adjustedSell = null;
 let buyLimit = 0;
 const buyLimits = {}; // Cached buy limits (lazy-loaded from items-json/${id}.json)
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-const tip = document.getElementById("tip");
+const categoryItems = {};
+const f2pAlchItems = ['rune pickaxe', 'rune platebody', 'rune kiteshield', 'rune battleaxe', 'rune longsword', 'rune med helm', 'rune 2h sword', 'rune full helm', 'green d\'hide body', 'rune sword', 'rune mace', 'rune platelegs', 'rune plateskirt', 'rune axe', 'rune scimitar', 'adamant platebody', 'rune sq shield', 'rune chainbody', 'mithril kiteshield', 'adamant kiteshield', 'adamant chainbody', 'mithril platebody', 'adamant platelegs', 'Steel platebody', 'rune dagger'];
+const membersAlchItems = ['dragon med helm', 'dragon battleaxe', 'dragon platelegs', 'black d\'hide body', 'dragon halberd', 'red d\'hide body', 'dragon scimitar', 'dragon longsword', 'rune halberd', 'dragon dagger', 'rune dagger(p+)', 'rune hasta', 'red d\'hide vambraces', 'dragon plateskirt', ...f2pAlchItems, 'blue d\'hide vambraces', 'combat bracelet', 'mystic water staff', 'mystic gloves', 'black d\'hide vambraces', 'water battlestaff', 'air battlestaff', 'red d\'hide chaps', 'earth battlestaff', 'fire battlestaff', 'diamond bracelet'];
+const natRuneId = 561; // Nature rune
+const goldBarId = 2357; // Gold bar ID
+const armorSets = [{"set_name":"Bronze set (lg)","components":["Bronze platebody","Bronze platelegs","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (lg)","components":["Iron platebody","Iron platelegs","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (lg)","components":["Steel platebody","Steel platelegs","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (lg)","components":["Black platebody","Black platelegs","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (lg)","components":["Mithril platebody","Mithril platelegs","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (lg)","components":["Adamant platebody","Adamant platelegs","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (lg)","components":["Rune platebody","Rune platelegs","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (lg)","components":["Dragon platebody","Dragon platelegs","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (lg)","components":["Bronze platebody (g)","Bronze platelegs (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (lg)","components":["Iron platebody (g)","Iron platelegs (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (lg)","components":["Steel platebody (g)","Steel platelegs (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (lg)","components":["Black platebody (g)","Black platelegs (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (lg)","components":["Mithril platebody (g)","Mithril platelegs (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (lg)","components":["Adamant platebody (g)","Adamant platelegs (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (lg)","components":["Rune platebody (g)","Rune platelegs (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (lg)","components":["Gilded platebody","Gilded platelegs","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (lg)","components":["Bronze platebody (t)","Bronze platelegs (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (lg)","components":["Iron platebody (t)","Iron platelegs (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (lg)","components":["Steel platebody (t)","Steel platelegs (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (lg)","components":["Black platebody (t)","Black platelegs (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (lg)","components":["Mithril platebody (t)","Mithril platelegs (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (lg)","components":["Adamant platebody (t)","Adamant platelegs (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (lg)","components":["Rune platebody (t)","Rune platelegs (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (lg)","components":["Guthix platebody","Guthix platelegs","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (lg)","components":["Saradomin platebody","Saradomin platelegs","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (lg)","components":["Zamorak platebody","Zamorak platelegs","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (lg)","components":["Ancient platebody","Ancient platelegs","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (lg)","components":["Armadyl platebody","Armadyl platelegs","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (lg)","components":["Bandos platebody","Bandos platelegs","Bandos full helm","Bandos kiteshield"]},{"set_name":"Bronze set (sk)","components":["Bronze platebody","Bronze plateskirt","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (sk)","components":["Iron platebody","Iron plateskirt","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (sk)","components":["Steel platebody","Steel plateskirt","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (sk)","components":["Black platebody","Black plateskirt","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (sk)","components":["Mithril platebody","Mithril plateskirt","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (sk)","components":["Adamant platebody","Adamant plateskirt","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (sk)","components":["Rune platebody","Rune plateskirt","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (sk)","components":["Dragon platebody","Dragon plateskirt","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (sk)","components":["Bronze platebody (g)","Bronze plateskirt (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (sk)","components":["Iron platebody (g)","Iron plateskirt (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (sk)","components":["Steel platebody (g)","Steel plateskirt (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (sk)","components":["Black platebody (g)","Black plateskirt (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (sk)","components":["Mithril platebody (g)","Mithril plateskirt (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (sk)","components":["Adamant platebody (g)","Adamant plateskirt (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (sk)","components":["Rune platebody (g)","Rune plateskirt (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (sk)","components":["Gilded platebody","Gilded plateskirt","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (sk)","components":["Bronze platebody (t)","Bronze plateskirt (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (sk)","components":["Iron platebody (t)","Iron plateskirt (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (sk)","components":["Steel platebody (t)","Steel plateskirt (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (sk)","components":["Black platebody (t)","Black plateskirt (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (sk)","components":["Mithril platebody (t)","Mithril plateskirt (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (sk)","components":["Adamant platebody (t)","Adamant plateskirt (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (sk)","components":["Rune platebody (t)","Rune plateskirt (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (sk)","components":["Guthix platebody","Guthix plateskirt","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (sk)","components":["Saradomin platebody","Saradomin plateskirt","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (sk)","components":["Zamorak platebody","Zamorak plateskirt","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (sk)","components":["Ancient platebody","Ancient plateskirt","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (sk)","components":["Armadyl platebody","Armadyl plateskirt","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (sk)","components":["Bandos platebody","Bandos plateskirt","Bandos full helm","Bandos kiteshield"]},{"set_name":"Initiate harness m","components":["Initiate hauberk","Initiate cuisse","Initiate helm"]}];
+const goldJewelry = [{"item":"Gold ring","level":5,"exp":15,"gem":null},{"item":"Gold necklace","level":6,"exp":20,"gem":null},{"item":"Gold bracelet","level":7,"exp":25,"gem":null},{"item":"Gold amulet (u)","level":8,"exp":30,"gem":null},{"item":"Sapphire ring","level":20,"exp":40,"gem":"sapphire"},{"item":"Sapphire necklace","level":22,"exp":55,"gem":"sapphire"},{"item":"Sapphire bracelet","level":23,"exp":60,"gem":"sapphire"},{"item":"Sapphire amulet (u)","level":24,"exp":65,"gem":"sapphire"},{"item":"Emerald ring","level":27,"exp":55,"gem":"emerald"},{"item":"Emerald necklace","level":29,"exp":60,"gem":"emerald"},{"item":"Emerald bracelet","level":30,"exp":65,"gem":"emerald"},{"item":"Emerald amulet (u)","level":31,"exp":70,"gem":"emerald"},{"item":"Ruby ring","level":34,"exp":70,"gem":"ruby"},{"item":"Ruby necklace","level":40,"exp":75,"gem":"ruby"},{"item":"Ruby bracelet","level":42,"exp":80,"gem":"ruby"},{"item":"Ruby amulet (u)","level":50,"exp":85,"gem":"ruby"},{"item":"Diamond ring","level":43,"exp":85,"gem":"diamond"},{"item":"Diamond necklace","level":56,"exp":90,"gem":"diamond"},{"item":"Diamond bracelet","level":58,"exp":95,"gem":"diamond"},{"item":"Diamond amulet (u)","level":70,"exp":100,"gem":"diamond"},{"item":"Dragonstone ring","level":55,"exp":100,"gem":"dragonstone"},{"item":"Dragon necklace","level":72,"exp":105,"gem":"dragonstone"},{"item":"Dragonstone bracelet","level":74,"exp":110,"gem":"dragonstone"},{"item":"Dragonstone amulet (u)","level":80,"exp":150,"gem":"dragonstone"},{"item":"Onyx ring","level":67,"exp":115,"gem":"onyx"},{"item":"Onyx necklace","level":82,"exp":120,"gem":"onyx"},{"item":"Onyx bracelet","level":84,"exp":125,"gem":"onyx"},{"item":"Onyx amulet (u)","level":90,"exp":165,"gem":"onyx"},{"item":"Zenyte ring","level":89,"exp":150,"gem":"zenyte"},{"item":"Zenyte necklace","level":92,"exp":165,"gem":"zenyte"},{"item":"Zenyte bracelet","level":95,"exp":180,"gem":"zenyte"},{"item":"Zenyte amulet (u)","level":98,"exp":200,"gem":"zenyte"}];
+const enchantJewelry = [{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal ring","enchanted_item":"Ring of pursuit","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal necklace","enchanted_item":"Dodgy necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal bracelet","enchanted_item":"Expeditious bracelet","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal amulet","enchanted_item":"Amulet of bounty","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade ring","enchanted_item":"Ring of returning","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade necklace","enchanted_item":"Necklace of passage","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade bracelet","enchanted_item":"Flamtaer bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade amulet","enchanted_item":"Amulet of chemistry","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire ring","enchanted_item":"Ring of recoil","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire necklace","enchanted_item":"Games necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire bracelet","enchanted_item":"Bracelet of clay","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire amulet","enchanted_item":"Amulet of magic","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald ring","enchanted_item":"Ring of dueling","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald necklace","enchanted_item":"Binding necklace","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald bracelet","enchanted_item":"Castle wars bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald amulet","enchanted_item":"Amulet of defence","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz ring","enchanted_item":"Efaritay's aid","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz necklace","enchanted_item":"Necklace of faith","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz bracelet","enchanted_item":"Bracelet of slaughter","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz amulet","enchanted_item":"Burning amulet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby ring","enchanted_item":"Ring of forging","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby necklace","enchanted_item":"Digsite pendant","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby bracelet","enchanted_item":"Inoculation bracelet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby amulet","enchanted_item":"Amulet of strength","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond ring","enchanted_item":"Ring of life","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond necklace","enchanted_item":"Phoenix necklace","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond bracelet","enchanted_item":"Abyssal bracelet","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond amulet","enchanted_item":"Amulet of power","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone ring","enchanted_item":"Ring of wealth","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragon necklace","enchanted_item":"Skills necklace","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone bracelet","enchanted_item":"Combat bracelet","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone amulet","enchanted_item":"Amulet of glory","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx ring","enchanted_item":"Ring of stone","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx necklace","enchanted_item":"Berserker necklace","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx bracelet","enchanted_item":"Regen bracelet","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx amulet","enchanted_item":"Amulet of fury","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte ring","enchanted_item":"Ring of suffering","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte necklace","enchanted_item":"Necklace of anguish","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte bracelet","enchanted_item":"Tormented bracelet","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte amulet","enchanted_item":"Amulet of torture","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110}];
+const smithItems = [
+  // Steel
+  {"item":"Steel dagger","bars":1,"level":30,"exp":37.5,"barId":2353},
+  {"item":"Steel axe","bars":1,"level":31,"exp":37.5,"barId":2353},
+  {"item":"Steel mace","bars":1,"level":32,"exp":37.5,"barId":2353},
+  {"item":"Steel med helm","bars":1,"level":33,"exp":37.5,"barId":2353},
+  {"item":"Steel sword","bars":1,"level":34,"exp":37.5,"barId":2353},
+  {"item":"Steel scimitar","bars":2,"level":35,"exp":75,"barId":2353},
+  {"item":"Steel limbs","bars":1,"level":36,"exp":37.5,"barId":2353},
+  {"item":"Steel longsword","bars":2,"level":36,"exp":75,"barId":2353},
+  {"item":"Steel studs","bars":1,"level":36,"exp":37.5,"barId":2353},
+  {"item":"Steel full helm","bars":2,"level":37,"exp":75,"barId":2353},
+  {"item":"Steel sq shield","bars":2,"level":38,"exp":75,"barId":2353},
+  {"item":"Steel warhammer","bars":3,"level":39,"exp":112.5,"barId":2353},
+  {"item":"Steel battleaxe","bars":3,"level":40,"exp":112.5,"barId":2353},
+  {"item":"Steel chainbody","bars":3,"level":41,"exp":112.5,"barId":2353},
+  {"item":"Steel kiteshield","bars":3,"level":42,"exp":112.5,"barId":2353},
+  {"item":"Steel claws","bars":2,"level":43,"exp":75,"barId":2353},
+  {"item":"Steel 2h sword","bars":3,"level":44,"exp":112.5,"barId":2353},
+  {"item":"Steel platelegs","bars":3,"level":46,"exp":112.5,"barId":2353},
+  {"item":"Steel plateskirt","bars":3,"level":46,"exp":112.5,"barId":2353},
+  {"item":"Steel platebody","bars":5,"level":48,"exp":187.5,"barId":2353},
+  // Mithril
+  {"item":"Mithril dagger","bars":1,"level":50,"exp":50,"barId":2359},
+  {"item":"Mithril axe","bars":1,"level":51,"exp":50,"barId":2359},
+  {"item":"Mithril mace","bars":1,"level":52,"exp":50,"barId":2359},
+  {"item":"Mithril med helm","bars":1,"level":53,"exp":50,"barId":2359},
+  {"item":"Mithril sword","bars":1,"level":54,"exp":50,"barId":2359},
+  {"item":"Mithril scimitar","bars":2,"level":55,"exp":100,"barId":2359},
+  {"item":"Mithril limbs","bars":1,"level":56,"exp":50,"barId":2359},
+  {"item":"Mithril longsword","bars":2,"level":56,"exp":100,"barId":2359},
+  {"item":"Mithril full helm","bars":2,"level":57,"exp":100,"barId":2359},
+  {"item":"Mithril sq shield","bars":2,"level":58,"exp":100,"barId":2359},
+  {"item":"Mithril warhammer","bars":3,"level":59,"exp":150,"barId":2359},
+  {"item":"Mith grapple tip","bars":1,"level":59,"exp":50,"barId":2359},
+  {"item":"Mithril battleaxe","bars":3,"level":60,"exp":150,"barId":2359},
+  {"item":"Mithril chainbody","bars":3,"level":61,"exp":150,"barId":2359},
+  {"item":"Mithril kiteshield","bars":3,"level":62,"exp":150,"barId":2359},
+  {"item":"Mithril claws","bars":2,"level":63,"exp":100,"barId":2359},
+  {"item":"Mithril 2h sword","bars":3,"level":64,"exp":150,"barId":2359},
+  {"item":"Mithril platelegs","bars":3,"level":66,"exp":150,"barId":2359},
+  {"item":"Mithril plateskirt","bars":3,"level":66,"exp":150,"barId":2359},
+  {"item":"Mithril platebody","bars":5,"level":68,"exp":250,"barId":2359},
+  // Adamant
+  {"item":"Adamant dagger","bars":1,"level":70,"exp":62.5,"barId":2361},
+  {"item":"Adamant axe","bars":1,"level":71,"exp":62.5,"barId":2361},
+  {"item":"Adamant mace","bars":1,"level":72,"exp":62.5,"barId":2361},
+  {"item":"Adamant med helm","bars":1,"level":73,"exp":62.5,"barId":2361},
+  {"item":"Adamant sword","bars":1,"level":74,"exp":62.5,"barId":2361},
+  {"item":"Adamant scimitar","bars":2,"level":75,"exp":125,"barId":2361},
+  {"item":"Adamantite limbs","bars":1,"level":76,"exp":62.5,"barId":2361},
+  {"item":"Adamant longsword","bars":2,"level":76,"exp":125,"barId":2361},
+  {"item":"Adamant full helm","bars":2,"level":77,"exp":125,"barId":2361},
+  {"item":"Adamant sq shield","bars":2,"level":78,"exp":125,"barId":2361},
+  {"item":"Adamant warhammer","bars":3,"level":79,"exp":187.5,"barId":2361},
+  {"item":"Adamant battleaxe","bars":3,"level":80,"exp":187.5,"barId":2361},
+  {"item":"Adamant chainbody","bars":3,"level":81,"exp":187.5,"barId":2361},
+  {"item":"Adamant kiteshield","bars":3,"level":82,"exp":187.5,"barId":2361},
+  {"item":"Adamant claws","bars":2,"level":83,"exp":125,"barId":2361},
+  {"item":"Adamant 2h sword","bars":3,"level":84,"exp":187.5,"barId":2361},
+  {"item":"Adamant platelegs","bars":3,"level":86,"exp":187.5,"barId":2361},
+  {"item":"Adamant plateskirt","bars":3,"level":86,"exp":187.5,"barId":2361},
+  {"item":"Adamant platebody","bars":5,"level":88,"exp":312.5,"barId":2361},
+  // Rune
+  {"item":"Rune dagger","bars":1,"level":85,"exp":75,"barId":2363},
+  {"item":"Rune axe","bars":1,"level":86,"exp":75,"barId":2363},
+  {"item":"Rune mace","bars":1,"level":87,"exp":75,"barId":2363},
+  {"item":"Rune med helm","bars":1,"level":88,"exp":75,"barId":2363},
+  {"item":"Rune sword","bars":1,"level":89,"exp":75,"barId":2363},
+  {"item":"Rune scimitar","bars":2,"level":90,"exp":150,"barId":2363},
+  {"item":"Runite limbs","bars":1,"level":91,"exp":75,"barId":2363},
+  {"item":"Rune longsword","bars":2,"level":91,"exp":150,"barId":2363},
+  {"item":"Rune full helm","bars":2,"level":92,"exp":150,"barId":2363},
+  {"item":"Rune sq shield","bars":2,"level":93,"exp":150,"barId":2363},
+  {"item":"Rune warhammer","bars":3,"level":94,"exp":225,"barId":2363},
+  {"item":"Rune battleaxe","bars":3,"level":95,"exp":225,"barId":2363},
+  {"item":"Rune chainbody","bars":3,"level":96,"exp":225,"barId":2363},
+  {"item":"Rune kiteshield","bars":3,"level":97,"exp":225,"barId":2363},
+  {"item":"Rune claws","bars":2,"level":98,"exp":150,"barId":2363},
+  {"item":"Rune 2h sword","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune platelegs","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune plateskirt","bars":3,"level":99,"exp":225,"barId":2363},
+  {"item":"Rune platebody","bars":5,"level":99,"exp":375,"barId":2363}
+];
 /* ---------- Utilities ---------- */
 const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
 const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
@@ -364,6 +1090,11 @@ const loadVolumes=()=>jget(API+"/volumes");
 const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
 function bigIconUrl(id){ 
   return `./images/${id}.png`; // Relative path; works locally and on GitHub Pages 
+}
+function wikiIconUrl(name){
+  if(!name) return "";
+  const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase()); // Get ID from name
+  return m ? `./images/${m.id}.png` : ""; // Use ID for consistency 
 }
 function suggestPrices(low, high) {
   if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
@@ -405,11 +1136,14 @@ function seriesFromTS(ts){
   return { labels: rows.map(r=>r.t), low: rows.map(r=>r.lo), high: rows.map(r=>r.hi), vol: rows.map(r=>r.vol ?? 0) };
 }
 /* ========== Chart (line + scatter + hold line) ========== */
-const ypx = (v, vmin, vmax, y0, h) => {
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
+function ypx(v, vmin, vmax, y0, h){
   if(vmin===vmax) return y0+h/2;
   const p=(v-vmin)/(vmax-vmin);
   return y0 + (1-p)*h;
-};
+}
 function linearRegression(x, y) {
   const n = x.length;
   const sumX = x.reduce((a, b) => a + b, 0);
@@ -593,7 +1327,7 @@ async function setItem(m){
   $("#capitalRequired").textContent = adjustedBuy ? fmtGp(adjustedBuy * buyLimit) : "—";
   $("#buyLimitInfo").textContent = `with ${buyLimit.toLocaleString()} units (4h buy limit)`;
   $("#status").textContent="Loading chart…";
-  const step = (view==="1d"?"1h":view==="1w"?"6h":view==="1m"?"24h":"24h");
+  const step = (view==="day"?"1h":view==="week"?"6h":view==="month"?"24h":"24h");
   const ts = await loadTS(step, m.id);
   currentSeries = seriesFromTS(ts);
   // Load recent 5m series to cap suggestions
@@ -603,8 +1337,8 @@ async function setItem(m){
   const maxRecentHi = recentHighs.length ? Math.max(...recentHighs) : hi || 0;
   rec.sellMin = Math.min(rec.sellMin, maxRecentHi + Math.floor(maxRecentHi * 0.05)); // Relaxed cap to +5%
   rec.sellMax = Math.min(rec.sellMax, maxRecentHi + Math.floor(maxRecentHi * 0.1)); // Relaxed cap to +10%
-  if(view === "1d") zoom = 6;
-  else if(view === "1m") zoom = 1;
+  if(view === "day") zoom = 6;
+  else if(view === "month") zoom = 1;
   else zoom = 1.5;
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
   drawChart(currentSeries);
@@ -762,6 +1496,204 @@ function updateSmartSuggest(){
   const totalProfit = profitPerItem * Math.min(itemBuyLimit, 100); // Cap for realistic profit
   $("#suggestProfit strong").textContent = fmtGp(totalProfit);
 }
+async function buildWatchlist(sortBy = 'buy'){
+  if(!latest||!mapping) return;
+  const rows=[];
+  for(const id of watchlist){
+    const m = mapping.find(x=>x.id === id);
+    if(!m) continue;
+    const node=latest.data[String(id)];
+    if(!node) continue;
+    const lo=node.low??node.avgLowPrice;
+    const hi=node.high??node.avgHighPrice;
+    if(lo==null||hi==null) continue;
+    const spread=(hi-lo);
+    const vol=volumes?.data?.[String(id)] ?? 0;
+    const rec = suggestPrices(lo, hi);
+    const medianBuy = rec.buyMin ? Math.floor((rec.buyMin + rec.buyMax) / 2) : null;
+    const medianSell = rec.sellMin ? Math.floor((rec.sellMin + rec.sellMax) / 2) : null;
+    rows.push({id:m.id,name:m.name,icon:rowIcon(m), spread, vol, medianBuy, medianSell});
+  }
+  if(sortBy === 'name') rows.sort((a,b)=> a.name.localeCompare(b.name));
+  else if(sortBy === 'buy') rows.sort((a,b)=> (b.medianBuy || 0) - (a.medianBuy || 0));
+  else if(sortBy === 'sell') rows.sort((a,b)=> (b.medianSell || 0) - (a.medianSell || 0));
+  else rows.sort((a,b)=> b.spread - a.spread);
+  $("#watch").innerHTML = rows.map(r=>{
+    const isLong = (r.medianBuy && r.medianBuy > 999999) || (r.medianSell && r.medianSell > 999999);
+    return `
+  <div class="row ${isLong ? 'long-price' : ''}">
+    <img src="${r.icon}" alt="${r.name}">
+    <div class="sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+    <div class="delta">${r.medianBuy ? abbreviateNumber(r.medianBuy) : '—'}</div>
+    <div class="vol">${r.medianSell ? abbreviateNumber(r.medianSell) : '—'}</div>
+  </div>
+  `}).join("");
+  document.querySelectorAll('#watch .sym').forEach(el => {
+    el.onclick = () => {
+      const m = mapping.find(x => x.id == el.dataset.id);
+      if (m) setItem(m);
+    };
+  });
+}
+async function buildAlchList() {
+  const items = membersOn ? membersAlchItems : f2pAlchItems;
+  const natNode = latest.data[natRuneId];
+  const natPrice = natNode?.low ?? natNode?.avgLowPrice ?? 0;
+  $('#natPrice').textContent = fmtGp(natPrice);
+  const rows = [];
+  for (const name of items) {
+    const m = mapping.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (!m) continue;
+    const node = latest.data[m.id];
+    const buyPrice = node?.low ?? node?.avgLowPrice ?? 0;
+    let alchValue = 0;
+    try {
+      const itemData = await jget(`./items-json/${m.id}.json`);
+      alchValue = itemData.highalch ?? 0;
+    } catch (e) { console.warn(`Failed to load alch for ${m.id}`); }
+    const profit = alchValue - buyPrice - natPrice;
+    rows.push({id: m.id, name: m.name, icon: rowIcon(m), buyPrice, natPrice, alchValue, profit});
+  }
+  rows.sort((a,b) => b.profit - a.profit); // Sort by profit desc
+  $('#alchList').innerHTML = rows.map(r => `
+    <div class="alch-row">
+      <img src="${r.icon}" alt="${r.name}">
+      <div class="alch-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="alch-value">${abbreviateNumber(r.alchValue)}</div>
+      <div class="alch-buy">${abbreviateNumber(r.buyPrice)}</div>
+      <div class="alch-nat">${abbreviateNumber(r.natPrice)}</div>
+      <div class="alch-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+  document.querySelectorAll('#alchList .alch-sym').forEach(el => {
+    el.onclick = () => { const m = mapping.find(x => x.id == el.dataset.id); if (m) setItem(m); };
+  });
+}
+async function buildSetsList() {
+  const rows = [];
+  for (const s of armorSets) {
+    const setM = mapping.find(x => x.name.toLowerCase() === s.set_name.toLowerCase());
+    if (!setM) continue;
+    const setBuy = latest.data[setM.id]?.low ?? 0;
+    let piecesSell = 0;
+    let tax = 0;
+    for (const comp of s.components) {
+      const compM = mapping.find(x => x.name.toLowerCase() === comp.toLowerCase());
+      if (!compM) continue;
+      const high = latest.data[compM.id]?.high ?? 0;
+      piecesSell += high;
+      tax += Math.min(5000000, Math.floor(high * 0.01));
+    }
+    const profit = piecesSell - tax - setBuy; // Profit from buying set, unpacking, selling pieces
+    rows.push({name: s.set_name, buy: setBuy, sell: piecesSell, profit, pieces: s.components.join(', ')});
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#setsList').innerHTML = rows.map(r => `
+    <div class="sets-row">
+      <div class="sets-sym" title="${r.name}">${r.name}</div>
+      <div class="sets-buy">${abbreviateNumber(r.buy)}</div>
+      <div class="sets-sell">${abbreviateNumber(r.sell)}</div>
+      <div class="sets-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+      <div class="sets-pieces" style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.pieces}</div>
+    </div>
+  `).join('');
+}
+async function buildCraftList() {
+  const goldBarPrice = latest.data[goldBarId]?.low ?? 0;
+  const rows = [];
+  for (const c of goldJewelry) {
+    const itemM = mapping.find(x => x.name.toLowerCase() === c.item.toLowerCase());
+    if (!itemM || (!membersOn && itemM.members)) continue;
+    const sell = latest.data[itemM.id]?.high ?? 0;
+    let buyCost = goldBarPrice;
+    if (c.gem) {
+      const gemM = mapping.find(x => x.name.toLowerCase() === `uncut ${c.gem}`.toLowerCase() || x.name.toLowerCase() === c.gem.toLowerCase());
+      if (gemM) buyCost += latest.data[gemM.id]?.low ?? 0;
+    }
+    const tax = Math.min(5000000, Math.floor(sell * 0.01));
+    const profit = sell - tax - buyCost;
+    rows.push({id: itemM.id, name: c.item, level: c.level, exp: c.exp, buyCost, profit});
+  }
+  if (rows.length === 0) {
+    $('#craftList').innerHTML = '<p>No F2P items available for crafting.</p>';
+    return;
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#craftList').innerHTML = rows.map(r => `
+    <div class="craft-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.name}">
+      <div class="craft-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="craft-level">${r.level}</div>
+      <div class="craft-exp">${r.exp}</div>
+      <div class="craft-buy">${abbreviateNumber(r.buyCost)}</div>
+      <div class="craft-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+}
+async function buildEnchantList() {
+  const rows = [];
+  for (const e of enchantJewelry) {
+    const baseM = mapping.find(x => x.name.toLowerCase() === e.base_item.toLowerCase());
+    if (!baseM || (!membersOn && baseM.members)) continue;
+    const enchM = mapping.find(x => x.name.toLowerCase() === e.enchanted_item.toLowerCase());
+    if (!enchM || (!membersOn && enchM.members)) continue;
+    const buyBase = latest.data[baseM.id]?.low ?? 0;
+    const sellEnch = latest.data[enchM.id]?.high ?? 0;
+    let runesCost = 0;
+    // Parse runes, e.g. "1 Water rune, 1 Cosmic rune"
+    const runes = e.runes.split(', ');
+    for (const runeStr of runes) {
+      const [amount, ...runeNameArr] = runeStr.split(' ');
+      const runeName = runeNameArr.join(' ');
+      const runeM = mapping.find(x => x.name.toLowerCase() === runeName.toLowerCase());
+      if (runeM) runesCost += (parseInt(amount) || 1) * (latest.data[runeM.id]?.low ?? 0);
+    }
+    const tax = Math.min(5000000, Math.floor(sellEnch * 0.01));
+    const profit = sellEnch - tax - buyBase - runesCost;
+    rows.push({level: e.level, spell: e.spell, base: e.base_item, enchanted: e.enchanted_item, runes: e.runes, exp: e.exp, profit, id: enchM.id});
+  }
+  if (rows.length === 0) {
+    $('#enchantList').innerHTML = '<p>No F2P items available for enchanting.</p>';
+    return;
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#enchantList').innerHTML = rows.map(r => `
+    <div class="enchant-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.enchanted}">
+      <div class="enchant-sym">${r.spell}</div>
+      <div class="enchant-level">${r.level}</div>
+      <div class="enchant-base">${r.base}</div>
+      <div class="enchant-enchanted">${r.enchanted}</div>
+      <div class="enchant-exp">${r.exp}</div>
+      <div class="enchant-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+}
+async function buildSmithList() {
+  const rows = [];
+  for (const s of smithItems) {
+    if (!membersOn && s.level > 48) continue; // Assume steel max for F2P, adjust if needed
+    const itemM = mapping.find(x => x.name.toLowerCase() === s.item.toLowerCase());
+    if (!itemM) continue;
+    const alchValue = await getAlchValue(itemM.id);
+    const barPrice = latest.data[s.barId]?.low ?? 0;
+    const buyCost = s.bars * barPrice;
+    const profit = alchValue - buyCost;
+    rows.push({id: itemM.id, name: s.item, bars: s.bars, level: s.level, exp: s.exp, alchValue, profit});
+  }
+  rows.sort((a,b) => b.profit - a.profit);
+  $('#smithList').innerHTML = rows.map(r => `
+    <div class="smith-row">
+      <img src="${bigIconUrl(r.id)}" alt="${r.name}">
+      <div class="smith-sym" data-id="${r.id}" title="${r.name}">${r.name}</div>
+      <div class="smith-bars">${r.bars}</div>
+      <div class="smith-level">${r.level}</div>
+      <div class="smith-exp">${r.exp}</div>
+      <div class="smith-alch">${abbreviateNumber(r.alchValue)}</div>
+      <div class="smith-profit ${r.profit > 0 ? 'positive' : 'negative'}">${fmtGp(r.profit)}</div>
+    </div>
+  `).join('');
+}
 /* ---------- Popout Chart ---------- */
 function popoutChart(){
   const popup = window.open('', '_blank', 'width=900,height=600');
@@ -772,13 +1704,9 @@ function popoutChart(){
     <div style="padding:10px;display:flex;flex-direction:column;height:100%;">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
       <div class="viewtabs">
-        <button data-view="1d" class="active">1D</button>
-        <button data-view="1w">1W</button>
-        <button data-view="1m">1M</button>
-        <button data-view="6m">6M</button>
-        <button data-view="1y">1Y</button>
-        <button data-view="5y">5Y</button>
-        <button data-view="all">All</button>
+        <button data-view="day" class="active">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="month">Month</button>
       </div>
       <div class="tools" style="margin-left:auto;display:flex;gap:6px;align-items:center;">
         <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
@@ -811,11 +1739,11 @@ function popoutChart(){
     popup.document.getElementById('foot').textContent = $("#foot").textContent;
   }
   popup.document.querySelectorAll('.viewtabs button').forEach(b=>{
-    b.onclick=async ()=>{
+    b.onclick=async ()=>{ 
       popup.document.querySelector('.viewtabs button.active').classList.remove("active");
       b.classList.add("active");
-      popView=b.dataset.view;
-      const step = (popView==="1d"?"1h":popView==="1w"?"6h":popView==="1m"?"24h":"24h");
+      popView = b.dataset.view;
+      const step = (popView==="day"?"1h":popView==="week"?"6h":"24h");
       const ts = await loadTS(step, selected.id);
       popSeries = seriesFromTS(ts);
       popZoom = 1.5;
@@ -905,11 +1833,11 @@ function popoutChart(){
     });
     // View buttons
     document.querySelectorAll(".viewtabs button").forEach(b=>{
-      b.onclick=()=>{
-        document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
+      b.onclick=()=>{ 
+        document.querySelector('.viewtabs button.active').classList.remove("active");
         b.classList.add("active");
-        view=b.dataset.view;
-        if(selected) setItem(selected);
+        view = b.dataset.view;
+        if (selected) setItem(selected);
       }
     });
     // Chart tools
