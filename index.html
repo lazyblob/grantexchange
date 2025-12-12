@@ -25,18 +25,24 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Grant Exchange - OSRS Charting Tool",
-  "url": "https://grantexchange.net/",
-  "description": "Advanced charting tool for OSRS Grand Exchange items with indicators like Ichimoku Cloud, Volume Profile, and Volume. Analyze trends from 1 day to 5 years.",
-  "applicationCategory": "Game",
-  "operatingSystem": "Web",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
+  "name": "OSRS Grand Exchange Price Checker & Flipping Tool - GE Tracker & Money Making Guides",
+  "@type": "HowTo",
+  "name": "How to Profit from High Alchemy in OSRS",
+  "description": "Step-by-step guide to high alch for gold in Old School RuneScape, featuring top items and profit estimates using current Grand Exchange prices.",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "text": "Acquire nature runes and suitable items via the OSRS Grand Exchange."
+    },
+    {
+      "@type": "HowToStep",
+      "text": "Use High Level Alchemy to convert items to gold, calculating profit as alch value less purchase price and rune cost."
+    }
+  ]
 }
 </script>
+<!-- Bing Webmaster Tools -->
+<meta name="msvalidate.01" content="B8AD4B8F6BA522C07502C8DEB4BEE524" />
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -45,78 +51,81 @@
   gtag('js', new Date());
   gtag('config', 'G-43YM2RCX1R');
 </script>
-<!-- CSS -->
+<!-- ===================== CSS ===================== -->
 <style>
-:root{
-  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
-  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
-  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
-  --teal: #00ffff;
-  --ichi-tenkan: #069af3; --ichi-kijun: #ec2b88; --ichi-chikou: #22b14c;
-  --ichi-senkou-a: #a1d8a0; --ichi-senkou-b: #d8a0a6;
-  --cloud-green: rgba(161,216,160,0.2); --cloud-red: rgba(216,160,166,0.2);
+body { 
+  overflow: auto; /* Ensure scrolling works if needed */ 
+}
+:root{ 
+  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b; 
+  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99; 
+  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703; 
+  --teal: #00ffff; 
 }
 * {box-sizing:border-box}
 html,body{height:100%}
-body{
-  margin:0;
-  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a;
-  color:var(--ink);
-  font-family:Segoe UI,Inter,system-ui,Arial;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+body{ 
+  margin:0; 
+  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a; 
+  color:var(--ink); 
+  font-family:Segoe UI,Inter,system-ui,Arial; 
+  -webkit-font-smoothing:antialiased; 
+  -moz-osx-font-smoothing:grayscale; 
 }
 /* Layout */
-.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px);
-  display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
-.header{grid-column:1 / -1;display:grid;
+.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px); 
+  display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+.header{grid-column:1 / -1;display:grid; 
   grid-template-columns:1fr auto auto;gap:12px;align-items:center}
 /* Branding */
 h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
-.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;
+.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px; 
   padding:2px 8px;color:var(--muted);background:#20190e}
 .small{font-size:12px;color:var(--muted)}
 .status-error{color:#ffb4b4}
 /* Cards */
-.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
-  border:1px solid var(--edge);border-radius:16px;padding:12px;
+.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); 
+  border:1px solid var(--edge);border-radius:16px;padding:12px; 
   box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .left{display:flex;flex-direction:column}
 .hr{border:none;border-top:1px solid var(--edge);margin:10px 0}
 /* Main grid: image / search / stats */
-.grid{display:grid;grid-template-columns:240px 1fr 260px;
+.grid{display:grid;grid-template-columns:240px 1fr 260px; 
   gap:14px;align-items:center}
-.imgbox{
-  width:240px;height:240px;border:1px solid var(--edge);
-  border-radius:14px;background:#22180b;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25) }
+.imgbox{ 
+  width:240px;height:240px;border:1px solid var(--edge); 
+  border-radius:14px;background:#22180b; 
+  display:flex;align-items:center;justify-content:center; 
+  box-shadow:inset 0 0 0 1px #151008,0 8px 18px rgba(0,0,0,.25) 
+}
 .imgbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 /* Search */
 .label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
 .sbar{display:flex;gap:10px;margin-top:2px;position:relative}
-.sbar input{
-  flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink);
-  border-radius:14px;padding:16px;font-size:20px;outline:none;
-  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s }
-.sbar input:focus{border-color:var(--orange);
+.sbar input{ 
+  flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink); 
+  border-radius:14px;padding:16px;font-size:20px;outline:none; 
+  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s 
+}
+.sbar input:focus{border-color:var(--orange); 
   box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-.sbar button{
-  background:#2b2212;border:1px solid var(--edge);color:var(--gold);
-  border-radius:12px;padding:12px 16px;cursor:pointer;font-size:15px;
-  text-transform:uppercase;letter-spacing:.5px;transition:box-shadow .18s,border-color .18s }
-.sbar button:focus{border-color:var(--orange);
+.sbar button{ 
+  background:#2b2212;border:1px solid var(--edge);color:var(--gold); 
+  border-radius:12px;padding:12px 16px;cursor:pointer;font-size:15px; 
+  text-transform:uppercase;letter-spacing:.5px;transition:box-shadow .18s,border-color .18s 
+}
+.sbar button:focus{border-color:var(--orange); 
   box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px;
+.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px; 
   max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
-.suggest::-webkit-scrollbar {width:8px; background:var(--panel);}
+.suggest::-webkit-scrollbar {width:8px; background:var(--panel); }
 .suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.suggest div{display:flex;align-items:center;gap:6px;
+.suggest div{display:flex;align-items:center;gap:6px; 
   padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
 .suggest div:hover{background:#2d220f}
 .suggest img{width:20px;height:20px;image-rendering:pixelated}
 /* Stats */
-.title{font-size:15px;letter-spacing:.3px;
+.title{font-size:15px;letter-spacing:.3px; 
   text-transform:uppercase;margin-bottom:4px}
 .title.low{color:var(--low-color)}
 .title.high{color:var(--high-color)}
@@ -135,83 +144,153 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .kv .buy-limit-input{width:140px; text-align:center; font-size:24px; background:transparent; border:none; color:var(--gold)}
 /* Tabs + Tools */
 .viewtabs, .mode-pill {display:flex;gap:6px;}
-.viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge);
-  color:var(--ink);border-radius:10px;padding:6px 10px;
+.viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge); 
+  color:var(--ink);border-radius:10px;padding:6px 10px; 
   cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
 .viewtabs button.active, .mode-pill button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-.viewtabs button:focus, .mode-pill button:focus{border-color:var(--orange);
+.viewtabs button:focus, .mode-pill button:focus{border-color:var(--orange); 
   box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 .tools{display:flex;gap:6px;align-items:center;margin-top:6px}
-.tools button{background:#2b2212;border:1px solid var(--edge);
-  color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
+.tools button{background:#2b2212;border:1px solid var(--edge); 
+  color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer; 
   text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
 .tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-.tools button:focus{border-color:var(--orange);
+.tools button:focus{border-color:var(--orange); 
   box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 /* Chart */
 .chartWrap{position:relative}
-.chart{
-  width:100%;height:500px;
-  background:repeating-linear-gradient(to bottom,
-    rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
-    transparent 1px,transparent 24px),#181208;
-  border:1px solid var(--edge);border-radius:12px }
-.chart-tip{
-  position:absolute;display:none;background:rgba(0,0,0,.85);
-  color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;
-  pointer-events:none;white-space:nowrap;border:1px solid #000 }
+.chart{ 
+  width:100%;height:500px; 
+  background:repeating-linear-gradient(to bottom, 
+    rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px, 
+    transparent 1px,transparent 24px),#181208; 
+  border:1px solid var(--edge);border-radius:12px 
+}
+.chart-tip{ 
+  position:absolute;display:none;background:rgba(0,0,0,.85); 
+  color:#fff;padding:6px 8px;border-radius:6px;font-size:12px; 
+  pointer-events:none;white-space:nowrap;border:1px solid #000 
+}
 .legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
-.legend .sell::before{content:"";display:inline-block;width:14px;height:3px;
+.legend .sell::before{content:"";display:inline-block;width:14px;height:3px; 
   background:var(--low-color);margin-right:6px;border-radius:2px}
-.legend .buy::before{content:"";display:inline-block;width:14px;height:3px;
+.legend .buy::before{content:"";display:inline-block;width:14px;height:3px; 
   background:var(--high-color);margin-right:6px;border-radius:2px}
 /* Refresh button glow */
 .refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
-.btn-refresh{
-  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
-  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
-  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
-  text-transform:uppercase;letter-spacing:.5px;
-  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease }
-.btn-refresh:hover{filter:brightness(1.05);
-  transform:translateY(-1px);
+.btn-refresh{ 
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge); 
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); 
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; 
+  text-transform:uppercase;letter-spacing:.5px; 
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); 
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease 
+}
+.btn-refresh:hover{filter:brightness(1.05); 
+  transform:translateY(-1px); 
   box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-refresh:active{transform:translateY(0);
+.btn-refresh:active{transform:translateY(0); 
   box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-refresh.loading {
-  animation: pulse-rs 1.5s infinite;
+.btn-refresh.loading { 
+  animation: pulse-rs 1.5s infinite; 
 }
-@keyframes pulse-rs {
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+@keyframes pulse-rs { 
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
 }
+/* Sidebar (tighter columns + name header per slot) */
+.side{display:flex;flex-direction:column;gap:12px}
+.side .card{display:flex;flex-direction:column}
+.side h3{margin:0 0 10px 0;font-size:18px;font-weight:900;color:var(--orange)}
+.filter{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.switch{position:relative;display:inline-block;width:46px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0; 
+  background:#5a4630;border:1px solid var(--edge); 
+  transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:18px;width:18px; 
+  left:3px;top:2px;background:white;border-radius:50%; 
+  transition:.2s}
+.switch input:checked + .slider{background:#275a30}
+.switch input:checked + .slider:before{transform:translateX(21px)}
+.head{ 
+  display:grid;grid-template-columns:22px 1fr 80px 80px; 
+  gap:6px;padding:6px 8px;color:#cbbf99;font-size:12px; 
+  border-bottom:1px solid var(--edge) 
+}
+.sort-arrow { font-size: 10px; margin-left: 4px; }
+.tb{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:700px}
+.tb::-webkit-scrollbar {width:8px; background:var(--panel);}
+.tb::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
+.row{ 
+  display:grid;grid-template-columns:22px 1fr 80px 80px; 
+  gap:6px;align-items:center;background:#231b0d; 
+  border:1px solid var(--edge);border-radius:10px;padding:12px 8px;min-height:40px 
+}
+.row.long-price{min-height:70px}
+.row img{width:18px;height:18px;image-rendering:pixelated;cursor:pointer}
+.sym{font-weight:700;font-size:15px;white-space:nowrap; 
+  overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.last,.delta,.pct,.vol{font-variant-numeric:tabular-nums;text-align:right}
+.last{color:var(--gold)}
+.delta{color:var(--low-color)}
+.vol{color:var(--high-color)}
+.up{color:var(--buy)}
+.down{color:var(--sell)}
+.btn-add{display:inline-flex;align-items:center;justify-content:center; 
+  width:26px;height:26px;border-radius:8px; 
+  border:1px solid #1c4022;background:#1f4d28; 
+  color:#c8f0cf;font-weight:900;cursor:pointer}
+.btn-add::before{content:"+";font-size:16px;line-height:1}
+/* Mode pill */
+.mode-pill{display:flex;gap:6px;}
+.mode-pill button{border:1px solid var(--edge);background:#2b2212;color:var(--muted); 
+  padding:6px 10px;cursor:pointer;font-weight:700; 
+  text-transform:uppercase;transition:box-shadow .18s,border-color .18s}
+/* Help */
+.help{line-height:1.45;color:#dacda9}
+.help ul{margin:6px 0 0 18px;padding:0}
+/* Watchlist button */
+.btn-watch{ 
+  padding:12px 20px;border-radius:18px;border:2px solid var(--edge); 
+  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%); 
+  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px; 
+  text-transform:uppercase;letter-spacing:.5px; 
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5); 
+  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease; 
+}
+.btn-watch:hover{filter:brightness(1.05); 
+  transform:translateY(-1px); 
+  box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:active{transform:translateY(0); 
+  box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-watch:disabled{opacity:0.5;cursor:not-allowed;}
 /* Rainbow spread */
-@keyframes rainbow {
-  0% {border-color: #ff0000;}
-  14% {border-color: #ff7f00;}
-  28% {border-color: #ffff00;}
-  42% {border-color: #00ff00;}
-  57% {border-color: #00ffff;}
-  71% {border-color: #0000ff;}
-  85% {border-color: #8b00ff;}
-  100% {border-color: #ff0000;}
+@keyframes rainbow { 
+  0% {border-color: #ff0000;} 
+  14% {border-color: #ff7f00;} 
+  28% {border-color: #ffff00;} 
+  42% {border-color: #00ff00;} 
+  57% {border-color: #00ffff;} 
+  71% {border-color: #0000ff;} 
+  85% {border-color: #8b00ff;} 
+  100% {border-color: #ff0000;} 
 }
-.sbar {
-  position: relative; /* Anchor dropdown to this container */
+.sbar { 
+  position: relative; /* Anchor dropdown to this container */ 
 }
-.suggest { /* Matches your existing class */
-  position: absolute;
-  left: 0;
-  top: 100%; /* Drops directly below the input */
-  width: 100%; /* Matches search bar width */
-  z-index: 10;
-  background: #231b0d; /* Matches your theme */
-  border: 1px solid var(--edge);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  overflow: auto;
-  max-height: 200px; /* Optional: scroll if many results */
+.suggest { /* Matches your existing class */ 
+  position: absolute; 
+  left: 0; 
+  top: 100%; /* Drops directly below the input */ 
+  width: 100%; /* Matches search bar width */ 
+  z-index: 10; 
+  background: #231b0d; /* Matches your theme */ 
+  border: 1px solid var(--edge); 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+  overflow: auto; 
+  max-height: 200px; /* Optional: scroll if many results */ 
 }
 /* Suggestion box */
 .suggest-box .item{display:flex;align-items:center;gap:10px;padding:10px;background:#2d220f;border:1px solid var(--edge);border-radius:10px;cursor:pointer;position:relative}
@@ -224,8 +303,8 @@ h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px
 .suggest-box .buy strong{color:var(--low-color)}
 .suggest-box .sell strong{color:var(--high-color)}
 .suggest-box .margin strong{color:var(--gold)}
-.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold);
-  border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold;
+.suggest-box .next-btn{background:#2b2212;border:1px solid #ff0000;color:var(--gold); 
+  border-radius:12px;padding:8px 12px;cursor:pointer;font-size:16px;font-weight:bold; 
   text-transform:uppercase;letter-spacing:.5px;margin-top:10px;animation: rainbow 5s linear infinite}
 .suggest-box .good-deal{position:absolute;top:10px;right:10px;background:#ff0000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold}
 .suggest-box .kv span{margin-right:5px}
@@ -234,16 +313,16 @@ select{background:#1e170c;border:3px solid var(--edge);color:var(--ink);border-r
 select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
 /* Loading animation */
 .loading { animation: pulse-rs 1.5s infinite; }
-@keyframes pulse-rs {
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
+@keyframes pulse-rs { 
+  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); } 
+  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); } 
+  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); } 
 }
 /* Small chart */
 .small-chart { width: 100%; height: 2in; margin-bottom: 10px; background: var(--grid); border:1px solid var(--edge); border-radius:8px; }
 /* Card-like for small chart */
-.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
-  border:1px solid var(--edge);border-radius:16px;padding:12px;
+.card-like {background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%); 
+  border:1px solid var(--edge);border-radius:16px;padding:12px; 
   box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .spread-margin { font-size: 18px; color: var(--teal); text-align: center; margin: 10px 0; }
 /* Loader overlay */
@@ -298,82 +377,80 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 .alch-profit.negative, .sets-profit.negative, .craft-profit.negative, .enchant-profit.negative, .smith-profit.negative { color: var(--low-color); }
 /* Desktop scaling */
 @media (min-width: 769px) {
-  html {
-    transform: scale(0.8); /* Scale everything to 80% */
-    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */
-    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */
-    height: 125%; /* Same for height */
+  html { 
+    transform: scale(0.8); /* Scale everything to 80% */ 
+    transform-origin: top left; /* Anchor scaling from top-left to avoid centering issues */ 
+    width: 125%; /* Compensate for scaling by increasing width (100% / 0.8 = 125%) */ 
+    height: 125%; /* Same for height */ 
   }
 }
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  body {
-    overflow-x: hidden;
+  body { 
+    overflow-x: hidden; 
   }
-  .wrap {
-    grid-template-columns: 1fr; /* Stack sidebar below main content */
-    padding: 0 8px; /* Compact padding */
-    gap: 10px; /* Reduced gap for modern, tight layout */
-    max-width: 100%;
-    margin: 10px auto;
+  .wrap { 
+    grid-template-columns: 1fr; /* Stack sidebar below main content */ 
+    padding: 0 8px; /* Compact padding */ 
+    gap: 10px; /* Reduced gap for modern, tight layout */ 
   }
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 8px; /* Smaller gaps */
-    align-items: start; /* Top align */
+  .grid { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    grid-template-rows: auto auto auto; 
+    gap: 8px; /* Smaller gaps */ 
+    align-items: start; /* Top align */ 
   }
   .imgbox { 
-    grid-column: 1;
-    grid-row: 1;
-    width: 80px; /* Smaller image to compact */
-    height: 80px;
-    margin: 0; /* Left align, no margin */
-    justify-self: start;
-    order: 1;
+    grid-column: 1; 
+    grid-row: 1; 
+    width: 80px; /* Smaller image to compact */ 
+    height: 80px; 
+    margin: 0; /* Left align, no margin */ 
+    justify-self: start; 
+    order: 1; 
   }
   .imgbox img { 
     width: 100%; 
     height: 100%; 
     object-fit: contain; 
-    cursor: pointer; /* Clickable for item search focus */
+    cursor: pointer; /* Clickable for item search focus */ 
   }
-  .grid > div:nth-child(2) { /* Search/profit right of image, top row */
-    grid-column: 1;
-    grid-row: 2;
-    order: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 2px; /* Tighter */
+  .grid > div:nth-child(2) { /* Search/profit right of image, top row */ 
+    grid-column: 1; 
+    grid-row: 2; 
+    order: 2; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; /* Tighter */ 
   }
-  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */
-    grid-column: 1;
-    grid-row: 3;
-    order: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 2px; /* Tighter gaps between rows/columns */
-    background: #231b0d; /* Dark bg for panel feel */
-    border: 1px solid var(--edge); /* Border for definition */
-    border-radius: 10px; /* Rounded */
-    padding: 4px; /* Reduced inner padding */
+  .grid > div:nth-child(3) { /* Smart prices right of image, bottom row */ 
+    grid-column: 1; 
+    grid-row: 3; 
+    order: 3; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; /* Tighter gaps between rows/columns */ 
+    background: #231b0d; /* Dark bg for panel feel */ 
+    border: 1px solid var(--edge); /* Border for definition */ 
+    border-radius: 10px; /* Rounded */ 
+    padding: 4px; /* Reduced inner padding */ 
   }
   .label { 
-    font-size: 16px; /* Smaller label */
+    font-size: 16px; /* Smaller label */ 
     margin: 0; 
   }
   .sbar input { 
-    font-size: 14px; /* Smaller input */
+    font-size: 14px; /* Smaller input */ 
     padding: 8px; 
   }
   .kv { 
     display: flex; 
-    flex-direction: row; /* Keep row for better space use */
+    flex-direction: row; /* Keep row for better space use */ 
     justify-content: space-between; 
     align-items: center; 
-    margin: 2px 0; /* Even tighter margins */
-    font-size: 12px; /* Smaller font for info */
+    margin: 2px 0; /* Even tighter margins */ 
+    font-size: 12px; /* Smaller font for info */ 
   }
   .kv span { 
     flex: 1; 
@@ -387,7 +464,7 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
-    font-size: 14px; /* Slightly larger for numbers */
+    font-size: 14px; /* Slightly larger for numbers */ 
   }
   #flipProfitLabel, #capitalRequired, #buyLimitInfo, #spreadMargin { 
     font-size: 12px; /* Compact text */ 
@@ -553,84 +630,85 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
   .spread-margin { font-size: 16px; }
   #chart, #historicalChart { width: 100% !important; }
   .chartWrap { overflow-x: hidden; }
-  /* Themed Up/Down Arrows */
-  .price-adjust button { 
-    background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
-    border: 2px solid var(--edge); /* Thicker border for emphasis */
-    border-radius: 12px; /* More rounded */
-    padding: 2px 8px; /* Smaller padding */
-    font-size: 18px; /* Slightly smaller text/symbols */
-    font-weight: 900; /* Max bold */
-    color: var(--gold); /* Gold base, overridden for low/high */
-    cursor: pointer; 
-    transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
-    box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
-    line-height: 1; /* Tight line height */
-    min-width: 32px; /* Smaller minimum width */
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-  }
-  .price-adjust button.down::before { 
-    content: "▽"; /* Tip-only down arrow (no tail) */ 
-  }
-  .price-adjust button.up::before { 
-    content: "△"; /* Tip-only up arrow (no tail) */ 
-  }
-  .price-adjust button { 
-    content: ""; /* Clear original text */ 
-  }
-  .price-adjust button:hover { 
-    box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
-    transform: translateY(-2px); /* More lift */ 
-    filter: brightness(1.1); /* Brighter on hover */ 
-  }
-  .price-adjust button:active { 
-    transform: translateY(0); /* Press down effect */ 
-    box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
-  }
-  .price-adjust.low button { 
-    color: var(--low-color); /* Red for low arrows */ 
-  }
-  .price-adjust.high button { 
-    color: var(--high-color); /* Green for high arrows */ 
-  }
-  /* Themed Color Selectors */
-  .color-picker { 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    background: #2b2212; /* Dark panel bg */ 
-    border: 1px solid var(--edge); /* Edge border */ 
-    border-radius: 8px; 
-    padding: 4px 8px; 
-    color: var(--muted); /* Muted label text */ 
-  }
-  .color-picker input[type="color"] { 
-    -webkit-appearance: none; /* Remove default styling */ 
-    appearance: none; 
-    width: 24px; /* Small square */ 
-    height: 24px; 
-    border: none; /* No border */ 
-    background: transparent; /* Transparent bg */ 
-    cursor: pointer; 
-  }
-  .color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
-    padding: 0; 
-  }
-  .color-picker input[type="color"]::-webkit-color-swatch { 
-    border: 1px solid var(--edge); /* Theme border */ 
-    border-radius: 4px; /* Rounded */ 
-  }
-  .color-picker input[type="color"]::-moz-color-swatch { 
-    border: 1px solid var(--edge); /* Firefox compat */ 
-    border-radius: 4px; 
-  }
-  @keyframes glow { 
-    from { box-shadow: 0 0 5px #00ff00; } 
-    to { box-shadow: 0 0 15px #00ff00; } 
-  }
+}
+/* Themed Up/Down Arrows */
+.price-adjust button { 
+  background: linear-gradient(180deg, #3a2f17 0%, #2b2212 100%); /* Gradient like refresh button */
+  border: 2px solid var(--edge); /* Thicker border for emphasis */
+  border-radius: 12px; /* More rounded */
+  padding: 2px 8px; /* Smaller padding */
+  font-size: 18px; /* Slightly smaller text/symbols */
+  font-weight: 900; /* Max bold */
+  color: var(--gold); /* Gold base, overridden for low/high */
+  cursor: pointer; 
+  transition: box-shadow .18s, transform .08s, filter .12s; /* Add brightness hover */
+  box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3); /* Depth shadow */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Shadow for better visibility on dark bg */
+  line-height: 1; /* Tight line height */
+  min-width: 32px; /* Smaller minimum width */
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+.price-adjust button.down::before { 
+  content: "▽"; /* Tip-only down arrow (no tail) */ 
+}
+.price-adjust button.up::before { 
+  content: "△"; /* Tip-only up arrow (no tail) */ 
+}
+.price-adjust button { 
+  content: ""; /* Clear original text */ 
+}
+.price-adjust button:hover { 
+  box-shadow: 0 4px 12px rgba(240,160,32,0.6); /* Stronger orange glow */ 
+  transform: translateY(-2px); /* More lift */ 
+  filter: brightness(1.1); /* Brighter on hover */ 
+}
+.price-adjust button:active { 
+  transform: translateY(0); /* Press down effect */ 
+  box-shadow: 0 1px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.3); 
+}
+.price-adjust.low button { 
+  color: var(--low-color); /* Red for low arrows */ 
+}
+.price-adjust.high button { 
+  color: var(--high-color); /* Green for high arrows */ 
+}
+/* Themed Color Selectors */
+.color-picker { 
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+  background: #2b2212; /* Dark panel bg */ 
+  border: 1px solid var(--edge); /* Edge border */ 
+  border-radius: 8px; 
+  padding: 4px 8px; 
+  color: var(--muted); /* Muted label text */ 
+}
+.color-picker input[type="color"] { 
+  -webkit-appearance: none; /* Remove default styling */ 
+  appearance: none; 
+  width: 24px; /* Small square */ 
+  height: 24px; 
+  border: none; /* No border */ 
+  background: transparent; /* Transparent bg */ 
+  cursor: pointer; 
+}
+.color-picker input[type="color"]::-webkit-color-swatch-wrapper { 
+  padding: 0; 
+}
+.color-picker input[type="color"]::-webkit-color-swatch { 
+  border: 1px solid var(--edge); /* Theme border */ 
+  border-radius: 4px; /* Rounded */ 
+}
+.color-picker input[type="color"]::-moz-color-swatch { 
+  border: 1px solid var(--edge); /* Firefox compat */ 
+  border-radius: 4px; 
+}
+@keyframes glow { 
+  from { box-shadow: 0 0 5px #00ff00; } 
+  to { box-shadow: 0 0 15px #00ff00; } 
+}
   h1 { font-size: 20px; }
   h3 { font-size: 16px; }
   .label { font-size: 20px; }
@@ -701,6 +779,10 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
 </style>
 </head>
 <body>
+<div id="loader-overlay" style="display:none;">
+  <div class="loader-wheel"></div>
+  Fetching the most recent market data please wait..
+</div>
 <div class="wrap">
   <div class="header">
     <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0</span> <span class="badge">OSRS Charts</span></div>
@@ -742,9 +824,9 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
     <div class="hr"></div>
     <div class="refreshRow">
       <div class="viewtabs">
-        <button data-view="day" class="active">1D</button>
-        <button data-view="week">1W</button>
-        <button data-view="month">1M</button>
+        <button data-view="day" class="active">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="month">Month</button>
       </div>
       <div class="tools">
         <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
@@ -771,188 +853,6 @@ select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,160,32,0.2
       </div>
     </div>
     <div id="itemDesc" class="help" style="margin-top:20px"></div>
-  </div> <!-- end .card.left -->
-  <!-- Sidebar -->
-  <div class="side">
-    <div class="card suggest-box">
-      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">Smart Flip Suggestion</h3>
-      <div id="smartSuggest" class="item">
-        <!-- Filled by JS -->
-      </div>
-      <div id="suggestProfit" class="kv" style="margin-top:10px"><span>Expected Profit</span><strong style="color:var(--gold);font-size:18px">—</strong></div>
-      <button id="nextSuggest" class="next-btn">Next Suggestion</button>
-    </div>
-    <div class="card card-like">
-      <h3 style="margin:0 0 10px;font-size:18px;font-weight:900;color:var(--orange)">1 Year Price Data</h3>
-      <canvas id="historicalChart" width="360" height="144"></canvas>
-    </div>
-    <div class="card">
-      <h3>Watchlist</h3>
-      <select id="categorySelect">
-        <option value="custom">Custom Watchlist</option>
-        <option value="gilded">Gilded Items</option>
-        <option value="runes">Runes</option>
-        <option value="herbs">Herbs</option>
-        <option value="food">Food</option>
-        <option value="armour">Armour</option>
-        <option value="weapons">Weapons</option>
-        <option value="gems">Gems</option>
-        <option value="ores-and-bars">Ores & Bars</option>
-        <option value="charging-items">Charging Items</option>
-        <option value="3rd-age-items">3rd Age Items</option>
-        <option value="potions">Potions</option>
-        <option value="range-armour">Range Armour</option>
-        <option value="melee-armour">Melee Armour</option>
-        <option value="mage-armour">Mage Armour</option>
-        <option value="range-weapons">Range Weapons</option>
-        <option value="melee-weapons">Melee Weapons</option>
-        <option value="mage-weapons">Mage Weapons</option>
-        <option value="ammo">Ammo</option>
-      </select>
-      <!-- Column headers (tighter) -->
-      <div class="head">
-        <div></div>
-        <div id="sortSymbol">Symbol <span class="sort-arrow">▼</span></div>
-        <div class="delta" id="sortBuy">Buy gp <span class="sort-arrow">▼</span></div>
-        <div class="vol" id="sortSell">Sell gp <span class="sort-arrow">▼</span></div>
-      </div>
-      <div id="watch" class="tb"></div>
-    </div>
-  </div>
-  <div class="card left" style="grid-column:1 / -1">
-    <div class="help-tabs">
-      <button id="faqTab" class="active">FAQ</button>
-      <button id="alchTab">High Alch Guide</button>
-      <button id="setsTab">Sets</button>
-      <button id="craftingTab">Crafting</button>
-      <button id="enchantingTab">Enchanting</button>
-      <button id="smithingTab">Smithing</button>
-      <button id="contactTab">Contact</button>
-    </div>
-    <div id="faqContent" class="help-tab-content active">
-      <div class="help" style="margin-top:20px">
-        <h2>Tools for OSRS Grand Exchange and Money Making</h2>
-        <p>Our flipping tool provides real-time prices from the OSRS Grand Exchange to help you maximize gold earnings. Designed for both F2P and Members, it offers market data, buy/sell recommendations, and profit tools to streamline your trades. Search for items, fine-tune prices, and track favorites in the watchlist. Ideal for flipping gems, ores, and more based on trends and volumes—enhance your RuneScape experience with efficient gold strategies. Check our <button onclick="switchToAlchTab()">high alch guide</button> for additional earning tips.</p>
-        <!-- FAQ -->
-        <h2>Common Questions on OSRS GE and Gold Strategies</h2>
-        <h3>How Does Item Flipping Work on the OSRS Grand Exchange?</h3>
-        <p>Item flipping means purchasing low and selling high for profit. Tips include focusing on high-volume goods like runes or gems for quick turnover. Use our tool to view current spreads and aim for solid returns per trade, considering taxes and limits.</p>
-        <ul>
-          <li>High-volume items ensure faster transactions.</li>
-          <li>Check real-time data to identify profitable opportunities.</li>
-          <li>Account for the 1% tax, capped at 5m GP.</li>
-          <li>Adhere to buy limits for accurate capital planning.</li>
-          <li>Analyze charts for optimal timing.</li>
-          <li>Begin with smaller investments in F2P, expand in Members mode.</li>
-        </ul>
-        <h3>F2P vs. Members Mode for OSRS Money Making?</h3>
-        <p>F2P limits to free items, while Members unlocks higher-profit options like herbs. Toggle modes for customized flipping ideas tailored to your playstyle.</p>
-        <h3>Are Profit Estimates Reliable for OSRS Gold Making?</h3>
-        <p>Calculations use live GE data with tax considerations. Markets fluctuate, so refresh often and monitor your watchlist for updates.</p>
-        <h3>How Do Price Alerts Function in the Watchlist?</h3>
-        <p>Alerts highlight changes in high prices over five minutes with borders:</p>
-        <ul>
-          <li>Green glow for +20% or more.</li>
-          <li>Green for +10%.</li>
-          <li>Cyan for +5%.</li>
-          <li>Yellow for -5%.</li>
-          <li>Red for -10%.</li>
-          <li>Dark red for -20%.</li>
-        </ul>
-        <p>These signal short-term shifts; large swings are uncommon for stable items like adamant bars.</p>
-      </div>
-    </div>
-    <div id="alchContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>High Alchemy Profit Guide & Calculator for OSRS</h2>
-        <p>High alch turns items into gold with the alchemy spell, ideal for passive earnings and Magic training. Purchase below alch value on the GE, cast the spell, and pocket the difference minus rune costs. Our calculator highlights top items with current prices for efficient gold farming.</p>
-        <h3>Steps for Profitable High Alch in OSRS</h3>
-        <ul>
-          <li>Use a fire staff to cut rune expenses.</li>
-          <li>Source items and nature runes from the GE.</li>
-          <li>Compute profit: alch value minus buy and rune prices.</li>
-          <li>Target profitable entries; alch safely near banks.</li>
-          <li>F2P shows accessible items; Members expands choices.</li>
-        </ul>
-        <p>Nature Rune Price: <span id="natPrice">Loading...</span></p>
-        <div class="head"> <!-- Header like watchlist -->
-          <div></div>
-          <div>Item</div>
-          <div>Alch Value</div>
-          <div>Buy GP</div>
-          <div>Nat GP</div>
-          <div>Profit/Alch</div>
-        </div>
-        <div id="alchList" class="alch-tb"></div>
-      </div>
-    </div>
-    <div id="setsContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>Armor Sets Profit Calculator for OSRS</h2>
-        <p>Profit by assembling or disassembling sets on the GE, factoring in taxes. This method complements other strategies for steady gold gains.</p>
-        <div class="head">
-          <div>Set</div>
-          <div>Buy Pieces</div>
-          <div>Sell Set</div>
-          <div>Profit (Pack)</div>
-          <div>Pieces</div>
-        </div>
-        <div id="setsList" class="sets-tb"></div>
-      </div>
-    </div>
-    <div id="craftingTabContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>Crafting Profit Guide for OSRS</h2>
-        <p>Craft jewelry from gold bars and gems bought on the GE, then sell for profit after taxes. A reliable approach for skill and gold progression.</p>
-        <div class="head">
-          <div></div>
-          <div>Item</div>
-          <div>Level</div>
-          <div>Exp</div>
-          <div>Buy Cost</div>
-          <div>Profit</div>
-        </div>
-        <div id="craftList" class="craft-tb"></div>
-      </div>
-    </div>
-    <div id="enchantingContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>Enchanting Profit Guide for OSRS</h2>
-        <p>Enchant jewelry using GE-sourced bases and runes, selling enchanted versions post-tax. Boosts Magic while generating income.</p>
-        <div class="head">
-          <div></div>
-          <div>Spell</div>
-          <div>Level</div>
-          <div>Base Item</div>
-          <div>Enchanted</div>
-          <div>Exp</div>
-          <div>Profit</div>
-        </div>
-        <div id="enchantList" class="enchant-tb"></div>
-      </div>
-    </div>
-    <div id="smithingContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>Smithing Profit Guide (Steel to Rune) for OSRS</h2>
-        <p>Smith bars into items for alching or selling, using GE prices. Effective for Smithing levels and gold accumulation.</p>
-        <div class="head">
-          <div></div>
-          <div>Item</div>
-          <div>Bars</div>
-          <div>Level</div>
-          <div>Exp</div>
-          <div>Profit (Alch)</div>
-        </div>
-        <div id="smithList" class="smith-tb"></div>
-      </div>
-    </div>
-    <div id="contactContent" class="help-tab-content">
-      <div class="help" style="margin-top:20px">
-        <h2>Contact Us</h2>
-        <p>Share feature ideas or report issues below.</p>
-        <p>The contact form is temporarily unavailable. Email us at example@email.com for assistance.</p>
-      </div>
-    </div>
   </div>
 </div>
 <!-- SCRIPT -->
@@ -962,7 +862,7 @@ const $ = s => document.querySelector(s);
 const API = "https://prices.runescape.wiki/api/v1/osrs";
 let mapping=[], latest=null, volumes=null, selected=null;
 let currentSeries=null, view="day", zoom=1.5, offset=0, drawMode="line";
-let membersOn=false;
+let membersOn=false; // F2P by default (false)
 let watchlist = [];
 let customWatchlist = [];
 let dismissed = [];
@@ -980,89 +880,89 @@ const goldBarId = 2357; // Gold bar ID
 const armorSets = [{"set_name":"Bronze set (lg)","components":["Bronze platebody","Bronze platelegs","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (lg)","components":["Iron platebody","Iron platelegs","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (lg)","components":["Steel platebody","Steel platelegs","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (lg)","components":["Black platebody","Black platelegs","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (lg)","components":["Mithril platebody","Mithril platelegs","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (lg)","components":["Adamant platebody","Adamant platelegs","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (lg)","components":["Rune platebody","Rune platelegs","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (lg)","components":["Dragon platebody","Dragon platelegs","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (lg)","components":["Bronze platebody (g)","Bronze platelegs (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (lg)","components":["Iron platebody (g)","Iron platelegs (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (lg)","components":["Steel platebody (g)","Steel platelegs (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (lg)","components":["Black platebody (g)","Black platelegs (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (lg)","components":["Mithril platebody (g)","Mithril platelegs (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (lg)","components":["Adamant platebody (g)","Adamant platelegs (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (lg)","components":["Rune platebody (g)","Rune platelegs (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (lg)","components":["Gilded platebody","Gilded platelegs","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (lg)","components":["Bronze platebody (t)","Bronze platelegs (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (lg)","components":["Iron platebody (t)","Iron platelegs (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (lg)","components":["Steel platebody (t)","Steel platelegs (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (lg)","components":["Black platebody (t)","Black platelegs (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (lg)","components":["Mithril platebody (t)","Mithril platelegs (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (lg)","components":["Adamant platebody (t)","Adamant platelegs (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (lg)","components":["Rune platebody (t)","Rune platelegs (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (lg)","components":["Guthix platebody","Guthix platelegs","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (lg)","components":["Saradomin platebody","Saradomin platelegs","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (lg)","components":["Zamorak platebody","Zamorak platelegs","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (lg)","components":["Ancient platebody","Ancient platelegs","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (lg)","components":["Armadyl platebody","Armadyl platelegs","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (lg)","components":["Bandos platebody","Bandos platelegs","Bandos full helm","Bandos kiteshield"]},{"set_name":"Bronze set (sk)","components":["Bronze platebody","Bronze plateskirt","Bronze full helm","Bronze kiteshield"]},{"set_name":"Iron set (sk)","components":["Iron platebody","Iron plateskirt","Iron full helm","Iron kiteshield"]},{"set_name":"Steel set (sk)","components":["Steel platebody","Steel plateskirt","Steel full helm","Steel kiteshield"]},{"set_name":"Black set (sk)","components":["Black platebody","Black plateskirt","Black full helm","Black kiteshield"]},{"set_name":"Mithril set (sk)","components":["Mithril platebody","Mithril plateskirt","Mithril full helm","Mithril kiteshield"]},{"set_name":"Adamant set (sk)","components":["Adamant platebody","Adamant plateskirt","Adamant full helm","Adamant kiteshield"]},{"set_name":"Rune armour set (sk)","components":["Rune platebody","Rune plateskirt","Rune full helm","Rune kiteshield"]},{"set_name":"Dragon armour set (sk)","components":["Dragon platebody","Dragon plateskirt","Dragon full helm","Dragon kiteshield"]},{"set_name":"Bronze gold-trimmed set (sk)","components":["Bronze platebody (g)","Bronze plateskirt (g)","Bronze full helm (g)","Bronze kiteshield (g)"]},{"set_name":"Iron gold-trimmed set (sk)","components":["Iron platebody (g)","Iron plateskirt (g)","Iron full helm (g)","Iron kiteshield (g)"]},{"set_name":"Steel gold-trimmed set (sk)","components":["Steel platebody (g)","Steel plateskirt (g)","Steel full helm (g)","Steel kiteshield (g)"]},{"set_name":"Black gold-trimmed set (sk)","components":["Black platebody (g)","Black plateskirt (g)","Black full helm (g)","Black kiteshield (g)"]},{"set_name":"Mithril gold-trimmed set (sk)","components":["Mithril platebody (g)","Mithril plateskirt (g)","Mithril full helm (g)","Mithril kiteshield (g)"]},{"set_name":"Adamant gold-trimmed set (sk)","components":["Adamant platebody (g)","Adamant plateskirt (g)","Adamant full helm (g)","Adamant kiteshield (g)"]},{"set_name":"Rune gold-trimmed set (sk)","components":["Rune platebody (g)","Rune plateskirt (g)","Rune full helm (g)","Rune kiteshield (g)"]},{"set_name":"Gilded armour set (sk)","components":["Gilded platebody","Gilded plateskirt","Gilded full helm","Gilded kiteshield"]},{"set_name":"Bronze trimmed set (sk)","components":["Bronze platebody (t)","Bronze plateskirt (t)","Bronze full helm (t)","Bronze kiteshield (t)"]},{"set_name":"Iron trimmed set (sk)","components":["Iron platebody (t)","Iron plateskirt (t)","Iron full helm (t)","Iron kiteshield (t)"]},{"set_name":"Steel trimmed set (sk)","components":["Steel platebody (t)","Steel plateskirt (t)","Steel full helm (t)","Steel kiteshield (t)"]},{"set_name":"Black trimmed set (sk)","components":["Black platebody (t)","Black plateskirt (t)","Black full helm (t)","Black kiteshield (t)"]},{"set_name":"Mithril trimmed set (sk)","components":["Mithril platebody (t)","Mithril plateskirt (t)","Mithril full helm (t)","Mithril kiteshield (t)"]},{"set_name":"Adamant trimmed set (sk)","components":["Adamant platebody (t)","Adamant plateskirt (t)","Adamant full helm (t)","Adamant kiteshield (t)"]},{"set_name":"Rune trimmed set (sk)","components":["Rune platebody (t)","Rune plateskirt (t)","Rune full helm (t)","Rune kiteshield (t)"]},{"set_name":"Guthix armour set (sk)","components":["Guthix platebody","Guthix plateskirt","Guthix full helm","Guthix kiteshield"]},{"set_name":"Saradomin armour set (sk)","components":["Saradomin platebody","Saradomin plateskirt","Saradomin full helm","Saradomin kiteshield"]},{"set_name":"Zamorak armour set (sk)","components":["Zamorak platebody","Zamorak plateskirt","Zamorak full helm","Zamorak kiteshield"]},{"set_name":"Ancient rune armour set (sk)","components":["Ancient platebody","Ancient plateskirt","Ancient full helm","Ancient kiteshield"]},{"set_name":"Armadyl rune armour set (sk)","components":["Armadyl platebody","Armadyl plateskirt","Armadyl full helm","Armadyl kiteshield"]},{"set_name":"Bandos rune armour set (sk)","components":["Bandos platebody","Bandos plateskirt","Bandos full helm","Bandos kiteshield"]},{"set_name":"Initiate harness m","components":["Initiate hauberk","Initiate cuisse","Initiate helm"]}];
 const goldJewelry = [{"item":"Gold ring","level":5,"exp":15,"gem":null},{"item":"Gold necklace","level":6,"exp":20,"gem":null},{"item":"Gold bracelet","level":7,"exp":25,"gem":null},{"item":"Gold amulet (u)","level":8,"exp":30,"gem":null},{"item":"Sapphire ring","level":20,"exp":40,"gem":"sapphire"},{"item":"Sapphire necklace","level":22,"exp":55,"gem":"sapphire"},{"item":"Sapphire bracelet","level":23,"exp":60,"gem":"sapphire"},{"item":"Sapphire amulet (u)","level":24,"exp":65,"gem":"sapphire"},{"item":"Emerald ring","level":27,"exp":55,"gem":"emerald"},{"item":"Emerald necklace","level":29,"exp":60,"gem":"emerald"},{"item":"Emerald bracelet","level":30,"exp":65,"gem":"emerald"},{"item":"Emerald amulet (u)","level":31,"exp":70,"gem":"emerald"},{"item":"Ruby ring","level":34,"exp":70,"gem":"ruby"},{"item":"Ruby necklace","level":40,"exp":75,"gem":"ruby"},{"item":"Ruby bracelet","level":42,"exp":80,"gem":"ruby"},{"item":"Ruby amulet (u)","level":50,"exp":85,"gem":"ruby"},{"item":"Diamond ring","level":43,"exp":85,"gem":"diamond"},{"item":"Diamond necklace","level":56,"exp":90,"gem":"diamond"},{"item":"Diamond bracelet","level":58,"exp":95,"gem":"diamond"},{"item":"Diamond amulet (u)","level":70,"exp":100,"gem":"diamond"},{"item":"Dragonstone ring","level":55,"exp":100,"gem":"dragonstone"},{"item":"Dragon necklace","level":72,"exp":105,"gem":"dragonstone"},{"item":"Dragonstone bracelet","level":74,"exp":110,"gem":"dragonstone"},{"item":"Dragonstone amulet (u)","level":80,"exp":150,"gem":"dragonstone"},{"item":"Onyx ring","level":67,"exp":115,"gem":"onyx"},{"item":"Onyx necklace","level":82,"exp":120,"gem":"onyx"},{"item":"Onyx bracelet","level":84,"exp":125,"gem":"onyx"},{"item":"Onyx amulet (u)","level":90,"exp":165,"gem":"onyx"},{"item":"Zenyte ring","level":89,"exp":150,"gem":"zenyte"},{"item":"Zenyte necklace","level":92,"exp":165,"gem":"zenyte"},{"item":"Zenyte bracelet","level":95,"exp":180,"gem":"zenyte"},{"item":"Zenyte amulet (u)","level":98,"exp":200,"gem":"zenyte"}];
 const enchantJewelry = [{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal ring","enchanted_item":"Ring of pursuit","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal necklace","enchanted_item":"Dodgy necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal bracelet","enchanted_item":"Expeditious bracelet","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Opal amulet","enchanted_item":"Amulet of bounty","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade ring","enchanted_item":"Ring of returning","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade necklace","enchanted_item":"Necklace of passage","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade bracelet","enchanted_item":"Flamtaer bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Jade amulet","enchanted_item":"Amulet of chemistry","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire ring","enchanted_item":"Ring of recoil","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire necklace","enchanted_item":"Games necklace","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire bracelet","enchanted_item":"Bracelet of clay","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-1 Enchant","level":7,"base_item":"Sapphire amulet","enchanted_item":"Amulet of magic","runes":"1 Water rune, 1 Cosmic rune","exp":17.5},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald ring","enchanted_item":"Ring of dueling","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald necklace","enchanted_item":"Binding necklace","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald bracelet","enchanted_item":"Castle wars bracelet","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-2 Enchant","level":27,"base_item":"Emerald amulet","enchanted_item":"Amulet of defence","runes":"3 Air rune, 1 Cosmic rune","exp":37},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz ring","enchanted_item":"Efaritay's aid","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz necklace","enchanted_item":"Necklace of faith","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz bracelet","enchanted_item":"Bracelet of slaughter","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Topaz amulet","enchanted_item":"Burning amulet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby ring","enchanted_item":"Ring of forging","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby necklace","enchanted_item":"Digsite pendant","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby bracelet","enchanted_item":"Inoculation bracelet","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-3 Enchant","level":49,"base_item":"Ruby amulet","enchanted_item":"Amulet of strength","runes":"5 Fire rune, 1 Cosmic rune","exp":59},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond ring","enchanted_item":"Ring of life","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond necklace","enchanted_item":"Phoenix necklace","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond bracelet","enchanted_item":"Abyssal bracelet","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-4 Enchant","level":57,"base_item":"Diamond amulet","enchanted_item":"Amulet of power","runes":"10 Earth rune, 1 Cosmic rune","exp":67},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone ring","enchanted_item":"Ring of wealth","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragon necklace","enchanted_item":"Skills necklace","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone bracelet","enchanted_item":"Combat bracelet","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-5 Enchant","level":68,"base_item":"Dragonstone amulet","enchanted_item":"Amulet of glory","runes":"15 Earth rune, 15 Water rune, 1 Cosmic rune","exp":78},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx ring","enchanted_item":"Ring of stone","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx necklace","enchanted_item":"Berserker necklace","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx bracelet","enchanted_item":"Regen bracelet","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-6 Enchant","level":87,"base_item":"Onyx amulet","enchanted_item":"Amulet of fury","runes":"20 Earth rune, 20 Fire rune, 1 Cosmic rune","exp":97},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte ring","enchanted_item":"Ring of suffering","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte necklace","enchanted_item":"Necklace of anguish","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte bracelet","enchanted_item":"Tormented bracelet","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110},{"spell":"Lvl-7 Enchant","level":93,"base_item":"Zenyte amulet","enchanted_item":"Amulet of torture","runes":"20 Blood rune, 1 Cosmic rune, 20 Soul rune","exp":110}];
-const smithItems = [
-  // Steel
-  {"item":"Steel dagger","bars":1,"level":30,"exp":37.5,"barId":2353},
-  {"item":"Steel axe","bars":1,"level":31,"exp":37.5,"barId":2353},
-  {"item":"Steel mace","bars":1,"level":32,"exp":37.5,"barId":2353},
-  {"item":"Steel med helm","bars":1,"level":33,"exp":37.5,"barId":2353},
-  {"item":"Steel sword","bars":1,"level":34,"exp":37.5,"barId":2353},
-  {"item":"Steel scimitar","bars":2,"level":35,"exp":75,"barId":2353},
-  {"item":"Steel limbs","bars":1,"level":36,"exp":37.5,"barId":2353},
-  {"item":"Steel longsword","bars":2,"level":36,"exp":75,"barId":2353},
-  {"item":"Steel studs","bars":1,"level":36,"exp":37.5,"barId":2353},
-  {"item":"Steel full helm","bars":2,"level":37,"exp":75,"barId":2353},
-  {"item":"Steel sq shield","bars":2,"level":38,"exp":75,"barId":2353},
-  {"item":"Steel warhammer","bars":3,"level":39,"exp":112.5,"barId":2353},
-  {"item":"Steel battleaxe","bars":3,"level":40,"exp":112.5,"barId":2353},
-  {"item":"Steel chainbody","bars":3,"level":41,"exp":112.5,"barId":2353},
-  {"item":"Steel kiteshield","bars":3,"level":42,"exp":112.5,"barId":2353},
-  {"item":"Steel claws","bars":2,"level":43,"exp":75,"barId":2353},
-  {"item":"Steel 2h sword","bars":3,"level":44,"exp":112.5,"barId":2353},
-  {"item":"Steel platelegs","bars":3,"level":46,"exp":112.5,"barId":2353},
-  {"item":"Steel plateskirt","bars":3,"level":46,"exp":112.5,"barId":2353},
-  {"item":"Steel platebody","bars":5,"level":48,"exp":187.5,"barId":2353},
-  // Mithril
-  {"item":"Mithril dagger","bars":1,"level":50,"exp":50,"barId":2359},
-  {"item":"Mithril axe","bars":1,"level":51,"exp":50,"barId":2359},
-  {"item":"Mithril mace","bars":1,"level":52,"exp":50,"barId":2359},
-  {"item":"Mithril med helm","bars":1,"level":53,"exp":50,"barId":2359},
-  {"item":"Mithril sword","bars":1,"level":54,"exp":50,"barId":2359},
-  {"item":"Mithril scimitar","bars":2,"level":55,"exp":100,"barId":2359},
-  {"item":"Mithril limbs","bars":1,"level":56,"exp":50,"barId":2359},
-  {"item":"Mithril longsword","bars":2,"level":56,"exp":100,"barId":2359},
-  {"item":"Mithril full helm","bars":2,"level":57,"exp":100,"barId":2359},
-  {"item":"Mithril sq shield","bars":2,"level":58,"exp":100,"barId":2359},
-  {"item":"Mithril warhammer","bars":3,"level":59,"exp":150,"barId":2359},
-  {"item":"Mith grapple tip","bars":1,"level":59,"exp":50,"barId":2359},
-  {"item":"Mithril battleaxe","bars":3,"level":60,"exp":150,"barId":2359},
-  {"item":"Mithril chainbody","bars":3,"level":61,"exp":150,"barId":2359},
-  {"item":"Mithril kiteshield","bars":3,"level":62,"exp":150,"barId":2359},
-  {"item":"Mithril claws","bars":2,"level":63,"exp":100,"barId":2359},
-  {"item":"Mithril 2h sword","bars":3,"level":64,"exp":150,"barId":2359},
-  {"item":"Mithril platelegs","bars":3,"level":66,"exp":150,"barId":2359},
-  {"item":"Mithril plateskirt","bars":3,"level":66,"exp":150,"barId":2359},
-  {"item":"Mithril platebody","bars":5,"level":68,"exp":250,"barId":2359},
-  // Adamant
-  {"item":"Adamant dagger","bars":1,"level":70,"exp":62.5,"barId":2361},
-  {"item":"Adamant axe","bars":1,"level":71,"exp":62.5,"barId":2361},
-  {"item":"Adamant mace","bars":1,"level":72,"exp":62.5,"barId":2361},
-  {"item":"Adamant med helm","bars":1,"level":73,"exp":62.5,"barId":2361},
-  {"item":"Adamant sword","bars":1,"level":74,"exp":62.5,"barId":2361},
-  {"item":"Adamant scimitar","bars":2,"level":75,"exp":125,"barId":2361},
-  {"item":"Adamantite limbs","bars":1,"level":76,"exp":62.5,"barId":2361},
-  {"item":"Adamant longsword","bars":2,"level":76,"exp":125,"barId":2361},
-  {"item":"Adamant full helm","bars":2,"level":77,"exp":125,"barId":2361},
-  {"item":"Adamant sq shield","bars":2,"level":78,"exp":125,"barId":2361},
-  {"item":"Adamant warhammer","bars":3,"level":79,"exp":187.5,"barId":2361},
-  {"item":"Adamant battleaxe","bars":3,"level":80,"exp":187.5,"barId":2361},
-  {"item":"Adamant chainbody","bars":3,"level":81,"exp":187.5,"barId":2361},
-  {"item":"Adamant kiteshield","bars":3,"level":82,"exp":187.5,"barId":2361},
-  {"item":"Adamant claws","bars":2,"level":83,"exp":125,"barId":2361},
-  {"item":"Adamant 2h sword","bars":3,"level":84,"exp":187.5,"barId":2361},
-  {"item":"Adamant platelegs","bars":3,"level":86,"exp":187.5,"barId":2361},
-  {"item":"Adamant plateskirt","bars":3,"level":86,"exp":187.5,"barId":2361},
-  {"item":"Adamant platebody","bars":5,"level":88,"exp":312.5,"barId":2361},
-  // Rune
-  {"item":"Rune dagger","bars":1,"level":85,"exp":75,"barId":2363},
-  {"item":"Rune axe","bars":1,"level":86,"exp":75,"barId":2363},
-  {"item":"Rune mace","bars":1,"level":87,"exp":75,"barId":2363},
-  {"item":"Rune med helm","bars":1,"level":88,"exp":75,"barId":2363},
-  {"item":"Rune sword","bars":1,"level":89,"exp":75,"barId":2363},
-  {"item":"Rune scimitar","bars":2,"level":90,"exp":150,"barId":2363},
-  {"item":"Runite limbs","bars":1,"level":91,"exp":75,"barId":2363},
-  {"item":"Rune longsword","bars":2,"level":91,"exp":150,"barId":2363},
-  {"item":"Rune full helm","bars":2,"level":92,"exp":150,"barId":2363},
-  {"item":"Rune sq shield","bars":2,"level":93,"exp":150,"barId":2363},
-  {"item":"Rune warhammer","bars":3,"level":94,"exp":225,"barId":2363},
-  {"item":"Rune battleaxe","bars":3,"level":95,"exp":225,"barId":2363},
-  {"item":"Rune chainbody","bars":3,"level":96,"exp":225,"barId":2363},
-  {"item":"Rune kiteshield","bars":3,"level":97,"exp":225,"barId":2363},
-  {"item":"Rune claws","bars":2,"level":98,"exp":150,"barId":2363},
-  {"item":"Rune 2h sword","bars":3,"level":99,"exp":225,"barId":2363},
-  {"item":"Rune platelegs","bars":3,"level":99,"exp":225,"barId":2363},
-  {"item":"Rune plateskirt","bars":3,"level":99,"exp":225,"barId":2363},
-  {"item":"Rune platebody","bars":5,"level":99,"exp":375,"barId":2363}
+const smithItems = [ 
+  // Steel 
+  {"item":"Steel dagger","bars":1,"level":30,"exp":37.5,"barId":2353}, 
+  {"item":"Steel axe","bars":1,"level":31,"exp":37.5,"barId":2353}, 
+  {"item":"Steel mace","bars":1,"level":32,"exp":37.5,"barId":2353}, 
+  {"item":"Steel med helm","bars":1,"level":33,"exp":37.5,"barId":2353}, 
+  {"item":"Steel sword","bars":1,"level":34,"exp":37.5,"barId":2353}, 
+  {"item":"Steel scimitar","bars":2,"level":35,"exp":75,"barId":2353}, 
+  {"item":"Steel limbs","bars":1,"level":36,"exp":37.5,"barId":2353}, 
+  {"item":"Steel longsword","bars":2,"level":36,"exp":75,"barId":2353}, 
+  {"item":"Steel studs","bars":1,"level":36,"exp":37.5,"barId":2353}, 
+  {"item":"Steel full helm","bars":2,"level":37,"exp":75,"barId":2353}, 
+  {"item":"Steel sq shield","bars":2,"level":38,"exp":75,"barId":2353}, 
+  {"item":"Steel warhammer","bars":3,"level":39,"exp":112.5,"barId":2353}, 
+  {"item":"Steel battleaxe","bars":3,"level":40,"exp":112.5,"barId":2353}, 
+  {"item":"Steel chainbody","bars":3,"level":41,"exp":112.5,"barId":2353}, 
+  {"item":"Steel kiteshield","bars":3,"level":42,"exp":112.5,"barId":2353}, 
+  {"item":"Steel claws","bars":2,"level":43,"exp":75,"barId":2353}, 
+  {"item":"Steel 2h sword","bars":3,"level":44,"exp":112.5,"barId":2353}, 
+  {"item":"Steel platelegs","bars":3,"level":46,"exp":112.5,"barId":2353}, 
+  {"item":"Steel plateskirt","bars":3,"level":46,"exp":112.5,"barId":2353}, 
+  {"item":"Steel platebody","bars":5,"level":48,"exp":187.5,"barId":2353}, 
+  // Mithril 
+  {"item":"Mithril dagger","bars":1,"level":50,"exp":50,"barId":2359}, 
+  {"item":"Mithril axe","bars":1,"level":51,"exp":50,"barId":2359}, 
+  {"item":"Mithril mace","bars":1,"level":52,"exp":50,"barId":2359}, 
+  {"item":"Mithril med helm","bars":1,"level":53,"exp":50,"barId":2359}, 
+  {"item":"Mithril sword","bars":1,"level":54,"exp":50,"barId":2359}, 
+  {"item":"Mithril scimitar","bars":2,"level":55,"exp":100,"barId":2359}, 
+  {"item":"Mithril limbs","bars":1,"level":56,"exp":50,"barId":2359}, 
+  {"item":"Mithril longsword","bars":2,"level":56,"exp":100,"barId":2359}, 
+  {"item":"Mithril full helm","bars":2,"level":57,"exp":100,"barId":2359}, 
+  {"item":"Mithril sq shield","bars":2,"level":58,"exp":100,"barId":2359}, 
+  {"item":"Mithril warhammer","bars":3,"level":59,"exp":150,"barId":2359}, 
+  {"item":"Mith grapple tip","bars":1,"level":59,"exp":50,"barId":2359}, 
+  {"item":"Mithril battleaxe","bars":3,"level":60,"exp":150,"barId":2359}, 
+  {"item":"Mithril chainbody","bars":3,"level":61,"exp":150,"barId":2359}, 
+  {"item":"Mithril kiteshield","bars":3,"level":62,"exp":150,"barId":2359}, 
+  {"item":"Mithril claws","bars":2,"level":63,"exp":100,"barId":2359}, 
+  {"item":"Mithril 2h sword","bars":3,"level":64,"exp":150,"barId":2359}, 
+  {"item":"Mithril platelegs","bars":3,"level":66,"exp":150,"barId":2359}, 
+  {"item":"Mithril plateskirt","bars":3,"level":66,"exp":150,"barId":2359}, 
+  {"item":"Mithril platebody","bars":5,"level":68,"exp":250,"barId":2359}, 
+  // Adamant 
+  {"item":"Adamant dagger","bars":1,"level":70,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant axe","bars":1,"level":71,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant mace","bars":1,"level":72,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant med helm","bars":1,"level":73,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant sword","bars":1,"level":74,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant scimitar","bars":2,"level":75,"exp":125,"barId":2361}, 
+  {"item":"Adamantite limbs","bars":1,"level":76,"exp":62.5,"barId":2361}, 
+  {"item":"Adamant longsword","bars":2,"level":76,"exp":125,"barId":2361}, 
+  {"item":"Adamant full helm","bars":2,"level":77,"exp":125,"barId":2361}, 
+  {"item":"Adamant sq shield","bars":2,"level":78,"exp":125,"barId":2361}, 
+  {"item":"Adamant warhammer","bars":3,"level":79,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant battleaxe","bars":3,"level":80,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant chainbody","bars":3,"level":81,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant kiteshield","bars":3,"level":82,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant claws","bars":2,"level":83,"exp":125,"barId":2361}, 
+  {"item":"Adamant 2h sword","bars":3,"level":84,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant platelegs","bars":3,"level":86,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant plateskirt","bars":3,"level":86,"exp":187.5,"barId":2361}, 
+  {"item":"Adamant platebody","bars":5,"level":88,"exp":312.5,"barId":2361}, 
+  // Rune 
+  {"item":"Rune dagger","bars":1,"level":85,"exp":75,"barId":2363}, 
+  {"item":"Rune axe","bars":1,"level":86,"exp":75,"barId":2363}, 
+  {"item":"Rune mace","bars":1,"level":87,"exp":75,"barId":2363}, 
+  {"item":"Rune med helm","bars":1,"level":88,"exp":75,"barId":2363}, 
+  {"item":"Rune sword","bars":1,"level":89,"exp":75,"barId":2363}, 
+  {"item":"Rune scimitar","bars":2,"level":90,"exp":150,"barId":2363}, 
+  {"item":"Runite limbs","bars":1,"level":91,"exp":75,"barId":2363}, 
+  {"item":"Rune longsword","bars":2,"level":91,"exp":150,"barId":2363}, 
+  {"item":"Rune full helm","bars":2,"level":92,"exp":150,"barId":2363}, 
+  {"item":"Rune sq shield","bars":2,"level":93,"exp":150,"barId":2363}, 
+  {"item":"Rune warhammer","bars":3,"level":94,"exp":225,"barId":2363}, 
+  {"item":"Rune battleaxe","bars":3,"level":95,"exp":225,"barId":2363}, 
+  {"item":"Rune chainbody","bars":3,"level":96,"exp":225,"barId":2363}, 
+  {"item":"Rune kiteshield","bars":3,"level":97,"exp":225,"barId":2363}, 
+  {"item":"Rune claws","bars":2,"level":98,"exp":150,"barId":2363}, 
+  {"item":"Rune 2h sword","bars":3,"level":99,"exp":225,"barId":2363}, 
+  {"item":"Rune platelegs","bars":3,"level":99,"exp":225,"barId":2363}, 
+  {"item":"Rune plateskirt","bars":3,"level":99,"exp":225,"barId":2363}, 
+  {"item":"Rune platebody","bars":5,"level":99,"exp":375,"barId":2363} 
 ];
 /* ---------- Utilities ---------- */
 const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
@@ -1834,10 +1734,10 @@ function popoutChart(){
     // View buttons
     document.querySelectorAll(".viewtabs button").forEach(b=>{
       b.onclick=()=>{ 
-        document.querySelector('.viewtabs button.active').classList.remove("active");
+        document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
         b.classList.add("active");
-        view = b.dataset.view;
-        if (selected) setItem(selected);
+        view=b.dataset.view;
+        if(selected) setItem(selected);
       }
     });
     // Chart tools
