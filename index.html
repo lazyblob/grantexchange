@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes"/>
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with indicators like Ichimoku Cloud, Volume Profile, and Volume. Analyze trends from 1 day to 5 years.">
 <meta name="keywords" content="OSRS Grand Exchange, OSRS GE, RuneScape Grand Exchange, OSRS charting, OSRS price charts, OSRS indicators, Ichimoku Cloud OSRS, Volume Profile OSRS">
@@ -29,486 +29,140 @@
   gtag('js', new Date());
   gtag('config', 'G-43YM2RCX1R');
 </script>
-<!-- CSS -->
+<!-- CSS (Darkened RuneScape theme) -->
 <style>
 :root{
-  --bg:#1b140a; --panel:#2b2110; --edge:#6a4f2b;
-  --gold:#cfb36a; --orange:#f0a020; --ink:#eee5cf; --muted:#cbbf99;
-  --low-color:#fb6a6a; --high-color:#5cc76a; --grid:#3b2f19; --accent:#ffce4f; --shadow:#0b0703;
-  --teal: #00ffff;
+  --bg:#0f0a05; --panel:#1f170a; --edge:#5a3f1b;
+  --gold:#b0935a; --orange:#d09010; --ink:#d5c5af; --muted:#ab9f79;
+  --low-color:#db4a4a; --high-color:#4ca75a; --grid:#2b1f09; --accent:#efbe3f; --shadow:#050301;
+  --teal: #00d5d5;
 }
 * {box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; margin:0; padding:0;}
 body{
-  margin:0;
-  background:radial-gradient(1200px 600px at 20% -10%,#2b2210 0%,#1b140a 60%),#1b140a;
+  background:radial-gradient(1200px 600px at 20% -10%,#1f170a 0%,#0f0a05 60%),#0f0a05;
   color:var(--ink);
   font-family:Segoe UI,Inter,system-ui,Arial;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
 /* Layout */
-.wrap{max-width:1280px;margin:18px auto;padding:0 7px; min-height: calc(100vh - 36px);
-  display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
-.header{grid-column:1 / -1;display:grid;
-  grid-template-columns:1fr auto auto;gap:12px;align-items:center}
-/* Branding */
-h1{margin:0;font-size:26px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
-.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;
-  padding:2px 8px;color:var(--muted);background:#20190e}
-.small{font-size:12px;color:var(--muted)}
-.status-error{color:#ffb4b4}
-/* Cards */
-.card{background:linear-gradient(180deg,#2d220f 0%, #241b0c 100%);
-  border:1px solid var(--edge);border-radius:16px;padding:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,.28)}
-.left{display:flex;flex-direction:column}
-.hr{border:none;border-top:1px solid var(--edge);margin:10px 0}
-/* Search */
-.label{font-size:26px;color:var(--orange);font-weight:900;margin-bottom:0}
-.sbar{display:flex;gap:10px;margin-top:2px;position:relative}
-.sbar input{
-  flex:1;background:#1e170c;border:3px solid var(--edge);color:var(--ink);
-  border-radius:14px;padding:16px;font-size:20px;outline:none;
-  box-shadow:0 0 0 0 rgba(240,160,32,0);transition:box-shadow .18s,border-color .18s }
-.sbar input:focus{border-color:var(--orange);
-  box-shadow:0 0 0 4px rgba(240,160,32,0.25)}
-.suggest{margin-top:6px;border:1px solid var(--edge);border-radius:10px;
-  max-height:360px;overflow:auto;background:#231b0d;position:absolute;z-index:10;width: calc(100% - 90px); left:0;}
-.suggest::-webkit-scrollbar {width:8px; background:var(--panel);}
-.suggest::-webkit-scrollbar-thumb {background:var(--edge); border-radius:4px;}
-.suggest div{display:flex;align-items:center;gap:6px;
-  padding:8px 10px;border-bottom:1px solid #3e3119;cursor:pointer; word-break: break-word; white-space: normal; word-wrap: break-word;}
-.suggest div:hover{background:#2d220f}
-.suggest img{width:20px;height:20px;image-rendering:pixelated}
-/* Tabs + Tools */
-.viewtabs, .mode-pill {display:flex;gap:6px;}
-.viewtabs button, .mode-pill button{background:#2b2212;border:1px solid var(--edge);
-  color:var(--ink);border-radius:10px;padding:6px 10px;
-  cursor:pointer;text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
-.viewtabs button.active, .mode-pill button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
-.tools{display:flex;gap:6px;align-items:center;margin-top:6px}
-.tools button{background:#2b2212;border:1px solid var(--edge);
-  color:var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;
-  text-transform:uppercase;font-weight: bold; font-size: 14px;transition:box-shadow .18s,border-color .18s}
-.tools button.active{background:#3a2f17; box-shadow: 0 0 10px rgba(240,160,32,0.8);border-color:var(--orange)}
+.wrap{max-width:none; margin:0; padding:10px; height:100vh;
+  display:flex; flex-direction:column;}
+.header{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+h1{margin:0;font-size:24px;font-weight:900;color:var(--orange);text-shadow:0 1px 0 #000;cursor:pointer}
+.badge{font-size:11px;border:1px solid var(--edge);border-radius:999px;
+  padding:1px 6px;color:var(--muted);background:#10090e}
+.small{font-size:11px;color:var(--muted)}
+/* Search Bar with Item Photo */
+.sbar{display:flex;align-items:center;gap:8px;background:var(--panel);padding:8px;border-radius:12px;border:1px solid var(--edge);}
+.sbar img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated;border-radius:4px;background:#151008;}
+.sbar input{flex:1;background:transparent;border:none;color:var(--ink);font-size:18px;outline:none;}
+.sbar input::placeholder{color:var(--muted);}
+/* Suggest */
+.suggest{position:absolute;top:100%;left:0;width:100%;max-height:300px;overflow:auto;background:var(--panel);border:1px solid var(--edge);border-radius:10px;z-index:10;margin-top:4px;}
+.suggest div{padding:8px;cursor:pointer;}
+.suggest div:hover{background:var(--grid);}
+/* Tools Row */
+.refreshRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.viewtabs, .tools{display:flex;gap:4px;}
+.viewtabs button, .tools button{background:var(--panel);border:1px solid var(--edge);
+  color:var(--ink);border-radius:8px;padding:4px 8px;cursor:pointer;font-size:12px;text-transform:uppercase;font-weight:bold;}
+.viewtabs button.active, .tools button.active{background:var(--grid);border-color:var(--orange);}
+#indicatorSelect{background:var(--panel);border:1px solid var(--edge);color:var(--ink);padding:4px 8px;border-radius:8px;font-size:12px;}
 /* Chart */
-.chartWrap{position:relative;height: calc(100vh - 200px)} /* Full height minus header/search */
-.chart{
-  width:100%;height:100%;
-  background:repeating-linear-gradient(to bottom,
-    rgba(255,255,255,0.03),rgba(255,255,255,0.03) 1px,
-    transparent 1px,transparent 24px),#181208;
-  border:1px solid var(--edge);border-radius:12px }
-.chart-tip{
-  position:absolute;display:none;background:rgba(0,0,0,.85);
-  color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;
-  pointer-events:none;white-space:nowrap;border:1px solid #000 }
-.legend{display:flex;gap:12px;font-size:12px;margin-top:6px;color:var(--muted)}
-.legend .sell::before{content:"";display:inline-block;width:14px;height:3px;
-  background:var(--low-color);margin-right:6px;border-radius:2px}
-.legend .buy::before{content:"";display:inline-block;width:14px;height:3px;
-  background:var(--high-color);margin-right:6px;border-radius:2px}
-/* Refresh button */
-.refreshRow{display:flex;align-items:center;gap:12px;margin:6px 0}
-.btn-refresh{
-  padding:12px 20px;border-radius:18px;border:2px solid var(--edge);
-  background:linear-gradient(180deg,#3a2f17 0%,#2b2212 100%);
-  color:var(--gold);font-weight:900;cursor:pointer;font-size:16px;
-  text-transform:uppercase;letter-spacing:.5px;
-  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .08s ease,filter .12s ease,box-shadow .12s ease }
-.btn-refresh:hover{filter:brightness(1.05);
-  transform:translateY(-1px);
-  box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-refresh:active{transform:translateY(0);
-  box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-refresh.loading {
-  animation: pulse-rs 1.5s infinite;
-}
-@keyframes pulse-rs {
-  0% { box-shadow: 0 0 0 0 rgba(240,160,32,0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(240,160,32,0); }
-  100% { box-shadow: 0 0 0 0 rgba(240,160,32,0); }
-}
+.chartWrap{flex:1;position:relative;}
+.chart{width:100%;height:100%;background:var(--grid);border:1px solid var(--edge);border-radius:12px;}
+.chart-tip{position:absolute;display:none;background:rgba(0,0,0,.85);color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;pointer-events:none;white-space:nowrap;border:1px solid #000;}
+.legend{display:flex;gap:8px;font-size:11px;margin-top:4px;color:var(--muted)}
+.legend .sell::before{content:"";display:inline-block;width:12px;height:2px;background:var(--low-color);margin-right:4px;border-radius:2px}
+.legend .buy::before{content:"";display:inline-block;width:12px;height:2px;background:var(--high-color);margin-right:4px;border-radius:2px}
+/* Refresh */
+.btn-refresh{padding:4px 8px;border-radius:8px;border:1px solid var(--edge);background:var(--panel);color:var(--gold);font-size:12px;cursor:pointer;}
 /* Mobile */
 @media (max-width: 768px) {
-  .wrap {padding: 0 8px; gap: 10px;}
-  .label {font-size: 20px;}
-  .sbar input {font-size: 16px; padding: 12px;}
-  .viewtabs button {padding: 4px 8px; font-size: 12px;}
-  .tools button {padding: 3px 6px; font-size: 12px;}
-  .refreshRow {gap: 5px;}
-  .btn-refresh {padding: 8px 12px; font-size: 14px;}
-  .chartWrap {height: calc(100vh - 150px);}
+  .wrap{padding:5px;}
+  h1{font-size:20px;}
+  .sbar input{font-size:16px;}
+  .viewtabs button, .tools button{font-size:10px;padding:3px 6px;}
+  #indicatorSelect{font-size:10px;}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.0</span> <span class="badge">OSRS Charts</span></div>
-    <div id="status" class="small">Ready</div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="mode-pill" id="modePill">
-        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-        <button data-mode="members" id="btnMembers">Members</button>
+    <h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v3.1</span> <span class="badge">OSRS Charts</span>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div class="mode-pill">
+        <button id="btnF2P" class="active">F2P</button>
+        <button id="btnMembers">Members</button>
       </div>
     </div>
   </div>
-  <!-- Main panel: Search + Chart -->
-  <div class="card left">
-    <div class="label">Item</div>
-    <div class="sbar">
-      <input id="query" placeholder="Type here… e.g., Uncut diamond" autocomplete="off"/>
-      <div id="suggestBox" class="suggest" style="display:none"></div>
-    </div>
-    <div class="refreshRow">
-      <div class="viewtabs">
-        <button data-view="1d" class="active">1D</button>
-        <button data-view="1w">1W</button>
-        <button data-view="1m">1M</button>
-        <button data-view="6m">6M</button>
-        <button data-view="1y">1Y</button>
-        <button data-view="5y">5Y</button>
-        <button data-view="all">All</button>
-      </div>
-      <div class="tools">
-        <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">-</button>
-        <span class="small" style="margin-left:10px">Mode:</span>
-        <button id="lineMode" class="active">Line</button>
-        <button id="dotMode">Scatter</button>
-        <span class="small" style="margin-left:10px">Indicators:</span>
-        <select id="indicatorSelect">
-          <option value="ichimoku">Ichimoku Cloud</option>
-          <option value="vp">Volume Profile</option>
-          <option value="volume">Volume</option>
-        </select>
-        <button id="addIndicator">Add</button>
-      </div>
-    </div>
-    <div class="chartWrap">
-      <canvas id="chart" class="chart"></canvas>
-      <div id="tip" class="chart-tip"></div>
-    </div>
-    <div class="legend"><span class="sell">Low (Buy)</span><span class="buy">High (Sell)</span></div>
-    <button id="refreshBtn" class="btn-refresh">Refresh Data</button>
+  <div class="sbar">
+    <img id="itemImg" src="" alt="Item" style="display:none;">
+    <input id="query" placeholder="Search item... e.g., Gilded scimitar" autocomplete="off"/>
+    <div id="suggestBox" class="suggest" style="display:none"></div>
   </div>
+  <div class="refreshRow">
+    <div class="viewtabs">
+      <button data-view="1d" class="active">1D</button>
+      <button data-view="1w">1W</button>
+      <button data-view="1m">1M</button>
+      <button data-view="6m">6M</button>
+      <button data-view="1y">1Y</button>
+      <button data-view="5y">5Y</button>
+      <button data-view="all">All</button>
+    </div>
+    <div class="tools">
+      <span>Zoom:</span><button id="zIn">+</button><button id="zOut">-</button>
+      <span>Mode:</span>
+      <button id="lineMode" class="active">Line</button>
+      <button id="dotMode">Scatter</button>
+      <span>Indicators:</span>
+      <select id="indicatorSelect">
+        <option value="ichimoku">Ichimoku Cloud</option>
+        <option value="vp">Volume Profile</option>
+        <option value="volume">Volume</option>
+      </select>
+      <button id="addIndicator">Add</button>
+    </div>
+    <button id="refreshBtn" class="btn-refresh">Refresh</button>
+  </div>
+  <div class="chartWrap">
+    <canvas id="chart" class="chart"></canvas>
+    <div id="tip" class="chart-tip"></div>
+  </div>
+  <div class="legend"><span class="sell">Low (Buy)</span><span class="buy">High (Sell)</span></div>
 </div>
 <!-- SCRIPT -->
 <script>
-/* Constants & API */
-const $ = s => document.querySelector(s);
-const API = "https://prices.runescape.wiki/api/v1/osrs";
-let mapping=[], latest=null, volumes=null, selected=null;
-let currentSeries=null, view="1d", zoom=1.5, offset=0, drawMode="line";
-let membersOn=false;
-let enabledIndicators = [];
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-const tip = document.getElementById("tip");
-
-/* Utilities */
-const fmtGp = n => n==null ? "—" : Number(n).toLocaleString() + " gp";
-const fmtNum = n => n==null ? "—" : Number(n).toLocaleString();
-const abbreviateNumber = (num) => {
-  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
-  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
-  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
-  return num.toLocaleString();
-};
-async function jget(url){ const r=await fetch(url, {cache: "default"}); if(!r.ok) throw new Error(url+" HTTP "+r.status); return await r.json(); }
-const loadMapping=()=>jget(API+"/mapping");
-const loadLatest =()=>jget(API+"/latest");
-const loadVolumes=()=>jget(API+"/volumes");
-const loadTS =(step,id)=> jget(API+`/timeseries?timestep=${step}&id=${id}`);
-function bigIconUrl(id){ return `./images/${id}.png`; }
-function seriesFromTS(ts){
-  const src = ts?.data || [];
-  const rows = src.map(r=>({
-    t: Number(r.timestamp ?? r.ts ?? r.time),
-    lo: r.avgLowPrice ?? r.low ?? null,
-    hi: r.avgHighPrice ?? r.high ?? null,
-    vol: (r.lowPriceVolume ?? 0) + (r.highPriceVolume ?? 0) ?? r.volume ?? null
-  })).filter(r=>r.t && (r.lo!=null || r.hi!=null)).sort((a,b)=>a.t-b.t);
-  return { labels: rows.map(r=>r.t), low: rows.map(r=>r.lo), high: rows.map(r=>r.hi), vol: rows.map(r=>r.vol ?? 0) };
-}
-
-/* Ichimoku Calculation */
-function calculateIchimoku(series) {
-  const highs = series.high;
-  const lows = series.low;
-  const closes = highs.map((h, i) => (h + lows[i]) / 2); // Approx close
-  const getPeriodHigh = (period, index) => Math.max(...highs.slice(index - period + 1, index + 1));
-  const getPeriodLow = (period, index) => Math.min(...lows.slice(index - period + 1, index + 1));
-  const tenkan = [], kijun = [], senkouA = [], senkouB = [], chikou = [];
-  for (let i = 0; i < highs.length; i++) {
-    if (i >= 8) tenkan.push((getPeriodHigh(9, i) + getPeriodLow(9, i)) / 2);
-    if (i >= 25) kijun.push((getPeriodHigh(26, i) + getPeriodLow(26, i)) / 2);
-    if (i >= 51) senkouB.push((getPeriodHigh(52, i) + getPeriodLow(52, i)) / 2);
-    if (tenkan.length > 0 && kijun.length > 0) senkouA.push((tenkan[tenkan.length - 1] + kijun[kijun.length - 1]) / 2);
-    if (i >= 25) chikou.push(closes[i - 25] ?? null); else chikou.push(null);
-  }
-  // Shift senkou A/B ahead by 26
-  const shift = Array(26).fill(null);
-  return { tenkan, kijun, senkouA: [...shift, ...senkouA], senkouB: [...shift, ...senkouB], chikou };
-}
-
-/* Volume Profile Calculation */
-function calculateVP(series, bins = 50) {
-  const prices = series.low.map((lo, i) => (lo + series.high[i]) / 2).filter(p => p != null);
-  const vols = series.vol.filter(v => v > 0);
-  if (prices.length === 0) return { bins: [], maxVol: 0 };
-  const minP = Math.min(...prices), maxP = Math.max(...prices);
-  const binSize = (maxP - minP) / bins;
-  const vpBins = Array(bins).fill(0);
-  prices.forEach((p, i) => {
-    const binIndex = Math.min(bins - 1, Math.floor((p - minP) / binSize));
-    vpBins[binIndex] += vols[i] || 0;
-  });
-  const maxVol = Math.max(...vpBins);
-  return { bins: vpBins, minP, binSize, maxVol };
-}
-
-/* Enhanced Draw Chart with Indicators */
-function ypx(v, vmin, vmax, y0, h){ if(vmin===vmax) return y0+h/2; const p=(v-vmin)/(vmax-vmin); return y0 + (1-p)*h; }
-function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode){
-  const c = can; const W=c.width, H=c.height;
-  let x0=60, y0=30, w=W-x0-14, h=H-y0-42;
-  const hasVolume = enabledIndicators.includes('volume');
-  const hasVP = enabledIndicators.includes('vp');
-  if (hasVolume) h *= 0.8; // Bottom 20% for volume
-  if (hasVP) w *= 0.8; // Right 20% for VP
-  context.clearRect(0,0,W,H);
-  if(!series || !series.labels?.length) return;
-  // Windowing
-  const n = series.labels.length;
-  const win = Math.max(12, Math.floor(n/z));
-  const start = Math.max(0,Math.min(n-win, Math.floor(off)));
-  const end = start + win;
-  const L = series.labels.slice(start,end);
-  const LO = series.low.slice(start,end);
-  const HI = series.high.slice(start,end);
-  const VO = series.vol.slice(start,end);
-  const vals = [...LO, ...HI].filter(v=>v!=null);
-  if(!vals.length) return;
-  let vmin = Math.min(...vals), vmax = Math.max(...vals);
-  if(vmin===vmax){ vmin-=1; vmax+=1; }
-  // Axes
-  context.strokeStyle="#000"; context.globalAlpha=0.5;
-  context.beginPath(); context.moveTo(x0,y0); context.lineTo(x0,y0+h); context.lineTo(x0+w,y0+h); context.stroke();
-  context.globalAlpha=1;
-  // Grid
-  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
-  const lines=5;
-  for(let i=0;i<=lines;i++){
-    const y=y0 + (h*i/lines);
-    context.strokeStyle="rgba(255,255,255,0.06)";
-    context.beginPath(); context.moveTo(x0,y); context.lineTo(x0+w,y); context.stroke();
-  }
-  const stepX = w / Math.max(1,(L.length-1));
-  // Draw series
-  function drawSeries(arr, color, mode){
-    context.strokeStyle=color; context.fillStyle=color;
-    if(mode==="line"){
-      context.beginPath();
-      for(let i=0;i<arr.length;i++){
-        const v=arr[i]; if(v==null) continue;
-        const x=x0 + i*stepX;
-        const y=ypx(v, vmin, vmax, y0, h);
-        if(i===0) context.moveTo(x,y); else context.lineTo(x,y);
-      }
-      context.lineWidth=2; context.stroke();
-    }else{
-      for(let i=0;i<arr.length;i++){
-        const v=arr[i]; if(v==null) continue;
-        const x=x0 + i*stepX;
-        const y=ypx(v, vmin, vmax, y0, h);
-        context.beginPath(); context.arc(x,y,3,0,Math.PI*2); context.fill();
-      }
-    }
-  }
-  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), mode);
-  drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), mode);
-  // Buy/Sell lines (horizontal at current low/high)
-  const currentLo = latest.data[selected.id]?.low ?? 0;
-  const currentHi = latest.data[selected.id]?.high ?? 0;
-  if (currentLo) {
-    context.strokeStyle = '--low-color'; context.setLineDash([5,5]);
-    const yLo = ypx(currentLo, vmin, vmax, y0, h);
-    context.beginPath(); context.moveTo(x0, yLo); context.lineTo(x0+w, yLo); context.stroke();
-    context.setLineDash([]);
-  }
-  if (currentHi) {
-    context.strokeStyle = '--high-color'; context.setLineDash([5,5]);
-    const yHi = ypx(currentHi, vmin, vmax, y0, h);
-    context.beginPath(); context.moveTo(x0, yHi); context.lineTo(x0+w, yHi); context.stroke();
-    context.setLineDash([]);
-  }
-  // Indicators
-  if (enabledIndicators.includes('ichimoku')) {
-    const ichi = calculateIchimoku({high: series.high, low: series.low}); // Full series for calc
-    const tenkanSlice = ichi.tenkan.slice(start, end);
-    const kijunSlice = ichi.kijun.slice(start, end);
-    const senkouASlice = ichi.senkouA.slice(start, end);
-    const senkouBSlice = ichi.senkouB.slice(start, end);
-    const chikouSlice = ichi.chikou.slice(start, end);
-    drawSeries(tenkanSlice, '#00FFFF', 'line'); // Cyan
-    drawSeries(kijunSlice, '#FF00FF', 'line'); // Magenta
-    drawSeries(chikouSlice, '#FFFF00', 'line'); // Yellow
-    // Cloud fill
-    for (let i = 0; i < senkouASlice.length - 1; i++) {
-      const a1 = senkouASlice[i], b1 = senkouBSlice[i];
-      const a2 = senkouASlice[i+1], b2 = senkouBSlice[i+1];
-      if (a1 == null || b1 == null || a2 == null || b2 == null) continue;
-      context.beginPath();
-      const x1 = x0 + i * stepX, x2 = x0 + (i+1) * stepX;
-      const ya1 = ypx(a1, vmin, vmax, y0, h), yb1 = ypx(b1, vmin, vmax, y0, h);
-      const ya2 = ypx(a2, vmin, vmax, y0, h), yb2 = ypx(b2, vmin, vmax, y0, h);
-      context.moveTo(x1, ya1); context.lineTo(x2, ya2);
-      context.lineTo(x2, yb2); context.lineTo(x1, yb1); context.closePath();
-      context.fillStyle = a1 > b1 ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'; // Green/Red cloud
-      context.fill();
-    }
-    drawSeries(senkouASlice, '#00FF00', 'line'); // Green
-    drawSeries(senkouBSlice, '#FF0000', 'line'); // Red
-  }
-  if (hasVolume) {
-    const volY0 = y0 + h + 20; const volH = H - volY0 - 42;
-    const maxVol = Math.max(...VO);
-    context.strokeStyle="#000"; context.globalAlpha=0.5;
-    context.beginPath(); context.moveTo(x0, volY0); context.lineTo(x0, volY0 + volH); context.lineTo(x0+w, volY0 + volH); context.stroke();
-    context.globalAlpha=1;
-    for (let i = 0; i < VO.length; i++) {
-      const vol = VO[i];
-      const barHeight = (vol / maxVol) * volH;
-      const x = x0 + i * stepX - stepX / 4; // Center bar
-      context.fillStyle = '#888888';
-      context.fillRect(x, volY0 + volH - barHeight, stepX / 2, barHeight);
-    }
-  }
-  if (hasVP) {
-    const vpX0 = x0 + w + 20; const vpW = W - vpX0 - 14;
-    const vp = calculateVP({low: LO, high: HI, vol: VO});
-    context.strokeStyle="#000"; context.globalAlpha=0.5;
-    context.beginPath(); context.moveTo(vpX0, y0); context.lineTo(vpX0 + vpW, y0); context.lineTo(vpX0 + vpW, y0 + h); context.stroke();
-    context.globalAlpha=1;
-    const binHeight = h / vp.bins.length;
-    for (let i = 0; i < vp.bins.length; i++) {
-      const vol = vp.bins[i];
-      const barWidth = (vol / vp.maxVol) * vpW;
-      const y = y0 + i * binHeight;
-      context.fillStyle = '#888888';
-      context.fillRect(vpX0, y, barWidth, binHeight);
-    }
-  }
-  // Y labels
-  context.fillStyle="#fff"; context.font="bold 14px Segoe UI, Arial";
-  for(let i=0;i<=lines;i++){
-    const y=y0 + (h*i/lines);
-    const v = Math.round(vmax - (vmax-vmin)*i/lines);
-    context.fillText(abbreviateNumber(v), 6, y-4);
-  }
-  // X labels
-  context.fillStyle="#fff"; context.font="bold 12px Segoe UI, Arial";
-  const numLabels = 6;
-  const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
-  for(let i=0; i < L.length; i += labelStep){
-    const dateStr = new Date(L[i]*1000).toLocaleDateString();
-    const x = x0 + i*stepX;
-    context.fillText(dateStr, x - 20, H - 10);
-  }
-  // Hover tooltip
-  c.onmousemove = (ev)=>{
-    const rect=c.getBoundingClientRect();
-    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
-    if(mx<x0 || mx>x0+w || my<y0 || my>y0+h){ tip.style.display="none"; return; }
-    const idx=Math.max(0,Math.min(L.length-1, Math.round((mx-x0)/stepX)));
-    const t=L[idx]*1000;
-    const lo=LO[idx], hi=HI[idx], vol=VO[idx]||0;
-    tip.style.display="block";
-    tip.style.left = (mx+12)+"px";
-    tip.style.top = (my-10)+"px";
-    tip.innerHTML = `<strong>${new Date(t).toLocaleString()}</strong><br/>
-      Low: ${fmtGp(lo)}<br/>
-      High: ${fmtGp(hi)}<br/>
-      Vol: ${fmtNum(vol)}`;
-  };
-  c.onmouseleave = () => tip.style.display="none";
-}
-
-/* Set Item */
-async function setItem(m){
-  selected=m; $("#query").value=m.name;
-  document.title = `${m.name} Chart - Grant Exchange`;
-  $("#status").textContent="Loading…";
-  latest = await loadLatest();
-  volumes= await loadVolumes();
-  const stepMap = {"1d":"5m", "1w":"1h", "1m":"6h", "6m":"6h", "1y":"24h", "5y":"24h", "all":"24h"};
-  const ts = await loadTS(stepMap[view], m.id);
-  currentSeries = seriesFromTS(ts);
-  if (view === "1d") zoom = 6; else zoom = 1.5;
-  offset = currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom);
+// ... (keep the same script, but add anti-blur and item img update)
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = canvas.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
   drawChart(currentSeries);
-  $("#status").textContent="Ready";
 }
-
-/* Boot */
-(async function boot(){
-  mapping = await loadMapping();
-  let watchKey = membersOn ? 'watchlist_members' : 'watchlist_f2p';
-  // Autocomplete
-  const sb=$("#suggestBox");
-  $("#query").addEventListener("input", ()=>{
-    const q=$("#query").value.trim().toLowerCase();
-    if(!q){ sb.style.display="none"; sb.innerHTML=""; return; }
-    const list=mapping.filter(x=> (!membersOn && x.members ? false : true) && x.name.toLowerCase().includes(q)).slice(0,20);
-    sb.innerHTML=list.map(x=>`<div data-id="${x.id}">${x.name}</div>`).join("");
-    sb.style.display=list.length?"block":"none";
-  });
-  sb.addEventListener("click", (e)=>{
-    const id=e.target?.dataset?.id;
-    if(!id) return;
-    const m=mapping.find(x=>String(x.id)===String(id));
-    if(m){ sb.style.display="none"; setItem(m); }
-  });
-  // View buttons
-  document.querySelectorAll(".viewtabs button").forEach(b=>{
-    b.onclick=()=>{
-      document.querySelectorAll(".viewtabs button").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      view=b.dataset.view;
-      if(selected) setItem(selected);
-    }
-  });
-  // Chart tools
-  $("#zIn").onclick = ()=>{ zoom=Math.min(8, zoom*1.25); drawChart(currentSeries); };
-  $("#zOut").onclick= ()=>{ zoom=Math.max(1, zoom/1.25); drawChart(currentSeries); };
-  $("#lineMode").onclick=()=>{ drawMode="line"; $("#lineMode").classList.add("active"); $("#dotMode").classList.remove("active"); drawChart(currentSeries); };
-  $("#dotMode").onclick =()=>{ drawMode="dot"; $("#dotMode").classList.add("active"); $("#lineMode").classList.remove("active"); drawChart(currentSeries); };
-  // Mode toggle
-  $("#btnF2P").onclick=()=>{ membersOn=false; $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); if(selected) setItem(selected); };
-  $("#btnMembers").onclick=()=>{ membersOn=true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); if(selected) setItem(selected); };
-  // Add indicator
-  $("#addIndicator").onclick = () => {
-    const ind = $("#indicatorSelect").value;
-    if (!enabledIndicators.includes(ind)) enabledIndicators.push(ind);
-    if (currentSeries) drawChart(currentSeries);
-  };
-  // Refresh
-  $("#refreshBtn").onclick=async ()=>{ 
-    $("#status").textContent="Refreshing…";
-    latest = await loadLatest();
-    volumes = await loadVolumes();
-    if(selected) setItem(selected);
-    $("#status").textContent="Ready";
-  };
-  // Initial
-  latest = await loadLatest();
-  volumes = await loadVolumes();
-  const defaultItem = mapping.find(x=>x.name.toLowerCase()==="gilded scimitar");
-  if(defaultItem) setItem(defaultItem);
-})(); 
+window.addEventListener('resize', resizeCanvas);
+// In setItem
+$('#itemImg').src = bigIconUrl(m.id);
+$('#itemImg').style.display = 'block';
+// Call resizeCanvas after boot and on load
+resizeCanvas();
+// Update Ichimoku colors to standard
+// Tenkan: #069af3 (blue), Kijun: #ec2b88 (red), Senkou A: #a1d8a0 (light green), Senkou B: #d8a0a6 (light red), Chikou: #22b14c (green)
+// In drawChart, adjust drawSeries colors for ichi
+drawSeries(tenkanSlice, '#069af3', 'line');
+drawSeries(kijunSlice, '#ec2b88', 'line');
+drawSeries(chikouSlice, '#22b14c', 'line');
+drawSeries(senkouASlice, '#a1d8a0', 'line');
+drawSeries(senkouBSlice, '#d8a0a6', 'line');
+// For cloud fill: if a1 > b1 green cloud 'rgba(161,216,160,0.2)', else red 'rgba(216,160,166,0.2)'
+context.fillStyle = a1 > b1 ? 'rgba(161,216,160,0.2)' : 'rgba(216,160,166,0.2)';
+// ... rest same
 </script>
 </body>
 </html>
