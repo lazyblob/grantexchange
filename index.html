@@ -144,7 +144,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <button data-view="1m" class="view-btn">1M</button>
       <button data-view="6m" class="view-btn">6M</button>
       <button data-view="1y" class="view-btn">1Y</button>
-      <button data-view="all" class="view-btn">ALL</button>
+      <button data-view="all" class="view-btn">5Y</button>
       <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
       <button id="lineMode" class="active">Line</button>
       <button id="dotMode">Dots</button>
@@ -178,7 +178,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 </div>
 <script>
 const $ = s => document.querySelector(s);
-const API = "https://prices.runescape.wiki/api/v1/osrs";
+const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
+const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
 let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
 let vpActive = false, ichiActive = false;
@@ -205,12 +206,14 @@ async function jget(url) {
   if (!r.ok) throw new Error(url + " HTTP " + r.status);
   return await r.json();
 }
-const loadMapping = () => jget(API + "/mapping");
-const loadLatest = () => jget(API + "/latest");
-const loadVolumes = () => jget(API + "/volumes");
-const loadTS = (step, id) => jget(API + `/timeseries?timestep=${step}&id=${id}`);
-function bigIconUrl(id) {
-  return `https://oldschool.runescape.wiki/images/${id}.png?${id}`;
+const loadMapping = () => jget(PRICES_API + "/mapping");
+const loadLatest = () => jget(PRICES_API + "/latest");
+const loadVolumes = () => jget(PRICES_API + "/volumes");
+const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
+const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
+function bigIconUrl(name) {
+  const fileName = name.replace(/ /g, '_');
+  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(fileName)}.png`;
 }
 function suggestPrices(low, high) {
   if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
@@ -246,9 +249,42 @@ function seriesFromTS(ts) {
     t: Number(r.timestamp ?? r.ts ?? r.time),
     lo: r.avgLowPrice ?? r.low ?? null,
     hi: r.avgHighPrice ?? r.high ?? null,
-    vol: r.lowPriceVolume ?? r.highPriceVolume ?? r.volume ?? null
+    vol: (r.lowPriceVolume ?? 0) + (r.highPriceVolume ?? 0) ?? r.volume ?? null
   })).filter(r => r.t && (r.lo != null || r.hi != null)).sort((a, b) => a.t - b.t);
   return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
+}
+function seriesFromHistorical(h) {
+  const src = h?.[String(selected.id)] || [];
+  const rows = src.map(r => ({
+    t: Number(r.timestamp / 1000),
+    lo: r.price,
+    hi: r.price,
+    vol: r.volume ?? 0
+  })).filter(r => r.t && r.lo != null).sort((a, b) => a.t - b.t);
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
+}
+function getPeriod(view) {
+  const periods = {
+    "1d": 86400,
+    "1w": 604800,
+    "1m": 2592000,
+    "6m": 15552000,
+    "1y": 31536000,
+    "all": Infinity
+  };
+  return periods[view] || Infinity;
+}
+function filterSeries(series, view) {
+  if (view === "all") return series;
+  const period = getPeriod(view);
+  const minT = Math.max(...series.labels) - period;
+  const startIdx = series.labels.findIndex(t => t >= minT);
+  return {
+    labels: series.labels.slice(startIdx),
+    low: series.low.slice(startIdx),
+    high: series.high.slice(startIdx),
+    vol: series.vol.slice(startIdx)
+  };
 }
 function ypx(v, vmin, vmax, y0, h) {
   if (vmin === vmax) return y0 + h / 2;
@@ -294,7 +330,7 @@ function calculateIchimoku(series) {
 function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode) {
   const c = can;
   const W = c.width, H = c.height;
-  const x0 = 60, y0 = 30, w = W - x0 - 14, h = H - y0 - 42;
+  const x0 = 70, y0 = 40, w = W - x0 - 30, h = H - y0 - 50;
   context.clearRect(0, 0, W, H);
   if (!series || !series.labels?.length) { 
     context.fillStyle = "#fff"; 
@@ -310,7 +346,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   const L = series.labels.slice(start, end);
   const LO = series.low.slice(start, end);
   const HI = series.high.slice(start, end);
-  const VO = (series.vol || []).slice(start, end);
+  const VO = series.vol.slice(start, end);
   const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) { 
     context.fillStyle = "#fff"; 
@@ -323,7 +359,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   context.strokeStyle = "#000"; context.globalAlpha = 0.5;
   context.beginPath(); context.moveTo(x0, y0); context.lineTo(x0, y0 + h); context.lineTo(x0 + w, y0 + h); context.stroke();
   context.globalAlpha = 1;
-  context.fillStyle = "#fff"; context.font = "bold 14px Segoe UI, Arial";
+  context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   const lines = 5;
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
@@ -336,61 +372,58 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.fillStyle = color;
     if (mode === "line") {
       context.beginPath();
+      let started = false;
       for (let i = 0; i < arr.length; i++) {
-        const v = arr[i]; if (v == null) continue;
+        const v = arr[i]; if (v == null) { started = false; continue; }
         const x = x0 + i * stepX;
         const y = ypx(v, vmin, vmax, y0, h);
-        if (i === 0) context.moveTo(x, y); else context.lineTo(x, y);
+        if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
       }
-      context.lineWidth = 2; context.stroke();
+      context.lineWidth = 3; context.stroke();
     } else if (mode === "dot") { // scatter
       for (let i = 0; i < arr.length; i++) {
         const v = arr[i]; if (v == null) continue;
         const x = x0 + i * stepX;
         const y = ypx(v, vmin, vmax, y0, h);
-        context.beginPath(); context.arc(x, y, 3, 0, Math.PI * 2); context.fill();
+        context.beginPath(); context.arc(x, y, 4, 0, Math.PI * 2); context.fill();
       }
     }
   }
   const h_price = h * 0.8;
   const h_vol = h * 0.2;
   const y0_vol = y0 + h_price;
-  if (drawMode === "line") {
-    drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
-    drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), "line");
-  } else if (drawMode === "dot") {
-    drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "dot");
-    drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), "dot");
-    // Draw volume bars
-    const maxVol = Math.max(...VO);
-    for (let i = 0; i < VO.length; i++) {
-      const v = VO[i];
-      if (v == null) continue;
-      const x = x0 + i * stepX - stepX / 4;
-      const width = stepX / 2;
-      const height = (v / maxVol) * h_vol;
-      context.fillStyle = '#fff';
-      context.fillRect(x, y0_vol + h_vol - height, width, height);
-    }
+  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
+  drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
+  // Draw volume bars always at bottom
+  const maxVol = Math.max(...VO, 1); // avoid division by zero
+  for (let i = 0; i < VO.length; i++) {
+    const v = VO[i];
+    if (v == null) continue;
+    const x = x0 + i * stepX - stepX / 4;
+    const width = stepX / 2;
+    const height = (v / maxVol) * h_vol;
+    context.fillStyle = '#aaa';
+    context.fillRect(x, y0_vol + h_vol - height, width, height);
   }
   if (vpActive) {
-    const mid = L.map((_, i) => (LO[i] + HI[i]) / 2);
-    const numBins = 20;
+    const mid = L.map((_, i) => (LO[i] + HI[i]) / 2).filter(p => p != null);
+    if (mid.length === 0) return;
+    const numBins = 50;
     const binSize = (vmax - vmin) / numBins;
     const bins = Array(numBins).fill(0);
     for (let i = 0; i < mid.length; i++) {
       const p = mid[i];
-      if (p == null) continue;
       const binIndex = Math.min(numBins - 1, Math.floor((p - vmin) / binSize));
       bins[binIndex] += VO[i];
     }
     const maxBin = Math.max(...bins);
     for (let i = 0; i < numBins; i++) {
       const binVol = bins[i];
+      if (binVol === 0) continue;
       const binCenter = vmin + (i + 0.5) * binSize;
       const y = ypx(binCenter, vmin, vmax, y0, h);
-      const binH = (h / (vmax - vmin)) * binSize;
-      const binW = (binVol / maxBin) * 100;
+      const binH = (h / (vmax - vmin)) * binSize * 1.2; // slightly overlap for better look
+      const binW = (binVol / maxBin) * 200;
       context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
     }
@@ -433,19 +466,19 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   }
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
   drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
-  context.fillStyle = "#fff"; context.font = "bold 14px Segoe UI, Arial";
+  context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
     const v = Math.round(vmax - (vmax - vmin) * i / lines);
     context.fillText(abbreviateNumber(v), 6, y - 4);
   }
-  context.fillStyle = "#fff"; context.font = "bold 12px Segoe UI, Arial";
+  context.fillStyle = "#fff"; context.font = "bold 14px Segoe UI, Arial";
   const numLabels = 6;
   const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
   for (let i = 0; i < L.length; i += labelStep) {
     const dateStr = new Date(L[i] * 1000).toLocaleDateString();
     const x = x0 + i * stepX;
-    context.fillText(dateStr, x - 20, H - 10);
+    context.fillText(dateStr, x - 30, H - 10);
   }
   let isDragging = false;
   let startX = 0;
@@ -491,7 +524,7 @@ async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
   document.title = `${m.name} - Grant Exchange`;
-  $("#itemIcon").src = bigIconUrl(m.id);
+  $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading latest…";
   latest = await loadLatest();
   volumes = await loadVolumes();
@@ -501,9 +534,16 @@ async function setItem(m) {
   $("#buyPrice span").textContent = fmtGp(lo);
   $("#sellPrice span").textContent = fmtGp(hi);
   $("#status").textContent = "Loading chart…";
-  const step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h");
-  const ts = await loadTS(step, m.id);
-  currentSeries = seriesFromTS(ts);
+  let ts;
+  if (view === "all") {
+    ts = await loadHistorical(m.id);
+    currentSeries = seriesFromHistorical(ts);
+  } else {
+    const step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h");
+    ts = await loadTS(step, m.id);
+    currentSeries = seriesFromTS(ts);
+  }
+  currentSeries = filterSeries(currentSeries, view);
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
   drawChart(currentSeries);
   const vol = volumes.data[String(m.id)] || 0;
@@ -532,7 +572,7 @@ async function setItem(m) {
       const q = $("#query").value.trim().toLowerCase();
       if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
       const list = mapping.filter(x => x.name.toLowerCase().includes(q)).slice(0, 20);
-      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${bigIconUrl(x.id)}">${x.name}</div>`).join("");
+      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${bigIconUrl(x.name)}">${x.name}</div>`).join("");
       sb.style.display = list.length ? "block" : "none";
     });
     sb.addEventListener("click", (e) => {
