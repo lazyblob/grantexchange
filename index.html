@@ -37,8 +37,8 @@
   --orange: #ff9900;
   --ink: #ffffff;
   --muted: #aaaaaa;
-  --low-color: #ff4d4d;
-  --high-color: #4dff4d;
+  --low-color: #00bfff;
+  --high-color: #ff9900;
   --grid: #222222;
   --accent: #ffff00;
   --shadow: #000000;
@@ -50,18 +50,17 @@
   --ichi-senkou-b: #ffb6c1;
   --cloud-green: rgba(144,238,144,0.2);
   --cloud-red: rgba(255,182,193,0.2);
+  --iqr-high: #8b4513;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: Segoe UI, Inter, system-ui, Arial; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.wrap { max-width: 1440px; margin: 24px auto; padding: 0 12px; min-height: calc(100vh - 48px); display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.wrap { max-width: 1440px; margin: 24px auto; padding: 0 12px; min-height: calc(100vh - 48px); display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 .header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-shadow: 0 1px 0 var(--shadow); cursor: pointer; }
 .badge { font-size: 13px; border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px; color: var(--muted); background: var(--panel); }
 .small { font-size: 13px; color: var(--muted); }
 .card { background: linear-gradient(180deg, var(--panel) 0%, #111 100%); border: 1px solid var(--edge); border-radius: 20px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-.left { display: flex; flex-direction: column; grid-column: 1; }
-.right { grid-column: 2; grid-row: 2 / span 2; }
 .hr { border: none; border-top: 1px solid var(--edge); margin: 12px 0; }
 .top-row { display: flex; align-items: center; gap: 12px; }
 .sbar { flex: 1; position: relative; }
@@ -109,8 +108,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
   100% {border-color: #ff0000;} 
 }
 @media (max-width: 768px) {
-  .wrap { grid-template-columns: 1fr; }
-  .right { grid-column: 1; grid-row: auto; }
   .top-row { flex-direction: column; gap: 12px; }
   .price-box { min-width: 0; width: 100%; }
   .toolbar { justify-content: center; }
@@ -123,7 +120,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v4.0</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.0</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div class="mode-pill">
       <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -161,18 +158,20 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
-  </div>
-  <div class="card right">
+    <div class="hr"></div>
     <div class="key-info">
       <h2>Key Info</h2>
       <div class="info-grid">
         <div>Buy Price</div><div id="keyBuyPrice">—</div>
         <div>Sell Price</div><div id="keySellPrice">—</div>
         <div>Volume</div><div id="keyVolume">—</div>
+        <div>Period Volume</div><div id="keyPeriodVolume">—</div>
         <div>Limit</div><div id="keyLimit">—</div>
         <div>Tax</div><div id="keyTax">—</div>
         <div>Margin</div><div id="keyMargin">—</div>
         <div>ROI</div><div id="keyROI">—</div>
+        <div>Period Change</div><div id="keyChange">—</div>
+        <div>Period % Change</div><div id="keyPctChange">—</div>
         <div>Potential Profit</div><div id="keyPotProfit">—</div>
       </div>
     </div>
@@ -183,7 +182,7 @@ const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
-let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
+let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "dot";
 let vpActive = false, ichiActive = false;
 let membersOn = false;
 const canvas = document.getElementById("chart");
@@ -251,9 +250,10 @@ function seriesFromTS(ts) {
     t: Number(r.timestamp ?? r.ts ?? r.time),
     lo: r.avgLowPrice ?? r.low ?? null,
     hi: r.avgHighPrice ?? r.high ?? null,
-    vol: (r.lowPriceVolume ?? 0) + (r.highPriceVolume ?? 0) ?? r.volume ?? null
+    lowVol: r.lowPriceVolume ?? 0,
+    highVol: r.highPriceVolume ?? 0
   })).filter(r => r.t && (r.lo != null || r.hi != null)).sort((a, b) => a.t - b.t);
-  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), lowVol: rows.map(r => r.lowVol), highVol: rows.map(r => r.highVol) };
 }
 function seriesFromHistorical(h) {
   const src = h?.[String(selected.id)] || [];
@@ -261,9 +261,10 @@ function seriesFromHistorical(h) {
     t: Number(r.timestamp / 1000),
     lo: r.price,
     hi: r.price,
-    vol: r.volume ?? 0
+    lowVol: r.volume ?? 0,
+    highVol: 0
   })).filter(r => r.t && r.lo != null).sort((a, b) => a.t - b.t);
-  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), lowVol: rows.map(r => r.lowVol), highVol: rows.map(r => r.highVol) };
 }
 function getPeriod(view) {
   const periods = {
@@ -285,7 +286,8 @@ function filterSeries(series, view) {
     labels: series.labels.slice(startIdx),
     low: series.low.slice(startIdx),
     high: series.high.slice(startIdx),
-    vol: series.vol.slice(startIdx)
+    lowVol: series.lowVol.slice(startIdx),
+    highVol: series.highVol.slice(startIdx)
   };
 }
 function ypx(v, vmin, vmax, y0, h) {
@@ -304,6 +306,15 @@ function linearRegression(x, y) {
   const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
   const intercept = meanY - slope * meanX;
   return { slope, intercept };
+}
+function percentile(arr, p) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const index = (p / 100) * (sorted.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const weight = index - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 function calculateIchimoku(series) {
   const mid = series.labels.map((_, i) => (series.low[i] + series.high[i]) / 2);
@@ -329,6 +340,23 @@ function calculateIchimoku(series) {
   }
   return { tenkan, kijun, senkouA, senkouB, chikou };
 }
+function calculateIQR(series, window = 26) {
+  const mid = series.labels.map((_, i) => {
+    if (series.low[i] != null && series.high[i] != null) return (series.low[i] + series.high[i]) / 2;
+    if (series.low[i] != null) return series.low[i];
+    if (series.high[i] != null) return series.high[i];
+    return null;
+  });
+  const lowIQR = Array(mid.length).fill(null);
+  const highIQR = Array(mid.length).fill(null);
+  for (let i = window - 1; i < mid.length; i++) {
+    const windowMids = mid.slice(i - window + 1, i + 1).filter(v => v != null);
+    if (windowMids.length < Math.floor(window / 2)) continue;
+    lowIQR[i] = percentile(windowMids, 25);
+    highIQR[i] = percentile(windowMids, 75);
+  }
+  return { lowIQR, highIQR };
+}
 function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode) {
   const c = can;
   const W = c.width, H = c.height;
@@ -348,7 +376,9 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   const L = series.labels.slice(start, end);
   const LO = series.low.slice(start, end);
   const HI = series.high.slice(start, end);
-  const VO = series.vol.slice(start, end);
+  const LOWVOL = series.lowVol.slice(start, end);
+  const HIGHVOL = series.highVol.slice(start, end);
+  const VO = LOWVOL.map((lv, i) => lv + HIGHVOL[i]);
   const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) { 
     context.fillStyle = "#fff"; 
@@ -387,7 +417,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
         const v = arr[i]; if (v == null) continue;
         const x = x0 + i * stepX;
         const y = ypx(v, vmin, vmax, y0, h);
-        context.beginPath(); context.arc(x, y, 4, 0, Math.PI * 2); context.fill();
+        context.beginPath(); context.arc(x, y, 2, 0, Math.PI * 2); context.fill();
       }
     }
   }
@@ -396,17 +426,24 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   const y0_vol = y0 + h_price;
   drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
   drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
-  // Draw volume bars always at bottom
+  // Draw stacked volume bars always at bottom
   const maxVol = Math.max(...VO, 1); // avoid division by zero
+  context.globalAlpha = 0.6;
   for (let i = 0; i < VO.length; i++) {
-    const v = VO[i];
-    if (v == null) continue;
-    const x = x0 + i * stepX - stepX / 4;
-    const width = stepX / 2;
-    const height = (v / maxVol) * h_vol;
-    context.fillStyle = '#aaa';
-    context.fillRect(x, y0_vol + h_vol - height, width, height);
+    const lv = LOWVOL[i];
+    const hv = HIGHVOL[i];
+    if (lv == null && hv == null) continue;
+    const totalH = ((lv + hv) / maxVol) * h_vol;
+    const lowH = (lv / maxVol) * h_vol;
+    const highH = totalH - lowH;
+    const x = x0 + i * stepX - (stepX * 0.3 / 2);
+    const width = stepX * 0.3;
+    context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
+    context.fillRect(x, y0_vol + h_vol - lowH, width, lowH);
+    context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
+    context.fillRect(x, y0_vol + h_vol - totalH, width, highH);
   }
+  context.globalAlpha = 1;
   if (vpActive) {
     const mid = L.map((_, i) => (LO[i] + HI[i]) / 2).filter(p => p != null);
     if (mid.length === 0) return;
@@ -419,6 +456,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       bins[binIndex] += VO[i];
     }
     const maxBin = Math.max(...bins);
+    context.globalAlpha = 0.3;
     for (let i = 0; i < numBins; i++) {
       const binVol = bins[i];
       if (binVol === 0) continue;
@@ -428,7 +466,12 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       const binW = (binVol / maxBin) * 200;
       context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
+      context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      context.lineWidth = 2;
+      context.strokeRect(x0 + w + 10, y - binH / 2, binW, binH);
     }
+    context.globalAlpha = 1;
+    context.lineWidth = 1;
   }
   if (ichiActive) {
     const ichi = calculateIchimoku({low: LO, high: HI, labels: L});
@@ -447,6 +490,30 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     drawSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim(), "line");
     drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
   }
+  function drawPrediction(arr, color) {
+    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
+    if (nonNull.length < 2) return;
+    const xVals = nonNull.map(({i}) => i);
+    const yVals = nonNull.map(({v}) => v);
+    const { slope, intercept } = linearRegression(xVals, yVals);
+    context.save();
+    context.setLineDash([6, 6]);
+    context.strokeStyle = color;
+    context.beginPath();
+    const startX = x0;
+    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
+    const endX = x0 + (arr.length - 1) * stepX;
+    const endY = ypx(slope * (arr.length - 1) + intercept, vmin, vmax, y0, h);
+    context.moveTo(startX, startY);
+    context.lineTo(endX, endY);
+    context.lineWidth = 2; context.stroke();
+    context.restore();
+  }
+  drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
+  drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
+  const iqr = calculateIQR({low: LO, high: HI, labels: L});
+  drawSeries(iqr.lowIQR, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
+  drawSeries(iqr.highIQR, getComputedStyle(document.documentElement).getPropertyValue('--iqr-high').trim(), "line");
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
@@ -533,13 +600,28 @@ async function setItem(m) {
   const margin = hi && lo ? hi - lo - tax : 0;
   const roi = lo ? ((margin / lo) * 100).toFixed(2) + '%' : '0%';
   const potProfit = margin * limit;
+  let firstMid = null, lastMid = null, periodVol = 0;
+  for (let i = 0; i < currentSeries.labels.length; i++) {
+    const l = currentSeries.low[i], h = currentSeries.high[i], v = currentSeries.lowVol[i] + currentSeries.highVol[i];
+    if (l != null || h != null) {
+      const mid = ((l ?? h) + (h ?? l)) / 2;
+      if (firstMid == null) firstMid = mid;
+      lastMid = mid;
+    }
+    periodVol += v;
+  }
+  const change = lastMid - firstMid;
+  const pctChange = firstMid ? ((change / firstMid) * 100).toFixed(2) + '%' : '0%';
   $("#keyBuyPrice").textContent = fmtGp(lo);
   $("#keySellPrice").textContent = fmtGp(hi);
   $("#keyVolume").textContent = fmtNum(vol);
+  $("#keyPeriodVolume").textContent = fmtNum(periodVol);
   $("#keyLimit").textContent = fmtNum(limit);
   $("#keyTax").textContent = fmtGp(tax);
   $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin);
   $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi;
+  $("#keyChange").textContent = (change > 0 ? '+' : '') + fmtGp(change);
+  $("#keyPctChange").textContent = (change > 0 ? '+' : '') + pctChange;
   $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit);
   $("#status").textContent = "Ready";
 }
