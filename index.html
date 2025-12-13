@@ -54,14 +54,13 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: Segoe UI, Inter, system-ui, Arial; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.wrap { max-width: 1440px; margin: 24px auto; padding: 0 12px; min-height: calc(100vh - 48px); display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.wrap { max-width: 1440px; margin: 24px auto; padding: 0 12px; min-height: calc(100vh - 48px); display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 .header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-shadow: 0 1px 0 var(--shadow); cursor: pointer; }
 .badge { font-size: 13px; border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px; color: var(--muted); background: var(--panel); }
 .small { font-size: 13px; color: var(--muted); }
 .card { background: linear-gradient(180deg, var(--panel) 0%, #111 100%); border: 1px solid var(--edge); border-radius: 20px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-.left { display: flex; flex-direction: column; grid-column: 1; }
-.right { grid-column: 2; grid-row: 2 / span 2; }
+.left { display: flex; flex-direction: column; }
 .hr { border: none; border-top: 1px solid var(--edge); margin: 12px 0; }
 .top-row { display: flex; align-items: center; gap: 12px; }
 .sbar { flex: 1; position: relative; }
@@ -83,7 +82,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; }
-.chart { width: 100%; height: 600px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
+.chart { width: 100%; height: 700px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
 .legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); }
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
@@ -109,8 +108,6 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
   100% {border-color: #ff0000;} 
 }
 @media (max-width: 768px) {
-  .wrap { grid-template-columns: 1fr; }
-  .right { grid-column: 1; grid-row: auto; }
   .top-row { flex-direction: column; gap: 12px; }
   .price-box { min-width: 0; width: 100%; }
   .toolbar { justify-content: center; }
@@ -123,7 +120,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v4.0</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v4.1</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div class="mode-pill">
       <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -154,25 +151,27 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <button id="refreshBtn" class="btn-refresh">Refresh</button>
     </div>
     <div class="chartWrap">
-      <canvas id="chart" class="chart" width="980" height="600"></canvas>
+      <canvas id="chart" class="chart" width="980" height="700"></canvas>
       <div id="tip" class="chart-tip"></div>
     </div>
     <div class="legend">
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
-  </div>
-  <div class="card right">
+    <div class="hr"></div>
     <div class="key-info">
       <h2>Key Info</h2>
       <div class="info-grid">
         <div>Buy Price</div><div id="keyBuyPrice">—</div>
         <div>Sell Price</div><div id="keySellPrice">—</div>
         <div>Volume</div><div id="keyVolume">—</div>
+        <div>Period Volume</div><div id="keyPeriodVolume">—</div>
         <div>Limit</div><div id="keyLimit">—</div>
         <div>Tax</div><div id="keyTax">—</div>
         <div>Margin</div><div id="keyMargin">—</div>
         <div>ROI</div><div id="keyROI">—</div>
+        <div>Period Change</div><div id="keyChange">—</div>
+        <div>Period % Change</div><div id="keyPctChange">—</div>
         <div>Potential Profit</div><div id="keyPotProfit">—</div>
       </div>
     </div>
@@ -293,18 +292,6 @@ function ypx(v, vmin, vmax, y0, h) {
   const p = (v - vmin) / (vmax - vmin);
   return y0 + (1 - p) * h;
 }
-function linearRegression(x, y) {
-  const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-  const meanX = sumX / n;
-  const meanY = sumY / n;
-  const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
-  const intercept = meanY - slope * meanX;
-  return { slope, intercept };
-}
 function calculateIchimoku(series) {
   const mid = series.labels.map((_, i) => (series.low[i] + series.high[i]) / 2);
   const getHigh = (arr, start, end) => Math.max(...arr.slice(Math.max(0, start), end));
@@ -362,51 +349,48 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   context.beginPath(); context.moveTo(x0, y0); context.lineTo(x0, y0 + h); context.lineTo(x0 + w, y0 + h); context.stroke();
   context.globalAlpha = 1;
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
-  const lines = 5;
+  const lines = 8; // more grid lines for better display
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
     context.strokeStyle = "rgba(255,255,255,0.06)";
     context.beginPath(); context.moveTo(x0, y); context.lineTo(x0 + w, y); context.stroke();
   }
   const stepX = w / Math.max(1, (L.length - 1));
-  function drawSeries(arr, color, mode) {
-    context.strokeStyle = color;
-    context.fillStyle = color;
-    if (mode === "line") {
-      context.beginPath();
-      let started = false;
-      for (let i = 0; i < arr.length; i++) {
-        const v = arr[i]; if (v == null) { started = false; continue; }
-        const x = x0 + i * stepX;
-        const y = ypx(v, vmin, vmax, y0, h);
-        if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
-      }
-      context.lineWidth = 3; context.stroke();
-    } else if (mode === "dot") { // scatter
-      for (let i = 0; i < arr.length; i++) {
-        const v = arr[i]; if (v == null) continue;
-        const x = x0 + i * stepX;
-        const y = ypx(v, vmin, vmax, y0, h);
-        context.beginPath(); context.arc(x, y, 4, 0, Math.PI * 2); context.fill();
-      }
-    }
+  // Draw candles instead of lines
+  let prevMid = null;
+  for (let i = 0; i < L.length; i++) {
+    const lo = LO[i], hi = HI[i];
+    if (lo == null || hi == null) continue;
+    const mid = (lo + hi) / 2;
+    const colorVar = (prevMid !== null && mid >= prevMid) ? '--high-color' : '--low-color';
+    context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim();
+    const x = x0 + i * stepX - 2; // thin width 4
+    const yLo = ypx(Math.max(lo, hi), vmin, vmax, y0, h); // min y
+    const yHi = ypx(Math.min(lo, hi), vmin, vmax, y0, h); // max y
+    const candleH = yHi - yLo;
+    context.fillRect(x, yLo, 4, candleH);
+    prevMid = mid;
   }
   const h_price = h * 0.8;
   const h_vol = h * 0.2;
   const y0_vol = y0 + h_price;
-  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
-  drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
-  // Draw volume bars always at bottom
+  // Draw volume bars
   const maxVol = Math.max(...VO, 1); // avoid division by zero
+  let prevVolMid = null;
+  context.globalAlpha = 0.7; // subtle
   for (let i = 0; i < VO.length; i++) {
     const v = VO[i];
     if (v == null) continue;
-    const x = x0 + i * stepX - stepX / 4;
-    const width = stepX / 2;
+    const mid = (LO[i] + HI[i]) / 2;
+    const colorVar = (prevVolMid !== null && mid > prevVolMid) ? '--high-color' : '--low-color';
+    context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim();
+    const x = x0 + i * stepX - (stepX * 0.15); // narrower width stepX * 0.3
+    const width = stepX * 0.3;
     const height = (v / maxVol) * h_vol;
-    context.fillStyle = '#aaa';
     context.fillRect(x, y0_vol + h_vol - height, width, height);
+    prevVolMid = mid;
   }
+  context.globalAlpha = 1;
   if (vpActive) {
     const mid = L.map((_, i) => (LO[i] + HI[i]) / 2).filter(p => p != null);
     if (mid.length === 0) return;
@@ -419,16 +403,22 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       bins[binIndex] += VO[i];
     }
     const maxBin = Math.max(...bins);
+    context.globalAlpha = 0.3; // subtle
+    context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    context.lineWidth = 2; // bold lines
     for (let i = 0; i < numBins; i++) {
       const binVol = bins[i];
       if (binVol === 0) continue;
       const binCenter = vmin + (i + 0.5) * binSize;
       const y = ypx(binCenter, vmin, vmax, y0, h);
-      const binH = (h / (vmax - vmin)) * binSize * 1.2; // slightly overlap for better look
+      const binH = (h / (vmax - vmin)) * binSize * 1.5; // bolder height
       const binW = (binVol / maxBin) * 200;
       context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
+      context.strokeRect(x0 + w + 10, y - binH / 2, binW, binH);
     }
+    context.globalAlpha = 1;
+    context.lineWidth = 1;
   }
   if (ichiActive) {
     const ichi = calculateIchimoku({low: LO, high: HI, labels: L});
@@ -441,11 +431,23 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       context.fillStyle = color;
       context.fillRect(x0 + i * stepX - stepX / 2, Math.min(y1, y2), stepX, Math.abs(y1 - y2));
     }
-    drawSeries(ichi.tenkan, getComputedStyle(document.documentElement).getPropertyValue('--ichi-tenkan').trim(), "line");
-    drawSeries(ichi.kijun, getComputedStyle(document.documentElement).getPropertyValue('--ichi-kijun').trim(), "line");
-    drawSeries(ichi.chikou, getComputedStyle(document.documentElement).getPropertyValue('--ichi-chikou').trim(), "line");
-    drawSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim(), "line");
-    drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
+    function drawIchiSeries(arr, color) {
+      context.strokeStyle = color;
+      context.beginPath();
+      let started = false;
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i]; if (v == null) { started = false; continue; }
+        const x = x0 + i * stepX;
+        const y = ypx(v, vmin, vmax, y0, h);
+        if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
+      }
+      context.lineWidth = 3; context.stroke();
+    }
+    drawIchiSeries(ichi.tenkan, getComputedStyle(document.documentElement).getPropertyValue('--ichi-tenkan').trim());
+    drawIchiSeries(ichi.kijun, getComputedStyle(document.documentElement).getPropertyValue('--ichi-kijun').trim());
+    drawIchiSeries(ichi.chikou, getComputedStyle(document.documentElement).getPropertyValue('--ichi-chikou').trim());
+    drawIchiSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim());
+    drawIchiSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim());
   }
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
@@ -502,6 +504,10 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   };
 }
 async function setItem(m) {
+  if (!membersOn && m.members) {
+    alert("This item is members-only. Switch to Members mode.");
+    return;
+  }
   selected = m;
   $("#query").value = m.name;
   document.title = `${m.name} - Grant Exchange`;
@@ -526,6 +532,19 @@ async function setItem(m) {
   }
   currentSeries = filterSeries(currentSeries, view);
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
+  // Calculate period stats
+  let firstMid = null, lastMid = null, periodVol = 0;
+  for (let i = 0; i < currentSeries.labels.length; i++) {
+    const l = currentSeries.low[i], h = currentSeries.high[i], v = currentSeries.vol[i];
+    if (l != null && h != null) {
+      const mid = (l + h) / 2;
+      if (firstMid == null) firstMid = mid;
+      lastMid = mid;
+    }
+    if (v != null) periodVol += v;
+  }
+  const change = (firstMid != null && lastMid != null) ? lastMid - firstMid : 0;
+  const pctChange = (firstMid != null && firstMid != 0) ? ((change / firstMid) * 100).toFixed(2) + '%' : '0%';
   drawChart(currentSeries);
   const vol = volumes.data[String(m.id)] || 0;
   const limit = selected.buy_limit || 0;
@@ -536,10 +555,13 @@ async function setItem(m) {
   $("#keyBuyPrice").textContent = fmtGp(lo);
   $("#keySellPrice").textContent = fmtGp(hi);
   $("#keyVolume").textContent = fmtNum(vol);
+  $("#keyPeriodVolume").textContent = fmtNum(periodVol);
   $("#keyLimit").textContent = fmtNum(limit);
   $("#keyTax").textContent = fmtGp(tax);
   $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin);
   $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi;
+  $("#keyChange").textContent = (change > 0 ? '+' : '') + fmtGp(change);
+  $("#keyPctChange").textContent = (change > 0 ? '+' : '') + pctChange;
   $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit);
   $("#status").textContent = "Ready";
 }
@@ -552,7 +574,7 @@ async function setItem(m) {
     $("#query").addEventListener("input", () => {
       const q = $("#query").value.trim().toLowerCase();
       if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
-      const list = mapping.filter(x => x.name.toLowerCase().includes(q)).slice(0, 20);
+      const list = mapping.filter(x => x.name.toLowerCase().includes(q) && (membersOn || !x.members)).slice(0, 20);
       sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${bigIconUrl(x.name)}">${x.name}</div>`).join("");
       sb.style.display = list.length ? "block" : "none";
     });
@@ -586,7 +608,10 @@ async function setItem(m) {
       membersOn = false;
       $("#btnF2P").classList.add("active");
       $("#btnMembers").classList.remove("active");
-      if (selected) setItem(selected);
+      if (selected && selected.members) {
+        const gildedScimitar = mapping.find(x => x.name.toLowerCase() === "gilded scimitar");
+        if (gildedScimitar) setItem(gildedScimitar);
+      }
     };
     $("#btnMembers").onclick = () => {
       membersOn = true;
