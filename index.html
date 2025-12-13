@@ -82,7 +82,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; }
-.chart { width: 100%; height: 600px; background: var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
+.chart { width: 100%; height: 600px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
 .legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); }
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
@@ -177,20 +177,19 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
   </div>
 </div>
 <script>
-// Code from previous response
-var $ = function(s) { return document.querySelector(s); }
-var PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
-var WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
-var mapping = [], latest = null, volumes = null, selected = null;
-var currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
-var vpActive = false, ichiActive = false;
-var membersOn = false;
-var canvas = document.getElementById("chart");
-var ctx = canvas.getContext("2d");
-var tip = document.getElementById("tip");
-var fmtGp = function(n) { return n == null ? "—" : Number(n).toLocaleString() + " gp"; }
-var fmtNum = function(n) { return n == null ? "—" : Number(n).toLocaleString(); }
-var abbreviateNumber = function(num) {
+const $ = s => document.querySelector(s);
+const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
+const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
+let mapping = [], latest = null, volumes = null, selected = null;
+let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
+let vpActive = false, ichiActive = false;
+let membersOn = false;
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
+const fmtGp = n => n == null ? "—" : Number(n).toLocaleString() + " gp";
+const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
+const abbreviateNumber = (num) => {
   if (num >= 1e9) {
     return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
   }
@@ -202,26 +201,25 @@ var abbreviateNumber = function(num) {
   }
   return num.toLocaleString();
 };
-function jget(url) {
-  return fetch(url, { cache: "default" }).then(function(r) {
-    if (!r.ok) throw new Error(url + " HTTP " + r.status);
-    return r.json();
-  });
+async function jget(url) {
+  const r = await fetch(url, { cache: "default" });
+  if (!r.ok) throw new Error(url + " HTTP " + r.status);
+  return await r.json();
 }
-var loadMapping = function() { return jget(PRICES_API + "/mapping"); }
-var loadLatest = function() { return jget(PRICES_API + "/latest"); }
-var loadVolumes = function() { return jget(PRICES_API + "/volumes"); }
-var loadTS = function(step, id) { return jget(PRICES_API + "/timeseries?timestep=" + step + "&id=" + id); }
-var loadHistorical = function(id) { return jget(WEIRD_GLOOP_API + "/all?id=" + id); }
+const loadMapping = () => jget(PRICES_API + "/mapping");
+const loadLatest = () => jget(PRICES_API + "/latest");
+const loadVolumes = () => jget(PRICES_API + "/volumes");
+const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
+const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 function bigIconUrl(name) {
-  var fileName = name.replace(/ /g, '_');
-  return "https://oldschool.runescape.wiki/images/" + encodeURIComponent(fileName) + ".png";
+  const fileName = name.replace(/ /g, '_');
+  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(fileName)}.png`;
 }
 function suggestPrices(low, high) {
   if (low == null || high == null) return { buyMin: null, buyMax: null, sellMin: null, sellMax: null };
-  var spread = high - low;
-  var buyMargin = Math.max(1, Math.floor(spread * 0.1));
-  var sellMargin = Math.max(1, Math.floor(spread * 0.1));
+  const spread = high - low;
+  let buyMargin = Math.max(1, Math.floor(spread * 0.1));
+  let sellMargin = Math.max(1, Math.floor(spread * 0.1));
   if (high < 100) {
     buyMargin = 2;
     sellMargin = 4;
@@ -235,42 +233,38 @@ function suggestPrices(low, high) {
     buyMargin = Math.floor(high * 0.005);
     sellMargin = Math.floor(high * 0.01);
   }
-  var buyMin = Math.max(1, low - buyMargin);
-  var buyMax = low;
-  var sellMin = high;
-  var sellMax = Math.max(1, high + sellMargin);
-  var tax = 0.01;
-  var minSell = Math.ceil(buyMax / (1 - tax)) + 1;
+  const buyMin = Math.max(1, low - buyMargin);
+  const buyMax = low;
+  let sellMin = high;
+  let sellMax = Math.max(1, high + sellMargin);
+  const tax = 0.01;
+  const minSell = Math.ceil(buyMax / (1 - tax)) + 1;
   sellMin = Math.max(sellMin, minSell);
   sellMax = Math.max(sellMax, minSell + Math.max(2, Math.floor(sellMargin / 2)));
-  return { buyMin: buyMin, buyMax: buyMax, sellMin: sellMin, sellMax: sellMax };
+  return { buyMin, buyMax, sellMin, sellMax };
 }
 function seriesFromTS(ts) {
-  var src = ts ? ts.data : [];
-  var rows = src.map(function(r) {
-    return {
-      t: Number(r.timestamp || r.ts || r.time),
-      lo: r.avgLowPrice || r.low || null,
-      hi: r.avgHighPrice || r.high || null,
-      vol: (r.lowPriceVolume || 0) + (r.highPriceVolume || 0) || r.volume || null
-    };
-  }).filter(function(r) { return r.t && (r.lo != null || r.hi != null); }).sort(function(a, b) { return a.t - b.t; });
-  return { labels: rows.map(function(r) { return r.t; }), low: rows.map(function(r) { return r.lo; }), high: rows.map(function(r) { return r.hi; }), vol: rows.map(function(r) { return r.vol || 0; }) };
+  const src = ts?.data || [];
+  const rows = src.map(r => ({
+    t: Number(r.timestamp ?? r.ts ?? r.time),
+    lo: r.avgLowPrice ?? r.low ?? null,
+    hi: r.avgHighPrice ?? r.high ?? null,
+    vol: (r.lowPriceVolume ?? 0) + (r.highPriceVolume ?? 0) ?? r.volume ?? null
+  })).filter(r => r.t && (r.lo != null || r.hi != null)).sort((a, b) => a.t - b.t);
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
 }
 function seriesFromHistorical(h) {
-  var src = h ? h[String(selected.id)] : [];
-  var rows = src.map(function(r) {
-    return {
-      t: Number(r.timestamp / 1000),
-      lo: r.price,
-      hi: r.price,
-      vol: r.volume || 0
-    };
-  }).filter(function(r) { return r.t && r.lo != null; }).sort(function(a, b) { return a.t - b.t; });
-  return { labels: rows.map(function(r) { return r.t; }), low: rows.map(function(r) { return r.lo; }), high: rows.map(function(r) { return r.hi; }), vol: rows.map(function(r) { return r.vol || 0; }) };
+  const src = h?.[String(selected.id)] || [];
+  const rows = src.map(r => ({
+    t: Number(r.timestamp / 1000),
+    lo: r.price,
+    hi: r.price,
+    vol: r.volume ?? 0
+  })).filter(r => r.t && r.lo != null).sort((a, b) => a.t - b.t);
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), vol: rows.map(r => r.vol ?? 0) };
 }
 function getPeriod(view) {
-  var periods = {
+  const periods = {
     "1d": 86400,
     "1w": 604800,
     "1m": 2592000,
@@ -282,9 +276,9 @@ function getPeriod(view) {
 }
 function filterSeries(series, view) {
   if (view === "all") return series;
-  var period = getPeriod(view);
-  var minT = Math.max.apply(null, series.labels) - period;
-  var startIdx = series.labels.findIndex(function(t) { return t >= minT; });
+  const period = getPeriod(view);
+  const minT = Math.max(...series.labels) - period;
+  const startIdx = series.labels.findIndex(t => t >= minT);
   return {
     labels: series.labels.slice(startIdx),
     low: series.low.slice(startIdx),
@@ -294,200 +288,154 @@ function filterSeries(series, view) {
 }
 function ypx(v, vmin, vmax, y0, h) {
   if (vmin === vmax) return y0 + h / 2;
-  var p = (v - vmin) / (vmax - vmin);
+  const p = (v - vmin) / (vmax - vmin);
   return y0 + (1 - p) * h;
 }
 function linearRegression(x, y) {
-  var n = x.length;
-  var sumX = x.reduce(function(a, b) { return a + b; }, 0);
-  var sumY = y.reduce(function(a, b) { return a + b; }, 0);
-  var sumXY = x.reduce(function(sum, xi, i) { return sum + xi * y[i]; }, 0);
-  var sumX2 = x.reduce(function(sum, xi) { return sum + xi * xi; }, 0);
-  var meanX = sumX / n;
-  var meanY = sumY / n;
-  var slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
-  var intercept = meanY - slope * meanX;
-  return { slope: slope, intercept: intercept };
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+  const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
+  const intercept = meanY - slope * meanX;
+  return { slope, intercept };
 }
 function calculateIchimoku(series) {
-  var mid = series.labels.map(function(_, i) { return (series.low[i] + series.high[i]) / 2; });
-  var getHigh = function(arr, start, end) { return Math.max.apply(null, arr.slice(Math.max(0, start), end)); };
-  var getLow = function(arr, start, end) { return Math.min.apply(null, arr.slice(Math.max(0, start), end)); };
-  var tenkan = Array(mid.length).fill(null);
-  var kijun = Array(mid.length).fill(null);
-  var senkouA = Array(mid.length).fill(null);
-  var senkouB = Array(mid.length).fill(null);
-  var chikou = Array(26).fill(null).concat(mid.slice(0, mid.length - 26)); // shifted back
-  var len = mid.length;
-  for (var i = 8; i < len; i++) {
+  const mid = series.labels.map((_, i) => (series.low[i] + series.high[i]) / 2);
+  const getHigh = (arr, start, end) => Math.max(...arr.slice(Math.max(0, start), end));
+  const getLow = (arr, start, end) => Math.min(...arr.slice(Math.max(0, start), end));
+  const tenkan = Array(mid.length).fill(null);
+  const kijun = Array(mid.length).fill(null);
+  const senkouA = Array(mid.length).fill(null);
+  const senkouB = Array(mid.length).fill(null);
+  const chikou = Array(26).fill(null).concat(mid.slice(0, mid.length - 26)); // shifted back
+  const len = mid.length;
+  for (let i = 8; i < len; i++) {
     tenkan[i] = (getHigh(mid, i - 8, i + 1) + getLow(mid, i - 8, i + 1)) / 2;
   }
-  for (var i = 25; i < len; i++) {
+  for (let i = 25; i < len; i++) {
     kijun[i] = (getHigh(mid, i - 25, i + 1) + getLow(mid, i - 25, i + 1)) / 2;
   }
-  for (var i = 25; i < len; i++) {
+  for (let i = 25; i < len; i++) {
     senkouA[i + 26] = (tenkan[i] + kijun[i]) / 2;
   }
-  for (var i = 51; i < len; i++) {
+  for (let i = 51; i < len; i++) {
     senkouB[i + 26] = (getHigh(mid, i - 51, i + 1) + getLow(mid, i - 51, i + 1)) / 2;
   }
-  return { tenkan: tenkan, kijun: kijun, senkouA: senkouA, senkouB: senkouB, chikou: chikou };
+  return { tenkan, kijun, senkouA, senkouB, chikou };
 }
-function drawChart(series, context, can, z, off, mode) {
-  context = context || ctx;
-  can = can || canvas;
-  z = z || zoom;
-  off = off || offset;
-  mode = mode || drawMode;
-  var c = can;
-  var W = c.width, H = c.height;
-  var x0 = 70, y0 = 40, w = W - x0 - 30, h = H - y0 - 50;
+function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode) {
+  const c = can;
+  const W = c.width, H = c.height;
+  const x0 = 70, y0 = 40, w = W - x0 - 30, h = H - y0 - 50;
   context.clearRect(0, 0, W, H);
-  if (!series || !series.labels || !series.labels.length) { 
+  if (!series || !series.labels?.length) { 
     context.fillStyle = "#fff"; 
     context.font = "bold 16px Segoe UI, Arial";
     context.fillText("No data available", W/2 - 80, H/2); 
     return; 
   }
-  var n = series.labels.length;
-  var win = Math.max(12, Math.floor(n / z));
-  offset = Math.max(0, Math.min(n - win, off));
-  var start = offset;
-  var end = start + win;
-  var L = series.labels.slice(start, end);
-  var LO = series.low.slice(start, end);
-  var HI = series.high.slice(start, end);
-  var VO = series.vol.slice(start, end);
-  var vals = LO.concat(HI).filter(function(v) { return v != null; });
+  const n = series.labels.length;
+  const win = Math.max(12, Math.floor(n / z));
+  offset = Math.max(0, Math.min(n - win, offset));
+  const start = offset;
+  const end = start + win;
+  const L = series.labels.slice(start, end);
+  const LO = series.low.slice(start, end);
+  const HI = series.high.slice(start, end);
+  const VO = series.vol.slice(start, end);
+  const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) { 
     context.fillStyle = "#fff"; 
     context.font = "bold 16px Segoe UI, Arial";
     context.fillText("No price data", W/2 - 70, H/2); 
     return; 
   }
-  var vmin = Math.min.apply(null, vals), vmax = Math.max.apply(null, vals);
+  let vmin = Math.min(...vals), vmax = Math.max(...vals);
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
   context.strokeStyle = "#000"; context.globalAlpha = 0.5;
   context.beginPath(); context.moveTo(x0, y0); context.lineTo(x0, y0 + h); context.lineTo(x0 + w, y0 + h); context.stroke();
   context.globalAlpha = 1;
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
-  var lines = 5;
-  for (var i = 0; i <= lines; i++) {
-    var y = y0 + (h * i / lines);
+  const lines = 5;
+  for (let i = 0; i <= lines; i++) {
+    const y = y0 + (h * i / lines);
     context.strokeStyle = "rgba(255,255,255,0.06)";
     context.beginPath(); context.moveTo(x0, y); context.lineTo(x0 + w, y); context.stroke();
   }
-  var stepX = w / Math.max(1, (L.length - 1));
-  function drawCandle(i, lo, hi) {
-    if (lo == null || hi == null) return;
-    var x = x0 + i * stepX;
-    var yLo = ypx(lo, vmin, vmax, y0, h);
-    var yHi = ypx(hi, vmin, vmax, y0, h);
-    var mid = (lo + hi) / 2;
-    var previousMid = i > 0 ? (LO[i-1] + HI[i-1]) / 2 : mid;
-    var color = mid > previousMid ? getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim() : getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
-    var bodyTop = Math.min(yLo, yHi);
-    var bodyBottom = Math.max(yLo, yHi);
-    var bodyHeight = bodyBottom - bodyTop;
-    var bodyWidth = stepX * 0.8;
-    context.fillStyle = color;
-    context.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
-    // Wick (thin line from lo to hi)
-    context.strokeStyle = color;
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(x, yLo);
-    context.lineTo(x, yHi);
-    context.stroke();
-  }
+  const stepX = w / Math.max(1, (L.length - 1));
   function drawSeries(arr, color, mode) {
     context.strokeStyle = color;
     context.fillStyle = color;
     if (mode === "line") {
       context.beginPath();
-      var started = false;
-      for (var i = 0; i < arr.length; i++) {
-        var v = arr[i]; if (v == null) { started = false; continue; }
-        var x = x0 + i * stepX;
-        var y = ypx(v, vmin, vmax, y0, h);
+      let started = false;
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i]; if (v == null) { started = false; continue; }
+        const x = x0 + i * stepX;
+        const y = ypx(v, vmin, vmax, y0, h);
         if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
       }
       context.lineWidth = 3; context.stroke();
     } else if (mode === "dot") { // scatter
-      for (var i = 0; i < arr.length; i++) {
-        var v = arr[i]; if (v == null) continue;
-        var x = x0 + i * stepX;
-        var y = ypx(v, vmin, vmax, y0, h);
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i]; if (v == null) continue;
+        const x = x0 + i * stepX;
+        const y = ypx(v, vmin, vmax, y0, h);
         context.beginPath(); context.arc(x, y, 4, 0, Math.PI * 2); context.fill();
       }
     }
   }
-  var h_price = h * 0.8;
-  var h_vol = h * 0.2;
-  var y0_vol = y0 + h_price;
-  for (var i = 0; i < LO.length; i++) {
-    drawCandle(i, LO[i], HI[i]);
-  }
+  const h_price = h * 0.8;
+  const h_vol = h * 0.2;
+  const y0_vol = y0 + h_price;
+  drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
+  drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
   // Draw volume bars always at bottom
-  var maxVol = Math.max.apply(null, VO) || 1; // avoid division by zero
-  for (var i = 0; i < VO.length; i++) {
-    var v = VO[i];
+  const maxVol = Math.max(...VO, 1); // avoid division by zero
+  for (let i = 0; i < VO.length; i++) {
+    const v = VO[i];
     if (v == null) continue;
-    var x = x0 + i * stepX - stepX / 4;
-    var width = stepX / 2;
-    var height = (v / maxVol) * h_vol;
-    var mid = (LO[i] + HI[i]) / 2;
-    var previousMid = i > 0 ? (LO[i-1] + HI[i-1]) / 2 : mid;
-    var color = mid > previousMid ? getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim() : getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
-    context.fillStyle = color;
+    const x = x0 + i * stepX - stepX / 4;
+    const width = stepX / 2;
+    const height = (v / maxVol) * h_vol;
+    context.fillStyle = '#aaa';
     context.fillRect(x, y0_vol + h_vol - height, width, height);
   }
   if (vpActive) {
-    var mid = L.map(function(_, i) { return (LO[i] + HI[i]) / 2; }).filter(function(p) { return p != null; });
+    const mid = L.map((_, i) => (LO[i] + HI[i]) / 2).filter(p => p != null);
     if (mid.length === 0) return;
-    var numBins = 50;
-    var binSize = (vmax - vmin) / numBins;
-    var bins = Array(numBins).fill(0);
-    var maxBinIndex = 0;
-    var maxBinVol = 0;
-    for (var i = 0; i < mid.length; i++) {
-      var p = mid[i];
-      var binIndex = Math.min(numBins - 1, Math.floor((p - vmin) / binSize));
+    const numBins = 50;
+    const binSize = (vmax - vmin) / numBins;
+    const bins = Array(numBins).fill(0);
+    for (let i = 0; i < mid.length; i++) {
+      const p = mid[i];
+      const binIndex = Math.min(numBins - 1, Math.floor((p - vmin) / binSize));
       bins[binIndex] += VO[i];
-      if (bins[binIndex] > maxBinVol) {
-        maxBinVol = bins[binIndex];
-        maxBinIndex = binIndex;
-      }
     }
-    var maxBin = Math.max.apply(null, bins);
-    for (var i = 0; i < numBins; i++) {
-      var binVol = bins[i];
+    const maxBin = Math.max(...bins);
+    for (let i = 0; i < numBins; i++) {
+      const binVol = bins[i];
       if (binVol === 0) continue;
-      var binCenter = vmin + (i + 0.5) * binSize;
-      var y = ypx(binCenter, vmin, vmax, y0, h);
-      var binH = (h / (vmax - vmin)) * binSize * 1.2; // slightly overlap for better look
-      var binW = (binVol / maxBin) * 200;
+      const binCenter = vmin + (i + 0.5) * binSize;
+      const y = ypx(binCenter, vmin, vmax, y0, h);
+      const binH = (h / (vmax - vmin)) * binSize * 1.2; // slightly overlap for better look
+      const binW = (binVol / maxBin) * 200;
       context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       context.fillRect(x0 + w + 10, y - binH / 2, binW, binH);
     }
-    // Horizontal line for POC
-    var pocPrice = vmin + (maxBinIndex + 0.5) * binSize;
-    var pocY = ypx(pocPrice, vmin, vmax, y0, h);
-    context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(x0, pocY);
-    context.lineTo(x0 + w, pocY);
-    context.stroke();
   }
   if (ichiActive) {
-    var ichi = calculateIchimoku({low: LO, high: HI, labels: L});
+    const ichi = calculateIchimoku({low: LO, high: HI, labels: L});
     // Draw cloud
-    for (var i = 0; i < L.length; i++) {
+    for (let i = 0; i < L.length; i++) {
       if (ichi.senkouA[i] == null || ichi.senkouB[i] == null) continue;
-      var y1 = ypx(ichi.senkouA[i], vmin, vmax, y0, h);
-      var y2 = ypx(ichi.senkouB[i], vmin, vmax, y0, h);
-      var color = ichi.senkouA[i] > ichi.senkouB[i] ? 'rgba(144,238,144,0.2)' : 'rgba(255,182,193,0.2)';
+      const y1 = ypx(ichi.senkouA[i], vmin, vmax, y0, h);
+      const y2 = ypx(ichi.senkouB[i], vmin, vmax, y0, h);
+      const color = ichi.senkouA[i] > ichi.senkouB[i] ? 'rgba(144,238,144,0.2)' : 'rgba(255,182,193,0.2)';
       context.fillStyle = color;
       context.fillRect(x0 + i * stepX - stepX / 2, Math.min(y1, y2), stepX, Math.abs(y1 - y2));
     }
@@ -498,21 +446,19 @@ function drawChart(series, context, can, z, off, mode) {
     drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
   }
   function drawPrediction(arr, color) {
-    var nonNull = arr.map(function(v, i) { return {v: v, i: i}; }).filter(function(obj) { return obj.v != null; });
+    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 2) return;
-    var xVals = nonNull.map(function(obj) { return obj.i; });
-    var yVals = nonNull.map(function(obj) { return obj.v; });
-    var slopeIntercept = linearRegression(xVals, yVals);
-    var slope = slopeIntercept.slope;
-    var intercept = slopeIntercept.intercept;
+    const xVals = nonNull.map(({i}) => i);
+    const yVals = nonNull.map(({v}) => v);
+    const { slope, intercept } = linearRegression(xVals, yVals);
     context.save();
     context.setLineDash([6, 6]);
     context.strokeStyle = color;
     context.beginPath();
-    var startX = x0;
-    var startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
-    var endX = x0 + (arr.length - 1) * stepX + stepX * 0.2;
-    var endY = ypx(slope * (arr.length - 1 + (arr.length * 0.2)) + intercept, vmin, vmax, y0, h);
+    const startX = x0;
+    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
+    const endX = x0 + (arr.length - 1) * stepX + stepX * 0.2;
+    const endY = ypx(slope * (arr.length - 1 + (arr.length * 0.2)) + intercept, vmin, vmax, y0, h);
     context.moveTo(startX, startY);
     context.lineTo(endX, endY);
     context.stroke();
@@ -521,68 +467,178 @@ function drawChart(series, context, can, z, off, mode) {
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
   drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
-  for (var i = 0; i <= lines; i++) {
-    var y = y0 + (h * i / lines);
-    var v = Math.round(vmax - (vmax - vmin) * i / lines);
+  for (let i = 0; i <= lines; i++) {
+    const y = y0 + (h * i / lines);
+    const v = Math.round(vmax - (vmax - vmin) * i / lines);
     context.fillText(abbreviateNumber(v), 6, y - 4);
   }
   context.fillStyle = "#fff"; context.font = "bold 14px Segoe UI, Arial";
-  var numLabels = 6;
-  var labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
-  for (var i = 0; i < L.length; i += labelStep) {
-    var dateStr = new Date(L[i] * 1000).toLocaleDateString();
-    var x = x0 + i * stepX;
+  const numLabels = 6;
+  const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
+  for (let i = 0; i < L.length; i += labelStep) {
+    const dateStr = new Date(L[i] * 1000).toLocaleDateString();
+    const x = x0 + i * stepX;
     context.fillText(dateStr, x - 30, H - 10);
   }
-  var isDragging = false;
-  var startX = 0;
-  c.onmousedown = function(ev) {
+  let isDragging = false;
+  let startX = 0;
+  c.onmousedown = (ev) => {
     isDragging = true;
     startX = ev.clientX;
   };
-  c.onmouseup = function() { isDragging = false; };
-  c.onmouseleave = function() { isDragging = false; tip.style.display = "none"; };
-  c.onmousemove = function(ev) {
-    var rect = c.getBoundingClientRect();
-    var mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+  c.onmouseup = () => isDragging = false;
+  c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
+  c.onmousemove = (ev) => {
+    const rect = c.getBoundingClientRect();
+    const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     if (isDragging) {
-      var dx = ev.clientX - startX;
+      const dx = ev.clientX - startX;
       startX = ev.clientX;
-      var pointWidth = w / (end - start);
+      const pointWidth = w / (end - start);
       offset -= dx / pointWidth;
       offset = Math.max(0, Math.min(n - win, offset));
       drawChart(series);
       return;
     }
     if (mx < x0 || mx > x0 + w || my < y0 || my > y0 + h) { tip.style.display = "none"; return; }
-    var idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
-    var t = L[idx] * 1000;
-    var lo = LO[idx], hi = HI[idx], vol = VO[idx] || 0;
+    const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
+    const t = L[idx] * 1000;
+    const lo = LO[idx], hi = HI[idx], vol = VO[idx] || 0;
     tip.style.display = "block";
     tip.style.left = (mx + 12) + "px";
     tip.style.top = (my - 10) + "px";
-    tip.innerHTML = "<strong>" + new Date(t).toLocaleString() + "</strong><br/>Low: " + fmtGp(lo) + "<br/>High: " + fmtGp(hi) + "<br/>Vol: " + fmtNum(vol);
+    tip.innerHTML = `<strong>${new Date(t).toLocaleString()}</strong><br/>
+      Low: ${fmtGp(lo)}<br/>
+      High: ${fmtGp(hi)}<br/>
+      Vol: ${fmtNum(vol)}`;
   };
-  c.onwheel = function(ev) {
+  c.onwheel = (ev) => {
     ev.preventDefault();
-    var delta = ev.deltaY < 0 ? 1.25 : 0.8;
+    const delta = ev.deltaY < 0 ? 1.25 : 0.8;
     zoom *= delta;
     zoom = Math.max(1, Math.min(8, zoom));
     drawChart(series);
   };
 }
-function setItem(m) {
+async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
-  document.title = m.name + " - Grant Exchange";
+  document.title = `${m.name} - Grant Exchange`;
   $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading latest…";
-  return loadLatest().then(function(data) { latest = data; return loadVolumes(); }).then(function(data) { volumes = data; var node = latest.data[String(m.id)]; var lo = node ? node.low || node.avgLowPrice : null; var hi = node ? node.high || node.avgHighPrice : null; $("#buyPrice span").textContent = fmtGp(lo); $("#sellPrice span").textContent = fmtGp(hi); $("#status").textContent = "Loading chart…"; var step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h"); var loadFn = view === "all" ? loadHistorical(m.id) : loadTS(step, m.id); return loadFn; }).then(function(ts) { currentSeries = view === "all" ? seriesFromHistorical(ts) : seriesFromTS(ts); currentSeries = filterSeries(currentSeries, view); offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom))); drawChart(currentSeries); var vol = volumes.data[String(m.id)] || 0; var limit = selected.buy_limit || 0; var tax = hi ? Math.floor(hi * 0.01) : 0; var margin = hi && lo ? hi - lo - tax : 0; var roi = lo ? ((margin / lo) * 100).toFixed(2) + '%' : '0%'; var potProfit = margin * limit; $("#keyBuyPrice").textContent = fmtGp(lo); $("#keySellPrice").textContent = fmtGp(hi); $("#keyVolume").textContent = fmtNum(vol); $("#keyLimit").textContent = fmtNum(limit); $("#keyTax").textContent = fmtGp(tax); $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin); $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi; $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit); $("#status").textContent = "Ready"; });
+  latest = await loadLatest();
+  volumes = await loadVolumes();
+  const node = latest.data[String(m.id)];
+  const lo = node?.low ?? node?.avgLowPrice ?? null;
+  const hi = node?.high ?? node?.avgHighPrice ?? null;
+  $("#buyPrice span").textContent = fmtGp(lo);
+  $("#sellPrice span").textContent = fmtGp(hi);
+  $("#status").textContent = "Loading chart…";
+  let ts;
+  if (view === "all") {
+    ts = await loadHistorical(m.id);
+    currentSeries = seriesFromHistorical(ts);
+  } else {
+    const step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h");
+    ts = await loadTS(step, m.id);
+    currentSeries = seriesFromTS(ts);
+  }
+  currentSeries = filterSeries(currentSeries, view);
+  offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
+  drawChart(currentSeries);
+  const vol = volumes.data[String(m.id)] || 0;
+  const limit = selected.buy_limit || 0;
+  const tax = hi ? Math.floor(hi * 0.01) : 0;
+  const margin = hi && lo ? hi - lo - tax : 0;
+  const roi = lo ? ((margin / lo) * 100).toFixed(2) + '%' : '0%';
+  const potProfit = margin * limit;
+  $("#keyBuyPrice").textContent = fmtGp(lo);
+  $("#keySellPrice").textContent = fmtGp(hi);
+  $("#keyVolume").textContent = fmtNum(vol);
+  $("#keyLimit").textContent = fmtNum(limit);
+  $("#keyTax").textContent = fmtGp(tax);
+  $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin);
+  $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi;
+  $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit);
+  $("#status").textContent = "Ready";
 }
-function boot() {
-  loadMapping().then(function(data) { mapping = data; return loadLatest(); }).then(function(data) { latest = data; return loadVolumes(); }).then(function(data) { volumes = data; var sb = $("#suggestBox"); $("#query").addEventListener("input", function() { var q = $("#query").value.trim().toLowerCase(); if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; } var list = mapping.filter(function(x) { return x.name.toLowerCase().includes(q); }).slice(0, 20); sb.innerHTML = list.map(function(x) { return '<div data-id="' + x.id + '"><img src="' + bigIconUrl(x.name) + '">' + x.name + '</div>'; }).join(""); sb.style.display = list.length ? "block" : "none"; }); sb.addEventListener("click", function(e) { var id = e.target.closest('div') ? e.target.closest('div').dataset.id : null; if (!id) return; var m = mapping.find(function(x) { return String(x.id) === String(id); }); if (m) { sb.style.display = "none"; setItem(m); } }); document.querySelectorAll(".view-btn").forEach(function(b) { b.onclick = function() { document.querySelectorAll(".view-btn").forEach(function(x) { x.classList.remove("active"); }); b.classList.add("active"); view = b.dataset.view; if (selected) setItem(selected); } }); $("#zIn").onclick = function() { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries); }; $("#zOut").onclick = function() { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries); }; $("#lineMode").onclick = function() { if ($("#dotMode").classList.contains("active")) $("#dotMode").classList.remove("active"); $("#lineMode").classList.add("active"); drawMode = "line"; drawChart(currentSeries); }; $("#dotMode").onclick = function() { if ($("#lineMode").classList.contains("active")) $("#lineMode").classList.remove("active"); $("#dotMode").classList.add("active"); drawMode = "dot"; drawChart(currentSeries); }; $("#vpMode").onclick = function() { vpActive = !vpActive; if (vpActive) $("#vpMode").classList.add("active"); else $("#vpMode").classList.remove("active"); drawChart(currentSeries); }; $("#ichiMode").onclick = function() { ichiActive = !ichiActive; if (ichiActive) $("#ichiMode").classList.add("active"); else $("#ichiMode").classList.remove("active"); drawChart(currentSeries); }; $("#btnF2P").onclick = function() { membersOn = false; $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); if (selected) setItem(selected); }; $("#btnMembers").onclick = function() { membersOn = true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); if (selected) setItem(selected); }; $("#refreshBtn").onclick = function() { $("#status").textContent = "Refreshing…"; loadLatest().then(function(data) { latest = data; return loadVolumes(); }).then(function(data) { volumes = data; if (selected) setItem(selected); $("#status").textContent = "Ready"; }); }; var gildedScimitar = mapping.find(function(x) { return x.name.toLowerCase() === "gilded scimitar"; }); if (gildedScimitar) setItem(gildedScimitar); }).catch(function(e) { console.error('Boot error:', e); $("#status").textContent = "Error"; });
-}
-boot();
+(async function boot() {
+  try {
+    mapping = await loadMapping();
+    latest = await loadLatest();
+    volumes = await loadVolumes();
+    const sb = $("#suggestBox");
+    $("#query").addEventListener("input", () => {
+      const q = $("#query").value.trim().toLowerCase();
+      if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
+      const list = mapping.filter(x => x.name.toLowerCase().includes(q)).slice(0, 20);
+      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${bigIconUrl(x.name)}">${x.name}</div>`).join("");
+      sb.style.display = list.length ? "block" : "none";
+    });
+    sb.addEventListener("click", (e) => {
+      const id = e.target.closest('div')?.dataset?.id;
+      if (!id) return;
+      const m = mapping.find(x => String(x.id) === String(id));
+      if (m) { sb.style.display = "none"; setItem(m); }
+    });
+    document.querySelectorAll(".view-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        view = b.dataset.view;
+        if (selected) setItem(selected);
+      }
+    });
+    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries); };
+    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries); };
+    $("#lineMode").onclick = () => {
+      if ($("#dotMode").classList.contains("active")) $("#dotMode").classList.remove("active");
+      $("#lineMode").classList.add("active");
+      drawMode = "line";
+      drawChart(currentSeries);
+    };
+    $("#dotMode").onclick = () => {
+      if ($("#lineMode").classList.contains("active")) $("#lineMode").classList.remove("active");
+      $("#dotMode").classList.add("active");
+      drawMode = "dot";
+      drawChart(currentSeries);
+    };
+    $("#vpMode").onclick = () => {
+      vpActive = !vpActive;
+      if (vpActive) $("#vpMode").classList.add("active"); else $("#vpMode").classList.remove("active");
+      drawChart(currentSeries);
+    };
+    $("#ichiMode").onclick = () => {
+      ichiActive = !ichiActive;
+      if (ichiActive) $("#ichiMode").classList.add("active"); else $("#ichiMode").classList.remove("active");
+      drawChart(currentSeries);
+    };
+    $("#btnF2P").onclick = () => {
+      membersOn = false;
+      $("#btnF2P").classList.add("active");
+      $("#btnMembers").classList.remove("active");
+      if (selected) setItem(selected);
+    };
+    $("#btnMembers").onclick = () => {
+      membersOn = true;
+      $("#btnMembers").classList.add("active");
+      $("#btnF2P").classList.remove("active");
+      if (selected) setItem(selected);
+    };
+    $("#refreshBtn").onclick = async () => {
+      $("#status").textContent = "Refreshing…";
+      latest = await loadLatest();
+      volumes = await loadVolumes();
+      if (selected) await setItem(selected);
+      $("#status").textContent = "Ready";
+    };
+    const gildedScimitar = mapping.find(x => x.name.toLowerCase() === "gilded scimitar");
+    if (gildedScimitar) setItem(gildedScimitar);
+  } catch (e) {
+    console.error('Boot error:', e);
+    $("#status").textContent = "Error";
+  }
+})();
 </script>
 </body>
 </html>
