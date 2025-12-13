@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -51,6 +52,8 @@
   --cloud-green: rgba(144,238,144,0.2);
   --cloud-red: rgba(255,182,193,0.2);
   --iqr-high: #8b4513;
+  --positive: #4dff4d;
+  --negative: #ff4d4d;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -61,6 +64,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .badge { font-size: 13px; border: 1px solid var(--edge); border-radius: 999px; padding: 3px 10px; color: var(--muted); background: var(--panel); }
 .small { font-size: 13px; color: var(--muted); }
 .card { background: linear-gradient(180deg, var(--panel) 0%, #111 100%); border: 1px solid var(--edge); border-radius: 20px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.left { display: flex; flex-direction: column; grid-column: 1; }
 .hr { border: none; border-top: 1px solid var(--edge); margin: 12px 0; }
 .top-row { display: flex; align-items: center; gap: 12px; }
 .sbar { flex: 1; position: relative; }
@@ -82,9 +86,9 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; }
-.chart { width: 100%; height: 600px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
+.chart { width: 100%; height: 700px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 28px), var(--bg); border: 1px solid var(--edge); border-radius: 16px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
-.legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); }
+.legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); flex-wrap: wrap; }
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
 .legend .low span { background: var(--low-color); }
 .legend .high span { background: var(--high-color); }
@@ -93,10 +97,12 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
 .mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .key-info h2 { margin: 0 0 10px; font-size: 18px; color: var(--gold); }
-.info-grid { display: grid; grid-template-columns: auto auto; gap: 8px 20px; }
-.info-grid div { font-size: 14px; }
-.info-grid div:nth-child(odd) { color: var(--muted); text-align: right; }
-.info-grid div:nth-child(even) { font-weight: bold; }
+.info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 20px; }
+.info-grid div { font-size: 16px; padding: 8px; border-radius: 8px; background: var(--panel); border: 1px solid var(--edge); }
+.info-grid div:nth-child(odd) { color: var(--muted); text-align: left; }
+.info-grid div:nth-child(even) { font-weight: bold; text-align: right; }
+.info-grid .positive { color: var(--positive); }
+.info-grid .negative { color: var(--negative); }
 @keyframes rainbow { 
   0% {border-color: #ff0000;} 
   14% {border-color: #ff7f00;} 
@@ -151,7 +157,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <button id="refreshBtn" class="btn-refresh">Refresh</button>
     </div>
     <div class="chartWrap">
-      <canvas id="chart" class="chart" width="980" height="600"></canvas>
+      <canvas id="chart" class="chart" width="980" height="700"></canvas>
       <div id="tip" class="chart-tip"></div>
     </div>
     <div class="legend">
@@ -168,11 +174,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
         <div>Period Volume</div><div id="keyPeriodVolume">—</div>
         <div>Limit</div><div id="keyLimit">—</div>
         <div>Tax</div><div id="keyTax">—</div>
-        <div>Margin</div><div id="keyMargin">—</div>
-        <div>ROI</div><div id="keyROI">—</div>
-        <div>Period Change</div><div id="keyChange">—</div>
-        <div>Period % Change</div><div id="keyPctChange">—</div>
-        <div>Potential Profit</div><div id="keyPotProfit">—</div>
+        <div>Margin</div><div id="keyMargin" class="">—</div>
+        <div>ROI</div><div id="keyROI" class="">—</div>
+        <div>Period Change</div><div id="keyChange" class="">—</div>
+        <div>Period % Change</div><div id="keyPctChange" class="">—</div>
+        <div>Potential Profit</div><div id="keyPotProfit" class="">—</div>
       </div>
     </div>
   </div>
@@ -435,13 +441,12 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     if (lv == null && hv == null) continue;
     const totalH = ((lv + hv) / maxVol) * h_vol;
     const lowH = (lv / maxVol) * h_vol;
-    const highH = totalH - lowH;
     const x = x0 + i * stepX - (stepX * 0.3 / 2);
     const width = stepX * 0.3;
     context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim();
     context.fillRect(x, y0_vol + h_vol - lowH, width, lowH);
     context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim();
-    context.fillRect(x, y0_vol + h_vol - totalH, width, highH);
+    context.fillRect(x, y0_vol + h_vol - totalH, width, (hv / maxVol) * h_vol);
   }
   context.globalAlpha = 1;
   if (vpActive) {
@@ -490,6 +495,9 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     drawSeries(ichi.senkouA, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-a').trim(), "line");
     drawSeries(ichi.senkouB, getComputedStyle(document.documentElement).getPropertyValue('--ichi-senkou-b').trim(), "line");
   }
+  const iqr = calculateIQR({low: LO, high: HI, labels: L});
+  drawSeries(iqr.lowIQR, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
+  drawSeries(iqr.highIQR, getComputedStyle(document.documentElement).getPropertyValue('--iqr-high').trim(), "line");
   function drawPrediction(arr, color) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 2) return;
@@ -500,10 +508,10 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.setLineDash([6, 6]);
     context.strokeStyle = color;
     context.beginPath();
-    const startX = x0;
-    const startY = ypx(slope * 0 + intercept, vmin, vmax, y0, h);
-    const endX = x0 + (arr.length - 1) * stepX;
-    const endY = ypx(slope * (arr.length - 1) + intercept, vmin, vmax, y0, h);
+    const startX = x0 + (nonNull[nonNull.length - 1].i) * stepX;
+    const startY = ypx(nonNull[nonNull.length - 1].v, vmin, vmax, y0, h);
+    const endX = x0 + arr.length * stepX;
+    const endY = ypx(slope * arr.length + intercept, vmin, vmax, y0, h);
     context.moveTo(startX, startY);
     context.lineTo(endX, endY);
     context.lineWidth = 2; context.stroke();
@@ -511,9 +519,6 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   }
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
   drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
-  const iqr = calculateIQR({low: LO, high: HI, labels: L});
-  drawSeries(iqr.lowIQR, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
-  drawSeries(iqr.highIQR, getComputedStyle(document.documentElement).getPropertyValue('--iqr-high').trim(), "line");
   context.fillStyle = "#fff"; context.font = "bold 16px Segoe UI, Arial";
   for (let i = 0; i <= lines; i++) {
     const y = y0 + (h * i / lines);
@@ -610,19 +615,24 @@ async function setItem(m) {
     }
     periodVol += v;
   }
-  const change = lastMid - firstMid;
-  const pctChange = firstMid ? ((change / firstMid) * 100).toFixed(2) + '%' : '0%';
+  const change = (firstMid != null && lastMid != null) ? lastMid - firstMid : 0;
+  const pctChange = (firstMid != null && firstMid != 0) ? ((change / firstMid) * 100).toFixed(2) + '%' : '0%';
   $("#keyBuyPrice").textContent = fmtGp(lo);
   $("#keySellPrice").textContent = fmtGp(hi);
   $("#keyVolume").textContent = fmtNum(vol);
   $("#keyPeriodVolume").textContent = fmtNum(periodVol);
   $("#keyLimit").textContent = fmtNum(limit);
   $("#keyTax").textContent = fmtGp(tax);
-  $("#keyMargin").textContent = (margin > 0 ? '+' : '') + fmtGp(margin);
-  $("#keyROI").textContent = (margin > 0 ? '+' : '') + roi;
-  $("#keyChange").textContent = (change > 0 ? '+' : '') + fmtGp(change);
-  $("#keyPctChange").textContent = (change > 0 ? '+' : '') + pctChange;
-  $("#keyPotProfit").textContent = (margin > 0 ? '+' : '') + fmtGp(potProfit);
+  $("#keyMargin").textContent = fmtGp(margin);
+  $("#keyMargin").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
+  $("#keyROI").textContent = roi;
+  $("#keyROI").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
+  $("#keyChange").textContent = fmtGp(change);
+  $("#keyChange").classList.add(change > 0 ? 'positive' : change < 0 ? 'negative' : '');
+  $("#keyPctChange").textContent = pctChange;
+  $("#keyPctChange").classList.add(change > 0 ? 'positive' : change < 0 ? 'negative' : '');
+  $("#keyPotProfit").textContent = fmtGp(potProfit);
+  $("#keyPotProfit").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
   $("#status").textContent = "Ready";
 }
 (async function boot() {
@@ -693,3 +703,4 @@ async function setItem(m) {
 </script>
 </body>
 </html>
+```
