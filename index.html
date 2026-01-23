@@ -74,6 +74,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .price-box.low { color: var(--low-color); }
 .price-box.high { color: var(--high-color); }
 .price-box span { font-size: 20px; font-weight: bold; }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-start; }
+.toolbar button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.toolbar button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
+.toolbar button:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,153,0,0.3); }
 .chartWrap { position: relative; margin: 8px 0; }
 .chart { width: 100%; height: 500px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 24px), var(--bg); border: 1px solid var(--edge); border-radius: 12px; }
 .chart-tip { position: absolute; display: none; background: rgba(0,0,0,.9); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid #111; }
@@ -81,12 +85,13 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
 .legend .low span { background: var(--low-color); }
 .legend .high span { background: var(--high-color); }
+.btn-refresh { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.btn-refresh:hover { box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
 .mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
-.period-changes { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 8px; margin-bottom: 8px; }
-.period-change { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 6px 10px; text-align: center; min-width: 80px; cursor: pointer; }
-.period-change.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
-.period-change .period { font-size: 13px; color: var(--ink); }
+.period-changes { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.period-change { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 6px 10px; text-align: center; min-width: 80px; }
+.period-change .period { font-size: 13px; color: var(--muted); }
 .period-change .change { font-size: 14px; font-weight: bold; }
 .period-change .positive { color: var(--positive); }
 .period-change .negative { color: var(--negative); }
@@ -103,6 +108,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 @media (max-width: 768px) {
   .top-row { flex-direction: column; gap: 12px; }
   .price-box { min-width: 0; width: 100%; }
+  .toolbar { justify-content: center; }
   .chart { height: 350px; }
   .period-changes { justify-content: flex-start; }
 }
@@ -111,7 +117,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.1</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.0</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div class="mode-pill">
       <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -129,7 +135,16 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <div id="sellPrice" class="price-box high">Sell Price<br><span>—</span></div>
     </div>
     <div class="hr"></div>
-    <div class="period-changes" id="periodChanges"></div>
+    <div class="toolbar">
+      <button data-view="1d" class="active view-btn">1D</button>
+      <button data-view="5d" class="view-btn">5D</button>
+      <button data-view="1m" class="view-btn">1M</button>
+      <button data-view="6m" class="view-btn">6M</button>
+      <button data-view="1y" class="view-btn">1Y</button>
+      <button data-view="5y" class="view-btn">5Y</button>
+      <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
+      <button id="refreshBtn" class="btn-refresh">Refresh</button>
+    </div>
     <div class="chartWrap">
       <canvas id="chart" class="chart" width="980" height="500"></canvas>
       <div id="tip" class="chart-tip"></div>
@@ -138,6 +153,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
+    <div class="period-changes" id="periodChanges"></div>
   </div>
 </div>
 <script>
@@ -489,11 +505,6 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     drawChart(series, ctx, canvas, zoom, offset, drawMode, currentPrice);
   };
 }
-async function refreshData() {
-  latest = await loadLatest();
-  volumes = await loadVolumes();
-  if (selected) await setItem(selected);
-}
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
@@ -515,16 +526,8 @@ async function setItem(m) {
   for (const [p, ch] of Object.entries(changes)) {
     const div = document.createElement('div');
     div.className = 'period-change';
-    div.dataset.view = p;
     const sign = parseFloat(ch) > 0 ? 'positive' : parseFloat(ch) < 0 ? 'negative' : '';
     div.innerHTML = `<div class="period">${p.toUpperCase()}</div><div class="change ${sign}">${ch}</div>`;
-    div.onclick = () => {
-      document.querySelectorAll(".period-change").forEach(x => x.classList.remove("active"));
-      div.classList.add("active");
-      view = p;
-      setItem(selected);
-    };
-    if (p === view) div.classList.add("active");
     periodChangesDiv.appendChild(div);
   }
   $("#status").textContent = "Loading chart…";
@@ -562,7 +565,17 @@ async function setItem(m) {
       if (!id) return;
       const m = mapping.find(x => String(x.id) === String(id));
       if (m) { sb.style.display = "none"; setItem(m); }
-    };
+    });
+    document.querySelectorAll(".view-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        view = b.dataset.view;
+        if (selected) setItem(selected);
+      }
+    });
+    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
+    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
     $("#btnF2P").onclick = () => {
       membersOn = false;
       $("#btnF2P").classList.add("active");
@@ -575,9 +588,15 @@ async function setItem(m) {
       $("#btnF2P").classList.remove("active");
       if (selected) setItem(selected);
     };
+    $("#refreshBtn").onclick = async () => {
+      $("#status").textContent = "Refreshing…";
+      latest = await loadLatest();
+      volumes = await loadVolumes();
+      if (selected) await setItem(selected);
+      $("#status").textContent = "Ready";
+    };
     const uncutRuby = mapping.find(x => x.name.toLowerCase() === "uncut ruby");
     if (uncutRuby) setItem(uncutRuby);
-    setInterval(refreshData, 60000); // Refresh every 1 minute
   } catch (e) {
     console.error('Boot error:', e);
     $("#status").textContent = "Error";
@@ -586,4 +605,3 @@ async function setItem(m) {
 </script>
 </body>
 </html>
-```
