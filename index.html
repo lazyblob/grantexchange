@@ -85,12 +85,13 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
 .legend .low span { background: var(--low-color); }
 .legend .high span { background: var(--high-color); }
+.btn-refresh { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
+.btn-refresh:hover { box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
 .mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
-.period-changes { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 8px; margin-bottom: 8px; }
-.period-change { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 6px 10px; text-align: center; min-width: 80px; cursor: pointer; }
-.period-change.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
-.period-change .period { font-size: 13px; color: var(--ink); }
+.period-changes { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.period-change { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 6px 10px; text-align: center; min-width: 80px; }
+.period-change .period { font-size: 13px; color: var(--muted); }
 .period-change .change { font-size: 14px; font-weight: bold; }
 .period-change .positive { color: var(--positive); }
 .period-change .negative { color: var(--negative); }
@@ -116,7 +117,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.1</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.0</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div class="mode-pill">
       <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -134,7 +135,16 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <div id="sellPrice" class="price-box high">Sell Price<br><span>—</span></div>
     </div>
     <div class="hr"></div>
-    <div class="period-changes" id="periodChanges"></div>
+    <div class="toolbar">
+      <button data-view="1d" class="active view-btn">1D</button>
+      <button data-view="5d" class="view-btn">5D</button>
+      <button data-view="1m" class="view-btn">1M</button>
+      <button data-view="6m" class="view-btn">6M</button>
+      <button data-view="1y" class="view-btn">1Y</button>
+      <button data-view="5y" class="view-btn">5Y</button>
+      <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
+      <button id="refreshBtn" class="btn-refresh">Refresh</button>
+    </div>
     <div class="chartWrap">
       <canvas id="chart" class="chart" width="980" height="500"></canvas>
       <div id="tip" class="chart-tip"></div>
@@ -143,6 +153,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
+    <div class="period-changes" id="periodChanges"></div>
   </div>
 </div>
 <script>
@@ -150,7 +161,7 @@ const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
-let currentSeries = null, view = "1d", offset = 0, drawMode = "line";
+let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
 let membersOn = false;
 let fullHistorical = null;
 const canvas = document.getElementById("chart");
@@ -306,7 +317,7 @@ function calculateIQR(series, window = 26) {
   }
   return { lowIQR, highIQR };
 }
-function drawChart(series, context = ctx, can = canvas, off = offset, mode = drawMode, currentPrice) {
+function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode, currentPrice) {
   const c = can;
   const W = c.width, H = c.height;
   const x0 = 70, y0 = 40, w = W - x0 - 30, h = H - y0 - 50;
@@ -318,9 +329,10 @@ function drawChart(series, context = ctx, can = canvas, off = offset, mode = dra
     return; 
   }
   const n = series.labels.length;
-  offset = Math.max(0, Math.min(n - 12, offset));
+  const win = Math.max(12, Math.floor(n / z));
+  offset = Math.max(0, Math.min(n - win, offset));
   const start = offset;
-  const end = n;
+  const end = start + win;
   const L = series.labels.slice(start, end);
   const LO = series.low.slice(start, end);
   const HI = series.high.slice(start, end);
@@ -469,8 +481,8 @@ function drawChart(series, context = ctx, can = canvas, off = offset, mode = dra
       startX = ev.clientX;
       const pointWidth = w / (end - start);
       offset -= dx / pointWidth;
-      offset = Math.max(0, Math.min(n - 12, offset));
-      drawChart(series, ctx, canvas, offset, drawMode, currentPrice);
+      offset = Math.max(0, Math.min(n - win, offset));
+      drawChart(series, ctx, canvas, zoom, offset, drawMode, currentPrice);
       return;
     }
     if (mx < x0 || mx > x0 + w || my < y0 || my > y0 + h) { tip.style.display = "none"; return; }
@@ -485,11 +497,13 @@ function drawChart(series, context = ctx, can = canvas, off = offset, mode = dra
       High: ${fmtGp(hi)}<br/>
       Vol: ${fmtNum(vol)}`;
   };
-}
-async function refreshData() {
-  latest = await loadLatest();
-  volumes = await loadVolumes();
-  if (selected) await setItem(selected);
+  c.onwheel = (ev) => {
+    ev.preventDefault();
+    const delta = ev.deltaY < 0 ? 1.25 : 0.8;
+    zoom *= delta;
+    zoom = Math.max(1, Math.min(8, zoom));
+    drawChart(series, ctx, canvas, zoom, offset, drawMode, currentPrice);
+  };
 }
 async function setItem(m) {
   selected = m;
@@ -512,16 +526,8 @@ async function setItem(m) {
   for (const [p, ch] of Object.entries(changes)) {
     const div = document.createElement('div');
     div.className = 'period-change';
-    div.dataset.view = p;
     const sign = parseFloat(ch) > 0 ? 'positive' : parseFloat(ch) < 0 ? 'negative' : '';
     div.innerHTML = `<div class="period">${p.toUpperCase()}</div><div class="change ${sign}">${ch}</div>`;
-    div.onclick = () => {
-      document.querySelectorAll(".period-change").forEach(x => x.classList.remove("active"));
-      div.classList.add("active");
-      view = p;
-      setItem(selected);
-    };
-    if (p === view) div.classList.add("active");
     periodChangesDiv.appendChild(div);
   }
   $("#status").textContent = "Loading chart…";
@@ -537,8 +543,8 @@ async function setItem(m) {
     currentSeries = seriesFromTS(ts);
   }
   currentSeries = filterSeries(currentSeries, getPeriod(view));
-  offset = Math.max(0, (currentSeries.labels.length - 12));
-  drawChart(currentSeries, ctx, canvas, offset, drawMode, currentPrice);
+  offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
+  drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, currentPrice);
   $("#status").textContent = "Ready";
 }
 (async function boot() {
@@ -560,6 +566,16 @@ async function setItem(m) {
       const m = mapping.find(x => String(x.id) === String(id));
       if (m) { sb.style.display = "none"; setItem(m); }
     });
+    document.querySelectorAll(".view-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        view = b.dataset.view;
+        if (selected) setItem(selected);
+      }
+    });
+    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
+    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
     $("#btnF2P").onclick = () => {
       membersOn = false;
       $("#btnF2P").classList.add("active");
@@ -572,9 +588,15 @@ async function setItem(m) {
       $("#btnF2P").classList.remove("active");
       if (selected) setItem(selected);
     };
+    $("#refreshBtn").onclick = async () => {
+      $("#status").textContent = "Refreshing…";
+      latest = await loadLatest();
+      volumes = await loadVolumes();
+      if (selected) await setItem(selected);
+      $("#status").textContent = "Ready";
+    };
     const uncutRuby = mapping.find(x => x.name.toLowerCase() === "uncut ruby");
     if (uncutRuby) setItem(uncutRuby);
-    setInterval(refreshData, 300000); // Refresh every 5 minutes
   } catch (e) {
     console.error('Boot error:', e);
     $("#status").textContent = "Error";
