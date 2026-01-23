@@ -89,13 +89,12 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
 .btn-refresh:hover { box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
 .mode-pill button { background: var(--panel); border: 1px solid var(--edge); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: box-shadow .2s, border-color .2s; }
 .mode-pill button.active { background: #252525; box-shadow: 0 0 12px rgba(255,153,0,0.6); border-color: var(--orange); }
-.key-info h2 { margin: 0 0 8px; font-size: 18px; color: var(--gold); }
-.info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; }
-.info-grid div { font-size: 15px; padding: 6px; border-radius: 6px; background: var(--panel); border: 1px solid var(--edge); }
-.info-grid div:nth-child(odd) { color: var(--muted); text-align: left; }
-.info-grid div:nth-child(even) { font-weight: bold; text-align: right; }
-.info-grid .positive { color: var(--positive); }
-.info-grid .negative { color: var(--negative); }
+.period-changes { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.period-change { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 6px 10px; text-align: center; min-width: 80px; }
+.period-change .period { font-size: 13px; color: var(--muted); }
+.period-change .change { font-size: 14px; font-weight: bold; }
+.period-change .positive { color: var(--positive); }
+.period-change .negative { color: var(--negative); }
 @keyframes rainbow { 
   0% {border-color: #ff0000;} 
   14% {border-color: #ff7f00;} 
@@ -111,8 +110,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
   .price-box { min-width: 0; width: 100%; }
   .toolbar { justify-content: center; }
   .chart { height: 350px; }
-  .info-grid { grid-template-columns: repeat(2, 1fr); }
-  .info-grid div:nth-child(odd) { text-align: left; }
+  .period-changes { justify-content: flex-start; }
 }
 </style>
 </head>
@@ -139,11 +137,11 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
     <div class="hr"></div>
     <div class="toolbar">
       <button data-view="1d" class="active view-btn">1D</button>
-      <button data-view="1w" class="view-btn">1W</button>
+      <button data-view="5d" class="view-btn">5D</button>
       <button data-view="1m" class="view-btn">1M</button>
       <button data-view="6m" class="view-btn">6M</button>
       <button data-view="1y" class="view-btn">1Y</button>
-      <button data-view="all" class="view-btn">5Y</button>
+      <button data-view="5y" class="view-btn">5Y</button>
       <span class="small">Zoom:</span><button id="zIn">+</button><button id="zOut">−</button>
       <button id="refreshBtn" class="btn-refresh">Refresh</button>
     </div>
@@ -155,23 +153,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--orange); text-sh
       <span>Low: <span></span></span>
       <span>High: <span></span></span>
     </div>
-    <div class="hr"></div>
-    <div class="key-info">
-      <h2>Key Info</h2>
-      <div class="info-grid">
-        <div>Buy Price</div><div id="keyBuyPrice">—</div>
-        <div>Sell Price</div><div id="keySellPrice">—</div>
-        <div>Volume</div><div id="keyVolume">—</div>
-        <div>Period Volume</div><div id="keyPeriodVolume">—</div>
-        <div>Limit</div><div id="keyLimit">—</div>
-        <div>Tax</div><div id="keyTax">—</div>
-        <div>Margin</div><div id="keyMargin" class="">—</div>
-        <div>ROI</div><div id="keyROI" class="">—</div>
-        <div>Period Change</div><div id="keyChange" class="">—</div>
-        <div>Period % Change</div><div id="keyPctChange" class="">—</div>
-        <div>Potential Profit</div><div id="keyPotProfit" class="">—</div>
-      </div>
-    </div>
+    <div class="period-changes" id="periodChanges"></div>
   </div>
 </div>
 <script>
@@ -181,6 +163,7 @@ const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
 let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
 let membersOn = false;
+let fullHistorical = null;
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
@@ -237,17 +220,15 @@ function seriesFromHistorical(h) {
 function getPeriod(view) {
   const periods = {
     "1d": 86400,
-    "1w": 604800,
+    "5d": 432000,
     "1m": 2592000,
     "6m": 15552000,
     "1y": 31536000,
-    "all": Infinity
+    "5y": 157680000
   };
   return periods[view] || Infinity;
 }
-function filterSeries(series, view) {
-  if (view === "all") return series;
-  const period = getPeriod(view);
+function filterSeries(series, period) {
   const minT = Math.max(...series.labels) - period;
   const startIdx = series.labels.findIndex(t => t >= minT);
   return {
@@ -257,6 +238,41 @@ function filterSeries(series, view) {
     lowVol: series.lowVol.slice(startIdx),
     highVol: series.highVol.slice(startIdx)
   };
+}
+function calculatePctChange(series) {
+  let firstMid = null, lastMid = null;
+  for (let i = 0; i < series.labels.length; i++) {
+    const l = series.low[i], h = series.high[i];
+    if (l != null || h != null) {
+      const mid = ((l ?? h) + (h ?? l)) / 2;
+      if (firstMid == null) firstMid = mid;
+      lastMid = mid;
+    }
+  }
+  if (firstMid == null || lastMid == null) return '0%';
+  const change = ((lastMid - firstMid) / firstMid) * 100;
+  return change.toFixed(2) + '%';
+}
+async function calculateAllPctChanges(id) {
+  const changes = {};
+  const historical = await loadHistorical(id);
+  fullHistorical = seriesFromHistorical(historical);
+  const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
+  for (const p of periods) {
+    let ser;
+    if (p === '1d' || p === '5d') {
+      ser = seriesFromTS(await loadTS('1h', id));
+    } else if (p === '1m') {
+      ser = seriesFromTS(await loadTS('6h', id));
+    } else if (p === '6m') {
+      ser = seriesFromTS(await loadTS('24h', id));
+    } else {
+      ser = fullHistorical;
+    }
+    const filtered = filterSeries(ser, getPeriod(p));
+    changes[p] = calculatePctChange(filtered);
+  }
+  return changes;
 }
 function ypx(v, vmin, vmax, y0, h) {
   if (vmin === vmax) return y0 + h / 2;
@@ -301,7 +317,7 @@ function calculateIQR(series, window = 26) {
   }
   return { lowIQR, highIQR };
 }
-function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode) {
+function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, mode = drawMode, currentPrice) {
   const c = can;
   const W = c.width, H = c.height;
   const x0 = 70, y0 = 40, w = W - x0 - 30, h = H - y0 - 50;
@@ -365,7 +381,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       for (let i = 0; i < arr.length; i++) {
         const v = arr[i]; if (v == null) { started = false; continue; }
         const x = x0 + i * stepX;
-        const y = ypx(v, vmin, vmax, y0, h);
+        const y = ypx(v, vmin, vmax, y0, h_price); // Use h_price for price lines
         if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
       }
       context.stroke();
@@ -373,17 +389,17 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       for (let i = 0; i < arr.length; i++) {
         const v = arr[i]; if (v == null) continue;
         const x = x0 + i * stepX;
-        const y = ypx(v, vmin, vmax, y0, h);
+        const y = ypx(v, vmin, vmax, y0, h_price);
         context.beginPath(); context.arc(x, y, 3, 0, Math.PI * 2); context.fill();
       }
     }
   }
-  const h_price = h * 0.8;
-  const h_vol = h * 0.2;
+  const h_price = h * 0.75;
+  const h_vol = h * 0.25;
   const y0_vol = y0 + h_price;
   drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
   drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
-  const maxVol = Math.max(...VO, 1);
+  const maxVol = Math.max(...VO.filter(v => v > 0), 1);
   context.globalAlpha = 0.7;
   for (let i = 0; i < VO.length; i++) {
     const lv = LOWVOL[i];
@@ -413,9 +429,9 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.strokeStyle = color;
     context.beginPath();
     const startX = x0 + (nonNull[nonNull.length - 1].i) * stepX;
-    const startY = ypx(nonNull[nonNull.length - 1].v, vmin, vmax, y0, h);
+    const startY = ypx(nonNull[nonNull.length - 1].v, vmin, vmax, y0, h_price);
     const endX = x0 + arr.length * stepX;
-    const endY = ypx(slope * arr.length + intercept, vmin, vmax, y0, h);
+    const endY = ypx(slope * arr.length + intercept, vmin, vmax, y0, h_price);
     context.moveTo(startX, startY);
     context.lineTo(endX, endY);
     context.lineWidth = 2; context.stroke();
@@ -423,6 +439,19 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
   }
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
   drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
+  // Draw current price dotted line
+  if (currentPrice != null) {
+    const currentY = ypx(currentPrice, vmin, vmax, y0, h_price);
+    context.save();
+    context.setLineDash([5, 5]);
+    context.strokeStyle = '#00ff00';
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(x0, currentY);
+    context.lineTo(x0 + w, currentY);
+    context.stroke();
+    context.restore();
+  }
   context.fillStyle = "#fff"; context.font = "14px Segoe UI, Arial";
   const numLabels = 6;
   const labelStep = Math.floor(L.length / (numLabels - 1)) || 1;
@@ -453,7 +482,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
       const pointWidth = w / (end - start);
       offset -= dx / pointWidth;
       offset = Math.max(0, Math.min(n - win, offset));
-      drawChart(series);
+      drawChart(series, ctx, canvas, zoom, offset, drawMode, currentPrice);
       return;
     }
     if (mx < x0 || mx > x0 + w || my < y0 || my > y0 + h) { tip.style.display = "none"; return; }
@@ -473,7 +502,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const delta = ev.deltaY < 0 ? 1.25 : 0.8;
     zoom *= delta;
     zoom = Math.max(1, Math.min(8, zoom));
-    drawChart(series);
+    drawChart(series, ctx, canvas, zoom, offset, drawMode, currentPrice);
   };
 }
 async function setItem(m) {
@@ -489,53 +518,33 @@ async function setItem(m) {
   const hi = node?.high ?? node?.avgHighPrice ?? null;
   $("#buyPrice span").textContent = fmtGp(lo);
   $("#sellPrice span").textContent = fmtGp(hi);
+  const currentPrice = (lo + hi) / 2;
+  $("#status").textContent = "Calculating changes…";
+  const changes = await calculateAllPctChanges(m.id);
+  const periodChangesDiv = $("#periodChanges");
+  periodChangesDiv.innerHTML = '';
+  for (const [p, ch] of Object.entries(changes)) {
+    const div = document.createElement('div');
+    div.className = 'period-change';
+    const sign = parseFloat(ch) > 0 ? 'positive' : parseFloat(ch) < 0 ? 'negative' : '';
+    div.innerHTML = `<div class="period">${p.toUpperCase()}</div><div class="change ${sign}">${ch}</div>`;
+    periodChangesDiv.appendChild(div);
+  }
   $("#status").textContent = "Loading chart…";
   let ts;
-  if (view === "all") {
-    ts = await loadHistorical(m.id);
-    currentSeries = seriesFromHistorical(ts);
+  let timestep;
+  if (view === "5y") {
+    currentSeries = fullHistorical;
   } else {
-    const step = (view === "1d" ? "1h" : view === "1w" ? "6h" : "24h");
-    ts = await loadTS(step, m.id);
+    if (view === "1d" || view === "5d") timestep = "1h";
+    else if (view === "1m") timestep = "6h";
+    else timestep = "24h";
+    ts = await loadTS(timestep, m.id);
     currentSeries = seriesFromTS(ts);
   }
-  currentSeries = filterSeries(currentSeries, view);
+  currentSeries = filterSeries(currentSeries, getPeriod(view));
   offset = Math.max(0, (currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom)));
-  drawChart(currentSeries);
-  const vol = volumes.data[String(m.id)] || 0;
-  const limit = selected.buy_limit || 0;
-  const tax = hi ? Math.floor(hi * 0.01) : 0;
-  const margin = hi && lo ? hi - lo - tax : 0;
-  const roi = lo ? ((margin / lo) * 100).toFixed(2) + '%' : '0%';
-  const potProfit = margin * limit;
-  let firstMid = null, lastMid = null, periodVol = 0;
-  for (let i = 0; i < currentSeries.labels.length; i++) {
-    const l = currentSeries.low[i], h = currentSeries.high[i], v = currentSeries.lowVol[i] + currentSeries.highVol[i];
-    if (l != null || h != null) {
-      const mid = ((l ?? h) + (h ?? l)) / 2;
-      if (firstMid == null) firstMid = mid;
-      lastMid = mid;
-    }
-    periodVol += v;
-  }
-  const change = (firstMid != null && lastMid != null) ? lastMid - firstMid : 0;
-  const pctChange = (firstMid != null && firstMid != 0) ? ((change / firstMid) * 100).toFixed(2) + '%' : '0%';
-  $("#keyBuyPrice").textContent = fmtGp(lo);
-  $("#keySellPrice").textContent = fmtGp(hi);
-  $("#keyVolume").textContent = fmtNum(vol);
-  $("#keyPeriodVolume").textContent = fmtNum(periodVol);
-  $("#keyLimit").textContent = fmtNum(limit);
-  $("#keyTax").textContent = fmtGp(tax);
-  $("#keyMargin").textContent = fmtGp(margin);
-  $("#keyMargin").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
-  $("#keyROI").textContent = roi;
-  $("#keyROI").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
-  $("#keyChange").textContent = fmtGp(change);
-  $("#keyChange").classList.add(change > 0 ? 'positive' : change < 0 ? 'negative' : '');
-  $("#keyPctChange").textContent = pctChange;
-  $("#keyPctChange").classList.add(change > 0 ? 'positive' : change < 0 ? 'negative' : '');
-  $("#keyPotProfit").textContent = fmtGp(potProfit);
-  $("#keyPotProfit").classList.add(margin > 0 ? 'positive' : margin < 0 ? 'negative' : '');
+  drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, currentPrice);
   $("#status").textContent = "Ready";
 }
 (async function boot() {
@@ -565,8 +574,8 @@ async function setItem(m) {
         if (selected) setItem(selected);
       }
     });
-    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries); };
-    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries); };
+    $("#zIn").onclick = () => { zoom = Math.min(8, zoom * 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
+    $("#zOut").onclick = () => { zoom = Math.max(1, zoom / 1.25); drawChart(currentSeries, ctx, canvas, zoom, offset, drawMode, (parseInt($("#buyPrice span").textContent) + parseInt($("#sellPrice span").textContent)) / 2); };
     $("#btnF2P").onclick = () => {
       membersOn = false;
       $("#btnF2P").classList.add("active");
