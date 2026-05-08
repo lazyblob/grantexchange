@@ -68,13 +68,9 @@ body {
   gap: 16px; 
 }
 
-/* Header */
-.header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.header-left { display: flex; align-items: center; gap: 12px; }
-h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--gold); text-shadow: 1px 2px 4px var(--shadow); cursor: pointer; letter-spacing: 0.5px; }
-.badge-container { display: flex; gap: 6px; }
-.badge { font-size: 12px; font-weight: 600; border: 1px solid var(--border-light); border-radius: 4px; padding: 2px 6px; color: var(--gold-dim); background: var(--bg-input); }
-.status-text { font-size: 13px; color: var(--muted); font-weight: 500; }
+/* Badge & Status */
+.badge { font-size: 12px; font-weight: 600; border: 1px solid var(--border-light); border-radius: 4px; padding: 3px 8px; color: var(--gold-dim); background: var(--bg-input); }
+.status-text { font-size: 13px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
 
 /* Mode Pill */
 .mode-pill { display: flex; background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 6px; overflow: hidden; }
@@ -127,17 +123,31 @@ h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--gold); text-shad
 .price-container { display: flex; gap: 12px; }
 .price-box { 
   background: linear-gradient(180deg, var(--bg-input) 0%, #000 100%); 
-  border: 1px solid var(--border-main); 
+  border: 2px solid var(--border-main); 
   border-radius: 6px; 
   padding: 10px 16px; 
   text-align: center; 
-  min-width: 130px; 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05); 
+  min-width: 140px; 
+  cursor: pointer;
+  opacity: 0.6;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+  transition: all 0.2s ease;
+}
+.price-box:hover { opacity: 0.8; }
+.price-box.selected {
+  border-color: #ffffff;
+  opacity: 1;
+  box-shadow: 0 0 15px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 .price-label { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 4px; }
+.price-box.selected .price-label { color: #fff; }
 .price-box.low .price-val { color: var(--buy-color); }
 .price-box.high .price-val { color: var(--sell-color); }
 .price-val { font-size: 20px; font-weight: 800; text-shadow: 1px 2px 2px var(--shadow); }
+
+/* Toolbars Row */
+.toolbar-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.mode-controls { display: flex; align-items: center; gap: 12px; }
 
 /* Timeframe Toolbar */
 .toolbar { 
@@ -191,29 +201,17 @@ h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--gold); text-shad
 @media (max-width: 768px) {
   .top-row { flex-direction: column; align-items: stretch; }
   .price-container { justify-content: space-between; }
-  .price-box { flex: 1; }
+  .price-box { flex: 1; min-width: 0; }
   .chart { height: 400px; }
+  .toolbar-row { flex-direction: column; align-items: stretch; }
+  .mode-controls { justify-content: space-between; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="header">
-    <div class="header-left">
-      <h1 onclick="location.reload();">Grant Exchange</h1>
-      <div class="badge-container">
-        <span class="badge">v5.4</span> 
-        <span class="badge">OSRS Charts</span>
-      </div>
-    </div>
-    <div id="status" class="status-text">Ready</div>
-    <div class="mode-pill">
-      <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-      <button data-mode="members" id="btnMembers">Members</button>
-    </div>
-  </div>
-
   <div class="card left">
+    
     <div class="top-row">
       <div class="sbar">
         <img id="itemIcon" src="" alt="">
@@ -221,7 +219,7 @@ h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--gold); text-shad
         <div id="suggestBox" class="suggest" style="display:none"></div>
       </div>
       <div class="price-container">
-        <div id="buyPrice" class="price-box low">
+        <div id="buyPrice" class="price-box low selected">
           <div class="price-label">Buy Price</div>
           <div class="price-val"><span>—</span></div>
         </div>
@@ -232,13 +230,23 @@ h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--gold); text-shad
       </div>
     </div>
 
-    <div class="toolbar" id="timeToolbar">
-      <button data-view="1d" class="active view-btn">1D</button>
-      <button data-view="5d" class="view-btn">5D</button>
-      <button data-view="1m" class="view-btn">1M</button>
-      <button data-view="6m" class="view-btn">6M</button>
-      <button data-view="1y" class="view-btn">1Y</button>
-      <button data-view="5y" class="view-btn">5Y</button>
+    <div class="toolbar-row">
+      <div class="toolbar" id="timeToolbar">
+        <button data-view="1d" class="active view-btn">1D</button>
+        <button data-view="5d" class="view-btn">5D</button>
+        <button data-view="1m" class="view-btn">1M</button>
+        <button data-view="6m" class="view-btn">6M</button>
+        <button data-view="1y" class="view-btn">1Y</button>
+        <button data-view="5y" class="view-btn">5Y</button>
+      </div>
+      <div class="mode-controls">
+        <span id="status" class="status-text">Ready</span>
+        <span class="badge">v5.5</span>
+        <div class="mode-pill">
+          <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+          <button data-mode="members" id="btnMembers">Members</button>
+        </div>
+      </div>
     </div>
 
     <div class="chartWrap">
@@ -263,9 +271,21 @@ let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
+// New state tracking for price box selection
+let activePriceBox = 'buy'; 
+let currentLatestLow = null, currentLatestHigh = null;
+
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
+
+// Price box listeners
+$('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
+$('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
+function updateSelection() {
+  $('#buyPrice').classList.toggle('selected', activePriceBox === 'buy');
+  $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
+}
 
 // Resize canvas for sharp rendering
 function resizeCanvas() {
@@ -346,7 +366,6 @@ async function calculateAllPctChanges(id) {
   
   for (const p of periods) {
     let ser;
-    // For % changes, 1h is sufficient. No need to pull dense 5m data just for the button label.
     if (p === '1d' || p === '5d') ser = seriesFromTS(await loadTS('1h', id));
     else if (p === '1m') ser = seriesFromTS(await loadTS('6h', id));
     else if (p === '6m') ser = seriesFromTS(await loadTS('24h', id));
@@ -373,13 +392,18 @@ function ypx(v, vmin, vmax, y0, h) {
   return y0 + (1 - ((v - vmin) / (vmax - vmin))) * h;
 }
 
+// Fixed standard linear regression
 function linearRegression(x, y) {
   const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0), sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0), sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-  const meanX = sumX / n, meanY = sumY / n;
-  const slope = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
-  return { slope, intercept: meanY - slope * meanX };
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += x[i]; sumY += y[i]; sumXY += x[i] * y[i]; sumX2 += x[i] * x[i];
+  }
+  const denominator = (n * sumX2 - sumX * sumX);
+  if (denominator === 0) return { slope: 0, intercept: sumY / n };
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const intercept = (sumY - slope * sumX) / n;
+  return { slope, intercept };
 }
 
 function calculateIQR(series, window = 26) {
@@ -424,6 +448,11 @@ function drawChart(series) {
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
   const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
 
+  // X-Axis Layout: 85% data, 15% future space for trailing predictions
+  const dataW = w * 0.85; 
+  const futureW = w * 0.15; 
+  const stepX = dataW / Math.max(1, (L.length - 1));
+
   // Draw Grid
   ctx.lineWidth = 1;
   const linesY = 6;
@@ -439,7 +468,6 @@ function drawChart(series) {
     ctx.fillText(abbreviateNumber(v), x0 - 10, y);
   }
 
-  const stepX = w / Math.max(1, (L.length - 1));
   const linesX = Math.min(8, L.length);
   const xStep = Math.floor(L.length / linesX);
   ctx.textAlign = "center";
@@ -451,6 +479,12 @@ function drawChart(series) {
     let dateStr = view === "1d" ? new Date(L[i]*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : new Date(L[i]*1000).toLocaleDateString([],{month:'short', day:'numeric'});
     ctx.fillText(dateStr, x, H - 25);
   }
+
+  // Draw subtle line splitting 'now' from 'future'
+  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  ctx.setLineDash([2, 4]);
+  ctx.beginPath(); ctx.moveTo(x0 + dataW, y0); ctx.lineTo(x0 + dataW, y0 + h); ctx.stroke();
+  ctx.setLineDash([]);
 
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
@@ -472,17 +506,15 @@ function drawChart(series) {
     ctx.closePath(); ctx.fill();
   }
 
-  // 2. Dash Plotting (The Flipping Copilot Effect)
+  // 2. Dash Plotting
   function drawDashes(arr, color) {
     ctx.fillStyle = color;
-    // Width slightly larger than stepX so steady prices fuse into lines
     const dashWidth = Math.max(3, stepX * 1.5); 
-    const dashHeight = 2; // Fixed thickness for lines
+    const dashHeight = 2; 
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
       const x = x0 + i * stepX;
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
-      // Draw centered rectangle
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
     }
   }
@@ -508,36 +540,84 @@ function drawChart(series) {
     ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
 
-  // 4. Predictions
-  function drawPrediction(arr, color) {
+  // 4. Trailing Predictions (Short-term projection into the future void)
+  function drawTrailingPrediction(arr, color) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
-    if (nonNull.length < 2) return;
-    const { slope, intercept } = linearRegression(nonNull.map(n=>n.i), nonNull.map(n=>n.v));
-    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = color; ctx.globalAlpha = 0.5;
+    if (nonNull.length < 5) return;
+    
+    // Analyze recent trend (last 25% of visible data)
+    const lookback = Math.max(5, Math.floor(nonNull.length * 0.25));
+    const recent = nonNull.slice(-lookback);
+    
+    const { slope, intercept } = linearRegression(recent.map(n=>n.i), recent.map(n=>n.v));
+    const lastPt = nonNull[nonNull.length - 1];
+    
+    const startX = x0 + lastPt.i * stepX;
+    const startY = ypx(lastPt.v, vmin, vmax, y0, h_price);
+    
+    // Project into future area
+    const projectedI = (L.length - 1) + (futureW / stepX);
+    const projectedV = slope * projectedI + intercept;
+    const endX = x0 + dataW + futureW;
+    const endY = ypx(projectedV, vmin, vmax, y0, h_price);
+    
+    ctx.save();
+    // Clip so wild predictions don't draw over UI
+    ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); 
+    
+    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.8;
     ctx.beginPath();
-    ctx.moveTo(x0 + nonNull[nonNull.length-1].i * stepX, ypx(nonNull[nonNull.length-1].v, vmin, vmax, y0, h_price));
-    ctx.lineTo(x0 + arr.length * stepX, ypx(slope * arr.length + intercept, vmin, vmax, y0, h_price));
-    ctx.stroke(); ctx.restore();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    ctx.restore();
   }
-  drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
-  drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
+  drawTrailingPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
+  drawTrailingPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
+
+  // 5. Bright Dashed Target Line for Active Price Box
+  const activePrice = activePriceBox === 'buy' ? currentLatestLow : currentLatestHigh;
+  if (activePrice != null) {
+    const py = ypx(activePrice, vmin, vmax, y0, h_price);
+    if (py >= y0 && py <= y0 + h_price) {
+      ctx.save();
+      ctx.setLineDash([8, 6]);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x0, py);
+      ctx.lineTo(x0 + w, py);
+      ctx.stroke();
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "11px Segoe UI";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("Selected", x0 + 6, py - 4);
+      ctx.restore();
+    }
+  }
 
   // Mouse Interaction
-  let isDragging = false, startX = 0;
-  c.onmousedown = ev => { isDragging = true; startX = ev.clientX; };
+  let isDragging = false, startXMouse = 0;
+  c.onmousedown = ev => { isDragging = true; startXMouse = ev.clientX; };
   c.onmouseup = () => isDragging = false;
   c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
   c.onmousemove = ev => {
     const rect = c.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     if (isDragging) {
-      const dx = ev.clientX - startX; startX = ev.clientX;
-      offset -= dx / (w / win);
+      const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
+      offset -= dx / (dataW / win);
       offset = Math.max(0, Math.min(n - win, offset));
       requestAnimationFrame(() => drawChart(series));
       return;
     }
-    if (mx < x0 || mx > x0 + w || my < y0 || my > H) { tip.style.display = "none"; return; }
+    // Hover logic - ignore future area
+    if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; return; }
     const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     tip.style.display = "block";
     tip.style.left = (mx + 15) + "px";
@@ -563,8 +643,13 @@ async function setItem(m) {
   
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
-  $("#buyPrice .price-val span").textContent = fmtGp(node?.low ?? node?.avgLowPrice);
-  $("#sellPrice .price-val span").textContent = fmtGp(node?.high ?? node?.avgHighPrice);
+  
+  // Update state tracking
+  currentLatestLow = node?.low ?? node?.avgLowPrice ?? null;
+  currentLatestHigh = node?.high ?? node?.avgHighPrice ?? null;
+  
+  $("#buyPrice .price-val span").textContent = fmtGp(currentLatestLow);
+  $("#sellPrice .price-val span").textContent = fmtGp(currentLatestHigh);
   
   // Update timeframe buttons
   const changes = await calculateAllPctChanges(m.id);
@@ -578,8 +663,8 @@ async function setItem(m) {
 
   // Pull dense data based on view
   let timestep = "24h";
-  if (view === "1d" || view === "5d") timestep = "5m"; // HIGH DENSITY
-  else if (view === "1m") timestep = "1h"; // HIGH DENSITY
+  if (view === "1d" || view === "5d") timestep = "5m"; 
+  else if (view === "1m") timestep = "1h"; 
   else if (view === "6m") timestep = "6h";
 
   if (view === "5y") {
