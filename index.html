@@ -36,11 +36,11 @@
   --ink: #d9c4a1; /* Parchment text color */
   --muted: #8c7b65; /* Darker parchment */
   --low-color: #3ca2d9; /* Modern sleek blue */
-  --high-color: #ff9800; /* Vibrant Orange for highs to match screenshots */
+  --high-color: #e2ad2b; /* Match high price to gold */
   --grid: #3a2e22; /* Faint grid lines */
   --accent: #ffb000;
   --shadow: rgba(0, 0, 0, 0.7);
-  --iqr-high: rgba(226, 173, 43, 0.15); /* Semi-transparent gold band */
+  --iqr-high: #784824;
   --positive: #55ff55;
   --negative: #ff5555;
 }
@@ -77,13 +77,10 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--gold); text-shad
 .chartWrap { position: relative; margin: 8px 0; }
 .chart { width: 100%; height: 500px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 24px), var(--bg); border: 2px solid var(--edge); border-radius: 8px; box-shadow: inset 0 4px 10px var(--shadow); }
 .chart-tip { position: absolute; display: none; background: rgba(20, 16, 12, 0.95); color: var(--ink); padding: 10px 12px; border-radius: 6px; font-size: 13px; pointer-events: none; white-space: nowrap; border: 1px solid var(--gold); box-shadow: 0 4px 12px var(--shadow); z-index: 20; }
-.legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); flex-wrap: wrap; align-items: center; }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.legend-dash { width: 12px; height: 3px; display: inline-block; border-radius: 1px; }
-.legend-box { width: 14px; height: 14px; display: inline-block; border-radius: 3px; border: 1px solid var(--edge); }
-.legend .low .legend-dash { background: var(--low-color); }
-.legend .high .legend-dash { background: var(--high-color); }
-.legend .iqr-band .legend-box { background: var(--iqr-high); }
+.legend { display: flex; gap: 16px; font-size: 13px; margin-top: 8px; color: var(--muted); flex-wrap: wrap; }
+.legend span span { width: 12px; height: 12px; display: inline-block; border-radius: 2px; }
+.legend .low span { background: var(--low-color); }
+.legend .high span { background: var(--high-color); }
 .btn-refresh { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--edge); background: var(--bg); color: var(--muted); cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: all .2s; }
 .btn-refresh:hover { color: var(--ink); border-color: var(--gold); box-shadow: 0 0 10px rgba(226, 173, 43, 0.3); }
 .mode-pill button { background: var(--bg); border: 1px solid var(--edge); color: var(--muted); border-radius: 8px; padding: 8px 12px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; transition: all .2s; }
@@ -107,7 +104,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--gold); text-shad
 <body>
 <div class="wrap">
   <div class="header">
-    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.2</span> <span class="badge">OSRS Charts</span></div>
+    <div><h1 onclick="location.reload();">Grant Exchange</h1><span class="badge">v5.1</span> <span class="badge">OSRS Charts</span></div>
     <div id="status" class="small">Ready</div>
     <div class="mode-pill">
       <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -138,10 +135,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--gold); text-shad
       <div id="tip" class="chart-tip"></div>
     </div>
     <div class="legend">
-      <div class="legend-item low"><span class="legend-dash"></span> Lows (Insta-sell)</div>
-      <div class="legend-item high"><span class="legend-dash"></span> Highs (Insta-buy)</div>
-      <div class="legend-item iqr-band"><span class="legend-box"></span> Trend Band (IQR)</div>
-      <div class="legend-item"><span class="legend-dash" style="background:var(--muted); border: 1px dashed var(--ink);"></span> Predictions</div>
+      <span class="low"><span></span> Low / Buy Price</span>
+      <span class="high"><span></span> High / Sell Price</span>
     </div>
   </div>
 </div>
@@ -150,8 +145,7 @@ const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, volumes = null, selected = null;
-// Changed default drawMode to 'scatter' for that blocky/dashed look
-let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "scatter";
+let currentSeries = null, view = "1d", zoom = 1.5, offset = 0, drawMode = "line";
 let membersOn = false;
 let fullHistorical = null;
 const canvas = document.getElementById("chart");
@@ -361,57 +355,40 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.strokeStyle = "rgba(217, 196, 161, 0.05)";
     context.beginPath(); context.moveTo(x, y0); context.lineTo(x, y0 + h); context.stroke();
   }
+  function drawSeries(arr, color, mode) {
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = 2;
+    if (mode === "line") {
+      context.beginPath();
+      let started = false;
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i]; if (v == null) { started = false; continue; }
+        const x = x0 + i * stepX;
+        const y = ypx(v, vmin, vmax, y0, h_price); // Use h_price for price lines
+        if (!started) { context.moveTo(x, y); started = true; } else context.lineTo(x, y);
+      }
+      context.stroke();
+    } else if (mode === "dot") {
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i]; if (v == null) continue;
+        const x = x0 + i * stepX;
+        const y = ypx(v, vmin, vmax, y0, h_price);
+        context.beginPath(); context.arc(x, y, 3, 0, Math.PI * 2); context.fill();
+      }
+    }
+  }
   
+  // ADJUSTED VOLUME BAR HEIGHT FOR A MORE MODERN LOOK (85% price, 15% volume)
   const h_price = h * 0.85;
   const h_vol = h * 0.15;
   const y0_vol = y0 + h_price;
-
-  // --- 1. DRAW SHADED IQR BAND (Instead of Lines) ---
-  const iqr = calculateIQR({low: LO, high: HI, labels: L});
-  context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--iqr-high').trim();
-  context.beginPath();
-  let firstValid = -1;
-  for (let i = 0; i < L.length; i++) {
-    if (iqr.highIQR[i] != null && iqr.lowIQR[i] != null) {
-      const x = x0 + i * stepX;
-      const y = ypx(iqr.highIQR[i], vmin, vmax, y0, h_price);
-      if (firstValid === -1) { context.moveTo(x, y); firstValid = i; }
-      else { context.lineTo(x, y); }
-    }
-  }
-  if (firstValid !== -1) {
-    for (let i = L.length - 1; i >= firstValid; i--) {
-      if (iqr.lowIQR[i] != null) {
-        const x = x0 + i * stepX;
-        const y = ypx(iqr.lowIQR[i], vmin, vmax, y0, h_price);
-        context.lineTo(x, y);
-      }
-    }
-    context.closePath();
-    context.fill(); // Fill the subtle background band
-  }
-
-  // --- 2. DRAW SCATTER PLOT (Dashes) ---
-  function drawSeries(arr, color, mode) {
-    context.fillStyle = color;
-    if (mode === "scatter") {
-      // Draw small horizontal dashes like the screenshot
-      const dashWidth = Math.max(3, stepX * 0.9); // Dynamic width based on zoom
-      for (let i = 0; i < arr.length; i++) {
-        const v = arr[i]; 
-        if (v == null) continue;
-        const x = x0 + i * stepX - (dashWidth / 2);
-        const y = ypx(v, vmin, vmax, y0, h_price);
-        context.fillRect(x, y - 1, dashWidth, 2); // 2px thick dash
-      }
-    }
-  }
   
   drawSeries(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), drawMode);
   drawSeries(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim(), drawMode);
-  
-  // --- 3. DRAW VOLUME BARS ---
   const maxVol = Math.max(...VO.filter(v => v > 0), 1);
+  
+  // Thinner bars, more transparent
   context.globalAlpha = 0.4;
   for (let i = 0; i < VO.length; i++) {
     const lv = LOWVOL[i];
@@ -420,6 +397,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const totalH = ((lv + hv) / maxVol) * h_vol;
     const lowH = (lv / maxVol) * h_vol;
     
+    // Thinner bars based on stepX
     const barWidth = Math.max(1, stepX * 0.5); 
     const x = x0 + i * stepX - (barWidth / 2);
     
@@ -429,8 +407,9 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     context.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
   context.globalAlpha = 1;
-
-  // --- 4. DRAW PREDICTIONS ---
+  const iqr = calculateIQR({low: LO, high: HI, labels: L});
+  drawSeries(iqr.lowIQR, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim(), "line");
+  drawSeries(iqr.highIQR, getComputedStyle(document.documentElement).getPropertyValue('--iqr-high').trim(), "line");
   function drawPrediction(arr, color) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 2) return;
@@ -438,7 +417,7 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const yVals = nonNull.map(({v}) => v);
     const { slope, intercept } = linearRegression(xVals, yVals);
     context.save();
-    context.setLineDash([4, 4]); // Dotted look
+    context.setLineDash([6, 6]);
     context.strokeStyle = color;
     context.beginPath();
     const startX = x0 + (nonNull[nonNull.length - 1].i) * stepX;
@@ -447,12 +426,11 @@ function drawChart(series, context = ctx, can = canvas, z = zoom, off = offset, 
     const endY = ypx(slope * arr.length + intercept, vmin, vmax, y0, h_price);
     context.moveTo(startX, startY);
     context.lineTo(endX, endY);
-    context.lineWidth = 1.5; context.stroke();
+    context.lineWidth = 2; context.stroke();
     context.restore();
   }
   drawPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--low-color').trim());
   drawPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--high-color').trim());
-  
   // Draw current price dotted line
   if (currentPrice != null) {
     const currentY = ypx(currentPrice, vmin, vmax, y0, h_price);
@@ -575,6 +553,8 @@ async function setItem(m) {
       const q = $("#query").value.trim().toLowerCase();
       if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
       
+      // LOGIC FIX: Filter based on 'membersOn' toggle.
+      // x.members is true/false from the OSRS Wiki API.
       const list = mapping.filter(x => 
         x.name.toLowerCase().includes(q) && (membersOn || !x.members)
       ).slice(0, 20);
@@ -603,6 +583,7 @@ async function setItem(m) {
       membersOn = false;
       $("#btnF2P").classList.add("active");
       $("#btnMembers").classList.remove("active");
+      // Trigger new search results immediately if the user is typing
       $("#query").dispatchEvent(new Event("input"));
     };
     
