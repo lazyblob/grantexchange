@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
 <title>Grant Exchange - OSRS Charting Tool</title>
-<meta name="description" content="Advanced AI charting tool for OSRS Grand Exchange items with volume and trend analysis.">
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -14,220 +14,301 @@
 </script>
 <style>
 :root {
-  /* Premium OSRS Theming */
-  --bg-body: #110d0a; 
-  --bg-card: #1c1611;
-  --bg-input: #0a0806;
-  --border-main: #3a2e22;
-  --border-light: #524231;
-  --gold: #e2ad2b;
-  --gold-dim: #a67c1e;
-  --ink: #d9c4a1;
-  --muted: #8c7b65;
+  /* TradingView Deep Slate Theming */
+  --bg-base: #0B0E14; /* Outer page backing */
+  --bg-chart: #131722; /* Classic TV chart area */
+  --bg-panel: #1E222D; /* TV top panels and sidebars */
+  --bg-input: #2A2E39; /* Input forms and active states */
   
-  /* Data Colors */
+  --border-main: #2A2E39;
+  --border-light: #363C4E;
+  --border-active: #2962FF; /* TV Blue Accent */
+  
+  --text-main: #D1D4DC;
+  --text-muted: #787B86;
+  
+  /* Custom Visuals */
   --buy-color: #E6C35C; /* Lows / Buy side */
-  --sell-color: #4FB64F; /* Highs / Sell side */
-  --iqr-band: rgba(226, 173, 43, 0.08); 
-  --vol-buy: rgba(230, 195, 92, 0.4);
-  --vol-sell: rgba(79, 182, 79, 0.4);
+  --sell-color: #26A69A; /* Highs / Sell side (TV Crisp Green) */
+  --iqr-band: rgba(120, 123, 134, 0.08); 
+  --vol-buy: rgba(230, 195, 92, 0.35);
+  --vol-sell: rgba(38, 166, 154, 0.35);
   
-  /* AI Accent */
-  --ai-glow: rgba(0, 255, 204, 0.2);
-  --ai-text: #00ffcc;
-  
-  --positive: #4FB64F;
-  --negative: #ff5555;
-  --shadow: rgba(0, 0, 0, 0.8);
+  --positive: #26A69A;
+  --negative: #EF5350;
+  --shadow: rgba(0, 0, 0, 0.5);
 }
+
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { 
   margin: 0; 
-  background: var(--bg-body); 
-  color: var(--ink); 
-  font-family: 'Segoe UI', system-ui, sans-serif; 
+  background: var(--bg-base); 
+  color: var(--text-main); 
+  font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
 }
+
 .wrap { 
-  max-width: 1440px; 
+  max-width: 1600px; 
   margin: 0 auto; 
-  padding: 16px 12px; 
-  min-height: 100vh; 
+  padding: 12px; 
+  height: 100vh; 
   display: flex; 
   flex-direction: column; 
-  gap: 16px; 
+  gap: 8px; 
 }
 
-/* Badge & Status */
-.badge { font-size: 12px; font-weight: 600; border: 1px solid var(--border-light); border-radius: 4px; padding: 3px 8px; color: var(--gold-dim); background: var(--bg-input); }
-.status-text { font-size: 13px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
-
-/* Mode Pill */
-.mode-pill { display: flex; background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 6px; overflow: hidden; }
-.mode-pill button { background: transparent; border: none; color: var(--muted); padding: 8px 16px; cursor: pointer; font-weight: bold; font-size: 13px; transition: all 0.2s; }
-.mode-pill button:hover { color: var(--ink); }
-.mode-pill button.active { background: var(--border-main); color: var(--gold); box-shadow: inset 0 0 8px var(--shadow); }
-
-/* Main Card */
-.card { 
-  background: var(--bg-card); 
-  border: 1px solid var(--border-main); 
-  border-radius: 8px; 
-  padding: 20px; 
-  box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); 
+/* Premium Compact Header Panel */
+.top-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  border-radius: 6px;
+  padding: 8px 12px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-/* Top Row: Search & Prices */
-.top-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.sbar { flex: 1; min-width: 250px; position: relative; }
-.sbar input { 
-  width: 100%; 
-  background: var(--bg-input); 
-  border: 1px solid var(--border-main); 
-  border-bottom: 2px solid var(--border-light);
-  color: var(--ink); 
-  border-radius: 6px; 
-  padding: 14px 14px 14px 48px; 
-  font-size: 16px; 
-  font-weight: 500;
-  outline: none; 
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6); 
-  transition: all 0.2s; 
+.panel-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.sbar input:focus { border-bottom-color: var(--gold); background: #14110e; }
-#itemIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; image-rendering: pixelated; filter: drop-shadow(0 2px 4px var(--shadow)); }
 
-/* Suggestion Box */
-.suggest { margin-top: 4px; border: 1px solid var(--border-main); border-radius: 6px; max-height: 300px; overflow: auto; background: var(--bg-card); position: absolute; z-index: 50; width: 100%; box-shadow: 0 12px 24px var(--shadow); }
-.suggest::-webkit-scrollbar { width: 6px; background: var(--bg-input); }
-.suggest::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-.suggest div { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border-main); cursor: pointer; transition: background 0.1s; font-size: 14px; }
-.suggest div:last-child { border-bottom: none; }
-.suggest div:hover { background: var(--bg-input); color: var(--gold); }
-.suggest img { width: 20px; height: 20px; image-rendering: pixelated; }
-
-/* Price Plaques */
-.price-container { display: flex; gap: 12px; }
-.price-box { 
-  background: linear-gradient(180deg, var(--bg-input) 0%, #000 100%); 
-  border: 2px solid var(--border-main); 
-  border-radius: 6px; 
-  padding: 10px 16px; 
-  text-align: center; 
-  min-width: 140px; 
+.brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
   cursor: pointer;
-  opacity: 0.6;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
-  transition: all 0.2s ease;
-}
-.price-box:hover { opacity: 0.8; }
-.price-box.selected {
-  border-color: #ffffff;
-  opacity: 1;
-  box-shadow: 0 0 15px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
-}
-.price-label { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 4px; }
-.price-box.selected .price-label { color: #fff; }
-.price-box.low .price-val { color: var(--buy-color); }
-.price-box.high .price-val { color: var(--sell-color); }
-.price-val { font-size: 20px; font-weight: 800; text-shadow: 1px 2px 2px var(--shadow); }
-
-/* Toolbars Row */
-.toolbar-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-.mode-controls { display: flex; align-items: center; gap: 12px; }
-
-/* Timeframe Toolbar */
-.toolbar { 
-  display: flex; 
-  background: var(--bg-input); 
-  border: 1px solid var(--border-main); 
-  border-radius: 6px; 
-  padding: 4px;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
   gap: 4px;
-  flex-wrap: wrap; 
 }
-.toolbar button { 
-  flex: 1;
-  background: transparent; 
-  border: 1px solid transparent; 
-  color: var(--muted); 
+.brand span { color: var(--border-active); }
+
+/* Shrunk Search Bar */
+.sbar {
+  position: relative;
+  width: 220px; /* Highly reduced width */
+}
+.sbar input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  border-radius: 4px;
+  padding: 6px 8px 6px 30px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.sbar input:focus { border-color: var(--border-active); }
+#itemIcon { 
+  position: absolute; 
+  left: 6px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  width: 18px; 
+  height: 18px; 
+  image-rendering: pixelated; 
+}
+
+/* Autocomplete Suggestion Dropdown */
+.suggest { 
+  margin-top: 4px; 
+  border: 1px solid var(--border-light); 
   border-radius: 4px; 
-  padding: 8px 12px; 
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 13px; 
-  transition: all .2s; 
-  min-width: 80px;
+  max-height: 250px; 
+  overflow-y: auto; 
+  background: var(--bg-panel); 
+  position: absolute; 
+  z-index: 100; 
+  width: 280px; 
+  box-shadow: 0 8px 16px var(--shadow); 
 }
-.toolbar button:hover { color: var(--ink); background: rgba(255,255,255,0.02); }
-.toolbar button.active { background: var(--border-main); border-color: var(--border-light); color: var(--gold); box-shadow: 0 2px 4px var(--shadow); }
-.pct-chg { font-size: 11px; margin-left: 4px; }
+.suggest::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.suggest::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+.suggest div { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding: 8px 10px; 
+  border-bottom: 1px solid var(--border-main); 
+  cursor: pointer; 
+  font-size: 12px; 
+}
+.suggest div:last-child { border-bottom: none; }
+.suggest div:hover { background: var(--bg-input); color: #fff; }
+.suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
+
+/* Timeframe Selection */
+.toolbar {
+  display: flex;
+  background: var(--bg-input);
+  border-radius: 4px;
+  padding: 2px;
+  gap: 2px;
+}
+.toolbar button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+.toolbar button:hover { color: var(--text-main); }
+.toolbar button.active { background: var(--border-light); color: #fff; }
+.pct-chg { font-size: 10px; margin-left: 2px; font-weight: normal; }
 .pct-chg.positive { color: var(--positive); }
 .pct-chg.negative { color: var(--negative); }
 
-/* AI Insight Bar */
-.ai-bar {
-  background: linear-gradient(90deg, rgba(0, 255, 204, 0.05) 0%, var(--bg-input) 100%);
-  border: 1px solid var(--border-main);
-  border-left: 3px solid var(--ai-text);
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 14px;
+/* Game Toggles */
+.mode-pill {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  padding: 2px;
 }
-.ai-bar span.icon { font-size: 16px; }
-.ai-bar strong { color: var(--ai-text); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-right: 6px;}
-.ai-text-content { color: var(--ink); }
-.ai-text-content .hlt-pos { color: var(--positive); font-weight: bold; }
-.ai-text-content .hlt-neg { color: var(--negative); font-weight: bold; }
+.mode-pill button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 3px;
+}
+.mode-pill button.active { background: var(--border-active); color: #fff; }
 
-/* Chart Area */
-.chartWrap { position: relative; width: 100%; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-main); box-shadow: inset 0 4px 12px rgba(0,0,0,0.6); }
-.chart { width: 100%; height: 500px; display: block; }
-.chart-tip { 
-  position: absolute; display: none; background: rgba(10, 8, 6, 0.95); color: var(--ink); 
-  padding: 12px; border-radius: 6px; font-size: 13px; pointer-events: none; white-space: nowrap; 
-  border: 1px solid var(--border-light); box-shadow: 0 8px 16px rgba(0,0,0,0.8); z-index: 20; 
+.status-text { font-size: 11px; color: var(--text-muted); }
+
+/* Main Chart & Side Interface Layout */
+.content-area {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-height: 0; /* strict flexbox handling */
+}
+
+/* Actual Chart Wrapper */
+.chart-container {
+  flex: 1;
+  background: var(--bg-chart);
+  border: 1px solid var(--border-main);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.chart { flex: 1; width: 100%; display: block; }
+
+/* Target Info Plaques embedded cleanly */
+.plaque-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+.price-box {
+  background: rgba(30, 34, 45, 0.85);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 6px 10px;
+  min-width: 120px;
+  pointer-events: auto;
+  cursor: pointer;
   backdrop-filter: blur(4px);
+  transition: border-color 0.15s;
 }
-.chart-tip strong { display: block; margin-bottom: 6px; font-size: 14px; border-bottom: 1px solid var(--border-main); padding-bottom: 4px;}
+.price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
+.price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+.price-box.low .price-val { color: var(--buy-color); }
+.price-box.high .price-val { color: var(--sell-color); }
+.price-val { font-size: 15px; font-weight: bold; margin-top: 2px; }
 
-/* Legend */
-.legend { display: flex; gap: 20px; font-size: 13px; color: var(--muted); flex-wrap: wrap; align-items: center; padding: 0 8px; }
-.legend-item { display: flex; align-items: center; gap: 8px; }
-.legend-dash { width: 14px; height: 3px; display: inline-block; border-radius: 1px; }
-.legend-box { width: 14px; height: 14px; display: inline-block; border-radius: 3px; border: 1px solid var(--border-light); }
+/* Legend Sub-Footer */
+.chart-footer {
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-main);
+  padding: 6px 12px;
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  align-items: center;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dash { width: 12px; height: 2px; display: inline-block; }
+.legend-box { width: 10px; height: 10px; display: inline-block; border-radius: 2px; }
 .legend .low .legend-dash { background: var(--buy-color); }
 .legend .high .legend-dash { background: var(--sell-color); }
-.legend .iqr-band .legend-box { background: var(--iqr-band); }
+.legend .iqr-band .legend-box { background: rgba(120, 123, 134, 0.2); border: 1px solid var(--border-light); }
 
-@media (max-width: 768px) {
-  .top-row { flex-direction: column; align-items: stretch; }
-  .price-container { justify-content: space-between; }
-  .price-box { flex: 1; min-width: 0; }
-  .chart { height: 400px; }
-  .toolbar-row { flex-direction: column; align-items: stretch; }
-  .mode-controls { justify-content: space-between; }
+/* Dynamic Floating Tooltip */
+.chart-tip { 
+  position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); 
+  padding: 10px; border-radius: 4px; font-size: 11px; pointer-events: none; white-space: nowrap; 
+  border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; 
+}
+.chart-tip strong { display: block; margin-bottom: 4px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 4px;}
+
+@media (max-width: 900px) {
+  .sbar { width: 150px; }
+  .content-area { flex-direction: column; }
+  .plaque-bar { position: static; background: var(--bg-panel); padding: 8px; border-bottom: 1px solid var(--border-main); }
+  .price-box { flex: 1; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card left">
-    
-    <div class="top-row">
+  
+  <div class="top-panel">
+    <div class="panel-left">
+      <div class="brand" onclick="location.reload();">GE<span>Chart</span></div>
+      
       <div class="sbar">
         <img id="itemIcon" src="" alt="">
-        <input id="query" placeholder="Search for an item..." autocomplete="off" spellcheck="false">
+        <input id="query" placeholder="Symbol Search..." autocomplete="off" spellcheck="false">
         <div id="suggestBox" class="suggest" style="display:none"></div>
       </div>
-      <div class="price-container">
+
+      <div class="toolbar" id="timeToolbar">
+        <button data-view="1d" class="active view-btn">1D</button>
+        <button data-view="5d" class="view-btn">5D</button>
+        <button data-view="1m" class="view-btn">1M</button>
+        <button data-view="6m" class="view-btn">6M</button>
+        <button data-view="1y" class="view-btn">1Y</button>
+        <button data-view="5y" class="view-btn">5Y</button>
+      </div>
+    </div>
+
+    <div class="panel-left">
+      <span id="status" class="status-text">Connecting...</span>
+      <div class="mode-pill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="chart-container">
+      
+      <div class="plaque-bar">
         <div id="buyPrice" class="price-box low selected">
           <div class="price-label">Rec. Buy</div>
           <div class="price-val"><span>—</span></div>
@@ -237,58 +318,29 @@ body {
           <div class="price-val"><span>—</span></div>
         </div>
       </div>
-    </div>
 
-    <div class="toolbar-row">
-      <div class="toolbar" id="timeToolbar">
-        <button data-view="1d" class="active view-btn">1D</button>
-        <button data-view="5d" class="view-btn">5D</button>
-        <button data-view="1m" class="view-btn">1M</button>
-        <button data-view="6m" class="view-btn">6M</button>
-        <button data-view="1y" class="view-btn">1Y</button>
-        <button data-view="5y" class="view-btn">5Y</button>
-      </div>
-      <div class="mode-controls">
-        <span id="status" class="status-text">Ready</span>
-        <span class="badge">v6.0 AI</span>
-        <div class="mode-pill">
-          <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-          <button data-mode="members" id="btnMembers">Members</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="ai-bar" id="aiBar">
-      <span class="icon">🤖</span>
-      <div>
-        <strong>Grant AI</strong>
-        <span class="ai-text-content" id="aiText">Awaiting item selection...</span>
-      </div>
-    </div>
-
-    <div class="chartWrap">
       <canvas id="chart" class="chart"></canvas>
       <div id="tip" class="chart-tip"></div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item low"><span class="legend-dash"></span> Lows (Insta-sell)</div>
-      <div class="legend-item high"><span class="legend-dash"></span> Highs (Insta-buy)</div>
-      <div class="legend-item iqr-band"><span class="legend-box"></span> Historical Trend Band</div>
-      <div class="legend-item"><span class="legend-dash" style="background:var(--muted); border: 1px dashed var(--ink);"></span> Target Trajectory</div>
+      
+      <div class="chart-footer legend">
+        <div class="legend-item low"><span class="legend-dash"></span> Lows (Buy-side)</div>
+        <div class="legend-item high"><span class="legend-dash"></span> Highs (Sell-side)</div>
+        <div class="legend-item iqr-band"><span class="legend-box"></span> Trading Band</div>
+        <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trajectory</div>
+      </div>
     </div>
   </div>
+
 </div>
 <script>
 const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
-let mapping = [], latest = null, volumes = null, selected = null;
+let mapping = [], latest = null, selected = null;
 let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
-// New state tracking for price box selection & AI Recommendations
 let activePriceBox = 'buy'; 
 let recommendedBuy = null, recommendedSell = null;
 
@@ -296,7 +348,6 @@ const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
 
-// Price box listeners
 $('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 $('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 function updateSelection() {
@@ -304,11 +355,11 @@ function updateSelection() {
   $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
 }
 
-// Resize canvas for sharp rendering
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
+  // Adjust height cleanly above footer
   canvas.width = rect.width;
-  canvas.height = rect.height || 500;
+  canvas.height = rect.height - 30;
   if(currentSeries) drawChart(currentSeries);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -316,9 +367,9 @@ window.addEventListener('resize', resizeCanvas);
 const fmtGp = n => n == null ? "—" : Number(n).toLocaleString() + " gp";
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
-  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
-  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
-  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
   return num.toLocaleString();
 };
 
@@ -329,7 +380,6 @@ async function jget(url) {
 }
 const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
-const loadVolumes = () => jget(PRICES_API + "/volumes");
 const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
@@ -447,73 +497,89 @@ function calculateIQR(series, window = 26) {
   return { lowIQR, highIQR };
 }
 
-// --- AI LOGIC ENGINE ---
+// --- CORE TRADING ENGINE (Updated for 2% GE Tax & Intelligent Sells) ---
 function calculateTax(price) {
-  return Math.min(5000000, Math.floor(price * 0.01));
+  // Official OSRS Tax: 2% rate capped strictly at 5,000,000 gp
+  return Math.min(5000000, Math.floor(price * 0.02));
 }
 
-function runAIEngine(rawLow, rawHigh, series) {
+function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) {
-    return { buy: 0, sell: 0, msg: "Insufficient live data to generate AI recommendation." };
+    return { buy: rawLow || 0, sell: rawHigh || 0 };
   }
 
   let recBuy = rawLow;
   let recSell = rawHigh;
-  let note = "";
 
-  // Handle Inverted Markets or Basic Undercutting
-  if (rawLow >= rawHigh) {
-    recBuy = rawHigh; // Buy at the lower price
-    recSell = rawLow;
-    note = "Market spread is currently inverted. ";
-  } else if (rawHigh - rawLow > 2) {
-    recBuy = rawLow + 1; // Undercut buyer
-    recSell = rawHigh - 1; // Undercut seller
+  // 1. Maintain accurate Buy Logic: Secure priority limit fills via standard undercutting
+  if (rawHigh - rawLow > 2) {
+    recBuy = rawLow + 1; 
   }
 
+  // 2. Smarter Sell Optimization Logic
+  // Avoid plotting directly onto unstable flash-pumps or phantom spikes.
+  if (series && series.high.length > 0) {
+    const recentHighs = series.high.slice(-40).filter(x => x != null);
+    if (recentHighs.length > 5) {
+      // Find the robust 75th percentile ceiling of recent trading highs
+      const p75High = Math.ceil(percentile(recentHighs, 75));
+      
+      // If live raw high is dangerously higher than recent distribution norms, anchor execution
+      if (rawHigh > p75High * 1.02) {
+        recSell = p75High;
+      } else {
+        recSell = Math.min(rawHigh - 1, p75High);
+      }
+    } else {
+      recSell = rawHigh - 1;
+    }
+  } else {
+    recSell = rawHigh - 1;
+  }
+
+  // 3. Mathematical Spread-Protection check post 2% Tax
   let tax = calculateTax(recSell);
   let profit = recSell - recBuy - tax;
 
-  // If live margin is crushed (negative profit), rely on historical IQR band to find a safe target
-  if (profit <= 0 && series && series.low.length > 0) {
-    const recentLows = series.low.slice(-30).filter(x => x != null);
-    const recentHighs = series.high.slice(-30).filter(x => x != null);
+  // If live trade spread is crushed or unviable against the updated tax, establish an anchor target floor
+  if (profit <= 0) {
+    // Solve target floor for positive gain: Sell - Tax > Buy * 1.015
+    // Sell * 0.98 = Buy * 1.015 => Sell = (Buy * 1.015) / 0.98
+    let safeTargetFloor = Math.ceil((recBuy * 1.015) / 0.98);
     
-    if (recentLows.length && recentHighs.length) {
-      const safeBuy = Math.floor(percentile(recentLows, 25));
-      const safeSell = Math.ceil(percentile(recentHighs, 75));
-      const safeTax = calculateTax(safeSell);
-      
-      if (safeSell - safeBuy - safeTax > 0) {
-        recBuy = safeBuy;
-        recSell = safeSell;
-        tax = safeTax;
-        profit = recSell - recBuy - tax;
-        note = "Live spread crushed by tax. Recommending limits based on recent historical trend.";
+    // Check if item tax hits absolute cap domain
+    if (safeTargetFloor * 0.02 >= 5000000) {
+      safeTargetFloor = Math.ceil(recBuy + 5000000 + (recBuy * 0.01));
+    }
+    
+    // Benchmark recommendation validity against the maximum upper trend band
+    if (series && series.high.length > 0) {
+      const p90High = Math.ceil(percentile(series.high.slice(-40).filter(x => x != null), 90));
+      if (p90High > safeTargetFloor) {
+        safeTargetFloor = Math.min(safeTargetFloor, p90High);
       }
     }
+    recSell = safeTargetFloor;
   }
 
-  // Format final output
-  if (profit > 0) {
-    const roi = ((profit / recBuy) * 100).toFixed(2);
-    let msg = `${note} After 1% GE Tax (${fmtGp(tax)}), expect <span class="hlt-pos">${fmtGp(profit)} profit</span> per item (${roi}% ROI).`;
-    return { buy: recBuy, sell: recSell, msg };
-  } else {
-    let msg = `Spread is too tight. After 1% GE Tax (${fmtGp(tax)}), you would <span class="hlt-neg">lose ${fmtGp(Math.abs(profit))}</span>. Do not flip currently.`;
-    return { buy: recBuy, sell: recSell, msg };
+  // Sanity check overlapping inversion limits
+  if (recBuy >= recSell) {
+    recBuy = Math.floor(recSell * 0.96); 
   }
+
+  return { buy: recBuy, sell: recSell };
 }
 
 function drawChart(series) {
   const c = canvas;
   const W = c.width, H = c.height;
-  const x0 = 60, y0 = 30, w = W - x0 - 30, h = H - y0 - 40;
+  // Offset appropriately for clean grid alignments
+  const x0 = 50, y0 = 80, w = W - x0 - 20, h = H - y0 - 30;
   ctx.clearRect(0, 0, W, H);
   
   if (!series || !series.labels?.length) { 
-    ctx.fillStyle = "var(--muted)"; ctx.font = "bold 16px Segoe UI";
-    ctx.fillText("No data available", W/2 - 70, H/2); return; 
+    ctx.fillStyle = "var(--text-muted)"; ctx.font = "bold 14px sans-serif";
+    ctx.fillText("No price metrics available", W/2 - 70, H/2); return; 
   }
 
   const n = series.labels.length;
@@ -532,15 +598,14 @@ function drawChart(series) {
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
   const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
 
-  // X-Axis Layout: 85% data, 15% future space for trailing predictions
   const dataW = w * 0.85; 
   const futureW = w * 0.15; 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
-  // Draw Grid
+  // Render Horizontal Gridlines
   ctx.lineWidth = 1;
   const linesY = 6;
-  ctx.font = "12px Segoe UI";
+  ctx.font = "11px BlinkMacSystemFont, sans-serif";
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
   for (let i = 0; i <= linesY; i++) {
@@ -548,10 +613,11 @@ function drawChart(series) {
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     const v = Math.round(vmax - (vmax - vmin) * i / linesY);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
-    ctx.fillText(abbreviateNumber(v), x0 - 10, y);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+    ctx.fillText(abbreviateNumber(v), x0 - 8, y);
   }
 
+  // Render Vertical Timeline Partitions
   const linesX = Math.min(8, L.length);
   const xStep = Math.floor(L.length / linesX);
   ctx.textAlign = "center";
@@ -561,10 +627,10 @@ function drawChart(series) {
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
     let dateStr = view === "1d" ? new Date(L[i]*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : new Date(L[i]*1000).toLocaleDateString([],{month:'short', day:'numeric'});
-    ctx.fillText(dateStr, x, H - 25);
+    ctx.fillText(dateStr, x, y0 + h + 6);
   }
 
-  // Draw subtle line splitting 'now' from 'future'
+  // Projected Zone Split line
   ctx.strokeStyle = "rgba(255,255,255,0.05)";
   ctx.setLineDash([2, 4]);
   ctx.beginPath(); ctx.moveTo(x0 + dataW, y0); ctx.lineTo(x0 + dataW, y0 + h); ctx.stroke();
@@ -572,7 +638,7 @@ function drawChart(series) {
 
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
-  // 1. IQR Band
+  // 1. IQR Base Fill
   const iqr = calculateIQR({low: LO, high: HI, labels: L});
   ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--iqr-band').trim();
   ctx.beginPath();
@@ -590,10 +656,10 @@ function drawChart(series) {
     ctx.closePath(); ctx.fill();
   }
 
-  // 2. Dash Plotting
+  // 2. High Density Dash Rendering
   function drawDashes(arr, color) {
     ctx.fillStyle = color;
-    const dashWidth = Math.max(3, stepX * 1.5); 
+    const dashWidth = Math.max(3, stepX * 1.4); 
     const dashHeight = 2; 
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
@@ -606,7 +672,7 @@ function drawChart(series) {
   drawDashes(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
   drawDashes(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
 
-  // 3. Volume
+  // 3. Stacked Histogram Volumetrics
   const maxVol = Math.max(...VO.filter(v => v > 0), 1);
   const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
   const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
@@ -624,7 +690,7 @@ function drawChart(series) {
     ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
 
-  // 4. Trailing Predictions (Short-term projection into the future void)
+  // 4. Trailing Futures Projections
   function drawTrailingPrediction(arr, color) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 5) return;
@@ -644,34 +710,34 @@ function drawChart(series) {
     
     ctx.save();
     ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); 
-    ctx.setLineDash([3, 5]); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+    ctx.setLineDash([2, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.6;
     ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
     ctx.restore();
   }
   drawTrailingPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
   drawTrailingPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
 
-  // 5. Bright Dashed Target Line for Active Price Box
+  // 5. Explicit Active Price Box Tracking Path
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
     if (py >= y0 && py <= y0 + h_price) {
       ctx.save();
-      ctx.setLineDash([8, 6]);
+      ctx.setLineDash([4, 4]);
       ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.0;
       ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
       
       ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.font = "11px Segoe UI";
+      ctx.font = "10px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Selected Rec.", x0 + 6, py - 4);
+      ctx.fillText("Active Target", x0 + 4, py - 4);
       ctx.restore();
     }
   }
 
-  // Mouse Interaction
+  // Frame Interactivities
   let isDragging = false, startXMouse = 0;
   c.onmousedown = ev => { isDragging = true; startXMouse = ev.clientX; };
   c.onmouseup = () => isDragging = false;
@@ -689,20 +755,19 @@ function drawChart(series) {
     if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; return; }
     const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     tip.style.display = "block";
-    tip.style.left = (mx + 15) + "px";
-    tip.style.top = (my + 15) + "px";
+    tip.style.left = (mx + 12) + "px";
+    tip.style.top = (my + 12) + "px";
     
-    // Calculate tooltip tax/profit on the fly for the hovered point
     let hLow = LO[idx]; let hHigh = HI[idx];
     let hTax = calculateTax(hHigh || 0);
     let hProf = (hHigh && hLow) ? (hHigh - hLow - hTax) : 0;
     let profHtml = hProf > 0 ? `<span style="color:var(--positive)">+${fmtNum(hProf)}</span>` : `<span style="color:var(--negative)">${fmtNum(hProf)}</span>`;
 
     tip.innerHTML = `<strong>${new Date(L[idx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
-      <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
-      <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
-      <span style="color:var(--muted)">Est. Profit: ${profHtml}</span><br/>
-      <span style="color:var(--muted)">Vol: ${fmtNum(VO[idx])}</span>`;
+      <span style="color:var(--buy-color)">Buy Limit: ${fmtGp(hLow)}</span><br/>
+      <span style="color:var(--sell-color)">Sell Limit: ${fmtGp(hHigh)}</span><br/>
+      <span style="color:var(--text-muted)">Est. Profit: ${profHtml}</span><br/>
+      <span style="color:var(--text-muted)">Vol: ${fmtNum(VO[idx])}</span>`;
   };
   c.onwheel = ev => {
     ev.preventDefault();
@@ -714,11 +779,10 @@ function drawChart(series) {
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
-  document.title = `${m.name} - Grant Exchange`;
+  document.title = `${m.name} - TradingView Engine`;
   $("#itemIcon").src = bigIconUrl(m.name);
-  $("#status").textContent = "Analyzing...";
+  $("#status").textContent = "Rendering...";
   
-  // Update timeframe buttons
   const changes = await calculateAllPctChanges(m.id);
   document.querySelectorAll(".view-btn").forEach(b => {
     const p = b.dataset.view;
@@ -728,7 +792,6 @@ async function setItem(m) {
     b.innerHTML = `${p.toUpperCase()} <span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
   });
 
-  // Pull dense data based on view
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
   else if (view === "1m") timestep = "1h"; 
@@ -740,24 +803,21 @@ async function setItem(m) {
     currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
   }
   
-  // RUN AI ENGINE
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
   const rawLow = node?.low ?? node?.avgLowPrice ?? 0;
   const rawHigh = node?.high ?? node?.avgHighPrice ?? 0;
   
-  const aiResult = runAIEngine(rawLow, rawHigh, currentSeries);
-  recommendedBuy = aiResult.buy;
-  recommendedSell = aiResult.sell;
+  const targets = runTradeEngine(rawLow, rawHigh, currentSeries);
+  recommendedBuy = targets.buy;
+  recommendedSell = targets.sell;
   
-  // Update UI Elements
   $("#buyPrice .price-val span").textContent = fmtGp(recommendedBuy);
   $("#sellPrice .price-val span").textContent = fmtGp(recommendedSell);
-  $("#aiText").innerHTML = aiResult.msg;
 
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   resizeCanvas(); 
-  $("#status").textContent = "Live";
+  $("#status").textContent = "Connected";
 }
 
 (async function boot() {
@@ -802,7 +862,7 @@ async function setItem(m) {
     if (diamond) setItem(diamond);
   } catch (e) {
     console.error(e);
-    $("#status").textContent = "Error loading API";
+    $("#status").textContent = "API Interrupted";
   }
 })();
 </script>
