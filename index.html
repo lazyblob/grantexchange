@@ -47,7 +47,7 @@ body {
   color: var(--text-main); 
   font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
-  overflow: hidden; /* Prevents scroll bounce on landscape mobile */
+  overflow: hidden; 
 }
 
 .wrap { 
@@ -73,11 +73,7 @@ body {
   gap: 8px;
 }
 
-.panel-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.panel-left { display: flex; align-items: center; gap: 10px; }
 
 .brand {
   font-size: 15px;
@@ -92,146 +88,61 @@ body {
 .brand span { color: var(--border-active); }
 
 /* Shrunk Search Bar */
-.sbar {
-  position: relative;
-  width: 200px; 
-}
+.sbar { position: relative; width: 200px; }
 .sbar input {
-  width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-light);
-  color: var(--text-main);
-  border-radius: 4px;
-  padding: 5px 8px 5px 28px;
-  
-  /* CRITICAL MOBILE FIX: Font size MUST be exactly 16px or higher to stop auto-zooming on iOS/Android */
-  font-size: 16px; 
-  
-  outline: none;
-  transition: border-color 0.15s ease;
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
+  color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px;
+  font-size: 16px; outline: none; transition: border-color 0.15s ease;
 }
 .sbar input:focus { border-color: var(--border-active); }
-#itemIcon { 
-  position: absolute; 
-  left: 6px; 
-  top: 50%; 
-  transform: translateY(-50%); 
-  width: 16px; 
-  height: 16px; 
-  image-rendering: pixelated; 
-}
+#itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
 
 /* Autocomplete Suggestion Dropdown */
 .suggest { 
-  margin-top: 4px; 
-  border: 1px solid var(--border-light); 
-  border-radius: 4px; 
-  max-height: 200px; 
-  overflow-y: auto; 
-  background: var(--bg-panel); 
-  position: absolute; 
-  z-index: 100; 
-  width: 260px; 
-  box-shadow: 0 8px 16px var(--shadow); 
+  margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; 
+  max-height: 200px; overflow-y: auto; background: var(--bg-panel); 
+  position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
 .suggest::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
-.suggest div { 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  padding: 8px 10px; 
-  border-bottom: 1px solid var(--border-main); 
-  cursor: pointer; 
-  font-size: 13px; 
-}
+.suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
 .suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
 /* Timeframe Selection */
-.toolbar {
-  display: flex;
-  background: var(--bg-input);
-  border-radius: 4px;
-  padding: 2px;
-  gap: 2px;
-}
+.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
 .toolbar button {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  border-radius: 3px;
-  padding: 4px 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 11px;
-  transition: all 0.15s;
+  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
+  padding: 4px 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: all 0.15s;
 }
 .toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
 
 /* Game Toggles */
-.mode-pill {
-  display: flex;
-  background: var(--bg-input);
-  border-radius: 4px;
-  padding: 2px;
-}
+.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; }
 .mode-pill button {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  padding: 4px 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 11px;
-  border-radius: 3px;
+  background: transparent; border: none; color: var(--text-muted); padding: 4px 8px;
+  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px;
 }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
 
 .status-text { font-size: 11px; color: var(--text-muted); }
 
-/* Main Chart Interface Layout */
-.content-area {
-  display: flex;
-  flex: 1;
-  gap: 8px;
-  min-height: 0; 
-}
+/* Main Chart & Watchlist Panel Layout */
+.content-area { display: flex; flex: 1; gap: 8px; min-height: 0; }
 
 .chart-container {
-  flex: 1;
-  background: var(--bg-chart);
-  border: 1px solid var(--border-main);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  flex: 1; background: var(--bg-chart); border: 1px solid var(--border-main);
+  border-radius: 6px; display: flex; flex-direction: column; position: relative; overflow: hidden;
 }
 .chart { flex: 1; width: 100%; display: block; }
 
 /* Target Info Plaques */
-.plaque-bar {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: flex;
-  gap: 6px;
-  z-index: 10;
-  pointer-events: none;
-}
+.plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
-  background: rgba(30, 34, 45, 0.85);
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  padding: 4px 8px;
-  min-width: 100px;
-  pointer-events: auto;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-  transition: border-color 0.15s;
+  background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
+  padding: 4px 8px; min-width: 100px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
 .price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
@@ -241,14 +152,8 @@ body {
 
 /* Legend Sub-Footer */
 .chart-footer {
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-main);
-  padding: 4px 10px;
-  display: flex;
-  gap: 12px;
-  font-size: 10px;
-  color: var(--text-muted);
-  align-items: center;
+  background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
+  display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center;
 }
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dash { width: 10px; height: 2px; display: inline-block; }
@@ -265,20 +170,61 @@ body {
 }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 
+/* --- WATCHLIST SIDEBAR STYLING --- */
+.watchlist-container {
+  width: 250px; background: var(--bg-panel); border: 1px solid var(--border-main);
+  border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
+}
+.watchlist-header {
+  padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
+  font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+.category-group { border-bottom: 1px solid var(--border-main); }
+.category-title {
+  padding: 6px 10px; font-size: 10px; font-weight: bold; color: var(--border-active);
+  background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
+}
+.category-title:hover { background: var(--bg-input); }
+.category-list { display: block; }
+.category-list.collapsed { display: none; }
+
+.wl-item {
+  display: flex; align-items: center; justify-content: space-between; padding: 6px 10px;
+  cursor: pointer; font-size: 12px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
+}
+.wl-item:last-child { border-bottom: none; }
+.wl-item:hover { background: var(--bg-input); }
+.wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
+.wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
+.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
+
 /* TARGETED MOBILE LANDSCAPE OPTIMIZATIONS */
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
   .top-panel { padding: 3px 6px; }
   .sbar { width: 160px; }
   .sbar input { padding-top: 3px; padding-bottom: 3px; }
-  .status-text { display: none; } /* Hide text to save space sideways */
+  .status-text { display: none; }
   .brand { font-size: 13px; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
+  
+  /* Auto collapse sidebar sideways to overlay approach */
+  .watchlist-container { width: 180px; font-size: 11px; }
+  .wl-item { padding: 4px 6px; font-size: 11px; }
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
   .sbar { width: 140px; }
+  .content-area { flex-direction: column; }
+  .watchlist-container { width: 100%; height: 200px; flex: none; }
   .plaque-bar { position: static; background: var(--bg-panel); padding: 6px; border-bottom: 1px solid var(--border-main); }
   .price-box { flex: 1; }
 }
@@ -340,6 +286,15 @@ body {
         <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trajectory</div>
       </div>
     </div>
+
+    <div class="watchlist-container">
+      <div class="watchlist-header">
+        <span>Watchlist</span>
+        <span id="wlCount" style="font-weight:normal; font-size:10px;">0 Items</span>
+      </div>
+      <div class="watchlist-content" id="watchlistContent">
+        </div>
+    </div>
   </div>
 
 </div>
@@ -355,6 +310,15 @@ let fullHistorical = null;
 let activePriceBox = 'buy'; 
 let recommendedBuy = null, recommendedSell = null;
 
+// Base configuration array fueling target initializations
+const baseWatchlistNames = [
+  "Abyssal whip", "Armadyl godsword", "Bandos tassets", "Ghrazi rapier", "Osmumten's fang",
+  "Amulet of fury", "Amulet of glory", "Ring of suffering", "Zenyte shard", "Diamond", "Ruby",
+  "Runite bar", "Adamantite bar", "Coal", "Gold ore", "Iron ore",
+  "Blood rune", "Death rune", "Nature rune", "Prayer potion(4)", "Saradomin brew(4)", "Super restore(4)",
+  "Zulrah's scales", "Dragon bones", "Yew logs", "Magic logs", "Cannonball", "Bond"
+];
+
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
@@ -369,13 +333,12 @@ function updateSelection() {
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width;
-  // Compact calculations keeping footer flush
   canvas.height = rect.height - 24;
   if(currentSeries) drawChart(currentSeries);
 }
 window.addEventListener('resize', resizeCanvas);
 
-const fmtGp = n => n == null ? "—" : Number(n).toLocaleString() + " gp";
+const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
   if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
@@ -396,6 +359,100 @@ const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
 function bigIconUrl(name) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`;
+}
+
+// --- ITEM CLASSIFIER ENGINE ---
+function classifyItem(name) {
+  const n = name.toLowerCase();
+  if (n.includes("sword") || n.includes("whip") || n.includes("tassets") || n.includes("rapier") || n.includes("fang") || n.includes("helm") || n.includes("plate") || n.includes("hide")) {
+    return "Weapons & Gear";
+  }
+  if (n.includes("amulet") || n.includes("ring") || n.includes("necklace") || n.includes("shard") || n.includes("gem") || n === "diamond" || n === "ruby" || n === "sapphire" || n === "emerald") {
+    return "Gems & Jewelry";
+  }
+  if (n.includes("bar") || n.includes("ore") || n === "coal") {
+    return "Bars & Ores";
+  }
+  if (n.includes("rune") || n.includes("potion") || n.includes("brew") || n.includes("restore") || n.includes("herb") || n.includes("weed")) {
+    return "Runes & Herblore";
+  }
+  return "Resources & Other";
+}
+
+// --- RENDER WATCHLIST LOGIC ---
+function renderWatchlist() {
+  const container = $("#watchlistContent");
+  container.innerHTML = "";
+  
+  // Intercept data context natively mapped via global variables
+  let populated = mapping.filter(m => baseWatchlistNames.includes(m.name));
+  
+  // DYNAMIC ACCOUNT VALIDATION: Hide members content inside base F2P layout setups
+  if (!membersOn) {
+    populated = populated.filter(m => !m.members);
+  }
+
+  $("#wlCount").textContent = `${populated.length} Items`;
+
+  // Sort groups systematically
+  const categories = {
+    "Weapons & Gear": [],
+    "Gems & Jewelry": [],
+    "Bars & Ores": [],
+    "Runes & Herblore": [],
+    "Resources & Other": []
+  };
+
+  populated.forEach(item => {
+    const c = classifyItem(item.name);
+    if(categories[c]) categories[c].push(item);
+  });
+
+  // Inject structural blocks
+  Object.keys(categories).forEach(cat => {
+    const list = categories[cat];
+    if(list.length === 0) return;
+
+    // Order items inside category alphabetically
+    list.sort((a,b) => a.name.localeCompare(b.name));
+
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "category-group";
+
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "category-title";
+    titleDiv.innerHTML = `<span>${cat}</span><span>▼</span>`;
+    
+    const listDiv = document.createElement("div");
+    listDiv.className = "category-list";
+
+    titleDiv.onclick = () => {
+      listDiv.classList.toggle("collapsed");
+      titleDiv.querySelector("span:last-child").textContent = listDiv.classList.contains("collapsed") ? "▶" : "▼";
+    };
+
+    list.forEach(item => {
+      const node = latest?.data?.[String(item.id)];
+      const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+
+      const iDiv = document.createElement("div");
+      iDiv.className = `wl-item ${selected?.id === item.id ? 'active' : ''}`;
+      iDiv.onclick = () => setItem(item);
+
+      iDiv.innerHTML = `
+        <div class="wl-item-left">
+          <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
+          <span class="wl-item-name">${item.name}</span>
+        </div>
+        <span class="wl-item-price">${abbreviateNumber(price)}</span>
+      `;
+      listDiv.appendChild(iDiv);
+    });
+
+    groupDiv.appendChild(titleDiv);
+    groupDiv.appendChild(listDiv);
+    container.appendChild(groupDiv);
+  });
 }
 
 function seriesFromTS(ts) {
@@ -683,18 +740,13 @@ function drawChart(series) {
 
   let isDragging = false, startXMouse = 0;
   
-  // SUPPORT MOBILE SWIPE NAVIGATION DIRECTLY
   c.ontouchstart = ev => { 
-    if(ev.touches.length === 1) { 
-      isDragging = true; 
-      startXMouse = ev.touches[0].clientX; 
-    } 
+    if(ev.touches.length === 1) { isDragging = true; startXMouse = ev.touches[0].clientX; } 
   };
   c.ontouchend = () => isDragging = false;
   c.ontouchmove = ev => {
     if (isDragging && ev.touches.length === 1) {
-      const dx = ev.touches[0].clientX - startXMouse; 
-      startXMouse = ev.touches[0].clientX;
+      const dx = ev.touches[0].clientX - startXMouse; startXMouse = ev.touches[0].clientX;
       offset -= dx / (dataW / win);
       offset = Math.max(0, Math.min(n - win, offset));
       requestAnimationFrame(() => drawChart(series));
@@ -745,6 +797,9 @@ async function setItem(m) {
   $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading...";
 
+  // Immediately track active states correctly in side list setups
+  renderWatchlist();
+
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
   else if (view === "1m") timestep = "1h"; 
@@ -776,6 +831,11 @@ async function setItem(m) {
 (async function boot() {
   try {
     mapping = await loadMapping();
+    latest = await loadLatest(); // Pull background core instantly to feed watchlist pricing
+    
+    // Set interface defaults natively
+    renderWatchlist();
+
     const sb = $("#suggestBox"), qInput = $("#query");
     
     qInput.addEventListener("input", () => {
@@ -792,7 +852,7 @@ async function setItem(m) {
       const m = mapping.find(x => String(x.id) === String(id));
       if (m) { 
         sb.style.display = "none"; 
-        qInput.blur(); // Dismiss mobile keyboard automatically on selection
+        qInput.blur(); 
         setItem(m); 
       }
     });
@@ -809,14 +869,35 @@ async function setItem(m) {
       }
     });
     
-    $("#btnF2P").onclick = () => { membersOn = false; $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); qInput.dispatchEvent(new Event("input")); };
-    $("#btnMembers").onclick = () => { membersOn = true; $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); qInput.dispatchEvent(new Event("input")); };
+    $("#btnF2P").onclick = () => { 
+      membersOn = false; 
+      $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
+      renderWatchlist();
+      qInput.dispatchEvent(new Event("input")); 
+      
+      // If currently observing member element, cleanly switch over to F2P safety
+      if (selected && selected.members) {
+        const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
+        if(ruby) setItem(ruby);
+      }
+    };
+
+    $("#btnMembers").onclick = () => { 
+      membersOn = true; 
+      $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); 
+      renderWatchlist();
+      qInput.dispatchEvent(new Event("input")); 
+    };
     
-    setInterval(() => { if (selected) setItem(selected); }, 300000);
+    setInterval(async () => { 
+      latest = await loadLatest();
+      renderWatchlist(); // Auto-refresh sidebar prices live
+      if (selected) setItem(selected); 
+    }, 300000);
     
     resizeCanvas();
-    const diamond = mapping.find(x => x.name.toLowerCase() === "diamond");
-    if (diamond) setItem(diamond);
+    const bond = mapping.find(x => x.name.toLowerCase() === "old school bond");
+    if (bond) setItem(bond);
   } catch (e) {
     console.error(e);
     $("#status").textContent = "API Error";
