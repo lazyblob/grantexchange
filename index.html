@@ -4,20 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes"/>
 <title>Grant Exchange - OSRS Charting Tool</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis. Analyze prices from 1 day to 5 years.">
-<meta name="keywords" content="OSRS Grand Exchange, OSRS GE, RuneScape Grand Exchange, OSRS charting, OSRS price charts, OSRS volume">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://grantexchange.net/">
-<meta property="og:title" content="Grant Exchange - OSRS Charting Tool">
-<meta property="og:description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis. Analyze prices from 1 day to 5 years.">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<meta property="og:url" content="https://grantexchange.net/">
-<meta property="og:type" content="website">
-<link rel="icon" type="image/png" sizes="48x48" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Grant Exchange - OSRS Charting Tool">
-<meta name="twitter:description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis. Analyze prices from 1 day to 5 years.">
-<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<meta name="description" content="Advanced AI charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -44,6 +31,10 @@
   --iqr-band: rgba(226, 173, 43, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.4);
   --vol-sell: rgba(79, 182, 79, 0.4);
+  
+  /* AI Accent */
+  --ai-glow: rgba(0, 255, 204, 0.2);
+  --ai-text: #00ffcc;
   
   --positive: #4FB64F;
   --negative: #ff5555;
@@ -178,9 +169,27 @@ body {
 .pct-chg.positive { color: var(--positive); }
 .pct-chg.negative { color: var(--negative); }
 
+/* AI Insight Bar */
+.ai-bar {
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.05) 0%, var(--bg-input) 100%);
+  border: 1px solid var(--border-main);
+  border-left: 3px solid var(--ai-text);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ai-bar span.icon { font-size: 16px; }
+.ai-bar strong { color: var(--ai-text); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-right: 6px;}
+.ai-text-content { color: var(--ink); }
+.ai-text-content .hlt-pos { color: var(--positive); font-weight: bold; }
+.ai-text-content .hlt-neg { color: var(--negative); font-weight: bold; }
+
 /* Chart Area */
 .chartWrap { position: relative; width: 100%; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-main); box-shadow: inset 0 4px 12px rgba(0,0,0,0.6); }
-.chart { width: 100%; height: 550px; display: block; }
+.chart { width: 100%; height: 500px; display: block; }
 .chart-tip { 
   position: absolute; display: none; background: rgba(10, 8, 6, 0.95); color: var(--ink); 
   padding: 12px; border-radius: 6px; font-size: 13px; pointer-events: none; white-space: nowrap; 
@@ -220,11 +229,11 @@ body {
       </div>
       <div class="price-container">
         <div id="buyPrice" class="price-box low selected">
-          <div class="price-label">Buy Price</div>
+          <div class="price-label">Rec. Buy</div>
           <div class="price-val"><span>—</span></div>
         </div>
         <div id="sellPrice" class="price-box high">
-          <div class="price-label">Sell Price</div>
+          <div class="price-label">Rec. Sell</div>
           <div class="price-val"><span>—</span></div>
         </div>
       </div>
@@ -241,11 +250,19 @@ body {
       </div>
       <div class="mode-controls">
         <span id="status" class="status-text">Ready</span>
-        <span class="badge">v5.5</span>
+        <span class="badge">v6.0 AI</span>
         <div class="mode-pill">
           <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
           <button data-mode="members" id="btnMembers">Members</button>
         </div>
+      </div>
+    </div>
+
+    <div class="ai-bar" id="aiBar">
+      <span class="icon">🤖</span>
+      <div>
+        <strong>Grant AI</strong>
+        <span class="ai-text-content" id="aiText">Awaiting item selection...</span>
       </div>
     </div>
 
@@ -255,10 +272,10 @@ body {
     </div>
 
     <div class="legend">
-      <div class="legend-item low"><span class="legend-dash"></span> Lows (Buy-side)</div>
-      <div class="legend-item high"><span class="legend-dash"></span> Highs (Sell-side)</div>
-      <div class="legend-item iqr-band"><span class="legend-box"></span> Trend Band</div>
-      <div class="legend-item"><span class="legend-dash" style="background:var(--muted); border: 1px dashed var(--ink);"></span> Predictions</div>
+      <div class="legend-item low"><span class="legend-dash"></span> Lows (Insta-sell)</div>
+      <div class="legend-item high"><span class="legend-dash"></span> Highs (Insta-buy)</div>
+      <div class="legend-item iqr-band"><span class="legend-box"></span> Historical Trend Band</div>
+      <div class="legend-item"><span class="legend-dash" style="background:var(--muted); border: 1px dashed var(--ink);"></span> Target Trajectory</div>
     </div>
   </div>
 </div>
@@ -271,9 +288,9 @@ let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
-// New state tracking for price box selection
+// New state tracking for price box selection & AI Recommendations
 let activePriceBox = 'buy'; 
-let currentLatestLow = null, currentLatestHigh = null;
+let recommendedBuy = null, recommendedSell = null;
 
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
@@ -291,7 +308,7 @@ function updateSelection() {
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width;
-  canvas.height = rect.height || 550;
+  canvas.height = rect.height || 500;
   if(currentSeries) drawChart(currentSeries);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -392,7 +409,6 @@ function ypx(v, vmin, vmax, y0, h) {
   return y0 + (1 - ((v - vmin) / (vmax - vmin))) * h;
 }
 
-// Fixed standard linear regression
 function linearRegression(x, y) {
   const n = x.length;
   let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -404,6 +420,16 @@ function linearRegression(x, y) {
   const slope = (n * sumXY - sumX * sumY) / denominator;
   const intercept = (sumY - slope * sumX) / n;
   return { slope, intercept };
+}
+
+function percentile(arr, p) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const index = (p / 100) * (sorted.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const weight = index - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
 function calculateIQR(series, window = 26) {
@@ -419,6 +445,64 @@ function calculateIQR(series, window = 26) {
     lowIQR[i] = p25; highIQR[i] = p75;
   }
   return { lowIQR, highIQR };
+}
+
+// --- AI LOGIC ENGINE ---
+function calculateTax(price) {
+  return Math.min(5000000, Math.floor(price * 0.01));
+}
+
+function runAIEngine(rawLow, rawHigh, series) {
+  if (!rawLow || !rawHigh) {
+    return { buy: 0, sell: 0, msg: "Insufficient live data to generate AI recommendation." };
+  }
+
+  let recBuy = rawLow;
+  let recSell = rawHigh;
+  let note = "";
+
+  // Handle Inverted Markets or Basic Undercutting
+  if (rawLow >= rawHigh) {
+    recBuy = rawHigh; // Buy at the lower price
+    recSell = rawLow;
+    note = "Market spread is currently inverted. ";
+  } else if (rawHigh - rawLow > 2) {
+    recBuy = rawLow + 1; // Undercut buyer
+    recSell = rawHigh - 1; // Undercut seller
+  }
+
+  let tax = calculateTax(recSell);
+  let profit = recSell - recBuy - tax;
+
+  // If live margin is crushed (negative profit), rely on historical IQR band to find a safe target
+  if (profit <= 0 && series && series.low.length > 0) {
+    const recentLows = series.low.slice(-30).filter(x => x != null);
+    const recentHighs = series.high.slice(-30).filter(x => x != null);
+    
+    if (recentLows.length && recentHighs.length) {
+      const safeBuy = Math.floor(percentile(recentLows, 25));
+      const safeSell = Math.ceil(percentile(recentHighs, 75));
+      const safeTax = calculateTax(safeSell);
+      
+      if (safeSell - safeBuy - safeTax > 0) {
+        recBuy = safeBuy;
+        recSell = safeSell;
+        tax = safeTax;
+        profit = recSell - recBuy - tax;
+        note = "Live spread crushed by tax. Recommending limits based on recent historical trend.";
+      }
+    }
+  }
+
+  // Format final output
+  if (profit > 0) {
+    const roi = ((profit / recBuy) * 100).toFixed(2);
+    let msg = `${note} After 1% GE Tax (${fmtGp(tax)}), expect <span class="hlt-pos">${fmtGp(profit)} profit</span> per item (${roi}% ROI).`;
+    return { buy: recBuy, sell: recSell, msg };
+  } else {
+    let msg = `Spread is too tight. After 1% GE Tax (${fmtGp(tax)}), you would <span class="hlt-neg">lose ${fmtGp(Math.abs(profit))}</span>. Do not flip currently.`;
+    return { buy: recBuy, sell: recSell, msg };
+  }
 }
 
 function drawChart(series) {
@@ -545,41 +629,30 @@ function drawChart(series) {
     const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
     if (nonNull.length < 5) return;
     
-    // Analyze recent trend (last 25% of visible data)
     const lookback = Math.max(5, Math.floor(nonNull.length * 0.25));
     const recent = nonNull.slice(-lookback);
-    
     const { slope, intercept } = linearRegression(recent.map(n=>n.i), recent.map(n=>n.v));
     const lastPt = nonNull[nonNull.length - 1];
     
     const startX = x0 + lastPt.i * stepX;
     const startY = ypx(lastPt.v, vmin, vmax, y0, h_price);
     
-    // Project into future area
     const projectedI = (L.length - 1) + (futureW / stepX);
     const projectedV = slope * projectedI + intercept;
     const endX = x0 + dataW + futureW;
     const endY = ypx(projectedV, vmin, vmax, y0, h_price);
     
     ctx.save();
-    // Clip so wild predictions don't draw over UI
     ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); 
-    
-    ctx.setLineDash([3, 5]);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.stroke();
+    ctx.setLineDash([3, 5]); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
     ctx.restore();
   }
   drawTrailingPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
   drawTrailingPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
 
   // 5. Bright Dashed Target Line for Active Price Box
-  const activePrice = activePriceBox === 'buy' ? currentLatestLow : currentLatestHigh;
+  const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
     if (py >= y0 && py <= y0 + h_price) {
@@ -587,16 +660,13 @@ function drawChart(series) {
       ctx.setLineDash([8, 6]);
       ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
       ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(x0, py);
-      ctx.lineTo(x0 + w, py);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
       
       ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
       ctx.font = "11px Segoe UI";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Selected", x0 + 6, py - 4);
+      ctx.fillText("Selected Rec.", x0 + 6, py - 4);
       ctx.restore();
     }
   }
@@ -616,15 +686,22 @@ function drawChart(series) {
       requestAnimationFrame(() => drawChart(series));
       return;
     }
-    // Hover logic - ignore future area
     if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; return; }
     const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     tip.style.display = "block";
     tip.style.left = (mx + 15) + "px";
     tip.style.top = (my + 15) + "px";
+    
+    // Calculate tooltip tax/profit on the fly for the hovered point
+    let hLow = LO[idx]; let hHigh = HI[idx];
+    let hTax = calculateTax(hHigh || 0);
+    let hProf = (hHigh && hLow) ? (hHigh - hLow - hTax) : 0;
+    let profHtml = hProf > 0 ? `<span style="color:var(--positive)">+${fmtNum(hProf)}</span>` : `<span style="color:var(--negative)">${fmtNum(hProf)}</span>`;
+
     tip.innerHTML = `<strong>${new Date(L[idx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
-      <span style="color:var(--buy-color)">Buy: ${fmtGp(LO[idx])}</span><br/>
-      <span style="color:var(--sell-color)">Sell: ${fmtGp(HI[idx])}</span><br/>
+      <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
+      <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
+      <span style="color:var(--muted)">Est. Profit: ${profHtml}</span><br/>
       <span style="color:var(--muted)">Vol: ${fmtNum(VO[idx])}</span>`;
   };
   c.onwheel = ev => {
@@ -639,17 +716,7 @@ async function setItem(m) {
   $("#query").value = m.name;
   document.title = `${m.name} - Grant Exchange`;
   $("#itemIcon").src = bigIconUrl(m.name);
-  $("#status").textContent = "Loading...";
-  
-  latest = await loadLatest();
-  const node = latest.data[String(m.id)];
-  
-  // Update state tracking
-  currentLatestLow = node?.low ?? node?.avgLowPrice ?? null;
-  currentLatestHigh = node?.high ?? node?.avgHighPrice ?? null;
-  
-  $("#buyPrice .price-val span").textContent = fmtGp(currentLatestLow);
-  $("#sellPrice .price-val span").textContent = fmtGp(currentLatestHigh);
+  $("#status").textContent = "Analyzing...";
   
   // Update timeframe buttons
   const changes = await calculateAllPctChanges(m.id);
@@ -673,8 +740,23 @@ async function setItem(m) {
     currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
   }
   
+  // RUN AI ENGINE
+  latest = await loadLatest();
+  const node = latest.data[String(m.id)];
+  const rawLow = node?.low ?? node?.avgLowPrice ?? 0;
+  const rawHigh = node?.high ?? node?.avgHighPrice ?? 0;
+  
+  const aiResult = runAIEngine(rawLow, rawHigh, currentSeries);
+  recommendedBuy = aiResult.buy;
+  recommendedSell = aiResult.sell;
+  
+  // Update UI Elements
+  $("#buyPrice .price-val span").textContent = fmtGp(recommendedBuy);
+  $("#sellPrice .price-val span").textContent = fmtGp(recommendedSell);
+  $("#aiText").innerHTML = aiResult.msg;
+
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
-  resizeCanvas(); // Trigger draw
+  resizeCanvas(); 
   $("#status").textContent = "Live";
 }
 
@@ -705,7 +787,7 @@ async function setItem(m) {
       b.onclick = () => {
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
         b.classList.add("active"); view = b.dataset.view;
-        zoom = 1.0; // reset zoom on tab change
+        zoom = 1.0; 
         if (selected) setItem(selected);
       }
     });
@@ -716,8 +798,8 @@ async function setItem(m) {
     setInterval(() => { if (selected) setItem(selected); }, 300000);
     
     resizeCanvas();
-    const uncutRuby = mapping.find(x => x.name.toLowerCase() === "uncut ruby");
-    if (uncutRuby) setItem(uncutRuby);
+    const diamond = mapping.find(x => x.name.toLowerCase() === "diamond");
+    if (diamond) setItem(diamond);
   } catch (e) {
     console.error(e);
     $("#status").textContent = "Error loading API";
