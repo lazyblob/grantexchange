@@ -50,6 +50,27 @@ body {
   overflow: hidden; 
 }
 
+/* PORTRAIT LOCK OVERLAY */
+.portrait-lock { display: none; }
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .wrap { display: none !important; }
+  .portrait-lock {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; background: var(--bg-base); color: var(--text-main); text-align: center; padding: 20px;
+  }
+  .portrait-lock svg { 
+    width: 60px; height: 60px; margin-bottom: 20px; color: var(--border-active);
+    animation: rotatePhone 2s infinite ease-in-out; 
+  }
+  .portrait-lock h2 { margin: 0 0 10px 0; font-size: 20px; }
+  .portrait-lock p { margin: 0; color: var(--text-muted); font-size: 14px; }
+  @keyframes rotatePhone { 
+    0% { transform: rotate(0deg); } 
+    50% { transform: rotate(-90deg); } 
+    100% { transform: rotate(-90deg); } 
+  }
+}
+
 .wrap { 
   max-width: 1600px; 
   margin: 0 auto; 
@@ -62,28 +83,15 @@ body {
 
 /* Premium Compact Header Panel */
 .top-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-main);
-  border-radius: 6px;
-  padding: 6px 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
+  padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
 }
 
 .panel-left { display: flex; align-items: center; gap: 10px; }
 
 .brand {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--text-main);
-  cursor: pointer;
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
+  font-size: 15px; font-weight: 800; color: var(--text-main); cursor: pointer;
+  letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px;
 }
 .brand span { color: var(--border-active); }
 
@@ -110,14 +118,19 @@ body {
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
-/* Timeframe Selection */
+/* Timeframe Selection - Updated for % display */
 .toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
 .toolbar button {
   background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
-  padding: 4px 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: all 0.15s;
+  padding: 2px 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
 }
 .toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
+.pct-chg { font-size: 9px; font-weight: normal; margin-top: 1px; }
+.pct-chg.positive { color: var(--positive); }
+.pct-chg.negative { color: var(--negative); }
+.pct-chg.neutral { color: var(--text-muted); }
 
 /* Game Toggles */
 .mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; }
@@ -172,7 +185,7 @@ body {
 
 /* --- WATCHLIST SIDEBAR STYLING --- */
 .watchlist-container {
-  width: 250px; background: var(--bg-panel); border: 1px solid var(--border-main);
+  width: 280px; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 .watchlist-header {
@@ -203,7 +216,11 @@ body {
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
 .wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-item-right { display: flex; align-items: center; gap: 4px; }
 .wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
+.wl-trend { font-size: 9px; }
+.wl-trend.up { color: var(--positive); }
+.wl-trend.down { color: var(--negative); }
 
 /* TARGETED MOBILE LANDSCAPE OPTIMIZATIONS */
 @media (max-height: 500px) and (orientation: landscape) {
@@ -215,22 +232,28 @@ body {
   .brand { font-size: 13px; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  
-  /* Auto collapse sidebar sideways to overlay approach */
-  .watchlist-container { width: 180px; font-size: 11px; }
+  .watchlist-container { width: 220px; font-size: 11px; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
 }
 
-@media (max-width: 768px) and (orientation: portrait) {
+/* Fallback if user bypasses orientation lock on slightly larger tablets */
+@media (max-width: 768px) {
   .sbar { width: 140px; }
-  .content-area { flex-direction: column; }
   .watchlist-container { width: 100%; height: 200px; flex: none; }
-  .plaque-bar { position: static; background: var(--bg-panel); padding: 6px; border-bottom: 1px solid var(--border-main); }
-  .price-box { flex: 1; }
 }
 </style>
 </head>
 <body>
+
+<div class="portrait-lock">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+  </svg>
+  <h2>Please Rotate Device</h2>
+  <p>GEChart is optimized for landscape viewing.</p>
+</div>
+
 <div class="wrap">
   
   <div class="top-panel">
@@ -244,12 +267,12 @@ body {
       </div>
 
       <div class="toolbar" id="timeToolbar">
-        <button data-view="1d" class="active view-btn">1D</button>
-        <button data-view="5d" class="view-btn">5D</button>
-        <button data-view="1m" class="view-btn">1M</button>
-        <button data-view="6m" class="view-btn">6M</button>
-        <button data-view="1y" class="view-btn">1Y</button>
-        <button data-view="5y" class="view-btn">5Y</button>
+        <button data-view="1d" class="active view-btn">1D<span class="pct-chg">...</span></button>
+        <button data-view="5d" class="view-btn">5D<span class="pct-chg">...</span></button>
+        <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+        <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+        <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+        <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
       </div>
     </div>
 
@@ -289,8 +312,8 @@ body {
 
     <div class="watchlist-container">
       <div class="watchlist-header">
-        <span>Watchlist</span>
-        <span id="wlCount" style="font-weight:normal; font-size:10px;">0 Items</span>
+        <span>Market Watchlist</span>
+        <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
       <div class="watchlist-content" id="watchlistContent">
         </div>
@@ -302,22 +325,13 @@ body {
 const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
-let mapping = [], latest = null, selected = null;
+let mapping = [], latest = null, past24h = null, selected = null;
 let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
 let activePriceBox = 'buy'; 
 let recommendedBuy = null, recommendedSell = null;
-
-// Base configuration array fueling target initializations
-const baseWatchlistNames = [
-  "Abyssal whip", "Armadyl godsword", "Bandos tassets", "Ghrazi rapier", "Osmumten's fang",
-  "Amulet of fury", "Amulet of glory", "Ring of suffering", "Zenyte shard", "Diamond", "Ruby",
-  "Runite bar", "Adamantite bar", "Coal", "Gold ore", "Iron ore",
-  "Blood rune", "Death rune", "Nature rune", "Prayer potion(4)", "Saradomin brew(4)", "Super restore(4)",
-  "Zulrah's scales", "Dragon bones", "Yew logs", "Magic logs", "Cannonball", "Bond"
-];
 
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
@@ -341,8 +355,8 @@ window.addEventListener('resize', resizeCanvas);
 const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
-  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
-  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
   if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
   return num.toLocaleString();
 };
@@ -354,6 +368,7 @@ async function jget(url) {
 }
 const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
+const load24h = () => jget(PRICES_API + "/24h"); // Baseline for trend arrows
 const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
@@ -361,97 +376,117 @@ function bigIconUrl(name) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`;
 }
 
-// --- ITEM CLASSIFIER ENGINE ---
+// --- MASSIVE ITEM CLASSIFIER ENGINE ---
 function classifyItem(name) {
   const n = name.toLowerCase();
-  if (n.includes("sword") || n.includes("whip") || n.includes("tassets") || n.includes("rapier") || n.includes("fang") || n.includes("helm") || n.includes("plate") || n.includes("hide")) {
-    return "Weapons & Gear";
-  }
-  if (n.includes("amulet") || n.includes("ring") || n.includes("necklace") || n.includes("shard") || n.includes("gem") || n === "diamond" || n === "ruby" || n === "sapphire" || n === "emerald") {
-    return "Gems & Jewelry";
-  }
-  if (n.includes("bar") || n.includes("ore") || n === "coal") {
-    return "Bars & Ores";
-  }
-  if (n.includes("rune") || n.includes("potion") || n.includes("brew") || n.includes("restore") || n.includes("herb") || n.includes("weed")) {
-    return "Runes & Herblore";
-  }
-  return "Resources & Other";
+  if (/(sword|whip|rapier|fang|dagger|mace|scimitar|halberd|spear|hasta|claws|axe|bow|arrow|dart|knife|javelin|bolt|chinchompa|blowpipe|staff|wand|trident|bludgeon)/.test(n)) return "Weapons & Ammo";
+  if (/(helm|plate|shield|legs|skirt|chainbody|hide|tassets|cuirass|faceguard|boots|gloves|defender|ahrim|karil|dharok|torag|guthan|verac|ancestral|justiciar|bandos|armadyl)/.test(n)) return "Armor & Gear";
+  if (/(amulet|ring|necklace|bracelet|gem|diamond|ruby|sapphire|emerald|onyx|zenyte|glory|fury|anguish|torture|occult)/.test(n)) return "Gems & Jewelry";
+  if (/(potion|brew|restore|herb|weed|seed|guam|marrentill|tarromin|harralander|ranarr|toadflax|irit|avantoe|kwuarm|snapdragon|cadantine|lantadyme|dwarf weed|torstol|vial|dust)/.test(n)) return "Herblore & Seeds";
+  if (/(raw|cooked|fish|shark|manta|karambwan|anglerfish|food|pie|cake|potato|stew|pizza|meat)/.test(n)) return "Food & Fishing";
+  if (/(bar|ore|coal|mithril|adamant|runite|gold|silver|copper|tin)/.test(n)) return "Bars & Ores";
+  if (/(log|plank|tree|teak|mahogany|yew|magic|dart tip|arrowtips)/.test(n)) return "Wood & Fletching";
+  if (/(rune|talisman|tiara)/.test(n) && !n.includes("rune plate") && !n.includes("rune sword")) return "Runes & Magic";
+  if (/(bone|hide|leather|scale|feather|ashes|ensouled)/.test(n)) return "Monster Drops";
+  return "Miscellaneous";
 }
 
-// --- RENDER WATCHLIST LOGIC ---
+// --- OPTIMIZED WATCHLIST RENDERER (ALL ITEMS) ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
   
-  // Intercept data context natively mapped via global variables
-  let populated = mapping.filter(m => baseWatchlistNames.includes(m.name));
-  
-  // DYNAMIC ACCOUNT VALIDATION: Hide members content inside base F2P layout setups
-  if (!membersOn) {
-    populated = populated.filter(m => !m.members);
-  }
-
-  $("#wlCount").textContent = `${populated.length} Items`;
+  // Filter by game mode
+  let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
+  $("#wlCount").textContent = `${activeItems.length} Items`;
 
   // Sort groups systematically
   const categories = {
-    "Weapons & Gear": [],
-    "Gems & Jewelry": [],
-    "Bars & Ores": [],
-    "Runes & Herblore": [],
-    "Resources & Other": []
+    "Weapons & Ammo": [], "Armor & Gear": [], "Gems & Jewelry": [], "Runes & Magic": [],
+    "Herblore & Seeds": [], "Food & Fishing": [], "Bars & Ores": [], 
+    "Wood & Fletching": [], "Monster Drops": [], "Miscellaneous": []
   };
 
-  populated.forEach(item => {
+  activeItems.forEach(item => {
     const c = classifyItem(item.name);
     if(categories[c]) categories[c].push(item);
   });
 
-  // Inject structural blocks
+  // Use Document Fragment for hyper-fast DOM insertion of 3800 items
+  const fragment = document.createDocumentFragment();
+
   Object.keys(categories).forEach(cat => {
     const list = categories[cat];
     if(list.length === 0) return;
 
-    // Order items inside category alphabetically
-    list.sort((a,b) => a.name.localeCompare(b.name));
+    // Sort heavily by price descending
+    list.sort((a,b) => {
+      const pA = latest?.data?.[String(a.id)]?.high ?? 0;
+      const pB = latest?.data?.[String(b.id)]?.high ?? 0;
+      return pB - pA;
+    });
 
     const groupDiv = document.createElement("div");
     groupDiv.className = "category-group";
 
     const titleDiv = document.createElement("div");
     titleDiv.className = "category-title";
-    titleDiv.innerHTML = `<span>${cat}</span><span>▼</span>`;
+    // Collapse Miscellaneous by default to save scroll space
+    const isMisc = cat === "Miscellaneous";
+    titleDiv.innerHTML = `<span>${cat}</span><span>${isMisc ? "▶" : "▼"}</span>`;
     
     const listDiv = document.createElement("div");
-    listDiv.className = "category-list";
+    listDiv.className = `category-list ${isMisc ? "collapsed" : ""}`;
 
     titleDiv.onclick = () => {
       listDiv.classList.toggle("collapsed");
       titleDiv.querySelector("span:last-child").textContent = listDiv.classList.contains("collapsed") ? "▶" : "▼";
     };
 
+    let innerListHTML = "";
     list.forEach(item => {
       const node = latest?.data?.[String(item.id)];
       const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+      
+      // Calculate Trend Arrow against 24h baseline
+      let trendHtml = "";
+      if (past24h && past24h.data && past24h.data[String(item.id)]) {
+        const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
+        if (price > pastHigh && pastHigh > 0) trendHtml = `<span class="wl-trend up">▲</span>`;
+        else if (price < pastHigh && price > 0) trendHtml = `<span class="wl-trend down">▼</span>`;
+      }
 
-      const iDiv = document.createElement("div");
-      iDiv.className = `wl-item ${selected?.id === item.id ? 'active' : ''}`;
-      iDiv.onclick = () => setItem(item);
-
-      iDiv.innerHTML = `
-        <div class="wl-item-left">
-          <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
-          <span class="wl-item-name">${item.name}</span>
+      const activeClass = selected?.id === item.id ? 'active' : '';
+      
+      innerListHTML += `
+        <div class="wl-item ${activeClass}" data-id="${item.id}">
+          <div class="wl-item-left">
+            <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
+            <span class="wl-item-name">${item.name}</span>
+          </div>
+          <div class="wl-item-right">
+            <span class="wl-item-price">${abbreviateNumber(price)}</span>
+            ${trendHtml}
+          </div>
         </div>
-        <span class="wl-item-price">${abbreviateNumber(price)}</span>
       `;
-      listDiv.appendChild(iDiv);
     });
 
+    listDiv.innerHTML = innerListHTML;
     groupDiv.appendChild(titleDiv);
     groupDiv.appendChild(listDiv);
-    container.appendChild(groupDiv);
+    fragment.appendChild(groupDiv);
+  });
+
+  container.appendChild(fragment);
+
+  // Delegate click events efficiently
+  container.querySelectorAll('.wl-item').forEach(el => {
+    el.onclick = () => {
+      const id = el.getAttribute('data-id');
+      const m = mapping.find(x => String(x.id) === String(id));
+      if(m) setItem(m);
+    };
   });
 }
 
@@ -491,6 +526,35 @@ function filterSeries(series, period) {
     labels: series.labels.slice(startIdx), low: series.low.slice(startIdx), high: series.high.slice(startIdx),
     lowVol: series.lowVol.slice(startIdx), highVol: series.highVol.slice(startIdx)
   };
+}
+
+async function calculateAllPctChanges(id) {
+  const changes = {};
+  const historical = await loadHistorical(id);
+  fullHistorical = seriesFromHistorical(historical);
+  const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
+  
+  for (const p of periods) {
+    let ser;
+    if (p === '1d' || p === '5d') ser = seriesFromTS(await loadTS('1h', id));
+    else if (p === '1m') ser = seriesFromTS(await loadTS('6h', id));
+    else if (p === '6m') ser = seriesFromTS(await loadTS('24h', id));
+    else ser = fullHistorical;
+    
+    const filtered = filterSeries(ser, getPeriod(p));
+    let firstMid = null, lastMid = null;
+    for (let i = 0; i < filtered.labels.length; i++) {
+      const l = filtered.low[i], h = filtered.high[i];
+      if (l != null || h != null) {
+        const mid = ((l ?? h) + (h ?? l)) / 2;
+        if (firstMid == null) firstMid = mid;
+        lastMid = mid;
+      }
+    }
+    if (firstMid == null || lastMid == null) { changes[p] = '0.00%'; } 
+    else { changes[p] = (((lastMid - firstMid) / firstMid) * 100).toFixed(2) + '%'; }
+  }
+  return changes;
 }
 
 function ypx(v, vmin, vmax, y0, h) {
@@ -797,8 +861,18 @@ async function setItem(m) {
   $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading...";
 
-  // Immediately track active states correctly in side list setups
+  // Ensure active state updates in sidebar
   renderWatchlist();
+
+  // Populate timeframe % change labels
+  const changes = await calculateAllPctChanges(m.id);
+  document.querySelectorAll(".view-btn").forEach(b => {
+    const p = b.dataset.view;
+    const val = parseFloat(changes[p]);
+    const cls = val > 0 ? 'positive' : val < 0 ? 'negative' : 'neutral';
+    const prefix = val > 0 ? '+' : '';
+    b.innerHTML = `${p.toUpperCase()}<span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
+  });
 
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
@@ -831,9 +905,11 @@ async function setItem(m) {
 (async function boot() {
   try {
     mapping = await loadMapping();
-    latest = await loadLatest(); // Pull background core instantly to feed watchlist pricing
+    latest = await loadLatest();
     
-    // Set interface defaults natively
+    // Fetch 24h data to generate baseline for up/down trend arrows
+    try { past24h = await load24h(); } catch(e) { console.warn("Could not fetch 24h baseline."); }
+    
     renderWatchlist();
 
     const sb = $("#suggestBox"), qInput = $("#query");
@@ -874,8 +950,6 @@ async function setItem(m) {
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
       renderWatchlist();
       qInput.dispatchEvent(new Event("input")); 
-      
-      // If currently observing member element, cleanly switch over to F2P safety
       if (selected && selected.members) {
         const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
         if(ruby) setItem(ruby);
@@ -891,13 +965,13 @@ async function setItem(m) {
     
     setInterval(async () => { 
       latest = await loadLatest();
-      renderWatchlist(); // Auto-refresh sidebar prices live
+      renderWatchlist(); 
       if (selected) setItem(selected); 
     }, 300000);
     
     resizeCanvas();
-    const bond = mapping.find(x => x.name.toLowerCase() === "old school bond");
-    if (bond) setItem(bond);
+    const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
+    if (ruby) setItem(ruby);
   } catch (e) {
     console.error(e);
     $("#status").textContent = "API Error";
