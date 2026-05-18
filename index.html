@@ -36,6 +36,7 @@
   
   --positive: #26A69A;
   --negative: #EF5350;
+  --fav-gold: #FFB300;
   --shadow: rgba(0, 0, 0, 0.5);
 }
 
@@ -52,7 +53,7 @@ body {
 
 /* PORTRAIT LOCK OVERLAY */
 .portrait-lock { display: none; }
-@media screen and (max-width: 768px) and (orientation: portrait) {
+@media screen and (orientation: portrait) {
   .wrap { display: none !important; }
   .portrait-lock {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -95,7 +96,8 @@ body {
 }
 .brand span { color: var(--border-active); }
 
-/* Shrunk Search Bar */
+/* Search & Fav Group */
+.search-group { display: flex; align-items: center; gap: 4px; }
 .sbar { position: relative; width: 200px; }
 .sbar input {
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
@@ -104,6 +106,16 @@ body {
 }
 .sbar input:focus { border-color: var(--border-active); }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
+
+.fav-btn {
+  background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px;
+  padding: 5px 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.fav-btn:hover { border-color: var(--fav-gold); color: var(--fav-gold); }
+.fav-btn.active { background: rgba(255, 179, 0, 0.1); border-color: var(--fav-gold); color: var(--fav-gold); }
+.fav-btn svg { width: 16px; height: 16px; fill: none; }
+.fav-btn.active svg { fill: currentColor; }
 
 /* Autocomplete Suggestion Dropdown */
 .suggest { 
@@ -118,7 +130,7 @@ body {
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
-/* Timeframe Selection - Updated for % display */
+/* Timeframe Selection */
 .toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
 .toolbar button {
   background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
@@ -142,12 +154,13 @@ body {
 
 .status-text { font-size: 11px; color: var(--text-muted); }
 
-/* Main Chart & Watchlist Panel Layout */
-.content-area { display: flex; flex: 1; gap: 8px; min-height: 0; }
+/* Main Chart & Watchlist Panel Layout (IRONCLAD FLEXBOX) */
+.content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 
 .chart-container {
-  flex: 1; background: var(--bg-chart); border: 1px solid var(--border-main);
-  border-radius: 6px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+  flex: 1; display: flex; flex-direction: column; min-width: 0;
+  background: var(--bg-chart); border: 1px solid var(--border-main);
+  border-radius: 6px; position: relative; overflow: hidden;
 }
 .chart { flex: 1; width: 100%; display: block; }
 
@@ -185,7 +198,7 @@ body {
 
 /* --- WATCHLIST SIDEBAR STYLING --- */
 .watchlist-container {
-  width: 280px; background: var(--bg-panel); border: 1px solid var(--border-main);
+  width: 280px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 .watchlist-header {
@@ -202,6 +215,7 @@ body {
   padding: 6px 10px; font-size: 10px; font-weight: bold; color: var(--border-active);
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
+.category-title.fav-title { color: var(--fav-gold); }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
@@ -226,20 +240,15 @@ body {
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
   .top-panel { padding: 3px 6px; }
-  .sbar { width: 160px; }
+  .sbar { width: 150px; }
   .sbar input { padding-top: 3px; padding-bottom: 3px; }
+  .fav-btn { padding: 3px 6px; }
   .status-text { display: none; }
   .brand { font-size: 13px; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
   .watchlist-container { width: 220px; font-size: 11px; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
-}
-
-/* Fallback if user bypasses orientation lock on slightly larger tablets */
-@media (max-width: 768px) {
-  .sbar { width: 140px; }
-  .watchlist-container { width: 100%; height: 200px; flex: none; }
 }
 </style>
 </head>
@@ -260,10 +269,17 @@ body {
     <div class="panel-left">
       <div class="brand" onclick="location.reload();">GE<span>Chart</span></div>
       
-      <div class="sbar">
-        <img id="itemIcon" src="" alt="">
-        <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <div id="suggestBox" class="suggest" style="display:none"></div>
+      <div class="search-group">
+        <div class="sbar">
+          <img id="itemIcon" src="" alt="">
+          <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <div id="suggestBox" class="suggest" style="display:none"></div>
+        </div>
+        <button id="btnFav" class="fav-btn" title="Toggle Favorite">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
       </div>
 
       <div class="toolbar" id="timeToolbar">
@@ -330,6 +346,9 @@ let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
+// Custom Favorites state
+let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
+
 let activePriceBox = 'buy'; 
 let recommendedBuy = null, recommendedSell = null;
 
@@ -342,6 +361,26 @@ $('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if
 function updateSelection() {
   $('#buyPrice').classList.toggle('selected', activePriceBox === 'buy');
   $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
+}
+
+// Favorite Button Handler
+$('#btnFav').onclick = () => {
+  if (!selected) return;
+  const idStr = String(selected.id);
+  if (favorites.includes(idStr)) {
+    favorites = favorites.filter(id => id !== idStr);
+  } else {
+    favorites.push(idStr);
+  }
+  localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+  updateFavoriteBtn();
+  renderWatchlist();
+};
+
+function updateFavoriteBtn() {
+  if (!selected) return;
+  const isFav = favorites.includes(String(selected.id));
+  $('#btnFav').classList.toggle('active', isFav);
 }
 
 function resizeCanvas() {
@@ -368,7 +407,7 @@ async function jget(url) {
 }
 const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
-const load24h = () => jget(PRICES_API + "/24h"); // Baseline for trend arrows
+const load24h = () => jget(PRICES_API + "/24h"); 
 const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
@@ -391,52 +430,55 @@ function classifyItem(name) {
   return "Miscellaneous";
 }
 
-// --- OPTIMIZED WATCHLIST RENDERER (ALL ITEMS) ---
+// --- OPTIMIZED WATCHLIST RENDERER (ALL ITEMS & FAVORITES) ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
   
-  // Filter by game mode
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
   $("#wlCount").textContent = `${activeItems.length} Items`;
 
-  // Sort groups systematically
   const categories = {
+    "⭐ Favorites": [],
     "Weapons & Ammo": [], "Armor & Gear": [], "Gems & Jewelry": [], "Runes & Magic": [],
     "Herblore & Seeds": [], "Food & Fishing": [], "Bars & Ores": [], 
     "Wood & Fletching": [], "Monster Drops": [], "Miscellaneous": []
   };
 
   activeItems.forEach(item => {
+    // Populate Favorites tab
+    if (favorites.includes(String(item.id))) {
+      categories["⭐ Favorites"].push(item);
+    }
+    // Populate standard tabs
     const c = classifyItem(item.name);
     if(categories[c]) categories[c].push(item);
   });
 
-  // Use Document Fragment for hyper-fast DOM insertion of 3800 items
   const fragment = document.createDocumentFragment();
 
   Object.keys(categories).forEach(cat => {
     const list = categories[cat];
     if(list.length === 0) return;
 
-    // Sort heavily by price descending
     list.sort((a,b) => {
       const pA = latest?.data?.[String(a.id)]?.high ?? 0;
       const pB = latest?.data?.[String(b.id)]?.high ?? 0;
       return pB - pA;
     });
 
+    const isFav = cat === "⭐ Favorites";
     const groupDiv = document.createElement("div");
     groupDiv.className = "category-group";
 
     const titleDiv = document.createElement("div");
-    titleDiv.className = "category-title";
-    // Collapse Miscellaneous by default to save scroll space
-    const isMisc = cat === "Miscellaneous";
-    titleDiv.innerHTML = `<span>${cat}</span><span>${isMisc ? "▶" : "▼"}</span>`;
+    titleDiv.className = `category-title ${isFav ? 'fav-title' : ''}`;
+    
+    // Default: Only Favorites tab starts expanded
+    titleDiv.innerHTML = `<span>${cat}</span><span>${isFav ? "▼" : "▶"}</span>`;
     
     const listDiv = document.createElement("div");
-    listDiv.className = `category-list ${isMisc ? "collapsed" : ""}`;
+    listDiv.className = `category-list ${isFav ? "" : "collapsed"}`;
 
     titleDiv.onclick = () => {
       listDiv.classList.toggle("collapsed");
@@ -448,7 +490,6 @@ function renderWatchlist() {
       const node = latest?.data?.[String(item.id)];
       const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
       
-      // Calculate Trend Arrow against 24h baseline
       let trendHtml = "";
       if (past24h && past24h.data && past24h.data[String(item.id)]) {
         const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
@@ -861,17 +902,17 @@ async function setItem(m) {
   $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading...";
 
-  // Ensure active state updates in sidebar
+  updateFavoriteBtn();
   renderWatchlist();
 
-  // Populate timeframe % change labels
+  // Populate timeframe % change labels cleanly
   const changes = await calculateAllPctChanges(m.id);
   document.querySelectorAll(".view-btn").forEach(b => {
     const p = b.dataset.view;
     const val = parseFloat(changes[p]);
     const cls = val > 0 ? 'positive' : val < 0 ? 'negative' : 'neutral';
     const prefix = val > 0 ? '+' : '';
-    b.innerHTML = `${p.toUpperCase()}<span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
+    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
   });
 
   let timestep = "24h";
