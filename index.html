@@ -3,8 +3,20 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GE Chart">
+<meta name="application-name" content="GE Chart">
+<meta name="theme-color" content="#0B0E14">
+
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
+
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://oldschool.runescape.wiki/images/Ruby.png">
+<link rel="apple-touch-icon" href="https://oldschool.runescape.wiki/images/Ruby.png">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png">
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -260,7 +272,7 @@ body {
     <line x1="12" y1="18" x2="12.01" y2="18"></line>
   </svg>
   <h2>Please Rotate Device</h2>
-  <p>GEChart is optimized for landscape viewing.</p>
+  <p>GE Chart is optimized for landscape viewing.</p>
 </div>
 
 <div class="wrap">
@@ -415,22 +427,29 @@ function bigIconUrl(name) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`;
 }
 
-// --- MASSIVE ITEM CLASSIFIER ENGINE ---
+// --- NEW STRICT CASCADING ITEM CLASSIFIER ENGINE ---
 function classifyItem(name) {
   const n = name.toLowerCase();
-  if (/(sword|whip|rapier|fang|dagger|mace|scimitar|halberd|spear|hasta|claws|axe|bow|arrow|dart|knife|javelin|bolt|chinchompa|blowpipe|staff|wand|trident|bludgeon)/.test(n)) return "Weapons & Ammo";
-  if (/(helm|plate|shield|legs|skirt|chainbody|hide|tassets|cuirass|faceguard|boots|gloves|defender|ahrim|karil|dharok|torag|guthan|verac|ancestral|justiciar|bandos|armadyl)/.test(n)) return "Armor & Gear";
-  if (/(amulet|ring|necklace|bracelet|gem|diamond|ruby|sapphire|emerald|onyx|zenyte|glory|fury|anguish|torture|occult)/.test(n)) return "Gems & Jewelry";
-  if (/(potion|brew|restore|herb|weed|seed|guam|marrentill|tarromin|harralander|ranarr|toadflax|irit|avantoe|kwuarm|snapdragon|cadantine|lantadyme|dwarf weed|torstol|vial|dust)/.test(n)) return "Herblore & Seeds";
-  if (/(raw|cooked|fish|shark|manta|karambwan|anglerfish|food|pie|cake|potato|stew|pizza|meat)/.test(n)) return "Food & Fishing";
-  if (/(bar|ore|coal|mithril|adamant|runite|gold|silver|copper|tin)/.test(n)) return "Bars & Ores";
-  if (/(log|plank|tree|teak|mahogany|yew|magic|dart tip|arrowtips)/.test(n)) return "Wood & Fletching";
-  if (/(rune|talisman|tiara)/.test(n) && !n.includes("rune plate") && !n.includes("rune sword")) return "Runes & Magic";
-  if (/(bone|hide|leather|scale|feather|ashes|ensouled)/.test(n)) return "Monster Drops";
+
+  if (/\bset\b/i.test(n)) return "Armor sets";
+  if (/(arrow|bolt|dart tip|javelin|cannonball|chinchompa)/i.test(n)) return "Ammo";
+  if (/(bow|blowpipe|crossbow|ballista|dart|knife|throwing axe)/i.test(n)) return "Range weapons";
+  if (/(staff|wand|trident|crozier|sceptre)/i.test(n)) return "Mage weapons";
+  if (/(sword|whip|rapier|fang|dagger|mace|scimitar|halberd|spear|hasta|claw|bludgeon|godsword|maul|blade|scythe|axe|pickaxe)/i.test(n)) return "Melee weapons";
+  if (/(hide|armadyl|karil|pegasian|masori|chaps|coif|vambraces)/i.test(n)) return "Range armor";
+  if (/(mystic|ahrim|ancestral|virtus|infinity|robe)/i.test(n)) return "Mage armor";
+  if (/(plate|chainbody|helm|shield|defender|tassets|cuirass|faceguard|torva|justiciar|bandos|dharok|torag|guthan|verac|inquisitor)/i.test(n)) return "Melee armor";
+  
+  // Caught after armors to prevent "Rune platebody" from sorting to runes
+  if (/(rune|talisman|tiara|essence)/i.test(n)) return "Runes / talismans / rune crafting stuff";
+  if (/(log|plank)/i.test(n)) return "Logs / planks";
+  if (/(ore|bar|coal)/i.test(n)) return "Ores / bars";
+  if (/(gem|diamond|ruby|sapphire|emerald|onyx|zenyte|amethyst|opal|jade|red topaz)/i.test(n)) return "Gems";
+  
   return "Miscellaneous";
 }
 
-// --- OPTIMIZED WATCHLIST RENDERER (ALL ITEMS & FAVORITES) ---
+// --- OPTIMIZED WATCHLIST RENDERER ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
@@ -440,9 +459,19 @@ function renderWatchlist() {
 
   const categories = {
     "⭐ Favorites": [],
-    "Weapons & Ammo": [], "Armor & Gear": [], "Gems & Jewelry": [], "Runes & Magic": [],
-    "Herblore & Seeds": [], "Food & Fishing": [], "Bars & Ores": [], 
-    "Wood & Fletching": [], "Monster Drops": [], "Miscellaneous": []
+    "Melee weapons": [],
+    "Range weapons": [],
+    "Mage weapons": [],
+    "Melee armor": [],
+    "Range armor": [],
+    "Mage armor": [],
+    "Armor sets": [],
+    "Ammo": [],
+    "Runes / talismans / rune crafting stuff": [],
+    "Gems": [],
+    "Ores / bars": [],
+    "Logs / planks": [],
+    "Miscellaneous": []
   };
 
   activeItems.forEach(item => {
@@ -474,7 +503,7 @@ function renderWatchlist() {
     const titleDiv = document.createElement("div");
     titleDiv.className = `category-title ${isFav ? 'fav-title' : ''}`;
     
-    // Default: Only Favorites tab starts expanded
+    // Default: Only Favorites tab starts expanded, others collapsed
     titleDiv.innerHTML = `<span>${cat}</span><span>${isFav ? "▼" : "▶"}</span>`;
     
     const listDiv = document.createElement("div");
