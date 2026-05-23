@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=6">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=6">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=6">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=6">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -165,6 +165,16 @@ body {
 }
 .chart { flex: 1; width: 100%; display: block; touch-action: none; }
 
+/* In-Chart Zoom Controls */
+.chart-controls {
+  position: absolute; bottom: 34px; right: 12px; display: flex; gap: 4px; z-index: 20;
+}
+.chart-controls button {
+  background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); color: var(--text-main);
+  border-radius: 4px; padding: 4px 10px; cursor: pointer; backdrop-filter: blur(4px); font-size: 14px; font-weight: bold;
+}
+.chart-controls button:hover { background: var(--bg-input); border-color: #fff; }
+
 .plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
@@ -237,9 +247,6 @@ body {
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.fav-title { color: var(--fav-gold); }
-.category-title.rec-title { color: #FF9800; }
-.category-title.win-title { color: var(--positive); }
-.category-title.lose-title { color: var(--negative); }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
@@ -274,6 +281,8 @@ body {
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 6px 8px; }
   .calc-grid { gap: 4px; }
+  .chart-controls { bottom: 26px; right: 8px; }
+  .chart-controls button { padding: 2px 8px; font-size: 12px; }
 }
 </style>
 </head>
@@ -337,6 +346,12 @@ body {
           <div class="price-val"><span>—</span></div>
         </div>
       </div>
+      
+      <div class="chart-controls">
+        <button id="btnZoomIn" title="Zoom In">+</button>
+        <button id="btnZoomOut" title="Zoom Out">−</button>
+        <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+      </div>
 
       <canvas id="chart" class="chart"></canvas>
       <div id="tip" class="chart-tip"></div>
@@ -374,7 +389,7 @@ body {
       </div>
 
       <div class="watchlist-header">
-        <span>Market Scanner (24H)</span>
+        <span>Market Scanner</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
       <div class="watchlist-content" id="watchlistContent"></div>
@@ -398,6 +413,28 @@ let recommendedBuy = null, recommendedSell = null;
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
+
+// Zoom Button Handlers
+$('#btnZoomIn').onclick = () => { 
+  zoom = Math.min(20, zoom * 1.5); 
+  if(currentSeries) requestAnimationFrame(() => drawChart(currentSeries)); 
+};
+$('#btnZoomOut').onclick = () => { 
+  zoom = Math.max(1, zoom / 1.5); 
+  if(currentSeries) {
+    const n = currentSeries.labels.length;
+    const win = Math.max(20, Math.floor(n / zoom));
+    offset = Math.max(0, Math.min(n - win, offset));
+    requestAnimationFrame(() => drawChart(currentSeries));
+  }
+};
+$('#btnZoomReset').onclick = () => { 
+  zoom = 1.0; 
+  if(currentSeries) {
+    offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+    requestAnimationFrame(() => drawChart(currentSeries));
+  }
+};
 
 // --- CALCULATOR LOGIC ---
 function parseOSRSNumber(str) {
@@ -440,7 +477,6 @@ $('#calcQty').addEventListener('input', updateCalculator);
 $('#calcBuy').addEventListener('input', updateCalculator);
 $('#calcSell').addEventListener('input', updateCalculator);
 
-// --- INTERACTIVE UI LOGIC ---
 $('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 $('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 function updateSelection() {
@@ -504,7 +540,7 @@ function calculateTax(price) {
   return Math.min(5000000, Math.floor(price * 0.02));
 }
 
-// --- FOCUSED ACTION WATCHLIST RENDERER ---
+// --- FOCUSED WATCHLIST RENDERER (Cleaned up lists) ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
@@ -522,44 +558,8 @@ function renderWatchlist() {
     .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
     .slice(0, 30);
 
-  const trendData = [];
-  const marginsData = [];
-
-  activeItems.forEach(item => {
-    const id = String(item.id);
-    const node = latest?.data?.[id];
-    const p24 = past24h?.data?.[id];
-    const vol = volumes?.data?.[id] || 0;
-    
-    if (node && p24 && p24.avgHighPrice > 100) {
-      const current = node.high || node.avgHighPrice;
-      const past = p24.avgHighPrice;
-      if (current && past) {
-        trendData.push({ item, pct: (current - past) / past });
-      }
-    }
-
-    if (vol > 5000 && node && node.high && node.low) {
-      const tax = calculateTax(node.high);
-      const margin = node.high - node.low - tax;
-      if (margin > 0) {
-        marginsData.push({ item, margin });
-      }
-    }
-  });
-
-  trendData.sort((a, b) => b.pct - a.pct);
-  const topWinners = trendData.slice(0, 30).map(t => t.item);
-  const topLosers = trendData.slice(-30).reverse().map(t => t.item);
-
-  marginsData.sort((a, b) => b.margin - a.margin);
-  const topMargins = marginsData.slice(0, 30).map(m => m.item);
-
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
-    { name: "💰 Largest Margins", items: topMargins, open: false, className: "rec-title" },
-    { name: "🚀 24H Biggest Winners", items: topWinners, open: false, className: "win-title" },
-    { name: "🩸 24H Biggest Losers", items: topLosers, open: false, className: "lose-title" },
     { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
   ];
@@ -593,31 +593,11 @@ function renderWatchlist() {
         const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
         
         let subText = "";
-        let isSpecial = false;
 
-        if (group.name === "🚀 24H Biggest Winners" || group.name === "🩸 24H Biggest Losers") {
-          const tData = trendData.find(t => t.item.id === item.id);
-          if (tData) {
-            const val = (tData.pct * 100).toFixed(1);
-            const sign = tData.pct > 0 ? "+" : "";
-            const cl = tData.pct > 0 ? "up" : "down";
-            subText = `<span class="wl-trend ${cl}">${sign}${val}%</span>`;
-            isSpecial = true;
-          }
-        } else if (group.name === "💰 Largest Margins") {
-          const mData = marginsData.find(m => m.item.id === item.id);
-          if (mData) {
-            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.margin)} gp</span>`;
-            isSpecial = true;
-          }
-        }
-        
-        if (!isSpecial) {
-          if (past24h && past24h.data && past24h.data[String(item.id)]) {
-            const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
-            if (price > pastHigh && pastHigh > 0) subText = `<span class="wl-trend up">▲</span>`;
-            else if (price < pastHigh && price > 0) subText = `<span class="wl-trend down">▼</span>`;
-          }
+        if (past24h && past24h.data && past24h.data[String(item.id)]) {
+          const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
+          if (price > pastHigh && pastHigh > 0) subText = `<span class="wl-trend up">▲</span>`;
+          else if (price < pastHigh && price > 0) subText = `<span class="wl-trend down">▼</span>`;
         }
 
         const activeClass = selected?.id === item.id ? 'active' : '';
@@ -955,6 +935,7 @@ function drawChart(series) {
     }
   }
 
+  // Vertical Selection Crosshair Rendering
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save();
@@ -968,7 +949,11 @@ function drawChart(series) {
     ctx.restore();
   }
 
+  // TOUCH & MOUSE EVENT HANDLING WITH PINCH-TO-ZOOM
   let isDragging = false, startXMouse = 0, touchMoved = false;
+  let initialPinchDist = null;
+  let initialZoom = null;
+  let isPinching = false;
 
   const handleTooltip = (clientX, clientY) => {
     const rect = c.getBoundingClientRect();
@@ -997,15 +982,30 @@ function drawChart(series) {
   };
 
   c.ontouchstart = ev => { 
-    if(ev.touches.length === 1) { 
+    if (ev.touches.length === 2) {
+      isPinching = true;
+      initialPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+      initialZoom = zoom;
+      tip.style.display = "none";
+      if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(series)); }
+    } else if (ev.touches.length === 1 && !isPinching) {
       isDragging = true; 
       touchMoved = false;
       startXMouse = ev.touches[0].clientX; 
-    } 
+    }
   };
   
   c.ontouchmove = ev => {
-    if (isDragging && ev.touches.length === 1) {
+    if (isPinching && ev.touches.length === 2) {
+      ev.preventDefault();
+      const currentPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+      zoom = Math.max(1, Math.min(20, initialZoom * (currentPinchDist / initialPinchDist)));
+      
+      const n = series.labels.length;
+      const win = Math.max(20, Math.floor(n / zoom));
+      offset = Math.max(0, Math.min(n - win, offset));
+      requestAnimationFrame(() => drawChart(series));
+    } else if (isDragging && ev.touches.length === 1 && !isPinching) {
       touchMoved = true;
       const dx = ev.touches[0].clientX - startXMouse; 
       startXMouse = ev.touches[0].clientX;
@@ -1017,12 +1017,17 @@ function drawChart(series) {
   };
 
   c.ontouchend = ev => { 
-    isDragging = false; 
-    if (!touchMoved && ev.changedTouches.length > 0) {
-      handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
-    } else {
-      tip.style.display = "none";
-      if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(series)); }
+    if (ev.touches.length < 2) {
+      isPinching = false;
+    }
+    if (ev.touches.length === 0) {
+      isDragging = false; 
+      if (!touchMoved && ev.changedTouches.length > 0 && !isPinching) {
+        handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+      } else {
+        tip.style.display = "none";
+        if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(series)); }
+      }
     }
   };
 
@@ -1045,7 +1050,7 @@ function drawChart(series) {
 
   c.onwheel = ev => {
     ev.preventDefault();
-    zoom = Math.max(1, Math.min(10, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
+    zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
     requestAnimationFrame(() => drawChart(series));
   };
 }
