@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -344,11 +344,11 @@ button, input { touch-action: manipulation; }
   <div class="content-area">
     <div class="chart-container">
       <div class="plaque-bar">
-        <div id="buyPrice" class="price-box low selected">
+        <div id="buyPrice" class="price-box low">
           <div class="price-label">Rec. Buy</div>
           <div class="price-val"><span>—</span></div>
         </div>
-        <div id="sellPrice" class="price-box high">
+        <div id="sellPrice" class="price-box high selected">
           <div class="price-label">Rec. Sell</div>
           <div class="price-val"><span>—</span></div>
         </div>
@@ -414,7 +414,9 @@ let membersOn = false;
 let fullHistorical = null;
 
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
-let activePriceBox = 'buy'; 
+
+// DEFAULT TARGET LINE TO SELL
+let activePriceBox = 'sell'; 
 let recommendedBuy = null, recommendedSell = null;
 
 const canvas = document.getElementById("chart");
@@ -550,7 +552,7 @@ function calculateTax(price) {
   return Math.min(5000000, Math.floor(price * 0.02));
 }
 
-// --- FOCUSED WATCHLIST RENDERER (Cleaned up lists) ---
+// --- FOCUSED WATCHLIST RENDERER (Cleaned up lists, utilizing Midpoint logic for accurate arrows) ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
@@ -604,10 +606,19 @@ function renderWatchlist() {
         
         let subText = "";
 
-        if (past24h && past24h.data && past24h.data[String(item.id)]) {
-          const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
-          if (price > pastHigh && pastHigh > 0) subText = `<span class="wl-trend up">▲</span>`;
-          else if (price < pastHigh && price > 0) subText = `<span class="wl-trend down">▼</span>`;
+        // True Midpoint logic for reliable Trend Arrows
+        let currentMid = null;
+        if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
+        else if (node?.high || node?.low) currentMid = node.high || node.low;
+
+        const p24 = past24h?.data?.[String(item.id)];
+        let pastMid = null;
+        if (p24?.avgHighPrice && p24?.avgLowPrice) pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
+        else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
+
+        if (currentMid !== null && pastMid !== null) {
+          if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
+          else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
         }
 
         const activeClass = selected?.id === item.id ? 'active' : '';
@@ -817,13 +828,27 @@ function drawChart(series) {
   const dataW = w * 0.85; 
   const futureW = w * 0.15; 
   
-  // Safe math fix for infinite loops!
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
   // Expose global chart properties for the event listeners
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
+
+  // IDENTIFY 24H EXTREMES FOR 5D VIEW
+  let max24hHigh = -Infinity, min24hLow = Infinity;
+  let max24hIdx = -1, min24hIdx = -1;
+
+  if (view === "5d" && L.length > 0) {
+    const latestTime = L[L.length - 1];
+    const cutoff24h = latestTime - 86400; // 24 hours in seconds
+    for (let i = 0; i < L.length; i++) {
+      if (L[i] >= cutoff24h) {
+        if (HI[i] != null && HI[i] > max24hHigh) { max24hHigh = HI[i]; max24hIdx = i; }
+        if (LO[i] != null && LO[i] < min24hLow) { min24hLow = LO[i]; min24hIdx = i; }
+      }
+    }
+  }
 
   ctx.lineWidth = 1;
   const linesY = 5;
@@ -873,7 +898,7 @@ function drawChart(series) {
     ctx.closePath(); ctx.fill();
   }
 
-  function drawDashes(arr, color) {
+  function drawDashes(arr, color, isHigh) {
     ctx.fillStyle = color;
     const dashWidth = Math.max(3, stepX * 1.4); 
     const dashHeight = 2; 
@@ -882,11 +907,30 @@ function drawChart(series) {
       const x = x0 + i * stepX;
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
+
+      // HIGHLIGHT 24H EXTREMES ON 5D VIEW
+      if (view === "5d") {
+        if (isHigh && i === max24hIdx) {
+          ctx.save();
+          ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
+          ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
+          ctx.restore();
+        } else if (!isHigh && i === min24hIdx) {
+          ctx.save();
+          ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
+          ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
+          ctx.restore();
+        }
+      }
     }
   }
   
-  drawDashes(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
-  drawDashes(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
+  drawDashes(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim(), false);
+  drawDashes(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim(), true);
 
   const maxVol = Math.max(...VO.filter(v => v > 0), 1);
   const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
@@ -945,7 +989,7 @@ function drawChart(series) {
       ctx.font = "9px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Active Target", x0 + 4, py - 3);
+      ctx.fillText("Selected Target", x0 + 4, py - 3);
       ctx.restore();
     }
   }
@@ -965,7 +1009,7 @@ function drawChart(series) {
   }
 }
 
-// --- SAFE GLOBAL EVENT LISTENERS (Stops iOS auto-zoom) ---
+// --- SAFE GLOBAL EVENT LISTENERS (Stops iOS auto-zoom entirely) ---
 let isDragging = false, startXMouse = 0, touchMoved = false;
 let initialPinchDist = null, initialZoom = null, isPinching = false;
 
