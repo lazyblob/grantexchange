@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=8">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -38,7 +38,6 @@
   --text-muted: #787B86;
   --buy-color: #E6C35C; 
   --sell-color: #26A69A; 
-  --iqr-band: rgba(120, 123, 134, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.35);
   --vol-sell: rgba(38, 166, 154, 0.35);
   --positive: #26A69A;
@@ -105,11 +104,12 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; }
 
-.brand {
+h1.brand {
+  margin: 0; padding: 0; line-height: 1;
   font-size: 15px; font-weight: 800; color: var(--text-main); cursor: pointer;
   letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px;
 }
-.brand span { color: var(--border-active); }
+h1.brand span { color: var(--border-active); }
 
 .search-group { display: flex; align-items: center; gap: 4px; }
 .sbar { position: relative; width: 200px; }
@@ -184,14 +184,14 @@ button, input { touch-action: manipulation; }
 .plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
-  padding: 4px 8px; min-width: 130px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+  padding: 4px 8px; min-width: 100px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
 .price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
 .live-val { font-weight: normal; color: var(--text-main); font-size: 9px; opacity: 0.8; text-transform: none; }
 .price-box.low .price-val { color: var(--buy-color); }
 .price-box.high .price-val { color: var(--sell-color); }
-.price-val { font-size: 13px; font-weight: bold; margin-top: 2px; }
+.price-val { font-size: 13px; font-weight: bold; margin-top: 1px; }
 
 .chart-footer {
   background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
@@ -215,7 +215,6 @@ button, input { touch-action: manipulation; }
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- CALCULATOR STYLING --- */
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
@@ -306,7 +305,7 @@ button, input { touch-action: manipulation; }
 <div class="wrap">
   <div class="top-panel">
     <div class="panel-left">
-      <div class="brand" onclick="location.reload();">GE<span>Chart</span></div>
+      <h1 class="brand" onclick="location.reload();">GE<span>Chart</span></h1>
       
       <div class="search-group">
         <div class="sbar">
@@ -375,7 +374,7 @@ button, input { touch-action: manipulation; }
         <div class="calc-header">Profit Calculator</div>
         <div class="calc-grid">
           <div class="calc-input">
-            <label>Qty</label>
+            <label>Qty (4H)</label>
             <input type="text" id="calcQty" value="1" placeholder="Limit">
           </div>
           <div class="calc-input">
@@ -421,25 +420,33 @@ const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
 
 let chartData = {};
+let isDrawing = false; // Performance throttle lock
 
-$('#btnZoomIn').onclick = () => { 
-  zoom = Math.min(20, zoom * 1.5); 
-  if(currentSeries) requestAnimationFrame(() => drawChart(currentSeries)); 
-};
+function queueDraw() {
+  if (!isDrawing && currentSeries) {
+    isDrawing = true;
+    requestAnimationFrame(() => {
+      drawChart(currentSeries);
+      isDrawing = false;
+    });
+  }
+}
+
+$('#btnZoomIn').onclick = () => { zoom = Math.min(20, zoom * 1.5); queueDraw(); };
 $('#btnZoomOut').onclick = () => { 
   zoom = Math.max(1, zoom / 1.5); 
   if(currentSeries) {
     const n = currentSeries.labels.length;
     const win = Math.max(20, Math.floor(n / zoom));
     offset = Math.max(0, Math.min(n - win, offset));
-    requestAnimationFrame(() => drawChart(currentSeries));
+    queueDraw();
   }
 };
 $('#btnZoomReset').onclick = () => { 
   zoom = 1.0; 
   if(currentSeries) {
     offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
-    requestAnimationFrame(() => drawChart(currentSeries));
+    queueDraw();
   }
 };
 
@@ -483,8 +490,8 @@ $('#calcQty').addEventListener('input', updateCalculator);
 $('#calcBuy').addEventListener('input', updateCalculator);
 $('#calcSell').addEventListener('input', updateCalculator);
 
-$('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
-$('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
+$('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); queueDraw(); };
+$('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); queueDraw(); };
 function updateSelection() {
   $('#buyPrice').classList.toggle('selected', activePriceBox === 'buy');
   $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
@@ -519,8 +526,7 @@ function resizeCanvas() {
   canvas.style.height = `${rect.height - 24}px`;
   
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  
-  if(currentSeries) drawChart(currentSeries);
+  queueDraw();
 }
 window.addEventListener('resize', resizeCanvas);
 
@@ -572,7 +578,7 @@ function renderWatchlist() {
 
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
-    { name: "📈 Highest Volume (24H)", items: topVol, open: false, className: "" },
+    { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
   ];
 
@@ -752,8 +758,8 @@ function percentile(arr, p) {
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
-  let targetBuy = rawLow + 1; 
-  let targetSell = rawHigh - 1;
+  let targetBuy = rawLow; 
+  let targetSell = rawHigh;
 
   if (series && series.high.length > 0 && series.low.length > 0) {
     const recentHighs = series.high.slice(-40).filter(x => x != null);
@@ -813,13 +819,13 @@ function drawChart(series) {
 
   const dataW = w * 0.85; 
   const futureW = w * 0.15; 
+  
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
 
-  // FIND GLOBAL MAX/MIN IN VISIBLE VIEW FOR HIGHLIGHTS
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
 
@@ -859,7 +865,6 @@ function drawChart(series) {
 
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
-  // TREND LINE
   const midPoints = [];
   for (let i = 0; i < L.length; i++) {
     if (LO[i] != null && HI[i] != null) midPoints.push({i, v: (LO[i]+HI[i])/2});
@@ -890,7 +895,6 @@ function drawChart(series) {
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
-      // HIGHLIGHT GLOBAL MAX/MIN ON ALL VIEWS
       if (isHigh && i === viewMaxIdx) {
         ctx.save();
         ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
@@ -929,32 +933,6 @@ function drawChart(series) {
     ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
 
-  function drawTrailingPrediction(arr, color) {
-    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
-    if (nonNull.length < 5) return;
-    
-    const lookback = Math.max(5, Math.floor(nonNull.length * 0.25));
-    const recent = nonNull.slice(-lookback);
-    const { slope, intercept } = linearRegression(recent.map(n=>n.i), recent.map(n=>n.v));
-    const lastPt = nonNull[nonNull.length - 1];
-    
-    const startX = x0 + lastPt.i * stepX;
-    const startY = ypx(lastPt.v, vmin, vmax, y0, h_price);
-    
-    const projectedI = (L.length - 1) + (futureW / stepX);
-    const projectedV = slope * projectedI + intercept;
-    const endX = x0 + dataW + futureW;
-    const endY = ypx(projectedV, vmin, vmax, y0, h_price);
-    
-    ctx.save();
-    ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); 
-    ctx.setLineDash([2, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.6;
-    ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
-    ctx.restore();
-  }
-  // drawTrailingPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
-  // drawTrailingPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
-
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
@@ -969,19 +947,18 @@ function drawChart(series) {
       ctx.font = "9px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Selected Target", x0 + 4, py - 3);
+      ctx.fillText("Active Target", x0 + 4, py - 3);
       ctx.restore();
     }
   }
 
-  // Draw Vertical Interactive Selection Crosshair
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(hx, y0);
     ctx.lineTo(hx, y0 + h);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.stroke();
@@ -989,38 +966,7 @@ function drawChart(series) {
   }
 }
 
-let isDragging = false, startXMouse = 0, touchMoved = false;
-let initialPinchDist = null, initialZoom = null, isPinching = false;
-
-const handleTooltip = (clientX, clientY) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = clientX - rect.left, my = clientY - rect.top;
-  const { x0, dataW, stepX, L, LO, HI, VO, y0, H } = chartData;
-  
-  if (!L || mx < x0 || mx > x0 + dataW || my < y0 || my > H) { 
-    tip.style.display = "none"; 
-    if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(currentSeries)); }
-    return; 
-  }
-  
-  const newIdx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
-  if (hoverIdx !== newIdx) {
-    hoverIdx = newIdx;
-    requestAnimationFrame(() => drawChart(currentSeries));
-  }
-  
-  tip.style.display = "block";
-  tip.style.left = (mx + 10) + "px";
-  tip.style.top = (my + 10) + "px";
-  
-  let hLow = LO[hoverIdx]; let hHigh = HI[hoverIdx];
-
-  tip.innerHTML = `<strong>${new Date(L[hoverIdx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
-    <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
-    <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
-    <span style="color:var(--text-muted)">Volume: ${fmtNum(VO[hoverIdx])}</span>`;
-};
-
+// SECURE INTERACTIVITY EVENT LISTENERS
 canvas.addEventListener('touchstart', ev => {
   if (ev.touches.length === 2) {
     ev.preventDefault(); 
@@ -1028,7 +974,7 @@ canvas.addEventListener('touchstart', ev => {
     initialPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
     initialZoom = zoom;
     tip.style.display = "none";
-    if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(currentSeries)); }
+    if (hoverIdx !== null) { hoverIdx = null; queueDraw(); }
   } else if (ev.touches.length === 1 && !isPinching) {
     isDragging = true; 
     touchMoved = false;
@@ -1041,11 +987,10 @@ canvas.addEventListener('touchmove', ev => {
     ev.preventDefault(); 
     const currentPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
     zoom = Math.max(1, Math.min(20, initialZoom * (currentPinchDist / initialPinchDist)));
-    
     const { n } = chartData;
     const win = Math.max(20, Math.floor(n / zoom));
     offset = Math.max(0, Math.min(n - win, offset));
-    requestAnimationFrame(() => drawChart(currentSeries));
+    queueDraw();
   } else if (isDragging && ev.touches.length === 1 && !isPinching) {
     ev.preventDefault(); 
     touchMoved = true;
@@ -1054,7 +999,7 @@ canvas.addEventListener('touchmove', ev => {
     const { dataW, win, n } = chartData;
     offset -= dx / (dataW / win);
     offset = Math.max(0, Math.min(n - win, offset));
-    requestAnimationFrame(() => drawChart(currentSeries));
+    queueDraw();
   }
 }, { passive: false });
 
@@ -1066,7 +1011,7 @@ canvas.addEventListener('touchend', ev => {
       handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
     } else {
       tip.style.display = "none";
-      if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(currentSeries)); }
+      if (hoverIdx !== null) { hoverIdx = null; queueDraw(); }
     }
   }
 }, { passive: false });
@@ -1074,8 +1019,7 @@ canvas.addEventListener('touchend', ev => {
 canvas.addEventListener('mousedown', ev => { isDragging = true; startXMouse = ev.clientX; });
 canvas.addEventListener('mouseup', () => { isDragging = false; });
 canvas.addEventListener('mouseleave', () => { 
-  isDragging = false; tip.style.display = "none"; hoverIdx = null;
-  requestAnimationFrame(() => drawChart(currentSeries));
+  isDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw();
 });
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
@@ -1084,7 +1028,7 @@ canvas.addEventListener('mousemove', ev => {
     const { dataW, win, n } = chartData;
     offset -= dx / (dataW / win);
     offset = Math.max(0, Math.min(n - win, offset));
-    requestAnimationFrame(() => drawChart(currentSeries));
+    queueDraw();
     return;
   }
   handleTooltip(ev.clientX, ev.clientY);
@@ -1093,7 +1037,7 @@ canvas.addEventListener('mousemove', ev => {
 canvas.addEventListener('wheel', ev => {
   ev.preventDefault();
   zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
-  requestAnimationFrame(() => drawChart(currentSeries));
+  queueDraw();
 }, { passive: false });
 
 async function setItem(m) {
