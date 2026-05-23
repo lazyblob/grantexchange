@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -281,8 +281,8 @@ body {
       </div>
 
       <div class="toolbar" id="timeToolbar">
-        <button data-view="1d" class="active view-btn">1D<span class="pct-chg">...</span></button>
-        <button data-view="5d" class="view-btn">5D<span class="pct-chg">...</span></button>
+        <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
+        <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
         <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
         <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
         <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
@@ -325,7 +325,7 @@ body {
 
     <div class="watchlist-container">
       <div class="watchlist-header">
-        <span>Market Scanner</span>
+        <span>Market Scanner (24H)</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
       <div class="watchlist-content" id="watchlistContent"></div>
@@ -337,7 +337,8 @@ const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
-let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
+let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
+let hoverIdx = null; // Global tracker for interactive crosshair
 let membersOn = false;
 let fullHistorical = null;
 
@@ -433,9 +434,9 @@ function renderWatchlist() {
     .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
     .slice(0, 30);
 
-  // 4. Trend Analyzers (Winners / Losers / Recommendations)
+  // 4. Trend Analyzers (Winners / Losers / Margins)
   const trendData = [];
-  const recsData = [];
+  const marginsData = [];
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -452,12 +453,12 @@ function renderWatchlist() {
       }
     }
 
-    // Recommendations (Require volume for liquidity safety)
+    // Largest Margins (Require volume for liquidity safety)
     if (vol > 5000 && node && node.high && node.low) {
       const tax = calculateTax(node.high);
-      const profit = node.high - node.low - tax;
-      if (profit > 0) {
-        recsData.push({ item, roi: profit / node.low });
+      const margin = node.high - node.low - tax;
+      if (margin > 0) {
+        marginsData.push({ item, margin });
       }
     }
   });
@@ -466,14 +467,14 @@ function renderWatchlist() {
   const topWinners = trendData.slice(0, 30).map(t => t.item);
   const topLosers = trendData.slice(-30).reverse().map(t => t.item);
 
-  recsData.sort((a, b) => b.roi - a.roi);
-  const topRecs = recsData.slice(0, 30).map(r => r.item);
+  marginsData.sort((a, b) => b.margin - a.margin);
+  const topMargins = marginsData.slice(0, 30).map(m => m.item);
 
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
-    { name: "🔥 Recommendations", items: topRecs, open: false, className: "rec-title" },
-    { name: "🚀 Biggest Winners", items: topWinners, open: false, className: "win-title" },
-    { name: "🩸 Biggest Losers", items: topLosers, open: false, className: "lose-title" },
+    { name: "💰 Largest Margins", items: topMargins, open: false, className: "rec-title" },
+    { name: "🚀 24H Biggest Winners", items: topWinners, open: false, className: "win-title" },
+    { name: "🩸 24H Biggest Losers", items: topLosers, open: false, className: "lose-title" },
     { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
   ];
@@ -509,8 +510,7 @@ function renderWatchlist() {
         let subText = "";
         let isSpecial = false;
 
-        // Custom formatting based on category
-        if (group.name === "🚀 Biggest Winners" || group.name === "🩸 Biggest Losers") {
+        if (group.name === "🚀 24H Biggest Winners" || group.name === "🩸 24H Biggest Losers") {
           const tData = trendData.find(t => t.item.id === item.id);
           if (tData) {
             const val = (tData.pct * 100).toFixed(1);
@@ -519,7 +519,13 @@ function renderWatchlist() {
             subText = `<span class="wl-trend ${cl}">${sign}${val}%</span>`;
             isSpecial = true;
           }
-        } 
+        } else if (group.name === "💰 Largest Margins") {
+          const mData = marginsData.find(m => m.item.id === item.id);
+          if (mData) {
+            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.margin)} gp</span>`;
+            isSpecial = true;
+          }
+        }
         
         if (!isSpecial) {
           if (past24h && past24h.data && past24h.data[String(item.id)]) {
@@ -673,14 +679,12 @@ function calculateIQR(series, window = 26) {
   return { lowIQR, highIQR };
 }
 
-// --- CONSERVATIVE TRADE ENGINE LOGIC ---
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
-  let recBuy = rawLow + 1; // Standard priority undercut
+  let recBuy = rawLow + 1; 
   let recSell = rawHigh - 1;
 
-  // Use Median (50th percentile) for a highly conservative sell target due to delayed data
   if (series && series.high.length > 0) {
     const recentHighs = series.high.slice(-40).filter(x => x != null);
     if (recentHighs.length > 5) {
@@ -692,14 +696,11 @@ function runTradeEngine(rawLow, rawHigh, series) {
   let tax = calculateTax(recSell);
   let profit = recSell - recBuy - tax;
 
-  // Enforce a minimum 1.5% Gross Margin spread if profit is negative or too tight
   if (profit <= 0) {
     let safeTargetFloor = Math.ceil((recBuy * 1.015) / 0.98); 
     if (safeTargetFloor * 0.02 >= 5000000) {
       safeTargetFloor = Math.ceil(recBuy + 5000000 + (recBuy * 0.015));
     }
-    
-    // Ensure this floor doesn't vastly exceed historical reality
     if (series && series.high.length > 0) {
       const p80High = Math.ceil(percentile(series.high.slice(-40).filter(x => x != null), 80));
       if (p80High > safeTargetFloor) safeTargetFloor = Math.min(safeTargetFloor, p80High);
@@ -869,27 +870,46 @@ function drawChart(series) {
     }
   }
 
-  // INTERACTIVE TOUCH / MOUSE LOGIC FOR TOOLTIP
+  // Draw Interactive Vertical Selection Crosshair
+  if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
+    const hx = x0 + hoverIdx * stepX;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(hx, y0);
+    ctx.lineTo(hx, y0 + h);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   let isDragging = false, startXMouse = 0, touchMoved = false;
 
   const handleTooltip = (clientX, clientY) => {
     const rect = c.getBoundingClientRect();
     const mx = clientX - rect.left, my = clientY - rect.top;
-    if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; return; }
-    const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
+    if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { 
+      tip.style.display = "none"; 
+      if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(series)); }
+      return; 
+    }
+    const newIdx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
+    if (hoverIdx !== newIdx) {
+      hoverIdx = newIdx;
+      requestAnimationFrame(() => drawChart(series));
+    }
+    
     tip.style.display = "block";
     tip.style.left = (mx + 10) + "px";
     tip.style.top = (my + 10) + "px";
     
-    let hLow = LO[idx]; let hHigh = HI[idx];
-    let hTax = calculateTax(hHigh || 0);
-    let hProf = (hHigh && hLow) ? (hHigh - hLow - hTax) : 0;
-    let profHtml = hProf > 0 ? `<span style="color:var(--positive)">+${fmtNum(hProf)}</span>` : `<span style="color:var(--negative)">${fmtNum(hProf)}</span>`;
+    let hLow = LO[hoverIdx]; let hHigh = HI[hoverIdx];
 
-    tip.innerHTML = `<strong>${new Date(L[idx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
+    tip.innerHTML = `<strong>${new Date(L[hoverIdx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
       <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
       <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
-      <span style="color:var(--text-muted)">Profit: ${profHtml}</span>`;
+      <span style="color:var(--text-muted)">Volume: ${fmtNum(VO[hoverIdx])}</span>`;
   };
 
   c.ontouchstart = ev => { 
@@ -914,15 +934,20 @@ function drawChart(series) {
 
   c.ontouchend = ev => { 
     isDragging = false; 
-    // If it was just a tap without dragging, calculate position and persist tooltip
     if (!touchMoved && ev.changedTouches.length > 0) {
       handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+    } else {
+      tip.style.display = "none";
+      if (hoverIdx !== null) { hoverIdx = null; requestAnimationFrame(() => drawChart(series)); }
     }
   };
 
   c.onmousedown = ev => { isDragging = true; startXMouse = ev.clientX; };
-  c.onmouseup = () => isDragging = false;
-  c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
+  c.onmouseup = () => { isDragging = false; };
+  c.onmouseleave = () => { 
+    isDragging = false; tip.style.display = "none"; hoverIdx = null;
+    requestAnimationFrame(() => drawChart(series));
+  };
   c.onmousemove = ev => {
     if (isDragging) {
       const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
