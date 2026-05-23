@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=4">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=5">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -198,6 +198,30 @@ body {
   width: 280px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
+
+/* --- CALCULATOR STYLING --- */
+.calc-container {
+  background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.calc-header { font-size: 10px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.calc-input { display: flex; flex-direction: column; gap: 4px; }
+.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.calc-input input { 
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); 
+  color: var(--text-main); border-radius: 4px; padding: 5px 6px; font-size: 11px; 
+  outline: none; font-family: inherit;
+}
+.calc-input input:focus { border-color: var(--border-active); }
+.calc-result { 
+  display: flex; justify-content: space-between; align-items: center; 
+  font-size: 11px; background: rgba(0,0,0,0.25); padding: 6px 8px; 
+  border-radius: 4px; border: 1px solid var(--border-main);
+}
+.calc-result .res-profit { font-weight: bold; font-size: 12px; }
+.calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
+
 .watchlist-header {
   padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
   font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
@@ -246,8 +270,10 @@ body {
   .brand { font-size: 13px; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 240px; font-size: 11px; }
+  .watchlist-container { width: 250px; font-size: 11px; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
+  .calc-container { padding: 6px 8px; }
+  .calc-grid { gap: 4px; }
 }
 </style>
 </head>
@@ -324,6 +350,29 @@ body {
     </div>
 
     <div class="watchlist-container">
+      
+      <div class="calc-container">
+        <div class="calc-header">Profit Calculator</div>
+        <div class="calc-grid">
+          <div class="calc-input">
+            <label>Qty</label>
+            <input type="text" id="calcQty" value="1" placeholder="1">
+          </div>
+          <div class="calc-input">
+            <label>Buy (ea)</label>
+            <input type="text" id="calcBuy" placeholder="0">
+          </div>
+          <div class="calc-input">
+            <label>Sell (ea)</label>
+            <input type="text" id="calcSell" placeholder="0">
+          </div>
+        </div>
+        <div class="calc-result" id="calcResult" title="Net Profit after Tax">
+          <span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span>
+          <span class="res-tax">Tax: 0</span>
+        </div>
+      </div>
+
       <div class="watchlist-header">
         <span>Market Scanner (24H)</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
@@ -338,7 +387,7 @@ const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
 let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
-let hoverIdx = null; // Global tracker for interactive crosshair
+let hoverIdx = null; 
 let membersOn = false;
 let fullHistorical = null;
 
@@ -350,6 +399,48 @@ const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
 
+// --- CALCULATOR LOGIC ---
+function parseOSRSNumber(str) {
+  if (!str) return 0;
+  let val = String(str).toLowerCase().replace(/,/g, '');
+  let multi = 1;
+  if (val.endsWith('k')) { multi = 1000; val = val.slice(0, -1); }
+  else if (val.endsWith('m')) { multi = 1000000; val = val.slice(0, -1); }
+  else if (val.endsWith('b')) { multi = 1000000000; val = val.slice(0, -1); }
+  const num = parseFloat(val);
+  return isNaN(num) ? 0 : Math.floor(num * multi);
+}
+
+function updateCalculator() {
+  const qty = parseOSRSNumber($('#calcQty').value);
+  const buy = parseOSRSNumber($('#calcBuy').value);
+  const sell = parseOSRSNumber($('#calcSell').value);
+
+  if (qty <= 0 || buy <= 0 || sell <= 0) {
+    $('#calcResult').innerHTML = `<span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span><span class="res-tax">Tax: 0</span>`;
+    return;
+  }
+
+  const taxPerItem = Math.min(5000000, Math.floor(sell * 0.02));
+  const profitPerItem = sell - buy - taxPerItem;
+  const totalProfit = profitPerItem * qty;
+  const totalTax = taxPerItem * qty;
+
+  const color = totalProfit > 0 ? 'var(--positive)' : (totalProfit < 0 ? 'var(--negative)' : 'var(--text-main)');
+  const sign = totalProfit > 0 ? '+' : '';
+
+  $('#calcResult').innerHTML = `
+    <span>Profit: <span class="res-profit" style="color:${color}">${sign}${abbreviateNumber(totalProfit)}</span></span>
+    <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
+  `;
+  $('#calcResult').title = `${sign}${totalProfit.toLocaleString()} gp net profit`;
+}
+
+$('#calcQty').addEventListener('input', updateCalculator);
+$('#calcBuy').addEventListener('input', updateCalculator);
+$('#calcSell').addEventListener('input', updateCalculator);
+
+// --- INTERACTIVE UI LOGIC ---
 $('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 $('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); if(currentSeries) drawChart(currentSeries); };
 function updateSelection() {
@@ -388,7 +479,7 @@ const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
   if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
-  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
   if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
   return num.toLocaleString();
 };
@@ -421,20 +512,16 @@ function renderWatchlist() {
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
   $("#wlCount").textContent = `${activeItems.length} Tracked`;
 
-  // 1. Favorites
   const favs = activeItems.filter(item => favorites.includes(String(item.id)));
 
-  // 2. Highest Priced
   const topPriced = [...activeItems]
     .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
     .slice(0, 30);
 
-  // 3. Highest Volume
   const topVol = [...activeItems]
     .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
     .slice(0, 30);
 
-  // 4. Trend Analyzers (Winners / Losers / Margins)
   const trendData = [];
   const marginsData = [];
 
@@ -444,7 +531,6 @@ function renderWatchlist() {
     const p24 = past24h?.data?.[id];
     const vol = volumes?.data?.[id] || 0;
     
-    // Winners / Losers (Filter out low value noise < 100gp)
     if (node && p24 && p24.avgHighPrice > 100) {
       const current = node.high || node.avgHighPrice;
       const past = p24.avgHighPrice;
@@ -453,7 +539,6 @@ function renderWatchlist() {
       }
     }
 
-    // Largest Margins (Require volume for liquidity safety)
     if (vol > 5000 && node && node.high && node.low) {
       const tax = calculateTax(node.high);
       const margin = node.high - node.low - tax;
@@ -870,7 +955,6 @@ function drawChart(series) {
     }
   }
 
-  // Draw Interactive Vertical Selection Crosshair
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save();
@@ -1007,6 +1091,10 @@ async function setItem(m) {
   
   $("#buyPrice .price-val span").textContent = fmtGp(recommendedBuy);
   $("#sellPrice .price-val span").textContent = fmtGp(recommendedSell);
+
+  $("#calcBuy").value = recommendedBuy;
+  $("#calcSell").value = recommendedSell;
+  updateCalculator();
 
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   resizeCanvas(); 
