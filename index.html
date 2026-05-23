@@ -3,8 +3,21 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GE Chart">
+<meta name="application-name" content="GE Chart">
+<meta name="theme-color" content="#0B0E14">
+
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
+
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=3">
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -14,26 +27,20 @@
 </script>
 <style>
 :root {
-  /* TradingView Deep Slate Theming */
   --bg-base: #0B0E14; 
   --bg-chart: #131722; 
   --bg-panel: #1E222D; 
   --bg-input: #2A2E39; 
-  
   --border-main: #2A2E39;
   --border-light: #363C4E;
   --border-active: #2962FF; 
-  
   --text-main: #D1D4DC;
   --text-muted: #787B86;
-  
-  /* Custom Visuals */
   --buy-color: #E6C35C; 
   --sell-color: #26A69A; 
   --iqr-band: rgba(120, 123, 134, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.35);
   --vol-sell: rgba(38, 166, 154, 0.35);
-  
   --positive: #26A69A;
   --negative: #EF5350;
   --fav-gold: #FFB300;
@@ -82,7 +89,6 @@ body {
   gap: 8px; 
 }
 
-/* Premium Compact Header Panel */
 .top-panel {
   background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
   padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
@@ -96,7 +102,6 @@ body {
 }
 .brand span { color: var(--border-active); }
 
-/* Search & Fav Group */
 .search-group { display: flex; align-items: center; gap: 4px; }
 .sbar { position: relative; width: 200px; }
 .sbar input {
@@ -117,7 +122,6 @@ body {
 .fav-btn svg { width: 16px; height: 16px; fill: none; }
 .fav-btn.active svg { fill: currentColor; }
 
-/* Autocomplete Suggestion Dropdown */
 .suggest { 
   margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; 
   max-height: 200px; overflow-y: auto; background: var(--bg-panel); 
@@ -130,7 +134,6 @@ body {
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
-/* Timeframe Selection */
 .toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
 .toolbar button {
   background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
@@ -144,7 +147,6 @@ body {
 .pct-chg.negative { color: var(--negative); }
 .pct-chg.neutral { color: var(--text-muted); }
 
-/* Game Toggles */
 .mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; }
 .mode-pill button {
   background: transparent; border: none; color: var(--text-muted); padding: 4px 8px;
@@ -154,7 +156,6 @@ body {
 
 .status-text { font-size: 11px; color: var(--text-muted); }
 
-/* Main Chart & Watchlist Panel Layout (IRONCLAD FLEXBOX) */
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 
 .chart-container {
@@ -162,9 +163,8 @@ body {
   background: var(--bg-chart); border: 1px solid var(--border-main);
   border-radius: 6px; position: relative; overflow: hidden;
 }
-.chart { flex: 1; width: 100%; display: block; }
+.chart { flex: 1; width: 100%; display: block; touch-action: none; }
 
-/* Target Info Plaques */
 .plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
@@ -176,7 +176,6 @@ body {
 .price-box.high .price-val { color: var(--sell-color); }
 .price-val { font-size: 13px; font-weight: bold; margin-top: 1px; }
 
-/* Legend Sub-Footer */
 .chart-footer {
   background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
   display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center;
@@ -188,7 +187,6 @@ body {
 .legend .high .legend-dash { background: var(--sell-color); }
 .legend .iqr-band .legend-box { background: rgba(120, 123, 134, 0.2); border: 1px solid var(--border-light); }
 
-/* Dynamic Tooltip */
 .chart-tip { 
   position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); 
   padding: 8px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; 
@@ -196,7 +194,6 @@ body {
 }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 
-/* --- WATCHLIST SIDEBAR STYLING --- */
 .watchlist-container {
   width: 280px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
@@ -216,6 +213,9 @@ body {
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.fav-title { color: var(--fav-gold); }
+.category-title.rec-title { color: #FF9800; }
+.category-title.win-title { color: var(--positive); }
+.category-title.lose-title { color: var(--negative); }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
@@ -230,13 +230,12 @@ body {
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
 .wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wl-item-right { display: flex; align-items: center; gap: 4px; }
+.wl-item-right { display: flex; align-items: center; gap: 4px; text-align: right; }
 .wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
 .wl-trend { font-size: 9px; }
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 
-/* TARGETED MOBILE LANDSCAPE OPTIMIZATIONS */
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
   .top-panel { padding: 3px 6px; }
@@ -247,7 +246,7 @@ body {
   .brand { font-size: 13px; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 220px; font-size: 11px; }
+  .watchlist-container { width: 240px; font-size: 11px; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
 }
 </style>
@@ -260,11 +259,10 @@ body {
     <line x1="12" y1="18" x2="12.01" y2="18"></line>
   </svg>
   <h2>Please Rotate Device</h2>
-  <p>GEChart is optimized for landscape viewing.</p>
+  <p>GE Chart is optimized for landscape viewing.</p>
 </div>
 
 <div class="wrap">
-  
   <div class="top-panel">
     <div class="panel-left">
       <div class="brand" onclick="location.reload();">GE<span>Chart</span></div>
@@ -303,7 +301,6 @@ body {
 
   <div class="content-area">
     <div class="chart-container">
-      
       <div class="plaque-bar">
         <div id="buyPrice" class="price-box low selected">
           <div class="price-label">Rec. Buy</div>
@@ -328,27 +325,23 @@ body {
 
     <div class="watchlist-container">
       <div class="watchlist-header">
-        <span>Market Watchlist</span>
+        <span>Market Scanner</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
-      <div class="watchlist-content" id="watchlistContent">
-        </div>
+      <div class="watchlist-content" id="watchlistContent"></div>
     </div>
   </div>
-
 </div>
 <script>
 const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
-let mapping = [], latest = null, past24h = null, selected = null;
+let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
 let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 let membersOn = false;
 let fullHistorical = null;
 
-// Custom Favorites state
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
-
 let activePriceBox = 'buy'; 
 let recommendedBuy = null, recommendedSell = null;
 
@@ -363,7 +356,6 @@ function updateSelection() {
   $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
 }
 
-// Favorite Button Handler
 $('#btnFav').onclick = () => {
   if (!selected) return;
   const idStr = String(selected.id);
@@ -408,6 +400,7 @@ async function jget(url) {
 const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
 const load24h = () => jget(PRICES_API + "/24h"); 
+const loadVolumes = () => jget(PRICES_API + "/volumes");
 const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
@@ -415,70 +408,90 @@ function bigIconUrl(name) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`;
 }
 
-// --- MASSIVE ITEM CLASSIFIER ENGINE ---
-function classifyItem(name) {
-  const n = name.toLowerCase();
-  if (/(sword|whip|rapier|fang|dagger|mace|scimitar|halberd|spear|hasta|claws|axe|bow|arrow|dart|knife|javelin|bolt|chinchompa|blowpipe|staff|wand|trident|bludgeon)/.test(n)) return "Weapons & Ammo";
-  if (/(helm|plate|shield|legs|skirt|chainbody|hide|tassets|cuirass|faceguard|boots|gloves|defender|ahrim|karil|dharok|torag|guthan|verac|ancestral|justiciar|bandos|armadyl)/.test(n)) return "Armor & Gear";
-  if (/(amulet|ring|necklace|bracelet|gem|diamond|ruby|sapphire|emerald|onyx|zenyte|glory|fury|anguish|torture|occult)/.test(n)) return "Gems & Jewelry";
-  if (/(potion|brew|restore|herb|weed|seed|guam|marrentill|tarromin|harralander|ranarr|toadflax|irit|avantoe|kwuarm|snapdragon|cadantine|lantadyme|dwarf weed|torstol|vial|dust)/.test(n)) return "Herblore & Seeds";
-  if (/(raw|cooked|fish|shark|manta|karambwan|anglerfish|food|pie|cake|potato|stew|pizza|meat)/.test(n)) return "Food & Fishing";
-  if (/(bar|ore|coal|mithril|adamant|runite|gold|silver|copper|tin)/.test(n)) return "Bars & Ores";
-  if (/(log|plank|tree|teak|mahogany|yew|magic|dart tip|arrowtips)/.test(n)) return "Wood & Fletching";
-  if (/(rune|talisman|tiara)/.test(n) && !n.includes("rune plate") && !n.includes("rune sword")) return "Runes & Magic";
-  if (/(bone|hide|leather|scale|feather|ashes|ensouled)/.test(n)) return "Monster Drops";
-  return "Miscellaneous";
+function calculateTax(price) {
+  return Math.min(5000000, Math.floor(price * 0.02));
 }
 
-// --- OPTIMIZED WATCHLIST RENDERER (ALL ITEMS & FAVORITES) ---
+// --- FOCUSED ACTION WATCHLIST RENDERER ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
   
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
-  $("#wlCount").textContent = `${activeItems.length} Items`;
+  $("#wlCount").textContent = `${activeItems.length} Tracked`;
 
-  const categories = {
-    "⭐ Favorites": [],
-    "Weapons & Ammo": [], "Armor & Gear": [], "Gems & Jewelry": [], "Runes & Magic": [],
-    "Herblore & Seeds": [], "Food & Fishing": [], "Bars & Ores": [], 
-    "Wood & Fletching": [], "Monster Drops": [], "Miscellaneous": []
-  };
+  // 1. Favorites
+  const favs = activeItems.filter(item => favorites.includes(String(item.id)));
+
+  // 2. Highest Priced
+  const topPriced = [...activeItems]
+    .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
+    .slice(0, 30);
+
+  // 3. Highest Volume
+  const topVol = [...activeItems]
+    .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
+    .slice(0, 30);
+
+  // 4. Trend Analyzers (Winners / Losers / Recommendations)
+  const trendData = [];
+  const recsData = [];
 
   activeItems.forEach(item => {
-    // Populate Favorites tab
-    if (favorites.includes(String(item.id))) {
-      categories["⭐ Favorites"].push(item);
+    const id = String(item.id);
+    const node = latest?.data?.[id];
+    const p24 = past24h?.data?.[id];
+    const vol = volumes?.data?.[id] || 0;
+    
+    // Winners / Losers (Filter out low value noise < 100gp)
+    if (node && p24 && p24.avgHighPrice > 100) {
+      const current = node.high || node.avgHighPrice;
+      const past = p24.avgHighPrice;
+      if (current && past) {
+        trendData.push({ item, pct: (current - past) / past });
+      }
     }
-    // Populate standard tabs
-    const c = classifyItem(item.name);
-    if(categories[c]) categories[c].push(item);
+
+    // Recommendations (Require volume for liquidity safety)
+    if (vol > 5000 && node && node.high && node.low) {
+      const tax = calculateTax(node.high);
+      const profit = node.high - node.low - tax;
+      if (profit > 0) {
+        recsData.push({ item, roi: profit / node.low });
+      }
+    }
   });
+
+  trendData.sort((a, b) => b.pct - a.pct);
+  const topWinners = trendData.slice(0, 30).map(t => t.item);
+  const topLosers = trendData.slice(-30).reverse().map(t => t.item);
+
+  recsData.sort((a, b) => b.roi - a.roi);
+  const topRecs = recsData.slice(0, 30).map(r => r.item);
+
+  const groups = [
+    { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
+    { name: "🔥 Recommendations", items: topRecs, open: false, className: "rec-title" },
+    { name: "🚀 Biggest Winners", items: topWinners, open: false, className: "win-title" },
+    { name: "🩸 Biggest Losers", items: topLosers, open: false, className: "lose-title" },
+    { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
+    { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
+  ];
 
   const fragment = document.createDocumentFragment();
 
-  Object.keys(categories).forEach(cat => {
-    const list = categories[cat];
-    if(list.length === 0) return;
+  groups.forEach(group => {
+    if (group.items.length === 0 && group.name !== "⭐ Favorites") return;
 
-    list.sort((a,b) => {
-      const pA = latest?.data?.[String(a.id)]?.high ?? 0;
-      const pB = latest?.data?.[String(b.id)]?.high ?? 0;
-      return pB - pA;
-    });
-
-    const isFav = cat === "⭐ Favorites";
     const groupDiv = document.createElement("div");
     groupDiv.className = "category-group";
 
     const titleDiv = document.createElement("div");
-    titleDiv.className = `category-title ${isFav ? 'fav-title' : ''}`;
-    
-    // Default: Only Favorites tab starts expanded
-    titleDiv.innerHTML = `<span>${cat}</span><span>${isFav ? "▼" : "▶"}</span>`;
+    titleDiv.className = `category-title ${group.className}`;
+    titleDiv.innerHTML = `<span>${group.name}</span><span>${group.open ? "▼" : "▶"}</span>`;
     
     const listDiv = document.createElement("div");
-    listDiv.className = `category-list ${isFav ? "" : "collapsed"}`;
+    listDiv.className = `category-list ${group.open ? "" : "collapsed"}`;
 
     titleDiv.onclick = () => {
       listDiv.classList.toggle("collapsed");
@@ -486,32 +499,52 @@ function renderWatchlist() {
     };
 
     let innerListHTML = "";
-    list.forEach(item => {
-      const node = latest?.data?.[String(item.id)];
-      const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-      
-      let trendHtml = "";
-      if (past24h && past24h.data && past24h.data[String(item.id)]) {
-        const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
-        if (price > pastHigh && pastHigh > 0) trendHtml = `<span class="wl-trend up">▲</span>`;
-        else if (price < pastHigh && price > 0) trendHtml = `<span class="wl-trend down">▼</span>`;
-      }
+    if (group.items.length === 0) {
+      innerListHTML = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">Empty</div>`;
+    } else {
+      group.items.forEach(item => {
+        const node = latest?.data?.[String(item.id)];
+        const price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+        
+        let subText = "";
+        let isSpecial = false;
 
-      const activeClass = selected?.id === item.id ? 'active' : '';
-      
-      innerListHTML += `
-        <div class="wl-item ${activeClass}" data-id="${item.id}">
-          <div class="wl-item-left">
-            <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
-            <span class="wl-item-name">${item.name}</span>
+        // Custom formatting based on category
+        if (group.name === "🚀 Biggest Winners" || group.name === "🩸 Biggest Losers") {
+          const tData = trendData.find(t => t.item.id === item.id);
+          if (tData) {
+            const val = (tData.pct * 100).toFixed(1);
+            const sign = tData.pct > 0 ? "+" : "";
+            const cl = tData.pct > 0 ? "up" : "down";
+            subText = `<span class="wl-trend ${cl}">${sign}${val}%</span>`;
+            isSpecial = true;
+          }
+        } 
+        
+        if (!isSpecial) {
+          if (past24h && past24h.data && past24h.data[String(item.id)]) {
+            const pastHigh = past24h.data[String(item.id)].avgHighPrice || 0;
+            if (price > pastHigh && pastHigh > 0) subText = `<span class="wl-trend up">▲</span>`;
+            else if (price < pastHigh && price > 0) subText = `<span class="wl-trend down">▼</span>`;
+          }
+        }
+
+        const activeClass = selected?.id === item.id ? 'active' : '';
+        
+        innerListHTML += `
+          <div class="wl-item ${activeClass}" data-id="${item.id}">
+            <div class="wl-item-left">
+              <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
+              <span class="wl-item-name">${item.name}</span>
+            </div>
+            <div class="wl-item-right">
+              <span class="wl-item-price">${abbreviateNumber(price)}</span>
+              ${subText}
+            </div>
           </div>
-          <div class="wl-item-right">
-            <span class="wl-item-price">${abbreviateNumber(price)}</span>
-            ${trendHtml}
-          </div>
-        </div>
-      `;
-    });
+        `;
+      });
+    }
 
     listDiv.innerHTML = innerListHTML;
     groupDiv.appendChild(titleDiv);
@@ -521,8 +554,7 @@ function renderWatchlist() {
 
   container.appendChild(fragment);
 
-  // Delegate click events efficiently
-  container.querySelectorAll('.wl-item').forEach(el => {
+  container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = () => {
       const id = el.getAttribute('data-id');
       const m = mapping.find(x => String(x.id) === String(id));
@@ -641,42 +673,36 @@ function calculateIQR(series, window = 26) {
   return { lowIQR, highIQR };
 }
 
-function calculateTax(price) {
-  return Math.min(5000000, Math.floor(price * 0.02));
-}
-
+// --- CONSERVATIVE TRADE ENGINE LOGIC ---
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
-  let recBuy = rawLow;
-  let recSell = rawHigh;
+  let recBuy = rawLow + 1; // Standard priority undercut
+  let recSell = rawHigh - 1;
 
-  if (rawHigh - rawLow > 2) recBuy = rawLow + 1; 
-
+  // Use Median (50th percentile) for a highly conservative sell target due to delayed data
   if (series && series.high.length > 0) {
     const recentHighs = series.high.slice(-40).filter(x => x != null);
     if (recentHighs.length > 5) {
-      const p75High = Math.ceil(percentile(recentHighs, 75));
-      if (rawHigh > p75High * 1.02) recSell = p75High;
-      else recSell = Math.min(rawHigh - 1, p75High);
-    } else {
-      recSell = rawHigh - 1;
+      const medianHigh = Math.ceil(percentile(recentHighs, 50));
+      recSell = Math.min(rawHigh - 1, medianHigh);
     }
-  } else {
-    recSell = rawHigh - 1;
   }
 
   let tax = calculateTax(recSell);
   let profit = recSell - recBuy - tax;
 
+  // Enforce a minimum 1.5% Gross Margin spread if profit is negative or too tight
   if (profit <= 0) {
-    let safeTargetFloor = Math.ceil((recBuy * 1.015) / 0.98);
+    let safeTargetFloor = Math.ceil((recBuy * 1.015) / 0.98); 
     if (safeTargetFloor * 0.02 >= 5000000) {
-      safeTargetFloor = Math.ceil(recBuy + 5000000 + (recBuy * 0.01));
+      safeTargetFloor = Math.ceil(recBuy + 5000000 + (recBuy * 0.015));
     }
+    
+    // Ensure this floor doesn't vastly exceed historical reality
     if (series && series.high.length > 0) {
-      const p90High = Math.ceil(percentile(series.high.slice(-40).filter(x => x != null), 90));
-      if (p90High > safeTargetFloor) safeTargetFloor = Math.min(safeTargetFloor, p90High);
+      const p80High = Math.ceil(percentile(series.high.slice(-40).filter(x => x != null), 80));
+      if (p80High > safeTargetFloor) safeTargetFloor = Math.min(safeTargetFloor, p80High);
     }
     recSell = safeTargetFloor;
   }
@@ -843,35 +869,12 @@ function drawChart(series) {
     }
   }
 
-  let isDragging = false, startXMouse = 0;
-  
-  c.ontouchstart = ev => { 
-    if(ev.touches.length === 1) { isDragging = true; startXMouse = ev.touches[0].clientX; } 
-  };
-  c.ontouchend = () => isDragging = false;
-  c.ontouchmove = ev => {
-    if (isDragging && ev.touches.length === 1) {
-      const dx = ev.touches[0].clientX - startXMouse; startXMouse = ev.touches[0].clientX;
-      offset -= dx / (dataW / win);
-      offset = Math.max(0, Math.min(n - win, offset));
-      requestAnimationFrame(() => drawChart(series));
-      return;
-    }
-  };
+  // INTERACTIVE TOUCH / MOUSE LOGIC FOR TOOLTIP
+  let isDragging = false, startXMouse = 0, touchMoved = false;
 
-  c.onmousedown = ev => { isDragging = true; startXMouse = ev.clientX; };
-  c.onmouseup = () => isDragging = false;
-  c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
-  c.onmousemove = ev => {
+  const handleTooltip = (clientX, clientY) => {
     const rect = c.getBoundingClientRect();
-    const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
-    if (isDragging) {
-      const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
-      offset -= dx / (dataW / win);
-      offset = Math.max(0, Math.min(n - win, offset));
-      requestAnimationFrame(() => drawChart(series));
-      return;
-    }
+    const mx = clientX - rect.left, my = clientY - rect.top;
     if (mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; return; }
     const idx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
     tip.style.display = "block";
@@ -888,6 +891,49 @@ function drawChart(series) {
       <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
       <span style="color:var(--text-muted)">Profit: ${profHtml}</span>`;
   };
+
+  c.ontouchstart = ev => { 
+    if(ev.touches.length === 1) { 
+      isDragging = true; 
+      touchMoved = false;
+      startXMouse = ev.touches[0].clientX; 
+    } 
+  };
+  
+  c.ontouchmove = ev => {
+    if (isDragging && ev.touches.length === 1) {
+      touchMoved = true;
+      const dx = ev.touches[0].clientX - startXMouse; 
+      startXMouse = ev.touches[0].clientX;
+      offset -= dx / (dataW / win);
+      offset = Math.max(0, Math.min(n - win, offset));
+      requestAnimationFrame(() => drawChart(series));
+      return;
+    }
+  };
+
+  c.ontouchend = ev => { 
+    isDragging = false; 
+    // If it was just a tap without dragging, calculate position and persist tooltip
+    if (!touchMoved && ev.changedTouches.length > 0) {
+      handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+    }
+  };
+
+  c.onmousedown = ev => { isDragging = true; startXMouse = ev.clientX; };
+  c.onmouseup = () => isDragging = false;
+  c.onmouseleave = () => { isDragging = false; tip.style.display = "none"; };
+  c.onmousemove = ev => {
+    if (isDragging) {
+      const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
+      offset -= dx / (dataW / win);
+      offset = Math.max(0, Math.min(n - win, offset));
+      requestAnimationFrame(() => drawChart(series));
+      return;
+    }
+    handleTooltip(ev.clientX, ev.clientY);
+  };
+
   c.onwheel = ev => {
     ev.preventDefault();
     zoom = Math.max(1, Math.min(10, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
@@ -898,14 +944,13 @@ function drawChart(series) {
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
-  document.title = `${m.name} - TradingView Engine`;
+  document.title = `${m.name} - GE Chart`;
   $("#itemIcon").src = bigIconUrl(m.name);
   $("#status").textContent = "Loading...";
 
   updateFavoriteBtn();
   renderWatchlist();
 
-  // Populate timeframe % change labels cleanly
   const changes = await calculateAllPctChanges(m.id);
   document.querySelectorAll(".view-btn").forEach(b => {
     const p = b.dataset.view;
@@ -948,8 +993,8 @@ async function setItem(m) {
     mapping = await loadMapping();
     latest = await loadLatest();
     
-    // Fetch 24h data to generate baseline for up/down trend arrows
-    try { past24h = await load24h(); } catch(e) { console.warn("Could not fetch 24h baseline."); }
+    try { past24h = await load24h(); } catch(e) {}
+    try { volumes = await loadVolumes(); } catch(e) {}
     
     renderWatchlist();
 
