@@ -10,13 +10,44 @@
 <meta name="application-name" content="GE Chart">
 <meta name="theme-color" content="#0B0E14">
 
-<title>Grant Exchange - OSRS Charting Tool</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
+<title>GE Chart - #1 OSRS Mobile Price Tracker & Profit Calculator</title>
+<meta name="description" content="The best mobile-friendly OSRS Grand Exchange tracker. Check live GE prices, track flipping margins, and use our profit calculator on-the-go alongside the OSRS mobile app.">
+<meta name="keywords" content="OSRS mobile, OSRS Grand Exchange, OSRS GE tracker, OSRS profit calculator, OSRS flipping, RuneLite mobile alternative, Old School RuneScape price check, live OSRS margins">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://grantexchange.net/">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=9">
+<meta property="og:title" content="GE Chart - OSRS Mobile Tracker & Profit Calculator">
+<meta property="og:description" content="The ultimate mobile companion for Old School RuneScape. Track live GE prices, find flipping margins, and calculate profit quickly while gaming on the go.">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<meta property="og:url" content="https://grantexchange.net/">
+<meta property="og:type" content="website">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GE Chart - OSRS Mobile Tracker">
+<meta name="twitter:description" content="Check live GE prices, track flipping margins, and calculate profit on-the-go. The best RuneLite alternative for mobile players.">
+<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "GE Chart - OSRS Mobile Tracker",
+  "url": "https://grantexchange.net/",
+  "description": "The ultimate mobile-friendly OSRS Grand Exchange companion. Track live prices, find flipping margins, and calculate profit on the go.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web, iOS, Android",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=11">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -105,11 +136,13 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; }
 
-.brand {
+/* Semantic H1 Update for SEO */
+h1.brand {
+  margin: 0; padding: 0; line-height: 1;
   font-size: 15px; font-weight: 800; color: var(--text-main); cursor: pointer;
   letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px;
 }
-.brand span { color: var(--border-active); }
+h1.brand span { color: var(--border-active); }
 
 .search-group { display: flex; align-items: center; gap: 4px; }
 .sbar { position: relative; width: 200px; }
@@ -301,13 +334,13 @@ button, input { touch-action: manipulation; }
     <line x1="12" y1="18" x2="12.01" y2="18"></line>
   </svg>
   <h2>Please Rotate Device</h2>
-  <p>GE Chart is optimized for landscape viewing.</p>
+  <p>GE Chart is optimized for mobile landscape viewing.</p>
 </div>
 
 <div class="wrap">
   <div class="top-panel">
     <div class="panel-left">
-      <div class="brand" onclick="location.reload();">GE<span>Chart</span></div>
+      <h1 class="brand" onclick="location.reload();">GE<span>Chart</span></h1>
       
       <div class="search-group">
         <div class="sbar">
@@ -366,8 +399,7 @@ button, input { touch-action: manipulation; }
       <div class="chart-footer legend">
         <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
         <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
-        <div class="legend-item iqr-band"><span class="legend-box"></span> Band</div>
-        <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trajectory</div>
+        <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
       </div>
     </div>
 
@@ -414,8 +446,6 @@ let membersOn = false;
 let fullHistorical = null;
 
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
-
-// DEFAULT TARGET LINE TO SELL
 let activePriceBox = 'sell'; 
 let recommendedBuy = null, recommendedSell = null;
 
@@ -423,10 +453,8 @@ const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
 
-// --- GLOBAL CHART DATA TRACKER FOR SAFE EVENTS ---
 let chartData = {};
 
-// Zoom Button Handlers
 $('#btnZoomIn').onclick = () => { 
   zoom = Math.min(20, zoom * 1.5); 
   if(currentSeries) requestAnimationFrame(() => drawChart(currentSeries)); 
@@ -448,7 +476,6 @@ $('#btnZoomReset').onclick = () => {
   }
 };
 
-// --- CALCULATOR LOGIC ---
 function parseOSRSNumber(str) {
   if (!str) return 0;
   let val = String(str).toLowerCase().replace(/,/g, '');
@@ -517,8 +544,15 @@ function updateFavoriteBtn() {
 
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height - 24;
+  const dpr = window.devicePixelRatio || 1;
+  
+  canvas.width = rect.width * dpr;
+  canvas.height = (rect.height - 24) * dpr;
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height - 24}px`;
+  
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  
   if(currentSeries) drawChart(currentSeries);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -552,7 +586,6 @@ function calculateTax(price) {
   return Math.min(5000000, Math.floor(price * 0.02));
 }
 
-// --- FOCUSED WATCHLIST RENDERER (Cleaned up lists, utilizing Midpoint logic for accurate arrows) ---
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
@@ -572,7 +605,7 @@ function renderWatchlist() {
 
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
-    { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
+    { name: "📈 Highest Volume (24H)", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
   ];
 
@@ -606,7 +639,6 @@ function renderWatchlist() {
         
         let subText = "";
 
-        // True Midpoint logic for reliable Trend Arrows
         let currentMid = null;
         if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
         else if (node?.high || node?.low) currentMid = node.high || node.low;
@@ -750,32 +782,21 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-function calculateIQR(series, window = 26) {
-  const mid = series.labels.map((_, i) => {
-    if (series.low[i] != null && series.high[i] != null) return (series.low[i] + series.high[i]) / 2;
-    return series.low[i] ?? series.high[i] ?? null;
-  });
-  const lowIQR = Array(mid.length).fill(null), highIQR = Array(mid.length).fill(null);
-  for (let i = window - 1; i < mid.length; i++) {
-    const w = mid.slice(i - window + 1, i + 1).filter(v => v != null).sort((a, b) => a - b);
-    if (w.length < Math.floor(window / 2)) continue;
-    const p25 = w[Math.floor(0.25 * (w.length - 1))], p75 = w[Math.floor(0.75 * (w.length - 1))];
-    lowIQR[i] = p25; highIQR[i] = p75;
-  }
-  return { lowIQR, highIQR };
-}
-
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
-  let recBuy = rawLow + 1; 
-  let recSell = rawHigh - 1;
+  let recBuy = rawLow; 
+  let recSell = rawHigh;
 
-  if (series && series.high.length > 0) {
+  if (series && series.high.length > 0 && series.low.length > 0) {
     const recentHighs = series.high.slice(-40).filter(x => x != null);
-    if (recentHighs.length > 5) {
-      const medianHigh = Math.ceil(percentile(recentHighs, 50));
-      recSell = Math.min(rawHigh - 1, medianHigh);
+    const recentLows = series.low.slice(-40).filter(x => x != null);
+    if (recentHighs.length > 5 && recentLows.length > 5) {
+      recBuy = Math.floor(percentile(recentLows, 15));
+      recSell = Math.ceil(percentile(recentHighs, 85));
+      
+      recBuy = Math.min(recBuy, rawLow - 1);
+      recSell = Math.max(recSell, rawHigh + 1);
     }
   }
 
@@ -787,10 +808,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
     if (safeTargetFloor * 0.02 >= 5000000) {
       safeTargetFloor = Math.ceil(recBuy + 5000000 + (recBuy * 0.015));
     }
-    if (series && series.high.length > 0) {
-      const p80High = Math.ceil(percentile(series.high.slice(-40).filter(x => x != null), 80));
-      if (p80High > safeTargetFloor) safeTargetFloor = Math.min(safeTargetFloor, p80High);
-    }
     recSell = safeTargetFloor;
   }
 
@@ -800,8 +817,12 @@ function runTradeEngine(rawLow, rawHigh, series) {
 
 function drawChart(series) {
   const c = canvas;
-  const W = c.width, H = c.height;
+  // Account for DPR mathematically based on CSS scaling
+  const rect = c.parentElement.getBoundingClientRect();
+  const W = rect.width, H = rect.height - 24;
+  
   const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
+  
   ctx.clearRect(0, 0, W, H);
   
   if (!series || !series.labels?.length) { 
@@ -832,16 +853,14 @@ function drawChart(series) {
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
-  // Expose global chart properties for the event listeners
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
 
-  // IDENTIFY 24H EXTREMES FOR 5D VIEW
   let max24hHigh = -Infinity, min24hLow = Infinity;
   let max24hIdx = -1, min24hIdx = -1;
 
   if (view === "5d" && L.length > 0) {
     const latestTime = L[L.length - 1];
-    const cutoff24h = latestTime - 86400; // 24 hours in seconds
+    const cutoff24h = latestTime - 86400; 
     for (let i = 0; i < L.length; i++) {
       if (L[i] >= cutoff24h) {
         if (HI[i] != null && HI[i] > max24hHigh) { max24hHigh = HI[i]; max24hIdx = i; }
@@ -881,21 +900,25 @@ function drawChart(series) {
 
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
-  const iqr = calculateIQR({low: LO, high: HI, labels: L});
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--iqr-band').trim();
-  ctx.beginPath();
-  let firstValid = -1;
+  // TREND LINE
+  const midPoints = [];
   for (let i = 0; i < L.length; i++) {
-    if (iqr.highIQR[i] != null && iqr.lowIQR[i] != null) {
-      const x = x0 + i * stepX, y = ypx(iqr.highIQR[i], vmin, vmax, y0, h_price);
-      if (firstValid === -1) { ctx.moveTo(x, y); firstValid = i; } else ctx.lineTo(x, y);
-    }
+    if (LO[i] != null && HI[i] != null) midPoints.push({i, v: (LO[i]+HI[i])/2});
+    else if (LO[i] != null) midPoints.push({i, v: LO[i]});
+    else if (HI[i] != null) midPoints.push({i, v: HI[i]});
   }
-  if (firstValid !== -1) {
-    for (let i = L.length - 1; i >= firstValid; i--) {
-      if (iqr.lowIQR[i] != null) ctx.lineTo(x0 + i * stepX, ypx(iqr.lowIQR[i], vmin, vmax, y0, h_price));
-    }
-    ctx.closePath(); ctx.fill();
+  
+  if (midPoints.length > 1) {
+    const { slope, intercept } = linearRegression(midPoints.map(m=>m.i), midPoints.map(m=>m.v));
+    ctx.save();
+    ctx.setLineDash([4, 6]);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
+    ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawDashes(arr, color, isHigh) {
@@ -908,7 +931,6 @@ function drawChart(series) {
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
-      // HIGHLIGHT 24H EXTREMES ON 5D VIEW
       if (view === "5d") {
         if (isHigh && i === max24hIdx) {
           ctx.save();
@@ -949,32 +971,6 @@ function drawChart(series) {
     ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
 
-  function drawTrailingPrediction(arr, color) {
-    const nonNull = arr.map((v, i) => ({v, i})).filter(({v}) => v != null);
-    if (nonNull.length < 5) return;
-    
-    const lookback = Math.max(5, Math.floor(nonNull.length * 0.25));
-    const recent = nonNull.slice(-lookback);
-    const { slope, intercept } = linearRegression(recent.map(n=>n.i), recent.map(n=>n.v));
-    const lastPt = nonNull[nonNull.length - 1];
-    
-    const startX = x0 + lastPt.i * stepX;
-    const startY = ypx(lastPt.v, vmin, vmax, y0, h_price);
-    
-    const projectedI = (L.length - 1) + (futureW / stepX);
-    const projectedV = slope * projectedI + intercept;
-    const endX = x0 + dataW + futureW;
-    const endY = ypx(projectedV, vmin, vmax, y0, h_price);
-    
-    ctx.save();
-    ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); 
-    ctx.setLineDash([2, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.6;
-    ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
-    ctx.restore();
-  }
-  drawTrailingPrediction(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim());
-  drawTrailingPrediction(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim());
-
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
@@ -989,12 +985,11 @@ function drawChart(series) {
       ctx.font = "9px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Selected Target", x0 + 4, py - 3);
+      ctx.fillText("Active Target", x0 + 4, py - 3);
       ctx.restore();
     }
   }
 
-  // Draw Vertical Interactive Selection Crosshair
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save();
@@ -1009,7 +1004,6 @@ function drawChart(series) {
   }
 }
 
-// --- SAFE GLOBAL EVENT LISTENERS (Stops iOS auto-zoom entirely) ---
 let isDragging = false, startXMouse = 0, touchMoved = false;
 let initialPinchDist = null, initialZoom = null, isPinching = false;
 
@@ -1159,7 +1153,6 @@ async function setItem(m) {
   $("#buyPrice .price-val span").textContent = fmtGp(recommendedBuy);
   $("#sellPrice .price-val span").textContent = fmtGp(recommendedSell);
 
-  // AUTO-POPULATE EXACT GE LIMIT
   const itemLimit = m.limit ? m.limit : 1;
   $("#calcQty").value = itemLimit.toLocaleString();
   $("#calcBuy").value = recommendedBuy;
