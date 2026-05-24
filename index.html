@@ -10,14 +10,21 @@
 <meta name="application-name" content="GE Chart">
 <meta name="theme-color" content="#0B0E14">
 
-<title>GE Chart - OSRS Tracker</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Over-Max cash consensus tracker.">
+<title>Grant Exchange - OSRS Charting Tool</title>
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=14">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=14">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=14">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=14">
 
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-43YM2RCX1R');
+</script>
 <style>
 :root {
   --bg-base: #0B0E14; 
@@ -31,6 +38,7 @@
   --text-muted: #787B86;
   --buy-color: #E6C35C; 
   --sell-color: #26A69A; 
+  --iqr-band: rgba(120, 123, 134, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.35);
   --vol-sell: rgba(38, 166, 154, 0.35);
   --positive: #26A69A;
@@ -177,7 +185,7 @@ h1.brand span { color: var(--border-active); }
 .plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
-  padding: 4px 8px; min-width: 120px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+  padding: 4px 8px; min-width: 130px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
 .price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -263,7 +271,7 @@ h1.brand span { color: var(--border-active); }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wl-item-right { display: flex; align-items: center; gap: 4px; text-align: right; }
 .wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
-.wl-trend { font-size: 9px; }
+.wl-trend { font-size: 9px; cursor: help;}
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 
@@ -403,10 +411,10 @@ let isDrawing = false;
 // OVER-MAX MOCK DATA (Hardcoded Mega-Rares priced in GP)
 const overMaxData = {
   "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
-  "12424": { name: "3rd age bow", wtb: 2300000000, wts: 2600000000 },
-  "23343": { name: "3rd age druidic robe top", wtb: 4100000000, wts: 4400000000 },
-  "23346": { name: "3rd age druidic robe bottom", wtb: 3900000000, wts: 4200000000 },
-  "23336": { name: "3rd age druidic cloak", wtb: 2400000000, wts: 2700000000 }
+  "12424": { name: "3rd age bow", wtb: 2800000000, wts: 3100000000 },
+  "23343": { name: "3rd age druidic robe top", wtb: 5100000000, wts: 5400000000 },
+  "23346": { name: "3rd age druidic robe bottom", wtb: 4700000000, wts: 5000000000 },
+  "23336": { name: "3rd age druidic cloak", wtb: 2800000000, wts: 3100000000 }
 };
 
 function queueDraw() {
@@ -582,7 +590,7 @@ function renderWatchlist() {
 
   const favs = activeItems.filter(item => favorites.includes(String(item.id)));
 
-  // Identify Over Max Items dynamically from mapping based on our list
+  // Identify Over Max Items dynamically
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
 
@@ -626,16 +634,13 @@ function renderWatchlist() {
       innerListHTML = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">Empty</div>`;
     } else {
       group.items.forEach(item => {
-        
         let price = 0;
         let subText = "";
 
         if (overMaxData[String(item.id)]) {
-          // OVER MAX FORMATTING
           price = overMaxData[String(item.id)].wts;
-          subText = `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>`;
+          subText = `<span class="wl-trend" style="color:var(--text-muted);" title="Calculated from consensus listings">Est. Value</span>`;
         } else {
-          // STANDARD GE FORMATTING
           const node = latest?.data?.[String(item.id)];
           price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
 
@@ -649,8 +654,8 @@ function renderWatchlist() {
           else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
 
           if (currentMid !== null && pastMid !== null) {
-            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
-            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
+            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up" title="Trending ABOVE 24H Average">▲</span>`;
+            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down" title="Trending BELOW 24H Average">▼</span>`;
           }
         }
 
@@ -829,7 +834,6 @@ function renderOverMax(m) {
     b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg neutral">${changes[p]}</span>`;
   });
 
-  // Generate fake series mimicking consensus reality
   const now = Math.floor(Date.now() / 1000);
   const mockSeries = { labels: [], low: [], high: [], lowVol: [], highVol: [] };
   let currentWtb = isOverMax.wtb * 0.95;
@@ -879,7 +883,6 @@ function renderOverMax(m) {
   $("#status").textContent = "Consensus Active";
 }
 
-
 function drawChart(series) {
   const c = canvas;
   const rect = c.parentElement.getBoundingClientRect();
@@ -911,6 +914,7 @@ function drawChart(series) {
 
   const dataW = w * 0.85; 
   const futureW = w * 0.15; 
+  
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
@@ -1038,7 +1042,7 @@ function drawChart(series) {
       ctx.font = "9px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Active Target", x0 + 4, py - 3);
+      ctx.fillText("Selected Target", x0 + 4, py - 3);
       ctx.restore();
     }
   }
