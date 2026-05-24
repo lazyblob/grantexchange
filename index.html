@@ -13,10 +13,10 @@
 <title>Grant Exchange - OSRS Charting Tool</title>
 <meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=12">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=12">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=12">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=12">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=13">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -38,6 +38,7 @@
   --text-muted: #787B86;
   --buy-color: #E6C35C; 
   --sell-color: #26A69A; 
+  --iqr-band: rgba(120, 123, 134, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.35);
   --vol-sell: rgba(38, 166, 154, 0.35);
   --positive: #26A69A;
@@ -268,7 +269,7 @@ h1.brand span { color: var(--border-active); }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wl-item-right { display: flex; align-items: center; gap: 4px; text-align: right; }
 .wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
-.wl-trend { font-size: 9px; }
+.wl-trend { font-size: 9px; cursor: help; }
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 
@@ -551,8 +552,9 @@ const loadVolumes = () => jget(PRICES_API + "/volumes");
 const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
-function bigIconUrl(name) {
-  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`;
+// FIX: Bulletproof images using static runelite cache IDs
+function itemIconUrl(id) {
+  return `https://static.runelite.net/cache/item/icon/${id}.png`;
 }
 
 function calculateTax(price) {
@@ -621,9 +623,10 @@ function renderWatchlist() {
         if (p24?.avgHighPrice && p24?.avgLowPrice) pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
         else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
 
+        // FIXED TREND ARROW WITH HOVER EXPLANATION
         if (currentMid !== null && pastMid !== null) {
-          if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
-          else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
+          if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up" title="Live price is ABOVE the 24h average">▲</span>`;
+          else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down" title="Live price is BELOW the 24h average">▼</span>`;
         }
 
         const activeClass = selected?.id === item.id ? 'active' : '';
@@ -631,7 +634,7 @@ function renderWatchlist() {
         innerListHTML += `
           <div class="wl-item ${activeClass}" data-id="${item.id}">
             <div class="wl-item-left">
-              <img src="${bigIconUrl(item.name)}" alt="" loading="lazy">
+              <img src="${itemIconUrl(item.id)}" alt="" loading="lazy">
               <span class="wl-item-name">${item.name}</span>
             </div>
             <div class="wl-item-right">
@@ -755,7 +758,6 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-// SMART SUPPORT / RESISTANCE LOGIC
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
@@ -825,7 +827,6 @@ function drawChart(series) {
 
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
 
-  // HIGHLIGHT DOT LOGIC FOR EVERY VIEW
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
 
@@ -865,7 +866,6 @@ function drawChart(series) {
 
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
-  // TREND LINE
   const midPoints = [];
   for (let i = 0; i < L.length; i++) {
     if (LO[i] != null && HI[i] != null) midPoints.push({i, v: (LO[i]+HI[i])/2});
@@ -948,7 +948,7 @@ function drawChart(series) {
       ctx.font = "9px BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Target", x0 + 4, py - 3);
+      ctx.fillText("Active Target", x0 + 4, py - 3);
       ctx.restore();
     }
   }
@@ -966,9 +966,6 @@ function drawChart(series) {
     ctx.restore();
   }
 }
-
-let isDragging = false, startXMouse = 0, touchMoved = false;
-let initialPinchDist = null, initialZoom = null, isPinching = false;
 
 const handleTooltip = (clientX, clientY) => {
   const rect = canvas.getBoundingClientRect();
@@ -1076,7 +1073,7 @@ async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
   document.title = `${m.name} - GE Chart`;
-  $("#itemIcon").src = bigIconUrl(m.name);
+  $("#itemIcon").src = itemIconUrl(m.id);
   $("#status").textContent = "Loading...";
 
   updateFavoriteBtn();
@@ -1152,7 +1149,7 @@ async function setItem(m) {
       const q = qInput.value.trim().toLowerCase();
       if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
       const list = mapping.filter(x => x.name.toLowerCase().includes(q) && (membersOn || !x.members)).slice(0, 40);
-      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${bigIconUrl(x.name)}">${x.name}</div>`).join("");
+      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${itemIconUrl(x.id)}">${x.name}</div>`).join("");
       sb.style.display = list.length ? "block" : "none";
     });
     
