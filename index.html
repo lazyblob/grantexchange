@@ -244,14 +244,13 @@ button, input { touch-action: manipulation; }
 }
 .calc-header { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.calc-input { display: flex; flex-direction: column; gap: 4px; }
-.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
-.calc-input input { 
+.calc-container input { 
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); 
   color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; 
   outline: none; font-family: inherit;
 }
-.calc-input input:focus { border-color: var(--border-active); }
+.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.calc-container input:focus { border-color: var(--border-active); }
 .calc-result { 
   display: flex; justify-content: space-between; align-items: center; 
   font-size: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; 
@@ -317,13 +316,18 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .content-area { flex-direction: column; }
   
-  .ticker-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 8px 10px; }
-  .ticker-title-group img { width: 32px; height: 32px; }
-  .ticker-info h2 { font-size: 20px; }
-  .ticker-price-row .price { font-size: 14px; }
-  .toolbar { width: 100%; justify-content: space-between; }
-  .toolbar button { flex: 1; }
-  
+  /* HIDE TICKER NAME & IMAGE IN MOBILE VIEWS */
+  #tickerHeaderIcon, h2#tickerName { display: none; }
+  .ticker-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 6px 10px; gap: 8px; }
+  .ticker-title-group { gap: 0; }
+  .ticker-price-row { margin: 0; flex-direction: column; align-items: flex-start; gap: 1px; }
+  .ticker-price-row .price { font-size: 15px; }
+  .ticker-price-row .change { font-size: 10px; }
+
+  .toolbar { justify-content: flex-end; padding: 2px; }
+  .toolbar button { min-width: 38px; padding: 3px 6px; font-size: 11px; }
+  .pct-chg { font-size: 8px; margin: 0; }
+
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .sbar { width: auto; flex: 1; }
@@ -1536,6 +1540,7 @@ async function setItem(m) {
       qInput.dispatchEvent(new Event("input")); 
     };
     
+    // Auto-refresh engine loop
     setInterval(async () => { 
       latest = await loadLatest();
       try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
