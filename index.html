@@ -43,10 +43,10 @@
 }
 </script>
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -96,7 +96,7 @@ body {
 button, input { touch-action: manipulation; }
 
 .wrap { 
-  max-width: 1600px; 
+  max-width: 1800px; 
   margin: 0 auto; 
   padding: 8px; 
   height: 100dvh; 
@@ -114,7 +114,7 @@ button, input { touch-action: manipulation; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
 
 .search-group { display: flex; align-items: center; gap: 4px; }
-.sbar { position: relative; width: 190px; }
+.sbar { position: relative; width: 220px; }
 .sbar input {
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
   color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px;
@@ -145,19 +145,6 @@ button, input { touch-action: manipulation; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
-.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
-.toolbar button {
-  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
-  padding: 2px 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: all 0.15s;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
-}
-.toolbar button:hover { color: var(--text-main); }
-.toolbar button.active { background: var(--border-light); color: #fff; }
-.pct-chg { font-size: 9px; font-weight: normal; margin-top: 1px; }
-.pct-chg.positive { color: var(--positive); }
-.pct-chg.negative { color: var(--negative); }
-.pct-chg.neutral { color: var(--text-muted); }
-
 .mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; }
 .mode-pill button {
   background: transparent; border: none; color: var(--text-muted); padding: 0 10px;
@@ -168,6 +155,39 @@ button, input { touch-action: manipulation; }
 .status-text { font-size: 11px; color: var(--text-muted); }
 
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
+
+/* TRADINGVIEW PRO DESKTOP LAYOUT (Main Column) */
+.main-column {
+  flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
+}
+
+.ticker-header {
+  background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
+  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.ticker-title-group { display: flex; align-items: center; gap: 12px; }
+.ticker-title-group img { width: 48px; height: 48px; image-rendering: pixelated; }
+.ticker-info h2 { margin: 0; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.ticker-price-row { margin-top: 2px; display: flex; align-items: center; gap: 10px; }
+.ticker-price-row .price { font-size: 18px; font-weight: 700; color: var(--text-main); }
+.ticker-price-row .change { font-size: 14px; font-weight: 600; }
+.change.positive { color: var(--positive); }
+.change.negative { color: var(--negative); }
+.change.neutral { color: var(--text-muted); }
+
+.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
+.toolbar button {
+  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
+  padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
+}
+.toolbar button:hover { color: var(--text-main); }
+.toolbar button.active { background: var(--border-light); color: #fff; }
+.pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
+.pct-chg.positive { color: var(--positive); }
+.pct-chg.negative { color: var(--negative); }
+.pct-chg.neutral { color: var(--text-muted); }
 
 .chart-container {
   flex: 1; display: flex; flex-direction: column; min-width: 0;
@@ -183,17 +203,17 @@ button, input { touch-action: manipulation; }
 }
 .chart-controls button:hover { background: var(--bg-input); border-color: #fff; }
 
-.plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
+.plaque-bar { position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
-  padding: 4px 8px; min-width: 130px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+  padding: 6px 10px; min-width: 140px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
-.price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.live-val { font-weight: normal; color: var(--text-main); font-size: 9px; opacity: 0.8; text-transform: none; }
+.price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.live-val { font-weight: normal; color: var(--text-main); font-size: 10px; opacity: 0.8; text-transform: none; }
 .price-box.low .price-val { color: var(--buy-color); }
 .price-box.high .price-val { color: var(--sell-color); }
-.price-val { font-size: 13px; font-weight: bold; margin-top: 1px; }
+.price-val { font-size: 16px; font-weight: bold; margin-top: 2px; }
 
 .chart-footer {
   background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
@@ -212,36 +232,36 @@ button, input { touch-action: manipulation; }
 }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 
+/* SIDEBAR REWORK */
 .watchlist-container {
-  width: 280px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
+  width: 340px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- CALCULATOR STYLING --- */
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
 }
-.calc-header { font-size: 10px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
+.calc-header { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .calc-input { display: flex; flex-direction: column; gap: 4px; }
 .calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
 .calc-input input { 
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); 
-  color: var(--text-main); border-radius: 4px; padding: 5px 6px; font-size: 11px; 
+  color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; 
   outline: none; font-family: inherit;
 }
 .calc-input input:focus { border-color: var(--border-active); }
 .calc-result { 
   display: flex; justify-content: space-between; align-items: center; 
-  font-size: 11px; background: rgba(0,0,0,0.25); padding: 6px 8px; 
+  font-size: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; 
   border-radius: 4px; border: 1px solid var(--border-main);
 }
-.calc-result .res-profit { font-weight: bold; font-size: 12px; }
+.calc-result .res-profit { font-weight: bold; font-size: 14px; }
 .calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
 
 .watchlist-header {
-  padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
+  padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
   font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
@@ -251,7 +271,7 @@ button, input { touch-action: manipulation; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
-  padding: 6px 10px; font-size: 10px; font-weight: bold; color: var(--border-active);
+  padding: 8px 14px; font-size: 11px; font-weight: bold; color: var(--border-active);
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.overmax-title { color: var(--fav-gold); }
@@ -265,8 +285,8 @@ button, input { touch-action: manipulation; }
 .category-list.collapsed { display: none; }
 
 .wl-item {
-  display: flex; align-items: center; justify-content: space-between; padding: 6px 10px;
-  cursor: pointer; font-size: 12px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
+  display: flex; align-items: center; justify-content: space-between; padding: 8px 14px;
+  cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
   transition: background 0.2s, border 0.2s;
 }
 .wl-item:last-child { border-bottom: none; }
@@ -279,50 +299,42 @@ button, input { touch-action: manipulation; }
 .wl-item.active.at-high { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--sell-color); }
 .wl-item.active.at-low { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--buy-color); }
 
-.wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-.wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
-.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wl-item-right { display: flex; align-items: center; gap: 4px; text-align: right; }
-.wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
-.wl-trend { font-size: 9px; cursor: help;}
+.wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
+.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+.wl-item-right { display: flex; align-items: center; gap: 6px; text-align: right; }
+.wl-item-price { font-weight: 700; font-size: 13px; color: var(--text-main); }
+.wl-trend { font-size: 10px; cursor: help;}
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 .wl-trend.neutral { color: var(--text-muted); }
 
 /* --- RESPONSIVE ORIENTATION RULES --- */
 
-/* LANDSCAPE (Pro Dash Mode) */
-@media (max-height: 500px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; }
-  .top-panel { padding: 4px 8px; justify-content: flex-start; gap: 10px; }
-  .sbar { width: 160px; }
-  .sbar input { padding-top: 3px; padding-bottom: 3px; }
-  .fav-btn { padding: 3px 6px; }
-  .status-text { display: none; }
-  .plaque-bar { top: 4px; left: 4px; }
-  .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 290px; font-size: 11px; } 
-  .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 6px 8px; }
-  .calc-grid { gap: 4px; }
-  .chart-controls { bottom: 26px; right: 8px; }
-  .chart-controls button { padding: 2px 8px; font-size: 12px; }
-}
-
-/* PORTRAIT (Vertical Stacked Mode) */
-@media screen and (orientation: portrait) {
+/* PORTRAIT (Vertical Stacked Mode - Mobile Optimized) */
+@media screen and (max-width: 1023px) {
   .wrap { padding: 6px; overflow-y: auto; }
   .top-panel { padding: 6px 8px; }
   .content-area { flex-direction: column; }
+  
+  .ticker-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 8px 10px; }
+  .ticker-title-group img { width: 32px; height: 32px; }
+  .ticker-info h2 { font-size: 20px; }
+  .ticker-price-row .price { font-size: 14px; }
+  .toolbar { width: 100%; justify-content: space-between; }
+  .toolbar button { flex: 1; }
+  
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .sbar { width: auto; flex: 1; }
   .search-group { flex: 1; }
-  .toolbar { width: 100%; justify-content: space-between; margin-top: 4px; }
-  .toolbar button { flex: 1; }
   .panel-left { width: 100%; justify-content: space-between;}
   .status-text { display: none; }
+  .plaque-bar { top: 8px; left: 8px; }
+  .price-box { padding: 4px 8px; min-width: 120px; }
+  .price-val { font-size: 13px; }
 }
+
 </style>
 </head>
 <body>
@@ -347,46 +359,62 @@ button, input { touch-action: manipulation; }
           </svg>
         </button>
       </div>
-
-      <div class="toolbar" id="timeToolbar">
-        <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
-        <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
-        <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
-        <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
-        <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
-        <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
-      </div>
     </div>
 
     <span id="status" class="status-text">Connecting...</span>
   </div>
 
   <div class="content-area">
-    <div class="chart-container">
-      <div class="plaque-bar">
-        <div id="buyPrice" class="price-box low">
-          <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
-          <div class="price-val"><span>—</span></div>
-        </div>
-        <div id="sellPrice" class="price-box high selected">
-          <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
-          <div class="price-val"><span>—</span></div>
-        </div>
-      </div>
+    <div class="main-column">
       
-      <div class="chart-controls">
-        <button id="btnZoomIn" title="Zoom In">+</button>
-        <button id="btnZoomOut" title="Zoom Out">−</button>
-        <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+      <div class="ticker-header" id="tickerHeader">
+        <div class="ticker-title-group">
+          <img id="tickerHeaderIcon" src="" alt="Icon">
+          <div class="ticker-info">
+            <h2 id="tickerName">Loading...</h2>
+            <div class="ticker-price-row">
+              <span id="tickerLivePrice" class="price">---</span>
+              <span id="tickerChange" class="change neutral">---</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="toolbar" id="timeToolbar">
+          <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
+          <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
+          <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+          <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+          <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+          <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+        </div>
       </div>
 
-      <canvas id="chart" class="chart"></canvas>
-      <div id="tip" class="chart-tip"></div>
-      
-      <div class="chart-footer legend">
-        <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
-        <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
-        <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
+      <div class="chart-container">
+        <div class="plaque-bar">
+          <div id="buyPrice" class="price-box low">
+            <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+          <div id="sellPrice" class="price-box high selected">
+            <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+        </div>
+        
+        <div class="chart-controls">
+          <button id="btnZoomIn" title="Zoom In">+</button>
+          <button id="btnZoomOut" title="Zoom Out">−</button>
+          <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+        </div>
+
+        <canvas id="chart" class="chart"></canvas>
+        <div id="tip" class="chart-tip"></div>
+        
+        <div class="chart-footer legend">
+          <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
+          <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
+          <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
+        </div>
       </div>
     </div>
 
@@ -445,6 +473,13 @@ function queueDraw() {
       isDrawing = false;
     });
   }
+}
+
+function updateFavicon(url) {
+  document.getElementById('favicon1').href = url;
+  document.getElementById('favicon2').href = url;
+  document.getElementById('favicon3').href = url;
+  document.getElementById('favicon4').href = url;
 }
 
 $('#btnZoomIn').onclick = () => { zoom = Math.min(20, zoom * 1.5); queueDraw(); };
@@ -667,21 +702,19 @@ function renderWatchlist() {
       }
     }
 
-    // MACRO UPGRADE: True 24-Hour Range Boundary Engine
-    if (node && p24 && p24.avgHighPrice > 100) {
+    // STRICT MACRO UPGRADE: Only flag true 4% pricing breakout events, completely ignoring daily noise.
+    if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
        const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-       if (dailyGPVolume > 5000000) {
+       if (dailyGPVolume > 10000000) { // Require 10m minimum volume for true signals
            const currentSell = node.high;
            const currentBuy = node.low;
-           
-           // Use the official 24H volume weighted limits to prevent temporary noise alerts
            const macroHighLimit = p24.avgHighPrice;
            const macroLowLimit = p24.avgLowPrice;
 
-           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 1.015) {
+           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 0.96) {
                dayLows.push(item);
            }
-           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 0.985) {
+           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 1.04) {
                dayHighs.push(item);
            }
        }
@@ -780,12 +813,12 @@ function renderWatchlist() {
           }
         }
 
-        // Apply strict math tracking constraints to keep indicators accurate
+        // Apply strict 4% breakout tracking constraints to keep indicators highly accurate
         if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-           if (dailyGPVolume > 5000000) {
-               if (node?.high > 0 && node.high >= p24.avgHighPrice * 0.985) hlClass = "at-high";
-               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 1.015) hlClass = "at-low";
+           if (dailyGPVolume > 10000000) {
+               if (node?.high > 0 && node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
+               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
            }
         }
 
@@ -990,14 +1023,16 @@ function renderOverMax(m) {
   let currentWtb = isOverMax.wtb * 0.95;
   let currentWts = isOverMax.wts * 0.95;
   
-  for (let i = 150; i >= 0; i--) {
-     mockSeries.labels.push(now - (i * 86400 / 5));
-     currentWtb += (isOverMax.wtb - currentWtb) * 0.1 + (Math.random() - 0.5) * 200000000;
-     currentWts += (isOverMax.wts - currentWts) * 0.1 + (Math.random() - 0.5) * 200000000;
+  // Expanded to 365 Days (1 Full Year)
+  for (let i = 365; i >= 0; i--) {
+     mockSeries.labels.push(now - (i * 86400));
+     currentWtb += (isOverMax.wtb - currentWtb) * 0.05 + (Math.random() - 0.5) * 60000000;
+     currentWts += (isOverMax.wts - currentWts) * 0.05 + (Math.random() - 0.5) * 60000000;
+     if (currentWts <= currentWtb) currentWts = currentWtb + 10000000;
      mockSeries.low.push(currentWtb);
      mockSeries.high.push(currentWts);
-     mockSeries.lowVol.push(Math.floor(Math.random() * 2));
-     mockSeries.highVol.push(Math.floor(Math.random() * 2));
+     mockSeries.lowVol.push(Math.floor(Math.random() * 5));
+     mockSeries.highVol.push(Math.floor(Math.random() * 5));
   }
   currentSeries = filterSeries(mockSeries, getPeriod(view));
 
@@ -1014,6 +1049,10 @@ function renderOverMax(m) {
     </div>
     <div class="price-val"><span>${abbreviateNumber(isOverMax.wts)}</span></div>
   `;
+
+  // Update Main Header
+  $("#tickerPrice").textContent = abbreviateNumber(isOverMax.wts);
+  $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
 
   recommendedBuy = isOverMax.wtb;
   recommendedSell = isOverMax.wts;
@@ -1033,7 +1072,6 @@ function renderOverMax(m) {
   resizeCanvas(); 
   $("#status").textContent = "Consensus Active";
 }
-
 
 function drawChart(series) {
   const c = canvas;
@@ -1350,9 +1388,14 @@ async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
   document.title = `${m.name} - PocketGE`;
-  $("#itemIcon").src = itemIconUrl(m.id);
+  
+  const iconURL = itemIconUrl(m.id);
+  $("#itemIcon").src = iconURL;
+  $("#tickerHeaderIcon").src = iconURL;
+  $("#tickerName").textContent = m.name;
   $("#status").textContent = "Loading...";
-
+  
+  updateFavicon(iconURL);
   updateFavoriteBtn();
   renderWatchlist();
 
@@ -1370,6 +1413,12 @@ async function setItem(m) {
     b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
   });
 
+  // Update Header with 24h change
+  const dailyVal = parseFloat(changes['1d']);
+  const dailyCls = dailyVal > 0 ? 'positive' : dailyVal < 0 ? 'negative' : 'neutral';
+  const dailyPrefix = dailyVal > 0 ? '+' : '';
+  $("#tickerChange").innerHTML = `<span class="${dailyCls}">${dailyPrefix}${changes['1d']}</span>`;
+
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
   else if (view === "1m") timestep = "1h"; 
@@ -1386,6 +1435,8 @@ async function setItem(m) {
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
   
+  $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
+
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy;
   recommendedSell = targets.sell;
@@ -1485,7 +1536,6 @@ async function setItem(m) {
       qInput.dispatchEvent(new Event("input")); 
     };
     
-    // Auto-refresh engine loop
     setInterval(async () => { 
       latest = await loadLatest();
       try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
