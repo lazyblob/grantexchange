@@ -91,7 +91,6 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
 
-/* REFRESH BRAND BUTTON */
 #logoBtn {
   font-weight: 800;
   color: #fff;
@@ -254,6 +253,8 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -300,7 +301,6 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .content-area { flex-direction: column; }
   
-  /* MOBILE REFRESH BRAND IS NOT WASTING TOP REVENUE SPACE */
   #logoBtn { display: none; }
   
   #tickerHeaderIcon, h2#tickerName { display: none; }
@@ -436,7 +436,6 @@ let recommendedBuy = null, recommendedSell = null;
 let liveBuyRaw = null, liveSellRaw = null;
 let isCalcOpen = false; 
 
-// PERSISTENT ACCORDION STATE CONTROLLER
 let groupOpenStates = {
   "⭐ Favorites": true,
   "📉 At Day Lows": false,
@@ -946,40 +945,33 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-// FLIPPING CO-PILOT ADJUSTED TRADE CALIBRATION
+// FLIPPING CO-PILOT ADJUSTED TRADE CALIBRATION (V13.1 FIX)
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
+  // Default strictly to live competitive margins so orders actually fill
   let targetBuy = rawLow; 
   let targetSell = rawHigh;
 
-  const currentMid = (rawLow + rawHigh) / 2;
-  const rawSpreadPct = currentMid > 0 ? (rawHigh - rawLow) / currentMid : 0;
-
   if (series && series.high.length > 0 && series.low.length > 0) {
-    const recentHighs = series.high.slice(-60).filter(x => x != null);
-    const recentLows = series.low.slice(-60).filter(x => x != null);
+    const recentHighs = series.high.slice(-100).filter(x => x != null);
+    const recentLows = series.low.slice(-100).filter(x => x != null);
     
     if (recentHighs.length > 5 && recentLows.length > 5) {
-      // WIDE-SPREAD ITEMS (like Rubies, gems, low volume gear): Shoot buy orders lower to match Co-Pilot strategy
-      if (rawSpreadPct > 0.015) {
-        const conservativeSupport = Math.floor(percentile(recentLows, 12)); 
-        targetBuy = Math.min(rawLow, conservativeSupport);
-        
-        // Deepen margins explicitly on wide assets to guarantee safety undercuts
-        if (rawSpreadPct > 0.03) {
-          targetBuy = Math.floor(targetBuy * 0.975);
-        } else {
-          targetBuy = Math.floor(targetBuy * 0.985);
-        }
-        
-        targetSell = Math.max(rawHigh, Math.ceil(percentile(recentHighs, 70)));
-      } 
-      // HIGH-VOLUME FLAT COMMODITIES (Runes, Teleport tabs, standard ammunition)
-      else {
-        const tightSupport = Math.floor(percentile(recentLows, 30));
-        targetBuy = Math.min(rawLow, tightSupport);
-        targetSell = Math.max(rawHigh, Math.ceil(percentile(recentHighs, 75)));
+      // Establish a realistic baseline 
+      const support = Math.floor(percentile(recentLows, 35));
+      const resistance = Math.ceil(percentile(recentHighs, 65));
+      
+      // SPIKE PROTECTION
+      // If the live buy price is abnormally high (more than 1.5% above established support), override it down to safety.
+      if (rawLow > support * 1.015) {
+         targetBuy = Math.floor(support * 1.01); 
+      }
+      
+      // CRASH PROTECTION
+      // If the live sell price is abnormally low (more than 1.5% below established resistance), push the ask up to safety.
+      if (rawHigh < resistance * 0.985) {
+         targetSell = Math.ceil(resistance * 0.99); 
       }
     }
   }
@@ -1249,8 +1241,6 @@ async function setItem(m) {
   
   updateFavicon(iconURL);
   updateFavoriteBtn();
-  
-  // FIXED: Open/Close folder matrices remain intact during refresh render invocations
   renderWatchlist();
 
   if (overMaxData[String(m.id)]) { renderOverMax(m); return; }
