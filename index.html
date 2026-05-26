@@ -10,13 +10,43 @@
 <meta name="application-name" content="GE Chart">
 <meta name="theme-color" content="#0B0E14">
 
-<title>GE Chart - OSRS Tracker</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Volume Spikes, Day Highs/Lows, and Over-Max Rares.">
+<title>GE Chart | Live OSRS Mobile Tracker & Flipping Tool</title>
+<meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day lows, and track over-max rares with our smart flipping calculator.">
+<meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
+<link rel="canonical" href="https://grantexchange.net/">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=21">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=21">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=21">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=21">
+<meta property="og:title" content="GE Chart | OSRS Mobile GE Tracker">
+<meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://grantexchange.net/">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GE Chart | OSRS Mobile GE Tracker">
+<meta name="twitter:description" content="Track live GE margins, volume spikes, and over-max rares on the go.">
+<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "GE Chart",
+  "url": "https://grantexchange.net/",
+  "description": "Live Old School RuneScape Grand Exchange tracker designed for mobile flippers. Features include smart trade engines, volume spike detection, and over-max item consensus.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web, iOS, Android",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -672,6 +702,7 @@ function renderWatchlist() {
   dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
   dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
 
+  // GROUPS - Favorites explicitly forced to the absolute top
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "low-title" },
@@ -755,6 +786,7 @@ function renderWatchlist() {
           }
         }
 
+        // Apply Day High/Low visual highlighting to ALL regular items
         if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
            if (dailyGPVolume > 5000000) {
@@ -906,6 +938,7 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const recentHighs = series.high.slice(-100).filter(x => x != null);
     const recentLows = series.low.slice(-100).filter(x => x != null);
     
+    // Evaluate Trend (Slope of last 20 points)
     const midPoints = [];
     const len = series.labels.length;
     for (let i = Math.max(0, len - 20); i < len; i++) {
