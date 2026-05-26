@@ -301,7 +301,7 @@ button, input { touch-action: manipulation; }
   .status-text { display: none; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 290px; font-size: 11px; } /* Expand space now that top bar is streamlined */
+  .watchlist-container { width: 290px; font-size: 11px; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 6px 8px; }
   .calc-grid { gap: 4px; }
@@ -641,7 +641,7 @@ function renderWatchlist() {
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
     
-    // Price Drops
+    // Price Drops (1H macro trend validation)
     if (node && p1h && p1h.avgHighPrice > 100) {
       const current = node.high || node.avgHighPrice;
       const hourAgo = p1h.avgHighPrice;
@@ -667,16 +667,21 @@ function renderWatchlist() {
       }
     }
 
-    // Day Lows / Day Highs
+    // MACRO UPGRADE: True 24-Hour Range Boundary Engine
     if (node && p24 && p24.avgHighPrice > 100) {
        const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
        if (dailyGPVolume > 5000000) {
            const currentSell = node.high;
            const currentBuy = node.low;
-           if (currentBuy > 0 && p24.avgLowPrice > 0 && currentBuy <= p24.avgLowPrice * 1.01) {
+           
+           // Use the official 24H volume weighted limits to prevent temporary noise alerts
+           const macroHighLimit = p24.avgHighPrice;
+           const macroLowLimit = p24.avgLowPrice;
+
+           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 1.015) {
                dayLows.push(item);
            }
-           if (currentSell > 0 && p24.avgHighPrice > 0 && currentSell >= p24.avgHighPrice * 0.99) {
+           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 0.985) {
                dayHighs.push(item);
            }
        }
@@ -775,11 +780,12 @@ function renderWatchlist() {
           }
         }
 
+        // Apply strict math tracking constraints to keep indicators accurate
         if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
            if (dailyGPVolume > 5000000) {
-               if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 0.99) hlClass = "at-high";
-               else if (node?.low > 0 && p24.avgLowPrice > 0 && node.low <= p24.avgLowPrice * 1.01) hlClass = "at-low";
+               if (node?.high > 0 && node.high >= p24.avgHighPrice * 0.985) hlClass = "at-high";
+               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 1.015) hlClass = "at-low";
            }
         }
 
@@ -893,7 +899,6 @@ function ypx(v, vmin, vmax, y0, h) {
   return y0 + (1 - ((v - vmin) / (vmax - vmin))) * h;
 }
 
-// REST OF APPLICATION LOGIC
 function linearRegression(x, y) {
   const n = x.length;
   let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -1060,7 +1065,6 @@ function drawChart(series) {
   const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
 
   const dataW = w * 0.85; 
-  const futureW = w * 0.15; 
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
@@ -1481,6 +1485,7 @@ async function setItem(m) {
       qInput.dispatchEvent(new Event("input")); 
     };
     
+    // Auto-refresh engine loop
     setInterval(async () => { 
       latest = await loadLatest();
       try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
