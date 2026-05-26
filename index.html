@@ -11,12 +11,12 @@
 <meta name="theme-color" content="#0B0E14">
 
 <title>GE Chart - OSRS Tracker</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Over-Max cash consensus tracker.">
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Over-Max cash consensus and Live USD Currency Exchange.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=17">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=17">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=17">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=17">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -215,6 +215,7 @@ h1.brand span { color: var(--border-active); }
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
+/* --- CALCULATOR STYLING --- */
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
@@ -237,6 +238,10 @@ h1.brand span { color: var(--border-active); }
 .calc-result .res-profit { font-weight: bold; font-size: 12px; }
 .calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
 
+/* USD EXCHANGE STYLING */
+.usd-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.usd-result { font-weight: bold; font-size: 16px; color: #4CAF50; display: flex; justify-content: center; padding: 10px 0;}
+
 .watchlist-header {
   padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
   font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
@@ -252,6 +257,7 @@ h1.brand span { color: var(--border-active); }
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.overmax-title { color: var(--fav-gold); }
+.category-title.usd-title { color: #4CAF50; }
 .category-title.fav-title { color: var(--text-main); }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
@@ -410,7 +416,7 @@ const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
 let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
 let hoverIdx = null; 
-let membersOn = localStorage.getItem('ge_members') === 'true'; // PERSISTENT GAME MODE
+let membersOn = localStorage.getItem('ge_members') === 'true'; 
 let fullHistorical = null;
 
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
@@ -424,6 +430,10 @@ const tip = document.getElementById("tip");
 
 let chartData = {};
 let isDrawing = false; 
+
+// CONSTANTS
+const BOND_ID = "13190";
+const BOND_REAL_WORLD_PRICE = 8.99; // $8.99 USD officially
 
 const overMaxData = {
   "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
@@ -499,6 +509,21 @@ function updateCalculator() {
     <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
   `;
   $('#calcResult').title = `${sign}${totalProfit.toLocaleString()} gp net profit`;
+}
+
+// USD CONVERTER LOGIC
+function updateUSDConverter(bondLivePrice) {
+  const gpInput = parseOSRSNumber($('#usdGpInput').value);
+  if (gpInput <= 0 || !bondLivePrice) {
+    $('#usdResult').textContent = "$0.00 USD";
+    return;
+  }
+
+  // Value of 1 GP in USD
+  const gpValueInUsd = BOND_REAL_WORLD_PRICE / bondLivePrice;
+  const totalUsd = gpInput * gpValueInUsd;
+
+  $('#usdResult').textContent = `$${totalUsd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD`;
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
@@ -607,8 +632,12 @@ function renderWatchlist() {
 
   const favs = activeItems.filter(item => favorites.includes(String(item.id)));
 
+  // Identify Over Max Items dynamically
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
+
+  // Currency Exchange Anchor (Bonds)
+  const usdExchangeItems = activeItems.filter(item => String(item.id) === BOND_ID);
 
   const topPriced = [...activeItems]
     .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
@@ -619,7 +648,8 @@ function renderWatchlist() {
     .slice(0, 30);
 
   const groups = [
-    { name: "👑 Over-Max Rares", items: overMaxItems, open: true, className: "overmax-title" },
+    { name: "💸 USD / GP Exchange Rate", items: usdExchangeItems, open: true, className: "usd-title" },
+    { name: "👑 Over-Max Rares", items: overMaxItems, open: false, className: "overmax-title" },
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
     { name: "📈 Highest Volume", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
@@ -656,6 +686,15 @@ function renderWatchlist() {
         if (overMaxData[String(item.id)]) {
           price = overMaxData[String(item.id)].wts;
           subText = `<span class="wl-trend" style="color:var(--text-muted);" title="Calculated from consensus listings">Est. Value</span>`;
+        } else if (String(item.id) === BOND_ID) {
+          const node = latest?.data?.[String(item.id)];
+          price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+          
+          // Calculate legal USD value of 1 Million GP
+          if (price > 0) {
+            const valPerMil = (BOND_REAL_WORLD_PRICE / price) * 1000000;
+            subText = `<span class="wl-trend" style="color:#4CAF50;" title="Based on Jagex official $8.99 bond cost">$${valPerMil.toFixed(2)} / 1M</span>`;
+          }
         } else {
           const node = latest?.data?.[String(item.id)];
           price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
@@ -840,6 +879,50 @@ function runTradeEngine(rawLow, rawHigh, series) {
   return { buy: targetBuy, sell: targetSell };
 }
 
+// RENDERERS FOR SPECIAL TABS
+function renderUSDConverter(m, liveBondPrice) {
+  const changes = {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
+  document.querySelectorAll(".view-btn").forEach(b => {
+    const p = b.dataset.view;
+    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg neutral">${changes[p]}</span>`;
+  });
+
+  $("#buyPrice").innerHTML = `
+    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span>
+    </div>
+    <div class="price-val"><span>${fmtGp(liveBuyRaw)}</span></div>
+  `;
+  
+  $("#sellPrice").innerHTML = `
+    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span>
+    </div>
+    <div class="price-val"><span>${fmtGp(liveSellRaw)}</span></div>
+  `;
+
+  $("#sideModule").innerHTML = `
+    <div class="calc-header" style="color: #4CAF50;">💸 Live Currency Exchange</div>
+    <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.4;">
+      Calculates the legal USD value of OSRS Gold based on the live in-game price of Bonds ($8.99).
+    </div>
+    <div class="usd-grid">
+      <div class="calc-input">
+        <label>Enter OSRS GP</label>
+        <input type="text" id="usdGpInput" value="10m" placeholder="10m">
+      </div>
+      <div class="usd-result" id="usdResult">$0.00 USD</div>
+    </div>
+  `;
+
+  $('#usdGpInput').addEventListener('input', () => updateUSDConverter(liveBondPrice));
+  updateUSDConverter(liveBondPrice); // Init run
+
+  offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+  resizeCanvas(); 
+  $("#status").textContent = "Currency Exchange";
+}
+
 function renderOverMax(m) {
   const isOverMax = overMaxData[String(m.id)];
   
@@ -898,7 +981,6 @@ function renderOverMax(m) {
   $("#status").textContent = "Consensus Active";
 }
 
-
 function drawChart(series) {
   const c = canvas;
   const rect = c.parentElement.getBoundingClientRect();
@@ -945,7 +1027,6 @@ function drawChart(series) {
     if (LO[i] != null && LO[i] < viewMinLow) { viewMinLow = LO[i]; viewMinIdx = i; }
   }
 
-  // Find absolute most recent valid data points
   for (let i = L.length - 1; i >= 0; i--) {
       if (recentHighIdx === -1 && HI[i] != null) recentHighIdx = i;
       if (recentLowIdx === -1 && LO[i] != null) recentLowIdx = i;
@@ -1013,7 +1094,6 @@ function drawChart(series) {
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
-      // Render Global Highs/Lows
       if (isHigh && i === viewMaxIdx) {
         ctx.save();
         ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
@@ -1030,7 +1110,6 @@ function drawChart(series) {
         ctx.restore();
       }
 
-      // Render Absolute Recent High/Low (with a slightly smaller glow to differentiate if it's not the max/min)
       if (isHigh && i === recentHighIdx && i !== viewMaxIdx) {
         ctx.save();
         ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -1046,7 +1125,6 @@ function drawChart(series) {
         ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
         ctx.restore();
       }
-
     }
   }
   
@@ -1103,6 +1181,9 @@ function drawChart(series) {
   }
 }
 
+let isDragging = false, startXMouse = 0, touchMoved = false;
+let initialPinchDist = null, initialZoom = null, isPinching = false;
+
 const handleTooltip = (clientX, clientY) => {
   const rect = canvas.getBoundingClientRect();
   const mx = clientX - rect.left, my = clientY - rect.top;
@@ -1129,21 +1210,14 @@ const handleTooltip = (clientX, clientY) => {
     
   tip.style.display = "block";
 
-  // BOUNDARY COLLISION DETECTION
   const tipW = tip.offsetWidth;
   const tipH = tip.offsetHeight;
   
   let tipX = mx + 15;
   let tipY = my + 15;
   
-  // Flip left if crossing right boundary
-  if (tipX + tipW > rect.width - 5) {
-      tipX = mx - tipW - 15;
-  }
-  // Flip up if crossing bottom boundary
-  if (tipY + tipH > rect.height - 5) {
-      tipY = my - tipH - 15;
-  }
+  if (tipX + tipW > rect.width - 5) { tipX = mx - tipW - 15; }
+  if (tipY + tipH > rect.height - 5) { tipY = my - tipH - 15; }
 
   tip.style.left = tipX + "px";
   tip.style.top = tipY + "px";
@@ -1261,6 +1335,11 @@ async function setItem(m) {
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
+  
+  if (String(m.id) === BOND_ID) {
+     renderUSDConverter(m, liveSellRaw);
+     return;
+  }
   
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy;
