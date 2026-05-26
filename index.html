@@ -6,23 +6,23 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GE Chart">
-<meta name="application-name" content="GE Chart">
+<meta name="apple-mobile-web-app-title" content="PocketGE">
+<meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
-<title>GE Chart | Live OSRS Mobile Tracker & Flipping Tool</title>
+<title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
 <meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day lows, and track over-max rares with our smart flipping calculator.">
 <meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
-<link rel="canonical" href="https://grantexchange.net/">
+<link rel="canonical" href="https://pocketge.com/">
 
-<meta property="og:title" content="GE Chart | OSRS Mobile GE Tracker">
+<meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
 <meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://grantexchange.net/">
+<meta property="og:url" content="https://pocketge.com/">
 <meta property="og:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="GE Chart | OSRS Mobile GE Tracker">
+<meta name="twitter:title" content="PocketGE | OSRS Mobile GE Tracker">
 <meta name="twitter:description" content="Track live GE margins, volume spikes, and over-max rares on the go.">
 <meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
@@ -30,8 +30,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "GE Chart",
-  "url": "https://grantexchange.net/",
+  "name": "PocketGE",
+  "url": "https://pocketge.com/",
   "description": "Live Old School RuneScape Grand Exchange tracker designed for mobile flippers. Features include smart trade engines, volume spike detection, and over-max item consensus.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Web, iOS, Android",
@@ -302,14 +302,14 @@ h1.brand span { color: var(--border-active); }
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
   .top-panel { padding: 3px 6px; }
-  .brand { display: none; } /* Hide title completely to maximize room for search bar */
+  .brand { display: none; } 
   .sbar { width: 160px; }
   .sbar input { padding-top: 3px; padding-bottom: 3px; }
   .fav-btn { padding: 3px 6px; }
   .status-text { display: none; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 280px; font-size: 11px; } /* Wider sidebar */
+  .watchlist-container { width: 280px; font-size: 11px; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 6px 8px; }
   .calc-grid { gap: 4px; }
@@ -337,7 +337,7 @@ h1.brand span { color: var(--border-active); }
 <div class="wrap">
   <div class="top-panel">
     <div class="panel-left">
-      <h1 class="brand" onclick="location.reload();">GE<span>Chart</span></h1>
+      <h1 class="brand" onclick="location.reload();">Pocket<span>GE</span></h1>
       
       <div class="search-group">
         <div class="sbar">
@@ -406,7 +406,7 @@ h1.brand span { color: var(--border-active); }
         </div>
 
       <div class="watchlist-header">
-        <span>Market Scanner</span>
+        <span>Market Scanner (24H)</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
       <div class="watchlist-content" id="watchlistContent"></div>
@@ -661,7 +661,7 @@ function renderWatchlist() {
       }
     }
 
-    // Smart Volume Spikes (Filtered by 10M GP Traded)
+    // Smart Volume Spikes
     if (p1h && p24) {
       const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
       const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
@@ -702,7 +702,6 @@ function renderWatchlist() {
   dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
   dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
 
-  // GROUPS - Favorites explicitly forced to the absolute top
   const groups = [
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "low-title" },
@@ -786,7 +785,6 @@ function renderWatchlist() {
           }
         }
 
-        // Apply Day High/Low visual highlighting to ALL regular items
         if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
            if (dailyGPVolume > 5000000) {
@@ -938,7 +936,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const recentHighs = series.high.slice(-100).filter(x => x != null);
     const recentLows = series.low.slice(-100).filter(x => x != null);
     
-    // Evaluate Trend (Slope of last 20 points)
     const midPoints = [];
     const len = series.labels.length;
     for (let i = Math.max(0, len - 20); i < len; i++) {
@@ -1040,6 +1037,7 @@ function renderOverMax(m) {
   resizeCanvas(); 
   $("#status").textContent = "Consensus Active";
 }
+
 
 function drawChart(series) {
   const c = canvas;
@@ -1356,7 +1354,7 @@ canvas.addEventListener('wheel', ev => {
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
-  document.title = `${m.name} - GE Chart`;
+  document.title = `${m.name} - PocketGE`;
   $("#itemIcon").src = itemIconUrl(m.id);
   $("#status").textContent = "Loading...";
 
