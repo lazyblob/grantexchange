@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -10,13 +10,13 @@
 <meta name="application-name" content="GE Chart">
 <meta name="theme-color" content="#0B0E14">
 
-<title>Grant Exchange - OSRS Charting Tool</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items with volume and trend analysis.">
+<title>GE Chart - OSRS Tracker</title>
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Over-Max cash consensus tracker.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=15">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=15">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=15">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=15">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=16">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -38,7 +38,6 @@
   --text-muted: #787B86;
   --buy-color: #E6C35C; 
   --sell-color: #26A69A; 
-  --iqr-band: rgba(120, 123, 134, 0.08); 
   --vol-buy: rgba(230, 195, 92, 0.35);
   --vol-sell: rgba(38, 166, 154, 0.35);
   --positive: #26A69A;
@@ -185,7 +184,7 @@ h1.brand span { color: var(--border-active); }
 .plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
-  padding: 4px 8px; min-width: 100px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+  padding: 4px 8px; min-width: 130px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
 .price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -216,7 +215,6 @@ h1.brand span { color: var(--border-active); }
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- CALCULATOR STYLING --- */
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
@@ -408,10 +406,11 @@ const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 
+// CORE APP STATE
 let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
 let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
 let hoverIdx = null; 
-let membersOn = false;
+let membersOn = localStorage.getItem('ge_members') === 'true'; // PERSISTENT GAME MODE
 let fullHistorical = null;
 
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
@@ -426,7 +425,6 @@ const tip = document.getElementById("tip");
 let chartData = {};
 let isDrawing = false; 
 
-// CORRECTED OVER-MAX DATA WITH ACCURATE OSRS WIKI IDS
 const overMaxData = {
   "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
   "12424": { name: "3rd age bow", wtb: 2800000000, wts: 3100000000 },
@@ -652,7 +650,6 @@ function renderWatchlist() {
       innerListHTML = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">Empty</div>`;
     } else {
       group.items.forEach(item => {
-        
         let price = 0;
         let subText = "";
 
@@ -941,10 +938,18 @@ function drawChart(series) {
 
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
+  let recentHighIdx = -1, recentLowIdx = -1;
 
   for (let i = 0; i < L.length; i++) {
     if (HI[i] != null && HI[i] > viewMaxHigh) { viewMaxHigh = HI[i]; viewMaxIdx = i; }
     if (LO[i] != null && LO[i] < viewMinLow) { viewMinLow = LO[i]; viewMinIdx = i; }
+  }
+
+  // Find absolute most recent valid data points
+  for (let i = L.length - 1; i >= 0; i--) {
+      if (recentHighIdx === -1 && HI[i] != null) recentHighIdx = i;
+      if (recentLowIdx === -1 && LO[i] != null) recentLowIdx = i;
+      if (recentHighIdx !== -1 && recentLowIdx !== -1) break;
   }
 
   ctx.lineWidth = 1;
@@ -1008,6 +1013,7 @@ function drawChart(series) {
       const y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
+      // Render Global Highs/Lows
       if (isHigh && i === viewMaxIdx) {
         ctx.save();
         ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
@@ -1023,6 +1029,24 @@ function drawChart(series) {
         ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
         ctx.restore();
       }
+
+      // Render Absolute Recent High/Low (with a slightly smaller glow to differentiate if it's not the max/min)
+      if (isHigh && i === recentHighIdx && i !== viewMaxIdx) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
+        ctx.restore();
+      } else if (!isHigh && i === recentLowIdx && i !== viewMinIdx) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
+        ctx.restore();
+      }
+
     }
   }
   
@@ -1079,9 +1103,6 @@ function drawChart(series) {
   }
 }
 
-let isDragging = false, startXMouse = 0, touchMoved = false;
-let initialPinchDist = null, initialZoom = null, isPinching = false;
-
 const handleTooltip = (clientX, clientY) => {
   const rect = canvas.getBoundingClientRect();
   const mx = clientX - rect.left, my = clientY - rect.top;
@@ -1099,16 +1120,33 @@ const handleTooltip = (clientX, clientY) => {
     queueDraw();
   }
   
-  tip.style.display = "block";
-  tip.style.left = (mx + 10) + "px";
-  tip.style.top = (my + 10) + "px";
-  
   let hLow = LO[hoverIdx]; let hHigh = HI[hoverIdx];
 
   tip.innerHTML = `<strong>${new Date(L[hoverIdx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
     <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
     <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
     <span style="color:var(--text-muted)">Volume: ${fmtNum(VO[hoverIdx])}</span>`;
+    
+  tip.style.display = "block";
+
+  // BOUNDARY COLLISION DETECTION
+  const tipW = tip.offsetWidth;
+  const tipH = tip.offsetHeight;
+  
+  let tipX = mx + 15;
+  let tipY = my + 15;
+  
+  // Flip left if crossing right boundary
+  if (tipX + tipW > rect.width - 5) {
+      tipX = mx - tipW - 15;
+  }
+  // Flip up if crossing bottom boundary
+  if (tipY + tipH > rect.height - 5) {
+      tipY = my - tipH - 15;
+  }
+
+  tip.style.left = tipX + "px";
+  tip.style.top = tipY + "px";
 };
 
 canvas.addEventListener('touchstart', ev => {
@@ -1251,6 +1289,15 @@ async function setItem(m) {
 }
 
 (async function boot() {
+  
+  if (membersOn) {
+      $("#btnMembers").classList.add("active");
+      $("#btnF2P").classList.remove("active");
+  } else {
+      $("#btnF2P").classList.add("active");
+      $("#btnMembers").classList.remove("active");
+  }
+
   try {
     mapping = await loadMapping();
     latest = await loadLatest();
@@ -1295,6 +1342,7 @@ async function setItem(m) {
     
     $("#btnF2P").onclick = () => { 
       membersOn = false; 
+      localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
       renderWatchlist();
       qInput.dispatchEvent(new Event("input")); 
@@ -1306,6 +1354,7 @@ async function setItem(m) {
 
     $("#btnMembers").onclick = () => { 
       membersOn = true; 
+      localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); 
       renderWatchlist();
       qInput.dispatchEvent(new Event("input")); 
