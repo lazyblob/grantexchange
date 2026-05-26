@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0B0E14">
 
 <title>GE Chart - OSRS Tracker</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Volume Spikes, Day Highs/Lows, and USD Exchange.">
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Volume Spikes, Day Highs/Lows, and Over-Max Rares.">
 
 <link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
 <link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
@@ -238,10 +238,6 @@ h1.brand span { color: var(--border-active); }
 .calc-result .res-profit { font-weight: bold; font-size: 12px; }
 .calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
 
-/* USD EXCHANGE STYLING */
-.usd-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.usd-result { font-weight: bold; font-size: 16px; color: #4CAF50; display: flex; justify-content: center; padding: 10px 0;}
-
 .watchlist-header {
   padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
   font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
@@ -257,7 +253,8 @@ h1.brand span { color: var(--border-active); }
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.overmax-title { color: var(--fav-gold); }
-.category-title.usd-title { color: #4CAF50; }
+.category-title.high-title { color: var(--positive); }
+.category-title.low-title { color: var(--buy-color); }
 .category-title.fav-title { color: var(--text-main); }
 .category-title.lose-title { color: var(--negative); }
 .category-title.rec-title { color: #FF9800; }
@@ -442,9 +439,6 @@ const tip = document.getElementById("tip");
 let chartData = {};
 let isDrawing = false; 
 
-const BOND_ID = "13190";
-const BOND_REAL_WORLD_PRICE = 8.99;
-
 const overMaxData = {
   "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
   "12424": { name: "3rd age bow", wtb: 2800000000, wts: 3100000000 },
@@ -519,19 +513,6 @@ function updateCalculator() {
     <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
   `;
   $('#calcResult').title = `${sign}${totalProfit.toLocaleString()} gp net profit`;
-}
-
-function updateUSDConverter(bondLivePrice) {
-  const gpInput = parseOSRSNumber($('#usdGpInput').value);
-  if (gpInput <= 0 || !bondLivePrice) {
-    $('#usdResult').textContent = "$0.00 USD";
-    return;
-  }
-
-  const gpValueInUsd = BOND_REAL_WORLD_PRICE / bondLivePrice;
-  const totalUsd = gpInput * gpValueInUsd;
-
-  $('#usdResult').textContent = `$${totalUsd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD`;
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
@@ -641,7 +622,6 @@ function renderWatchlist() {
   const favs = activeItems.filter(item => favorites.includes(String(item.id)));
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
-  const usdExchangeItems = activeItems.filter(item => String(item.id) === BOND_ID);
 
   const topPriced = [...activeItems]
     .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
@@ -661,7 +641,6 @@ function renderWatchlist() {
     const node = latest?.data?.[id];
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
-    const vol = volumes?.data?.[id] || 0;
     
     // Price Drops
     if (node && p1h && p1h.avgHighPrice > 100) {
@@ -711,14 +690,12 @@ function renderWatchlist() {
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
 
-  // Randomize sorting slightly or sort by margin for highs/lows so it's not strictly alphabetical
   dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
   dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
 
   const groups = [
-    { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "fav-title" },
-    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), open: false, className: "usd-title" },
-    { name: "💸 GP to USD", items: usdExchangeItems, open: false, className: "usd-title" },
+    { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "low-title" },
+    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), open: false, className: "high-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, open: false, className: "overmax-title" },
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
     { name: "🚨 Price Drops (1H)", items: topDrops, open: false, className: "lose-title" },
@@ -765,13 +742,6 @@ function renderWatchlist() {
           price = overMaxData[String(item.id)].wts;
           subText = `<span class="wl-trend" style="color:var(--text-muted);" title="Calculated from consensus listings">Est. Value</span>`;
           isSpecial = true;
-        } else if (String(item.id) === BOND_ID) {
-          price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-          if (price > 0) {
-            const valPerMil = (BOND_REAL_WORLD_PRICE / price) * 1000000;
-            subText = `<span class="wl-trend" style="color:#4CAF50;" title="Based on Jagex official $8.99 bond cost">$${valPerMil.toFixed(2)} / 1M</span>`;
-          }
-          isSpecial = true;
         } else if (group.name === "🚨 Price Drops (1H)") {
           const dData = dropsData.find(d => d.item.id === item.id);
           if (dData) {
@@ -806,8 +776,7 @@ function renderWatchlist() {
           }
         }
 
-        // Apply Day High/Low visual highlighting to ALL regular items
-        if (!overMaxData[String(item.id)] && String(item.id) !== BOND_ID && p24 && p24.avgHighPrice > 100) {
+        if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
            if (dailyGPVolume > 5000000) {
                if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 0.99) hlClass = "at-high";
@@ -958,7 +927,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const recentHighs = series.high.slice(-100).filter(x => x != null);
     const recentLows = series.low.slice(-100).filter(x => x != null);
     
-    // Evaluate Trend (Slope of last 20 points)
     const midPoints = [];
     const len = series.labels.length;
     for (let i = Math.max(0, len - 20); i < len; i++) {
@@ -1001,49 +969,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
   }
 
   return { buy: targetBuy, sell: targetSell };
-}
-
-function renderUSDConverter(m, liveBondPrice) {
-  const changes = {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
-  document.querySelectorAll(".view-btn").forEach(b => {
-    const p = b.dataset.view;
-    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg neutral">${changes[p]}</span>`;
-  });
-
-  $("#buyPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span>
-    </div>
-    <div class="price-val"><span>${fmtGp(liveBuyRaw)}</span></div>
-  `;
-  
-  $("#sellPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span>
-    </div>
-    <div class="price-val"><span>${fmtGp(liveSellRaw)}</span></div>
-  `;
-
-  $("#sideModule").innerHTML = `
-    <div class="calc-header" style="color: #4CAF50;">💸 Live Currency Exchange</div>
-    <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0 10px 0; line-height: 1.4;">
-      Calculates the legal USD value of OSRS Gold based on the live in-game price of Bonds ($8.99).
-    </div>
-    <div class="usd-grid">
-      <div class="calc-input">
-        <label>Enter OSRS GP</label>
-        <input type="text" id="usdGpInput" value="10m" placeholder="10m">
-      </div>
-      <div class="usd-result" id="usdResult">$0.00 USD</div>
-    </div>
-  `;
-
-  $('#usdGpInput').addEventListener('input', () => updateUSDConverter(liveBondPrice));
-  updateUSDConverter(liveBondPrice); 
-
-  offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
-  resizeCanvas(); 
-  $("#status").textContent = "Currency Exchange";
 }
 
 function renderOverMax(m) {
@@ -1103,6 +1028,7 @@ function renderOverMax(m) {
   resizeCanvas(); 
   $("#status").textContent = "Consensus Active";
 }
+
 
 function drawChart(series) {
   const c = canvas;
@@ -1455,11 +1381,6 @@ async function setItem(m) {
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
-  
-  if (String(m.id) === BOND_ID) {
-     renderUSDConverter(m, liveSellRaw);
-     return;
-  }
   
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy;
