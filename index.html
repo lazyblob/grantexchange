@@ -11,12 +11,12 @@
 <meta name="theme-color" content="#0B0E14">
 
 <title>GE Chart - OSRS Tracker</title>
-<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Volume Spikes, Price Drops, and USD Exchange.">
+<meta name="description" content="Advanced charting tool for OSRS Grand Exchange items. Includes Volume Spikes, Day Highs/Lows, and USD Exchange.">
 
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=18">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=18">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=18">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=18">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
+<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
+<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=19">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -268,10 +268,18 @@ h1.brand span { color: var(--border-active); }
 .wl-item {
   display: flex; align-items: center; justify-content: space-between; padding: 6px 10px;
   cursor: pointer; font-size: 12px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
+  transition: background 0.2s, border 0.2s;
 }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
 .wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
+
+/* DAY HIGH / LOW HIGHLIGHTING */
+.wl-item.at-high { background: rgba(38, 166, 154, 0.1); border-right: 3px solid var(--sell-color); }
+.wl-item.at-low { background: rgba(230, 195, 92, 0.1); border-right: 3px solid var(--buy-color); }
+.wl-item.active.at-high { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--sell-color); }
+.wl-item.active.at-low { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--buy-color); }
+
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
 .wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -280,6 +288,7 @@ h1.brand span { color: var(--border-active); }
 .wl-trend { font-size: 9px; cursor: help;}
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
+.wl-trend.neutral { color: var(--text-muted); }
 
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
@@ -402,7 +411,7 @@ h1.brand span { color: var(--border-active); }
       </div>
 
       <div class="watchlist-header">
-        <span>Market Scanner</span>
+        <span>Market Scanner (24H)</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
       </div>
       <div class="watchlist-content" id="watchlistContent"></div>
@@ -644,6 +653,8 @@ function renderWatchlist() {
 
   const dropsData = [];
   const spikesData = [];
+  const dayLows = [];
+  const dayHighs = [];
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -652,26 +663,45 @@ function renderWatchlist() {
     const p24 = past24h?.data?.[id];
     const vol = volumes?.data?.[id] || 0;
     
+    // Price Drops
     if (node && p1h && p1h.avgHighPrice > 100) {
       const current = node.high || node.avgHighPrice;
       const hourAgo = p1h.avgHighPrice;
       if (current && hourAgo) {
         const dropPct = (current - hourAgo) / hourAgo;
-        if (dropPct <= -0.05) { 
-          dropsData.push({ item, pct: dropPct });
+        if (dropPct <= -0.05) dropsData.push({ item, pct: dropPct });
+      }
+    }
+
+    // Smart Volume Spikes (Filtered by 10M GP Traded)
+    if (p1h && p24) {
+      const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
+      const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
+      
+      if (vol1h > 100 && vol24h > 1000) { 
+        const currentPrice = node?.high || node?.avgHighPrice || 0;
+        const gpMoved1h = vol1h * currentPrice;
+        
+        if (gpMoved1h > 10000000) {
+          const spikeRatio = (vol1h * 24) / vol24h;
+          if (spikeRatio > 2.0) spikesData.push({ item, ratio: spikeRatio });
         }
       }
     }
 
-    if (p1h && p24) {
-      const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
-      const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
-      if (vol1h > 100 && vol24h > 1000) { 
-        const spikeRatio = (vol1h * 24) / vol24h;
-        if (spikeRatio > 2.0) { 
-          spikesData.push({ item, ratio: spikeRatio });
-        }
-      }
+    // Day Lows / Day Highs
+    if (node && p24 && p24.avgHighPrice > 100) {
+       const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+       if (dailyGPVolume > 5000000) {
+           const currentSell = node.high;
+           const currentBuy = node.low;
+           if (currentBuy > 0 && p24.avgLowPrice > 0 && currentBuy <= p24.avgLowPrice * 1.01) {
+               dayLows.push(item);
+           }
+           if (currentSell > 0 && p24.avgHighPrice > 0 && currentSell >= p24.avgHighPrice * 0.99) {
+               dayHighs.push(item);
+           }
+       }
     }
   });
 
@@ -681,12 +711,18 @@ function renderWatchlist() {
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
 
+  // Randomize sorting slightly or sort by margin for highs/lows so it's not strictly alphabetical
+  dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
+  dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
+
   const groups = [
+    { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "fav-title" },
+    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), open: false, className: "usd-title" },
     { name: "💸 GP to USD", items: usdExchangeItems, open: false, className: "usd-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, open: false, className: "overmax-title" },
     { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
     { name: "🚨 Price Drops (1H)", items: topDrops, open: false, className: "lose-title" },
-    { name: "🌋 Volume Spikes", items: topSpikes, open: false, className: "rec-title" },
+    { name: "🌋 Volume Spikes (1H)", items: topSpikes, open: false, className: "rec-title" },
     { name: "📈 Highest Vol (24H)", items: topVol, open: false, className: "" },
     { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
   ];
@@ -720,12 +756,16 @@ function renderWatchlist() {
         let subText = "";
         let isSpecial = false;
 
+        const node = latest?.data?.[String(item.id)];
+        const p24 = past24h?.data?.[String(item.id)];
+        
+        let hlClass = "";
+
         if (overMaxData[String(item.id)]) {
           price = overMaxData[String(item.id)].wts;
           subText = `<span class="wl-trend" style="color:var(--text-muted);" title="Calculated from consensus listings">Est. Value</span>`;
           isSpecial = true;
         } else if (String(item.id) === BOND_ID) {
-          const node = latest?.data?.[String(item.id)];
           price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
           if (price > 0) {
             const valPerMil = (BOND_REAL_WORLD_PRICE / price) * 1000000;
@@ -736,15 +776,13 @@ function renderWatchlist() {
           const dData = dropsData.find(d => d.item.id === item.id);
           if (dData) {
             const val = (dData.pct * 100).toFixed(1);
-            const node = latest?.data?.[String(item.id)];
             price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
             subText = `<span class="wl-trend down">${val}%</span>`;
             isSpecial = true;
           }
-        } else if (group.name === "🌋 Volume Spikes") {
+        } else if (group.name === "🌋 Volume Spikes (1H)") {
           const sData = spikesData.find(s => s.item.id === item.id);
           if (sData) {
-            const node = latest?.data?.[String(item.id)];
             price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
             subText = `<span class="wl-trend up">${sData.ratio.toFixed(1)}x Vol</span>`;
             isSpecial = true;
@@ -752,14 +790,11 @@ function renderWatchlist() {
         }
 
         if (!isSpecial) {
-          const node = latest?.data?.[String(item.id)];
           price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-
           let currentMid = null;
           if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
           else if (node?.high || node?.low) currentMid = node.high || node.low;
 
-          const p24 = past24h?.data?.[String(item.id)];
           let pastMid = null;
           if (p24?.avgHighPrice && p24?.avgLowPrice) pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
           else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
@@ -767,13 +802,23 @@ function renderWatchlist() {
           if (currentMid !== null && pastMid !== null) {
             if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up" title="Trending ABOVE 24H Average">▲</span>`;
             else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down" title="Trending BELOW 24H Average">▼</span>`;
+            else subText = `<span class="wl-trend neutral" title="Neutral against 24H Average">—</span>`;
           }
+        }
+
+        // Apply Day High/Low visual highlighting to ALL regular items
+        if (!overMaxData[String(item.id)] && String(item.id) !== BOND_ID && p24 && p24.avgHighPrice > 100) {
+           const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+           if (dailyGPVolume > 5000000) {
+               if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 0.99) hlClass = "at-high";
+               else if (node?.low > 0 && p24.avgLowPrice > 0 && node.low <= p24.avgLowPrice * 1.01) hlClass = "at-low";
+           }
         }
 
         const activeClass = selected?.id === item.id ? 'active' : '';
         
         innerListHTML += `
-          <div class="wl-item ${activeClass}" data-id="${item.id}">
+          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
               <img src="${itemIconUrl(item.id)}" alt="" loading="lazy">
               <span class="wl-item-name">${item.name}</span>
@@ -903,7 +948,6 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-// SMART MOMENTUM TRADE ENGINE
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
@@ -911,8 +955,8 @@ function runTradeEngine(rawLow, rawHigh, series) {
   let targetSell = rawHigh;
 
   if (series && series.high.length > 0 && series.low.length > 0) {
-    const recentHighs = series.high.slice(-40).filter(x => x != null);
-    const recentLows = series.low.slice(-40).filter(x => x != null);
+    const recentHighs = series.high.slice(-100).filter(x => x != null);
+    const recentLows = series.low.slice(-100).filter(x => x != null);
     
     // Evaluate Trend (Slope of last 20 points)
     const midPoints = [];
@@ -930,7 +974,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
       const support = Math.floor(percentile(recentLows, 25)); 
       let resistance = Math.ceil(percentile(recentHighs, 75)); 
       
-      // Momentum dampener
       if (slope < -1) {
           const ultraRecentHighs = series.high.slice(-10).filter(x => x != null);
           if (ultraRecentHighs.length > 3) {
