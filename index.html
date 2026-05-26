@@ -113,15 +113,8 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
 
-h1.brand {
-  margin: 0; padding: 0; line-height: 1;
-  font-size: 15px; font-weight: 800; color: var(--text-main); cursor: pointer;
-  letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px;
-}
-h1.brand span { color: var(--border-active); }
-
 .search-group { display: flex; align-items: center; gap: 4px; }
-.sbar { position: relative; width: 200px; }
+.sbar { position: relative; width: 190px; }
 .sbar input {
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
   color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px;
@@ -165,10 +158,10 @@ h1.brand span { color: var(--border-active); }
 .pct-chg.negative { color: var(--negative); }
 .pct-chg.neutral { color: var(--text-muted); }
 
-.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; }
+.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; }
 .mode-pill button {
-  background: transparent; border: none; color: var(--text-muted); padding: 4px 8px;
-  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px;
+  background: transparent; border: none; color: var(--text-muted); padding: 0 10px;
+  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%;
 }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
 
@@ -301,15 +294,14 @@ h1.brand span { color: var(--border-active); }
 /* LANDSCAPE (Pro Dash Mode) */
 @media (max-height: 500px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
-  .top-panel { padding: 3px 6px; }
-  .brand { display: none; } 
+  .top-panel { padding: 4px 8px; justify-content: flex-start; gap: 10px; }
   .sbar { width: 160px; }
   .sbar input { padding-top: 3px; padding-bottom: 3px; }
   .fav-btn { padding: 3px 6px; }
   .status-text { display: none; }
   .plaque-bar { top: 4px; left: 4px; }
   .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 280px; font-size: 11px; } 
+  .watchlist-container { width: 290px; font-size: 11px; } /* Expand space now that top bar is streamlined */
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 6px 8px; }
   .calc-grid { gap: 4px; }
@@ -320,6 +312,7 @@ h1.brand span { color: var(--border-active); }
 /* PORTRAIT (Vertical Stacked Mode) */
 @media screen and (orientation: portrait) {
   .wrap { padding: 6px; overflow-y: auto; }
+  .top-panel { padding: 6px 8px; }
   .content-area { flex-direction: column; }
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
@@ -337,8 +330,11 @@ h1.brand span { color: var(--border-active); }
 <div class="wrap">
   <div class="top-panel">
     <div class="panel-left">
-      <h1 class="brand" onclick="location.reload();">Pocket<span>GE</span></h1>
-      
+      <div class="mode-pill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
+      </div>
+
       <div class="search-group">
         <div class="sbar">
           <img id="itemIcon" src="" alt="">
@@ -362,13 +358,7 @@ h1.brand span { color: var(--border-active); }
       </div>
     </div>
 
-    <div class="panel-left">
-      <span id="status" class="status-text">Connecting...</span>
-      <div class="mode-pill">
-        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-        <button data-mode="members" id="btnMembers">Members</button>
-      </div>
-    </div>
+    <span id="status" class="status-text">Connecting...</span>
   </div>
 
   <div class="content-area">
@@ -903,6 +893,7 @@ function ypx(v, vmin, vmax, y0, h) {
   return y0 + (1 - ((v - vmin) / (vmax - vmin))) * h;
 }
 
+// REST OF APPLICATION LOGIC
 function linearRegression(x, y) {
   const n = x.length;
   let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
