@@ -19,12 +19,12 @@
 <meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
-<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -140,7 +140,6 @@ button, input { touch-action: manipulation; }
 .calc-container input:focus { border-color: var(--border-active); }
 .calc-breakdown { margin-top: 8px; font-size: 10px; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-main); }
 .calc-breakdown .row { display: flex; justify-content: space-between; }
-.watchlist-header { padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main); font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .watchlist-content { flex: 1; overflow-y: auto; }
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title { padding: 8px 14px; font-size: 11px; font-weight: bold; color: var(--border-active); background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between; }
@@ -150,8 +149,10 @@ button, input { touch-action: manipulation; }
 .category-title.fav-title { color: var(--text-main); }
 .category-title.lose-title { color: var(--negative); }
 .category-title.rec-title { color: #FF9800; }
-.category-title.margin-title { color: #BB86FC; }
+.category-title.margin-title { color: #2ECC71; }
+.category-title.marginlo-title { color: #7FE3A6; }
 .category-title.ylow-title { color: #4FC3F7; }
+.category-title.fivey-title { color: #9C8CFF; }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
@@ -197,6 +198,7 @@ button, input { touch-action: manipulation; }
   .plaque-bar { top: 8px; left: 8px; }
   .price-box { padding: 4px 8px; min-width: 120px; }
   .price-val { font-size: 13px; }
+  .calc-container input { font-size: 16px; }
 }
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
@@ -206,7 +208,7 @@ button, input { touch-action: manipulation; }
   .panel-left { flex-wrap: nowrap; gap: 4px; height: 100%; }
   .mode-pill { height: 100%; }
   .sbar { width: 140px; }
-  .sbar input { padding-top: 2px; padding-bottom: 2px; height: 100%; font-size: 14px; }
+  .sbar input { padding-top: 2px; padding-bottom: 2px; height: 100%; font-size: 16px; }
   .brand-logo { display: none !important; }
   .ticker-title-group { display: none !important; }
   .ticker-header { flex: 1; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; }
@@ -216,7 +218,7 @@ button, input { touch-action: manipulation; }
   .watchlist-container { width: 230px; font-size: 11px; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 4px 6px; gap: 4px;}
-  .calc-container input { padding: 4px 6px; font-size: 11px;}
+  .calc-container input { padding: 4px 6px; font-size: 16px;}
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -235,7 +237,7 @@ button, input { touch-action: manipulation; }
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();"><img src="https://oldschool.runescape.wiki/images/Blue_partyhat.png" alt="">Pocket<span>GE</span></span>
+            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">Pocket<span>GE</span></span>
 
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -311,10 +313,6 @@ button, input { touch-action: manipulation; }
 
     <div class="watchlist-container">
       <div class="calc-container" id="sideModule"></div>
-      <div class="watchlist-header">
-        <span>Market Scanner</span>
-        <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
-      </div>
       <div class="watchlist-content" id="watchlistContent"></div>
     </div>
 
@@ -331,9 +329,9 @@ const LOW_VOL_THRESHOLD = 10000;
 const SCAN_VOL_POOL = 25;
 const SCAN_PRICE_POOL = 25;
 const SCAN_CONCURRENCY = 4;
-const BLUE_PHAT_ID = "1042";
+const LANDING_ID = "12389"; /* Gilded scimitar (F2P, GE-tradeable) */
 
-let mapping = [], latest = null, past24h = null, past1h = null, volumes = null, selected = null;
+let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
 let currentSeries = null, view = "1m", zoom = 1.0, offset = 0;
 let hoverIdx = null;
 let selectedAbsIdx = null;
@@ -346,24 +344,22 @@ let liveBuyRaw = null, liveSellRaw = null;
 let isCalcOpen = false;
 let currentItemSrc = null;
 let currentItemLowVol = false;
+let overMaxFull = null;
 let historyCache = {};
 let marginCache = {};
 let scanStatus = { history: 'idle', margin: 'idle' };
 
 let groupOpenStates = {
   "⭐ Favorites": true,
-  "📉 At Day Lows": false,
-  "📈 At Day Highs": false,
-  "💜 Top Margins · High Vol (1D)": false,
-  "💜 Top Margins · Low Vol (1D)": false,
+  "💰 Top Margins · High Vol (1D)": true,
+  "💵 Top Margins · Low Vol (1D)": false,
   "📅 Top Margins · High Vol (1M)": false,
-  "📅 Top Margins · Low Vol (1M)": false,
+  "🗓️ Top Margins · Low Vol (1M)": false,
+  "📉 At Day Lows": false,
+  "🚀 At Day Highs": false,
   "🔵 At 1-Year Lows": false,
-  "🟦 At 5-Year Lows": false,
-  "👑 Over-Max Rares": false,
-  "🌋 Volume Spikes (1H)": false,
-  "📊 Highest Vol (24H)": false,
-  "💎 Most Expensive": false
+  "🧊 At 5-Year Lows": false,
+  "👑 Over-Max Rares": false
 };
 
 const canvas = document.getElementById("chart");
@@ -528,6 +524,9 @@ function updateFavoriteBtn() {
 
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
+  /* Skip transient zero/tiny sizes (mid-rotation, or when the on-screen keyboard
+     collapses the layout) — sizing the canvas to those values breaks the chart. */
+  if (rect.width < 10 || rect.height < 60) return;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = rect.width * dpr;
   canvas.height = (rect.height - 24) * dpr;
@@ -536,7 +535,15 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   queueDraw();
 }
-window.addEventListener('resize', resizeCanvas);
+let _resizeTimer = null;
+function scheduleResize(delay) {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(resizeCanvas, delay || 0);
+}
+window.addEventListener('resize', () => scheduleResize(60));
+/* Orientation changes settle layout asynchronously on mobile; re-measure after
+   a short delay (and again later) so portrait↔landscape doesn't leave a broken canvas. */
+window.addEventListener('orientationchange', () => { scheduleResize(250); setTimeout(resizeCanvas, 600); });
 
 /* Deep scan: 1Y/5Y lows + 1M margins. Wiki API has no bulk endpoint for these,
    so we per-item fetch a bounded pool (top vol + top price), throttled & cached. */
@@ -587,12 +594,6 @@ async function runMarginScan() {
   scanStatus.margin = 'done'; renderWatchlist();
 }
 
-function marginFromP(p) {
-  if (!p || !p.avgHighPrice || !p.avgLowPrice) return null;
-  const sell = p.avgHighPrice, buy = p.avgLowPrice;
-  return { sell, buy, margin: sell - buy - calculateTax(sell) };
-}
-
 function trendSub(node, p24) {
   let currentMid = null;
   if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
@@ -616,39 +617,18 @@ function renderWatchlist() {
   container.innerHTML = "";
 
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
-  $("#wlCount").textContent = `${activeItems.length} Tracked`;
 
   const favs = activeItems.filter(item => favorites.includes(String(item.id)));
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
 
-  const topPriced = [...activeItems]
-    .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
-    .slice(0, 30);
-  const topVol = [...activeItems]
-    .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
-    .slice(0, 30);
-
-  const spikesData = [], dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [];
+  const dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [];
 
   activeItems.forEach(item => {
     const id = String(item.id);
     if (overMaxData[id]) return;
     const node = latest?.data?.[id];
-    const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
-
-    if (p1h && p24) {
-      const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
-      const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
-      if (vol1h > 100 && vol24h > 1000) {
-        const currentPrice = node?.high || node?.avgHighPrice || 0;
-        if (vol1h * currentPrice > 10000000) {
-          const spikeRatio = (vol1h * 24) / vol24h;
-          if (spikeRatio > 2.0) spikesData.push({ item, ratio: spikeRatio });
-        }
-      }
-    }
 
     if (p24 && p24.avgHighPrice > 100) {
       const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
@@ -656,16 +636,23 @@ function renderWatchlist() {
         if (node?.low > 0 && p24.avgLowPrice > 0 && node.low <= p24.avgLowPrice * 0.96) dayLows.push(item);
         if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 1.04) dayHighs.push(item);
       }
-      const m = marginFromP(p24);
-      if (m && m.margin > 0 && (p24.highPriceVolume || 0) > 0 && (p24.lowPriceVolume || 0) > 0 && m.margin < m.sell * 0.7) {
-        const row = { item, margin: m.margin };
+    }
+
+    /* 1D margin from the live instant-buy/instant-sell spread — the real margin
+       a flipper can capture right now. The 24h volume-weighted averages compress
+       the true spread and were hiding genuinely-spread items (e.g. uncut diamond)
+       while surfacing misleading near-zero margins. Require recent trades both sides. */
+    if (node && node.high > 0 && node.low > 0 && node.high > node.low
+        && p24 && (p24.highPriceVolume || 0) > 0 && (p24.lowPriceVolume || 0) > 0) {
+      const sell = node.high, buy = node.low;
+      const margin = sell - buy - calculateTax(sell);
+      if (margin > 0 && margin < sell * 0.7) {
+        const row = { item, margin };
         if (isLowVolume(item.id)) marginLow1d.push(row); else marginHigh1d.push(row);
       }
     }
   });
 
-  spikesData.sort((a, b) => b.ratio - a.ratio);
-  const topSpikes = spikesData.slice(0, 30).map(t => t.item);
   dayLows.sort((a, b) => priceOf(b) - priceOf(a));
   dayHighs.sort((a, b) => priceOf(b) - priceOf(a));
   marginHigh1d.sort((a, b) => b.margin - a.margin);
@@ -700,25 +687,18 @@ function renderWatchlist() {
   const marginEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend up">+${abbreviateNumber(r.margin)} ${tag}</span>` }));
   const lowEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend" style="color:#4FC3F7;">${tag} ${r.pct <= 0.5 ? 'AT low' : '+' + r.pct.toFixed(1) + '%'}</span>` }));
   const overEntries = overMaxItems.map(item => ({ item, price: overMaxData[String(item.id)].wts, sub: `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>` }));
-  const spikeEntries = topSpikes.map(item => {
-    const s = spikesData.find(d => d.item.id === item.id);
-    return { item, price: priceOf(item), sub: `<span class="wl-trend up">${s ? s.ratio.toFixed(1) : '?'}x Vol</span>` };
-  });
 
   const groups = [
     { name: "⭐ Favorites", className: "fav-title", entries: plainEntries(favs), alwaysShow: true },
-    { name: "📉 At Day Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)) },
-    { name: "📈 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
-    { name: "💜 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
-    { name: "💜 Top Margins · Low Vol (1D)", className: "margin-title", entries: marginEntries(marginLow1d, "ea") },
+    { name: "💰 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
+    { name: "💵 Top Margins · Low Vol (1D)", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
     { name: "📅 Top Margins · High Vol (1M)", className: "margin-title", entries: marginEntries(marginHigh1m, "ea avg"), scan: "margin" },
-    { name: "📅 Top Margins · Low Vol (1M)", className: "margin-title", entries: marginEntries(marginLow1m, "ea avg"), scan: "margin" },
+    { name: "🗓️ Top Margins · Low Vol (1M)", className: "marginlo-title", entries: marginEntries(marginLow1m, "ea avg"), scan: "margin" },
+    { name: "📉 At Day Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)) },
+    { name: "🚀 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
     { name: "🔵 At 1-Year Lows", className: "ylow-title", entries: lowEntries(at1yLows, "1Y"), scan: "history" },
-    { name: "🟦 At 5-Year Lows", className: "ylow-title", entries: lowEntries(at5yLows, "5Y"), scan: "history" },
-    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries },
-    { name: "🌋 Volume Spikes (1H)", className: "rec-title", entries: spikeEntries },
-    { name: "📊 Highest Vol (24H)", className: "", entries: plainEntries(topVol) },
-    { name: "💎 Most Expensive", className: "", entries: plainEntries(topPriced) }
+    { name: "🧊 At 5-Year Lows", className: "fivey-title", entries: lowEntries(at5yLows, "5Y"), scan: "history" },
+    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -787,7 +767,7 @@ function renderWatchlist() {
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = () => {
       const m = mapping.find(x => String(x.id) === String(el.getAttribute('data-id')));
-      if (m) setItem(m);
+      if (m) { setItem._userPicked = false; setItem(m); }
     };
   });
 }
@@ -949,12 +929,17 @@ function drawChart(series) {
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
   const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
 
-  const dataW = w * 0.85;
+  const dataW = w * 0.95;
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX));
   const stepX = dataW / Math.max(1, (L.length - 1));
 
-  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
+  /* price chart occupies the top 80%, volume bars the bottom 20%. The y-axis
+     gridlines/labels must use h_price (not h) so the labels line up with where
+     prices are actually plotted. */
+  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
+
+  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price };
 
   let viewMaxHigh = -Infinity, viewMinLow = Infinity, viewMaxIdx = -1, viewMinIdx = -1;
   for (let i = 0; i < L.length; i++) {
@@ -967,26 +952,37 @@ function drawChart(series) {
     if (HI[i] != null && HI[i] > recHiVal) { recHiVal = HI[i]; recHiIdx = i; }
     if (LO[i] != null && LO[i] < recLoVal) { recLoVal = LO[i]; recLoIdx = i; }
   }
+  chartData.markers = [viewMaxIdx, viewMinIdx, recHiIdx, recLoIdx].filter(i => i >= 0);
 
   ctx.lineWidth = 1;
   const linesY = 5;
   ctx.font = "10px BlinkMacSystemFont, sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
   for (let i = 0; i <= linesY; i++) {
-    const y = y0 + (h * i / linesY);
+    const y = y0 + (h_price * i / linesY);
     ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     const v = Math.round(vmax - (vmax - vmin) * i / linesY);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
     ctx.fillText(abbreviateNumber(v), x0 - 6, y);
   }
+
+  /* x-axis label granularity adapts to the visible time span: intraday → time,
+     up to ~6 months → month/day, up to ~2 years → month/year, longer → year. */
+  const spanSec = L.length > 1 ? (L[L.length - 1] - L[0]) : 0;
+  const fmtAxis = (t) => {
+    const d = new Date(t * 1000);
+    if (spanSec <= 2 * 86400) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (spanSec <= 180 * 86400) return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    if (spanSec <= 730 * 86400) return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
+    return String(d.getFullYear());
+  };
   ctx.textAlign = "center"; ctx.textBaseline = "top";
+  let lastAxisLabel = null;
   for (let i = 0; i < L.length; i += xStep) {
     const x = x0 + i * stepX;
     ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
-    const dateStr = view === "1d" ? new Date(L[i] * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(L[i] * 1000).toLocaleDateString([], { month: 'short', day: 'numeric' });
-    ctx.fillText(dateStr, x, y0 + h + 4);
+    const dateStr = fmtAxis(L[i]);
+    if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, x, y0 + h + 4); lastAxisLabel = dateStr; }
   }
-
-  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
   const midPoints = [];
   for (let i = 0; i < L.length; i++) if (LO[i] != null && HI[i] != null) midPoints.push({ i, v: (LO[i] + HI[i]) / 2 });
@@ -1001,29 +997,35 @@ function drawChart(series) {
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
+  /* Draw a visible point marker at every data point (so high-priced/low-volume
+     series read as dotted lines, not bare lines) plus a connecting dash. */
   function drawDashes(arr, color, isHigh) {
     ctx.fillStyle = color;
     const dashWidth = Math.max(3, stepX * 1.4), dashHeight = 2;
+    const dotR = Math.max(1.6, Math.min(3.2, stepX * 0.45));
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
       const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.fillRect(x - dashWidth / 2, y - dashHeight / 2, dashWidth, dashHeight);
+      ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2); ctx.fill();
       if ((isHigh && i === viewMaxIdx) || (!isHigh && i === viewMinIdx)) {
         ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.85; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
         ctx.restore();
       }
     }
   }
-  drawDashes(LO, buyColor, false);
+  /* Draw highs first, then lows, so the gold (buy) markers stay visible on top
+     for single-price historical series where low === high. */
   drawDashes(HI, sellColor, true);
+  drawDashes(LO, buyColor, false);
 
   function ring(i, arr, color) {
     if (i < 0 || arr[i] == null) return;
     const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
-    ctx.save(); ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2);
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke(); ctx.restore();
   }
   ring(recHiIdx, HI, sellColor);
   ring(recLoIdx, LO, buyColor);
@@ -1070,8 +1072,8 @@ function drawChart(series) {
       [[LO[sLocal], buyColor], [HI[sLocal], sellColor]].forEach(([val, col]) => {
         if (val == null) return;
         const y = ypx(val, vmin, vmax, y0, h_price);
-        ctx.beginPath(); ctx.arc(sx, y, 5, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill();
-        ctx.beginPath(); ctx.arc(sx, y, 5, 0, Math.PI * 2); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(sx, y, 7, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill();
+        ctx.beginPath(); ctx.arc(sx, y, 7, 0, Math.PI * 2); ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.stroke();
       });
       ctx.restore();
     }
@@ -1103,8 +1105,16 @@ function localFromClientX(clientX) {
 }
 
 function selectAt(clientX, clientY) {
-  const local = localFromClientX(clientX);
+  let local = localFromClientX(clientX);
   if (local < 0) return;
+  /* snap to a nearby highlighted marker (period/recent high & low) so the dots
+     are easier to tap precisely. */
+  const markers = chartData.markers;
+  if (markers && markers.length) {
+    let best = -1, bestDist = 2.5;
+    for (const mi of markers) { const d = Math.abs(mi - local); if (d < bestDist) { bestDist = d; best = mi; } }
+    if (best >= 0) local = best;
+  }
   selectedAbsIdx = offset + local;
   hoverIdx = local;
   showTipFor(local, clientX, clientY);
@@ -1168,16 +1178,19 @@ function renderOverMax(m) {
   });
   const now = Math.floor(Date.now() / 1000);
   const mock = emptySeries();
-  let wtb = o.wtb * 0.95, wts = o.wts * 0.95;
-  for (let i = 365; i >= 0; i--) {
+  /* 5 years of daily points so 1Y and 5Y timeframes have data to display. */
+  const noise = (o.wtb + o.wts) * 0.01;
+  let wtb = o.wtb * 0.8, wts = o.wts * 0.8;
+  for (let i = 1825; i >= 0; i--) {
     mock.labels.push(now - (i * 86400));
-    wtb += (o.wtb - wtb) * 0.05 + (Math.random() - 0.5) * 60000000;
-    wts += (o.wts - wts) * 0.05 + (Math.random() - 0.5) * 60000000;
+    wtb += (o.wtb - wtb) * 0.03 + (Math.random() - 0.5) * noise;
+    wts += (o.wts - wts) * 0.03 + (Math.random() - 0.5) * noise;
     if (wts <= wtb) wts = wtb + 10000000;
-    mock.low.push(wtb); mock.high.push(wts);
+    mock.low.push(Math.round(wtb)); mock.high.push(Math.round(wts));
     mock.lowVol.push(Math.floor(Math.random() * 5)); mock.highVol.push(Math.floor(Math.random() * 5));
   }
-  currentSeries = filterSeries(mock, getPeriod(view));
+  overMaxFull = mock;
+  currentSeries = filterSeries(overMaxFull, getPeriod(view));
   $("#buyPrice").innerHTML = `<div class="price-label">Target WTB <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wtb)}</span></div>`;
   $("#sellPrice").innerHTML = `<div class="price-label">Target WTS <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wts)}</span></div>`;
   $("#tickerLivePrice").textContent = abbreviateNumber(o.wts);
@@ -1201,8 +1214,18 @@ function renderOverMax(m) {
 /* Re-render only the chart + targets when the user changes timeframe.
    Don't refetch APIs; we already have all the data sources cached. */
 function refreshChart() {
-  if (!selected || !currentItemSrc) return;
-  if (overMaxData[String(selected.id)]) return;
+  if (!selected) return;
+  /* over-max rares: re-filter the cached synthetic series so 1Y/5Y cycle without
+     regenerating (and without an API source). */
+  if (overMaxData[String(selected.id)]) {
+    if (!overMaxFull) return;
+    currentSeries = filterSeries(overMaxFull, getPeriod(view));
+    selectedAbsIdx = null;
+    offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+    resizeCanvas();
+    return;
+  }
+  if (!currentItemSrc) return;
   currentSeries = filterSeries(seriesForView(view, currentItemSrc, currentItemLowVol), getPeriod(view));
   selectedAbsIdx = null;
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
@@ -1276,7 +1299,6 @@ setItem._userPicked = false;
     mapping = await loadMapping();
     latest = await loadLatest();
     try { past24h = await load24h(); } catch (e) {}
-    try { past1h = await jget(PRICES_API + "/1h"); } catch (e) {}
     try { volumes = await loadVolumes(); } catch (e) {}
 
     renderWatchlist();
@@ -1310,8 +1332,8 @@ setItem._userPicked = false;
       historyCache = {}; marginCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
       renderWatchlist();
       if (selected?.members) {
-        const phat = mapping.find(x => String(x.id) === BLUE_PHAT_ID);
-        if (phat) setItem(phat);
+        const landing = mapping.find(x => String(x.id) === LANDING_ID);
+        if (landing) { setItem._userPicked = false; setItem(landing); }
       }
     };
     $("#btnMembers").onclick = () => {
@@ -1324,7 +1346,6 @@ setItem._userPicked = false;
     setInterval(async () => {
       try {
         latest = await loadLatest();
-        try { past1h = await jget(PRICES_API + "/1h"); } catch (e) {}
         renderWatchlist();
         if (selected && !overMaxData[String(selected.id)]) {
           const node = latest.data[String(selected.id)];
@@ -1342,16 +1363,14 @@ setItem._userPicked = false;
 
     resizeCanvas();
 
-    /* Landing item: Blue partyhat. Low volume → defaults to 1M view. */
-    const phat = mapping.find(x => String(x.id) === BLUE_PHAT_ID);
-    if (phat) {
-      view = '1m';
-      document.querySelectorAll(".view-btn").forEach(b => b.classList.toggle('active', b.dataset.view === '1m'));
-      setItem._userPicked = true;
-      setItem(phat);
+    /* Landing item: Gilded scimitar. Timeframe defaults by volume (low → 1M, high → 1D). */
+    const landing = mapping.find(x => String(x.id) === LANDING_ID);
+    if (landing) {
+      setItem._userPicked = false;
+      setItem(landing);
     } else {
       const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
-      if (ruby) setItem(ruby);
+      if (ruby) { setItem._userPicked = false; setItem(ruby); }
     }
   } catch (e) {
     $("#status").textContent = "API Error";
