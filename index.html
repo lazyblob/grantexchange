@@ -89,10 +89,14 @@ button, input { touch-action: manipulation; }
   flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
 }
 
+/* NEW WRAPPER FOR MOBILE ROW MERGING */
+.top-row-wrapper {
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+
 .top-panel {
   background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
   padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
-  flex-shrink: 0;
 }
 
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
@@ -211,8 +215,9 @@ button, input { touch-action: manipulation; }
 }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 
+/* SLIMMER SIDEBAR FOR MAX CHART WIDTH */
 .watchlist-container {
-  width: 340px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
+  width: 300px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
@@ -288,6 +293,7 @@ button, input { touch-action: manipulation; }
 /* MOBILE PORTRAIT (Stacked Vertical View) */
 @media screen and (max-width: 1023px) and (orientation: portrait) {
   .wrap { padding: 6px; overflow-y: auto; }
+  .top-row-wrapper { gap: 4px; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   
@@ -299,11 +305,11 @@ button, input { touch-action: manipulation; }
   .content-area { flex-direction: column; }
   
   .ticker-title-group { display: none !important; }
-  .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; margin-bottom: -4px;}
+  .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; }
 
   .toolbar { width: 100%; justify-content: space-between; }
-  .toolbar button { flex: 1; padding: 4px 6px; font-size: 11px; }
-  .pct-chg { font-size: 8px; margin: 0; }
+  .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
+  .pct-chg { display: none !important; } /* NUKED PERCENTAGE TEXT */
 
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
@@ -313,31 +319,40 @@ button, input { touch-action: manipulation; }
   .price-val { font-size: 13px; }
 }
 
-/* MOBILE LANDSCAPE (Side-by-Side View) */
+/* MOBILE LANDSCAPE (Side-by-Side View, Merged Top Row) */
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; }
-  .top-panel { padding: 4px 8px; }
-  .panel-left { flex-wrap: nowrap; gap: 6px; }
-  
-  .brand-logo { display: none !important; }
   .content-area { flex-direction: row; } 
   
-  .ticker-title-group { display: none !important; }
-  .ticker-header { padding: 0; border: none; background: transparent; justify-content: center; margin-bottom: -4px;}
-
-  .toolbar { justify-content: space-between; padding: 2px; width: 100%; }
-  .toolbar button { flex: 1; padding: 2px 6px; font-size: 11px; }
-  .pct-chg { font-size: 8px; margin: 0; }
+  /* MERGE SEARCH AND TIME BAR ON LANDSCAPE */
+  .top-row-wrapper { flex-direction: row; gap: 4px; align-items: stretch; height: 34px; }
   
-  .sbar { width: 150px; }
-  .watchlist-container { width: 280px; font-size: 11px; } 
-  .wl-item { padding: 4px 8px; font-size: 11px; }
-  .calc-container { padding: 6px 8px; }
+  .top-panel { flex: 0 0 auto; padding: 2px 6px; }
+  .panel-left { flex-wrap: nowrap; gap: 4px; height: 100%; }
+  .mode-pill { height: 100%; }
+  .sbar { width: 140px; }
+  .sbar input { padding-top: 2px; padding-bottom: 2px; height: 100%; font-size: 14px; }
+  
+  .brand-logo { display: none !important; }
+  .ticker-title-group { display: none !important; }
+  
+  /* TOOLBAR ADAPTS TO FILL ROW */
+  .ticker-header { flex: 1; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; }
+  .toolbar { width: 100%; height: 100%; padding: 0; gap: 2px; }
+  .toolbar button { flex: 1; min-width: 0; height: 100%; padding: 0; font-size: 12px; }
+  .pct-chg { display: none !important; } /* NUKED PERCENTAGE TEXT */
+  
+  /* EXTRA SLIM SIDEBAR */
+  .watchlist-container { width: 230px; font-size: 11px; } 
+  .wl-item { padding: 4px 6px; font-size: 11px; }
+  .calc-container { padding: 4px 6px; gap: 4px;}
+  .calc-container input { padding: 4px 6px; font-size: 11px;}
   .chart-controls { bottom: 26px; right: 8px; }
   .chart-controls button { padding: 2px 8px; font-size: 12px; }
-  .plaque-bar { top: 4px; left: 4px; }
-  .price-box { padding: 4px 8px; min-width: 120px; }
-  .price-val { font-size: 13px; }
+  .plaque-bar { top: 4px; left: 4px; gap: 4px; }
+  .price-box { padding: 4px 6px; min-width: 100px; }
+  .price-label { font-size: 9px; }
+  .price-val { font-size: 12px; margin-top: 0px; }
   .status-text { display: none; }
 }
 </style>
@@ -349,51 +364,53 @@ button, input { touch-action: manipulation; }
     
     <div class="main-column">
       
-      <div class="top-panel" id="topPanel">
-        <div class="panel-left">
-          <span id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></span>
+      <div class="top-row-wrapper">
+        <div class="top-panel" id="topPanel">
+          <div class="panel-left">
+            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></span>
 
-          <div class="mode-pill">
-            <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-            <button data-mode="members" id="btnMembers">Members</button>
-          </div>
-
-          <div class="search-group">
-            <div class="sbar">
-              <img id="itemIcon" src="" alt="">
-              <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              <div id="suggestBox" class="suggest" style="display:none"></div>
+            <div class="mode-pill">
+              <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+              <button data-mode="members" id="btnMembers">Members</button>
             </div>
-            <button id="btnFav" class="fav-btn" title="Toggle Favorite">
-              <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-            </button>
-          </div>
-        </div>
 
-        <span id="status" class="status-text">Connecting...</span>
-      </div>
-
-      <div class="ticker-header" id="tickerHeader">
-        <div class="ticker-title-group">
-          <img id="tickerHeaderIcon" src="" alt="Icon">
-          <div class="ticker-info">
-            <h2 id="tickerName">Loading...</h2>
-            <div class="ticker-price-row">
-              <span id="tickerLivePrice" class="price">---</span>
-              <span id="tickerChange" class="change neutral">---</span>
+            <div class="search-group">
+              <div class="sbar">
+                <img id="itemIcon" src="" alt="">
+                <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <div id="suggestBox" class="suggest" style="display:none"></div>
+              </div>
+              <button id="btnFav" class="fav-btn" title="Toggle Favorite">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </button>
             </div>
           </div>
+
+          <span id="status" class="status-text">Connecting...</span>
         </div>
-        
-        <div class="toolbar" id="timeToolbar">
-          <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
-          <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
-          <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
-          <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
-          <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
-          <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+
+        <div class="ticker-header" id="tickerHeader">
+          <div class="ticker-title-group">
+            <img id="tickerHeaderIcon" src="" alt="Icon">
+            <div class="ticker-info">
+              <h2 id="tickerName">Loading...</h2>
+              <div class="ticker-price-row">
+                <span id="tickerLivePrice" class="price">---</span>
+                <span id="tickerChange" class="change neutral">---</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="toolbar" id="timeToolbar">
+            <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
+            <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
+            <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+            <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+            <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+            <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+          </div>
         </div>
       </div>
 
@@ -455,12 +472,12 @@ let recommendedBuy = null, recommendedSell = null;
 let liveBuyRaw = null, liveSellRaw = null;
 let isCalcOpen = false; 
 
+// PRICE DROPS 1H COMPLETELY REMOVED FROM TRACKING
 let groupOpenStates = {
   "⭐ Favorites": true,
   "📉 At Day Lows": false,
   "📈 At Day Highs": false,
   "👑 Over-Max Rares": false,
-  "🚨 Price Drops (1H)": false,
   "🌋 Volume Spikes (1H)": false,
   "📈 Highest Vol (24H)": false,
   "💎 Most Expensive": false
@@ -681,7 +698,6 @@ function renderWatchlist() {
     .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
     .slice(0, 30);
 
-  const dropsData = [];
   const spikesData = [];
   const dayLows = [];
   const dayHighs = [];
@@ -691,15 +707,6 @@ function renderWatchlist() {
     const node = latest?.data?.[id];
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
-    
-    if (node && p1h && p1h.avgHighPrice > 100) {
-      const current = node.high || node.avgHighPrice;
-      const hourAgo = p1h.avgHighPrice;
-      if (current && hourAgo) {
-        const dropPct = (current - hourAgo) / hourAgo;
-        if (dropPct <= -0.05) dropsData.push({ item, pct: dropPct });
-      }
-    }
 
     if (p1h && p24) {
       const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
@@ -730,9 +737,6 @@ function renderWatchlist() {
     }
   });
 
-  dropsData.sort((a, b) => a.pct - b.pct);
-  const topDrops = dropsData.slice(0, 30).map(t => t.item);
-
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
 
@@ -744,7 +748,6 @@ function renderWatchlist() {
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
     { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
-    { name: "🚨 Price Drops (1H)", items: topDrops, className: "lose-title" },
     { name: "🌋 Volume Spikes (1H)", items: topSpikes, className: "rec-title" },
     { name: "📈 Highest Vol (24H)", items: topVol, className: "" },
     { name: "💎 Most Expensive", items: topPriced, className: "" }
@@ -790,13 +793,6 @@ function renderWatchlist() {
           price = overMaxData[String(item.id)].wts;
           subText = `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>`;
           isSpecial = true;
-        } else if (group.name === "🚨 Price Drops (1H)") {
-          const dData = dropsData.find(d => d.item.id === item.id);
-          if (dData) {
-            price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-            subText = `<span class="wl-trend down">${(dData.pct * 100).toFixed(1)}%</span>`;
-            isSpecial = true;
-          }
         } else if (group.name === "🌋 Volume Spikes (1H)") {
           const sData = spikesData.find(s => s.item.id === item.id);
           if (sData) {
