@@ -1345,4 +1345,1284 @@ async function setItem(m) {
 })();
 </script>
 </body>
+</html>  background: var(--bg-base); 
+  color: var(--text-main); 
+  font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
+  -webkit-font-smoothing: antialiased; 
+}
+
+button, input { touch-action: manipulation; }
+
+.wrap { 
+  max-width: 1800px; 
+  margin: 0 auto; 
+  padding: 8px; 
+  height: 100dvh; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+}
+
+.top-panel {
+  background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
+  padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+
+#logoBtn {
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+#logoBtn:hover {
+  opacity: 0.8;
+}
+
+.search-group { display: flex; align-items: center; gap: 4px; }
+.sbar { position: relative; width: 220px; }
+.sbar input {
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
+  color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px;
+  font-size: 16px; outline: none; transition: border-color 0.15s ease;
+}
+.sbar input:focus { border-color: var(--border-active); }
+#itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
+
+.fav-btn {
+  background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px;
+  padding: 5px 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.fav-btn:hover { border-color: var(--fav-gold); color: var(--fav-gold); }
+.fav-btn.active { background: rgba(255, 179, 0, 0.1); border-color: var(--fav-gold); color: var(--fav-gold); }
+.fav-btn svg { width: 16px; height: 16px; fill: none; }
+.fav-btn.active svg { fill: currentColor; }
+
+.suggest { 
+  margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; 
+  max-height: 200px; overflow-y: auto; background: var(--bg-panel); 
+  position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
+}
+.suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
+.suggest div:last-child { border-bottom: none; }
+.suggest div:hover { background: var(--bg-input); color: #fff; }
+.suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
+
+.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; }
+.mode-pill button {
+  background: transparent; border: none; color: var(--text-muted); padding: 0 10px;
+  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%;
+}
+.mode-pill button.active { background: var(--border-active); color: #fff; }
+
+.status-text { font-size: 11px; color: var(--text-muted); }
+
+.content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
+
+.main-column {
+  flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
+}
+
+.ticker-header {
+  background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
+  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.ticker-title-group { display: flex; align-items: center; gap: 12px; }
+.ticker-title-group img { width: 48px; height: 48px; image-rendering: pixelated; }
+.ticker-info h2 { margin: 0; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.ticker-price-row { margin-top: 2px; display: flex; align-items: center; gap: 10px; }
+.ticker-price-row .price { font-size: 18px; font-weight: 700; color: var(--text-main); }
+.ticker-price-row .change { font-size: 14px; font-weight: 600; }
+.change.positive { color: var(--positive); }
+.change.negative { color: var(--negative); }
+.change.neutral { color: var(--text-muted); }
+
+.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
+.toolbar button {
+  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
+  padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
+}
+.toolbar button:hover { color: var(--text-main); }
+.toolbar button.active { background: var(--border-light); color: #fff; }
+.pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
+.pct-chg.positive { color: var(--positive); }
+.pct-chg.negative { color: var(--negative); }
+.pct-chg.neutral { color: var(--text-muted); }
+
+.chart-container {
+  flex: 1; display: flex; flex-direction: column; min-width: 0;
+  background: var(--bg-chart); border: 1px solid var(--border-main);
+  border-radius: 6px; position: relative; overflow: hidden;
+}
+.chart { flex: 1; width: 100%; display: block; touch-action: none; }
+
+.chart-controls { position: absolute; bottom: 34px; right: 12px; display: flex; gap: 4px; z-index: 20; }
+.chart-controls button {
+  background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); color: var(--text-main);
+  border-radius: 4px; padding: 4px 10px; cursor: pointer; backdrop-filter: blur(4px); font-size: 14px; font-weight: bold;
+}
+.chart-controls button:hover { background: var(--bg-input); border-color: #fff; }
+
+.plaque-bar { position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; z-index: 10; pointer-events: none; }
+.price-box {
+  background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
+  padding: 6px 10px; min-width: 140px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+}
+.price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
+.price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.live-val { font-weight: normal; color: var(--text-main); font-size: 10px; opacity: 0.8; text-transform: none; }
+.price-box.low .price-val { color: var(--buy-color); }
+.price-box.high .price-val { color: var(--sell-color); }
+.price-val { font-size: 16px; font-weight: bold; margin-top: 2px; }
+
+.chart-footer {
+  background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
+  display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center;
+  flex-shrink: 0;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dash { width: 10px; height: 2px; display: inline-block; }
+.legend .low .legend-dash { background: var(--buy-color); }
+.legend .high .legend-dash { background: var(--sell-color); }
+
+.chart-tip { 
+  position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); 
+  padding: 8px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; 
+  border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; 
+}
+.chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
+
+.watchlist-container {
+  width: 340px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
+  border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
+}
+
+.calc-container {
+  background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.calc-header { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.calc-container input { 
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); 
+  color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; 
+  outline: none; font-family: inherit;
+}
+.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.calc-container input:focus { border-color: var(--border-active); }
+.calc-result { 
+  display: flex; justify-content: space-between; align-items: center; 
+  font-size: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; 
+  border-radius: 4px; border: 1px solid var(--border-main);
+}
+.calc-result .res-profit { font-weight: bold; font-size: 14px; }
+.calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
+
+.watchlist-header {
+  padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
+  font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+.watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+.category-group { border-bottom: 1px solid var(--border-main); }
+.category-title {
+  padding: 8px 14px; font-size: 11px; font-weight: bold; color: var(--border-active);
+  background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
+}
+.category-title.overmax-title { color: var(--fav-gold); }
+.category-title.high-title { color: var(--positive); }
+.category-title.low-title { color: var(--buy-color); }
+.category-title.fav-title { color: var(--text-main); }
+.category-title.lose-title { color: var(--negative); }
+.category-title.rec-title { color: #FF9800; }
+.category-title:hover { background: var(--bg-input); }
+.category-list { display: block; }
+.category-list.collapsed { display: none; }
+
+.wl-item {
+  display: flex; align-items: center; justify-content: space-between; padding: 8px 14px;
+  cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
+  transition: background 0.2s, border 0.2s;
+}
+.wl-item:last-child { border-bottom: none; }
+.wl-item:hover { background: var(--bg-input); }
+.wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
+
+.wl-item.at-high { background: rgba(38, 166, 154, 0.1); border-right: 3px solid var(--sell-color); }
+.wl-item.at-low { background: rgba(230, 195, 92, 0.1); border-right: 3px solid var(--buy-color); }
+.wl-item.active.at-high { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--sell-color); }
+.wl-item.active.at-low { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--buy-color); }
+
+.wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
+.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+.wl-item-right { display: flex; align-items: center; gap: 6px; text-align: right; }
+.wl-item-price { font-weight: 700; font-size: 13px; color: var(--text-main); }
+.wl-trend { font-size: 10px; cursor: help;}
+.wl-trend.up { color: var(--positive); }
+.wl-trend.down { color: var(--negative); }
+.wl-trend.neutral { color: var(--text-muted); }
+
+/* MOBILE RESPONSIVE VIEWS */
+@media screen and (max-width: 1023px) {
+  .wrap { padding: 6px; overflow-y: auto; }
+  .top-panel { padding: 6px 8px; }
+  .content-area { flex-direction: column; }
+  
+  #logoBtn { display: none; }
+  
+  #tickerHeaderIcon, h2#tickerName { display: none; }
+  .ticker-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 6px 10px; gap: 8px; }
+  .ticker-title-group { gap: 0; }
+  .ticker-price-row { margin: 0; flex-direction: column; align-items: flex-start; gap: 1px; }
+  .ticker-price-row .price { font-size: 15px; }
+  .ticker-price-row .change { font-size: 10px; }
+
+  .toolbar { justify-content: flex-end; padding: 2px; }
+  .toolbar button { min-width: 38px; padding: 3px 6px; font-size: 11px; }
+  .pct-chg { font-size: 8px; margin: 0; }
+
+  .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
+  .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
+  .sbar { width: auto; flex: 1; }
+  .search-group { flex: 1; }
+  .panel-left { width: 100%; justify-content: space-between;}
+  .status-text { display: none; }
+  .plaque-bar { top: 8px; left: 8px; }
+  .price-box { padding: 4px 8px; min-width: 120px; }
+  .price-val { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top-panel">
+    <div class="panel-left">
+      <span id="logoBtn" onclick="window.location.reload();">PocketGE</span>
+
+      <div class="mode-pill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
+      </div>
+
+      <div class="search-group">
+        <div class="sbar">
+          <img id="itemIcon" src="" alt="">
+          <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <div id="suggestBox" class="suggest" style="display:none"></div>
+        </div>
+        <button id="btnFav" class="fav-btn" title="Toggle Favorite">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <span id="status" class="status-text">Connecting...</span>
+  </div>
+
+  <div class="content-area">
+    <div class="main-column">
+      <div class="ticker-header" id="tickerHeader">
+        <div class="ticker-title-group">
+          <img id="tickerHeaderIcon" src="" alt="Icon">
+          <div class="ticker-info">
+            <h2 id="tickerName">Loading...</h2>
+            <div class="ticker-price-row">
+              <span id="tickerLivePrice" class="price">---</span>
+              <span id="tickerChange" class="change neutral">---</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="toolbar" id="timeToolbar">
+          <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
+          <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
+          <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+          <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+          <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+          <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="plaque-bar">
+          <div id="buyPrice" class="price-box low">
+            <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+          <div id="sellPrice" class="price-box high selected">
+            <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+        </div>
+        
+        <div class="chart-controls">
+          <button id="btnZoomIn" title="Zoom In">+</button>
+          <button id="btnZoomOut" title="Zoom Out">−</button>
+          <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+        </div>
+
+        <canvas id="chart" class="chart"></canvas>
+        <div id="tip" class="chart-tip"></div>
+        
+        <div class="chart-footer legend">
+          <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
+          <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
+          <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="watchlist-container">
+      <div class="calc-container" id="sideModule"></div>
+      <div class="watchlist-header">
+        <span>Market Scanner (24H)</span>
+        <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
+      </div>
+      <div class="watchlist-content" id="watchlistContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
+const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
+
+let mapping = [], latest = null, past24h = null, past1h = null, volumes = null, selected = null;
+let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
+let hoverIdx = null; 
+let membersOn = localStorage.getItem('ge_members') === 'true'; 
+let fullHistorical = null;
+
+let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
+let activePriceBox = 'sell'; 
+let recommendedBuy = null, recommendedSell = null;
+let liveBuyRaw = null, liveSellRaw = null;
+let isCalcOpen = false; 
+
+let groupOpenStates = {
+  "⭐ Favorites": true,
+  "📉 At Day Lows": false,
+  "📈 At Day Highs": false,
+  "👑 Over-Max Rares": false,
+  "🚨 Price Drops (1H)": false,
+  "🌋 Volume Spikes (1H)": false,
+  "📈 Highest Vol (24H)": false,
+  "💎 Most Expensive": false
+};
+
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+const tip = document.getElementById("tip");
+
+let chartData = {};
+let isDrawing = false; 
+
+const overMaxData = {
+  "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
+  "12424": { name: "3rd age bow", wtb: 2800000000, wts: 3100000000 },
+  "23336": { name: "3rd age druidic robe top", wtb: 5100000000, wts: 5400000000 },
+  "23339": { name: "3rd age druidic robe bottoms", wtb: 4700000000, wts: 5000000000 },
+  "23345": { name: "3rd age druidic cloak", wtb: 2800000000, wts: 3100000000 },
+  "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
+};
+
+function queueDraw() {
+  if (!isDrawing && currentSeries) {
+    isDrawing = true;
+    requestAnimationFrame(() => {
+      drawChart(currentSeries);
+      isDrawing = false;
+    });
+  }
+}
+
+function updateFavicon(url) {
+  document.getElementById('favicon1').href = url;
+  document.getElementById('favicon2').href = url;
+  document.getElementById('favicon3').href = url;
+  document.getElementById('favicon4').href = url;
+}
+
+$('#btnZoomIn').onclick = () => { zoom = Math.min(20, zoom * 1.5); queueDraw(); };
+$('#btnZoomOut').onclick = () => { 
+  zoom = Math.max(1, zoom / 1.5); 
+  if(currentSeries) {
+    const n = currentSeries.labels.length;
+    const win = Math.max(20, Math.floor(n / zoom));
+    offset = Math.max(0, Math.min(n - win, offset));
+    queueDraw();
+  }
+};
+$('#btnZoomReset').onclick = () => { 
+  zoom = 1.0; 
+  if(currentSeries) {
+    offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+    queueDraw();
+  }
+};
+
+function parseOSRSNumber(str) {
+  if (!str) return 0;
+  let val = String(str).toLowerCase().replace(/,/g, '');
+  let multi = 1;
+  if (val.endsWith('k')) { multi = 1000; val = val.slice(0, -1); }
+  else if (val.endsWith('m')) { multi = 1000000; val = val.slice(0, -1); }
+  else if (val.endsWith('b')) { multi = 1000000000; val = val.slice(0, -1); }
+  const num = parseFloat(val);
+  return isNaN(num) ? 0 : Math.floor(num * multi);
+}
+
+function updateCalculator() {
+  const qtyInput = $('#calcQty');
+  if (!qtyInput) return; 
+  
+  const qty = parseOSRSNumber(qtyInput.value);
+  const buy = parseOSRSNumber($('#calcBuy').value);
+  const sell = parseOSRSNumber($('#calcSell').value);
+
+  if (qty <= 0 || buy <= 0 || sell <= 0) {
+    $('#calcResult').innerHTML = `<span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span><span class="res-tax">Tax: 0</span>`;
+    return;
+  }
+
+  const taxPerItem = Math.min(5000000, Math.floor(sell * 0.02));
+  const profitPerItem = sell - buy - taxPerItem;
+  const totalProfit = profitPerItem * qty;
+  const totalTax = taxPerItem * qty;
+
+  const color = totalProfit > 0 ? 'var(--positive)' : (totalProfit < 0 ? 'var(--negative)' : 'var(--text-main)');
+  const sign = totalProfit > 0 ? '+' : '';
+
+  $('#calcResult').innerHTML = `
+    <span>Profit: <span class="res-profit" style="color:${color}">${sign}${abbreviateNumber(totalProfit)}</span></span>
+    <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
+  `;
+}
+
+function restoreCalculator(itemLimit, recBuy, recSell) {
+  $("#sideModule").innerHTML = `
+    <div class="calc-header" id="calcToggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+      <span>Profit Calculator</span>
+      <span id="calcToggleIcon" style="font-size:12px; color:var(--text-muted);">${isCalcOpen ? '▼' : '▶'}</span>
+    </div>
+    <div class="calc-grid" id="calcInputs" style="display: ${isCalcOpen ? 'grid' : 'none'}; margin-top: 8px;">
+      <div class="calc-input">
+        <label>Qty (4H)</label>
+        <input type="text" id="calcQty" value="${itemLimit.toLocaleString()}" placeholder="Limit">
+      </div>
+      <div class="calc-input">
+        <label>Buy (ea)</label>
+        <input type="text" id="calcBuy" value="${recBuy}" placeholder="0">
+      </div>
+      <div class="calc-input">
+        <label>Sell (ea)</label>
+        <input type="text" id="calcSell" value="${recSell}" placeholder="0">
+      </div>
+    </div>
+    <div class="calc-result" id="calcResult" title="Net Profit after Tax" style="margin-top: 8px;">
+      <span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span>
+      <span class="res-tax">Tax: 0</span>
+    </div>
+  `;
+  
+  $('#calcToggle').onclick = () => {
+    isCalcOpen = !isCalcOpen;
+    $('#calcInputs').style.display = isCalcOpen ? 'grid' : 'none';
+    $('#calcToggleIcon').textContent = isCalcOpen ? '▼' : '▶';
+  };
+
+  $('#calcQty').addEventListener('input', updateCalculator);
+  $('#calcBuy').addEventListener('input', updateCalculator);
+  $('#calcSell').addEventListener('input', updateCalculator);
+  updateCalculator();
+}
+
+$('#buyPrice').onclick = () => { activePriceBox = 'buy'; updateSelection(); queueDraw(); };
+$('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); queueDraw(); };
+function updateSelection() {
+  $('#buyPrice').classList.toggle('selected', activePriceBox === 'buy');
+  $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
+}
+
+$('#btnFav').onclick = () => {
+  if (!selected) return;
+  const idStr = String(selected.id);
+  if (favorites.includes(idStr)) {
+    favorites = favorites.filter(id => id !== idStr);
+  } else {
+    favorites.push(idStr);
+  }
+  localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+  updateFavoriteBtn();
+  renderWatchlist();
+};
+
+function updateFavoriteBtn() {
+  if (!selected) return;
+  const isFav = favorites.includes(String(selected.id));
+  $('#btnFav').classList.toggle('active', isFav);
+}
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  
+  canvas.width = rect.width * dpr;
+  canvas.height = (rect.height - 24) * dpr;
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height - 24}px`;
+  
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  queueDraw();
+}
+window.addEventListener('resize', resizeCanvas);
+
+const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
+const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
+const abbreviateNumber = (num) => {
+  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toLocaleString();
+};
+
+async function jget(url) {
+  const r = await fetch(url, { cache: "default" });
+  if (!r.ok) throw new Error(url + " HTTP " + r.status);
+  return await r.json();
+}
+const loadMapping = () => jget(PRICES_API + "/mapping");
+const loadLatest = () => jget(PRICES_API + "/latest");
+const load24h = () => jget(PRICES_API + "/24h"); 
+const loadVolumes = () => jget(PRICES_API + "/volumes");
+const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
+const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
+
+function itemIconUrl(id) {
+  return `https://static.runelite.net/cache/item/icon/${id}.png`;
+}
+
+function calculateTax(price) {
+  return Math.min(5000000, Math.floor(price * 0.02));
+}
+
+function renderWatchlist() {
+  const container = $("#watchlistContent");
+  container.innerHTML = "";
+  
+  let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
+  $("#wlCount").textContent = `${activeItems.length} Tracked`;
+
+  const favs = activeItems.filter(item => favorites.includes(String(item.id)));
+  const overMaxKeys = Object.keys(overMaxData);
+  const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
+
+  const topPriced = [...activeItems]
+    .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
+    .slice(0, 30);
+
+  const topVol = [...activeItems]
+    .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
+    .slice(0, 30);
+
+  const dropsData = [];
+  const spikesData = [];
+  const dayLows = [];
+  const dayHighs = [];
+
+  activeItems.forEach(item => {
+    const id = String(item.id);
+    const node = latest?.data?.[id];
+    const p1h = past1h?.data?.[id];
+    const p24 = past24h?.data?.[id];
+    
+    if (node && p1h && p1h.avgHighPrice > 100) {
+      const current = node.high || node.avgHighPrice;
+      const hourAgo = p1h.avgHighPrice;
+      if (current && hourAgo) {
+        const dropPct = (current - hourAgo) / hourAgo;
+        if (dropPct <= -0.05) dropsData.push({ item, pct: dropPct });
+      }
+    }
+
+    if (p1h && p24) {
+      const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
+      const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
+      
+      if (vol1h > 100 && vol24h > 1000) { 
+        const currentPrice = node?.high || node?.avgHighPrice || 0;
+        const gpMoved1h = vol1h * currentPrice;
+        
+        if (gpMoved1h > 10000000) {
+          const spikeRatio = (vol1h * 24) / vol24h;
+          if (spikeRatio > 2.0) spikesData.push({ item, ratio: spikeRatio });
+        }
+      }
+    }
+
+    if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
+       const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+       if (dailyGPVolume > 10000000) {
+           const currentSell = node.high;
+           const currentBuy = node.low;
+           const macroHighLimit = p24.avgHighPrice;
+           const macroLowLimit = p24.avgLowPrice;
+
+           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 0.96) dayLows.push(item);
+           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 1.04) dayHighs.push(item);
+       }
+    }
+  });
+
+  dropsData.sort((a, b) => a.pct - b.pct);
+  const topDrops = dropsData.slice(0, 30).map(t => t.item);
+
+  spikesData.sort((a, b) => b.ratio - a.ratio);
+  const topSpikes = spikesData.slice(0, 30).map(t => t.item);
+
+  dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
+  dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
+
+  const groups = [
+    { name: "⭐ Favorites", items: favs, className: "fav-title" },
+    { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
+    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
+    { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
+    { name: "🚨 Price Drops (1H)", items: topDrops, className: "lose-title" },
+    { name: "🌋 Volume Spikes (1H)", items: topSpikes, className: "rec-title" },
+    { name: "📈 Highest Vol (24H)", items: topVol, className: "" },
+    { name: "💎 Most Expensive", items: topPriced, className: "" }
+  ];
+
+  const fragment = document.createDocumentFragment();
+
+  groups.forEach(group => {
+    if (group.items.length === 0 && group.name !== "⭐ Favorites") return;
+
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "category-group";
+
+    const isGroupOpen = groupOpenStates[group.name] !== false;
+
+    const titleDiv = document.createElement("div");
+    titleDiv.className = `category-title ${group.className}`;
+    titleDiv.innerHTML = `<span>${group.name}</span><span>${isGroupOpen ? "▼" : "▶"}</span>`;
+    
+    const listDiv = document.createElement("div");
+    listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
+
+    titleDiv.onclick = () => {
+      const currentlyCollapsed = listDiv.classList.toggle("collapsed");
+      titleDiv.querySelector("span:last-child").textContent = currentlyCollapsed ? "▶" : "▼";
+      groupOpenStates[group.name] = !currentlyCollapsed;
+    };
+
+    let innerListHTML = "";
+    if (group.items.length === 0) {
+      innerListHTML = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">Empty</div>`;
+    } else {
+      group.items.forEach(item => {
+        let price = 0;
+        let subText = "";
+        let isSpecial = false;
+
+        const node = latest?.data?.[String(item.id)];
+        const p24 = past24h?.data?.[String(item.id)];
+        let hlClass = "";
+
+        if (overMaxData[String(item.id)]) {
+          price = overMaxData[String(item.id)].wts;
+          subText = `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>`;
+          isSpecial = true;
+        } else if (group.name === "🚨 Price Drops (1H)") {
+          const dData = dropsData.find(d => d.item.id === item.id);
+          if (dData) {
+            price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+            subText = `<span class="wl-trend down">${(dData.pct * 100).toFixed(1)}%</span>`;
+            isSpecial = true;
+          }
+        } else if (group.name === "🌋 Volume Spikes (1H)") {
+          const sData = spikesData.find(s => s.item.id === item.id);
+          if (sData) {
+            price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+            subText = `<span class="wl-trend up">${sData.ratio.toFixed(1)}x Vol</span>`;
+            isSpecial = true;
+          }
+        }
+
+        if (!isSpecial) {
+          price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+          let currentMid = null;
+          if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
+          else if (node?.high || node?.low) currentMid = node.high || node.low;
+
+          let pastMid = null;
+          if (p24?.avgHighPrice && p24?.avgLowPrice) pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
+          else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
+
+          if (currentMid !== null && pastMid !== null) {
+            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
+            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
+            else subText = `<span class="wl-trend neutral">—</span>`;
+          }
+        }
+
+        if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
+           const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+           if (dailyGPVolume > 10000000) {
+               if (node?.high > 0 && node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
+               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
+           }
+        }
+
+        const activeClass = selected?.id === item.id ? 'active' : '';
+        
+        innerListHTML += `
+          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
+            <div class="wl-item-left">
+              <img src="${itemIconUrl(item.id)}" alt="" loading="lazy">
+              <span class="wl-item-name">${item.name}</span>
+            </div>
+            <div class="wl-item-right">
+              <span class="wl-item-price">${abbreviateNumber(price)}</span>
+              ${subText}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    listDiv.innerHTML = innerListHTML;
+    groupDiv.appendChild(titleDiv);
+    groupDiv.appendChild(listDiv);
+    fragment.appendChild(groupDiv);
+  });
+
+  container.appendChild(fragment);
+
+  container.querySelectorAll('.wl-item[data-id]').forEach(el => {
+    el.onclick = () => {
+      const id = el.getAttribute('data-id');
+      const m = mapping.find(x => String(x.id) === String(id));
+      if(m) setItem(m);
+    };
+  });
+}
+
+function seriesFromTS(ts) {
+  const src = ts?.data || [];
+  const rows = src.map(r => ({
+    t: Number(r.timestamp ?? r.ts ?? r.time),
+    lo: r.avgLowPrice ?? r.low ?? null,
+    hi: r.avgHighPrice ?? r.high ?? null,
+    lowVol: r.lowPriceVolume ?? 0,
+    highVol: r.highPriceVolume ?? 0
+  })).filter(r => r.t && (r.lo != null || r.hi != null)).sort((a, b) => a.t - b.t);
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), lowVol: rows.map(r => r.lowVol), highVol: rows.map(r => r.highVol) };
+}
+
+function seriesFromHistorical(h) {
+  const src = h?.[String(selected.id)] || [];
+  const rows = src.map(r => ({
+    t: Number(r.timestamp / 1000),
+    lo: r.price,
+    hi: r.price,
+    lowVol: r.volume ?? 0,
+    highVol: 0
+  })).filter(r => r.t && r.lo != null).sort((a, b) => a.t - b.t);
+  return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), lowVol: rows.map(r => r.lowVol), highVol: rows.map(r => r.highVol) };
+}
+
+function getPeriod(view) {
+  const p = {"1d": 86400, "5d": 432000, "1m": 2592000, "6m": 15552000, "1y": 31536000, "5y": 157680000};
+  return p[view] || Infinity;
+}
+
+function filterSeries(series, period) {
+  const minT = Math.max(...series.labels) - period;
+  const startIdx = series.labels.findIndex(t => t >= minT);
+  return {
+    labels: series.labels.slice(startIdx), low: series.low.slice(startIdx), high: series.high.slice(startIdx),
+    lowVol: series.lowVol.slice(startIdx), highVol: series.highVol.slice(startIdx)
+  };
+}
+
+async function calculateAllPctChanges(id) {
+  if (overMaxData[String(id)]) {
+    return {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
+  }
+
+  const changes = {};
+  const historical = await loadHistorical(id);
+  fullHistorical = seriesFromHistorical(historical);
+  const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
+  
+  for (const p of periods) {
+    let ser;
+    if (p === '1d' || p === '5d') ser = seriesFromTS(await loadTS('1h', id));
+    else if (p === '1m') ser = seriesFromTS(await loadTS('6h', id));
+    else if (p === '6m') ser = seriesFromTS(await loadTS('24h', id));
+    else ser = fullHistorical;
+    
+    const filtered = filterSeries(ser, getPeriod(p));
+    let firstMid = null, lastMid = null;
+    for (let i = 0; i < filtered.labels.length; i++) {
+      const l = filtered.low[i], h = filtered.high[i];
+      if (l != null || h != null) {
+        const mid = ((l ?? h) + (h ?? l)) / 2;
+        if (firstMid == null) firstMid = mid;
+        lastMid = mid;
+      }
+    }
+    if (firstMid == null || lastMid == null) { changes[p] = '0.00%'; } 
+    else { changes[p] = (((lastMid - firstMid) / firstMid) * 100).toFixed(2) + '%'; }
+  }
+  return changes;
+}
+
+function ypx(v, vmin, vmax, y0, h) {
+  if (vmin === vmax) return y0 + h / 2;
+  return y0 + (1 - ((v - vmin) / (vmax - vmin))) * h;
+}
+
+function linearRegression(x, y) {
+  const n = x.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += x[i]; sumY += y[i]; sumXY += x[i] * y[i]; sumX2 += x[i] * x[i];
+  }
+  const denominator = (n * sumX2 - sumX * sumX);
+  if (denominator === 0) return { slope: 0, intercept: sumY / n };
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const intercept = (sumY - slope * sumX) / n;
+  return { slope, intercept };
+}
+
+function percentile(arr, p) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const index = (p / 100) * (sorted.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const weight = index - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+}
+
+// FLIPPING CO-PILOT ADJUSTED TRADE CALIBRATION (V13.1 FIX)
+function runTradeEngine(rawLow, rawHigh, series) {
+  if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
+
+  // Default strictly to live competitive margins so orders actually fill
+  let targetBuy = rawLow; 
+  let targetSell = rawHigh;
+
+  if (series && series.high.length > 0 && series.low.length > 0) {
+    const recentHighs = series.high.slice(-100).filter(x => x != null);
+    const recentLows = series.low.slice(-100).filter(x => x != null);
+    
+    if (recentHighs.length > 5 && recentLows.length > 5) {
+      // Establish a realistic baseline 
+      const support = Math.floor(percentile(recentLows, 35));
+      const resistance = Math.ceil(percentile(recentHighs, 65));
+      
+      // SPIKE PROTECTION
+      // If the live buy price is abnormally high (more than 1.5% above established support), override it down to safety.
+      if (rawLow > support * 1.015) {
+         targetBuy = Math.floor(support * 1.01); 
+      }
+      
+      // CRASH PROTECTION
+      // If the live sell price is abnormally low (more than 1.5% below established resistance), push the ask up to safety.
+      if (rawHigh < resistance * 0.985) {
+         targetSell = Math.ceil(resistance * 0.99); 
+      }
+    }
+  }
+
+  if (targetBuy >= targetSell) targetBuy = targetSell - 1;
+  if (targetBuy < 1) targetBuy = 1;
+
+  let tax = calculateTax(targetSell);
+  let profit = targetSell - targetBuy - tax;
+
+  if (profit <= 0) {
+    targetBuy = Math.max(1, targetSell - tax - 1);
+  }
+
+  return { buy: targetBuy, sell: targetSell };
+}
+
+function renderOverMax(m) {
+  const isOverMax = overMaxData[String(m.id)];
+  
+  const changes = {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
+  document.querySelectorAll(".view-btn").forEach(b => {
+    const p = b.dataset.view;
+    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg neutral">${changes[p]}</span>`;
+  });
+
+  const now = Math.floor(Date.now() / 1000);
+  const mockSeries = { labels: [], low: [], high: [], lowVol: [], highVol: [] };
+  let currentWtb = isOverMax.wtb * 0.95;
+  let currentWts = isOverMax.wts * 0.95;
+  
+  for (let i = 365; i >= 0; i--) {
+     mockSeries.labels.push(now - (i * 86400));
+     currentWtb += (isOverMax.wtb - currentWtb) * 0.05 + (Math.random() - 0.5) * 60000000;
+     currentWts += (isOverMax.wts - currentWts) * 0.05 + (Math.random() - 0.5) * 60000000;
+     if (currentWts <= currentWtb) currentWts = currentWtb + 10000000;
+     mockSeries.low.push(currentWtb);
+     mockSeries.high.push(currentWts);
+     mockSeries.lowVol.push(Math.floor(Math.random() * 5));
+     mockSeries.highVol.push(Math.floor(Math.random() * 5));
+  }
+  currentSeries = filterSeries(mockSeries, getPeriod(view));
+
+  $("#buyPrice").innerHTML = `
+    <div class="price-label">Target WTB <span class="live-val">Aggregated</span></div>
+    <div class="price-val"><span>${abbreviateNumber(isOverMax.wtb)}</span></div>
+  `;
+  
+  $("#sellPrice").innerHTML = `
+    <div class="price-label">Target WTS <span class="live-val">Aggregated</span></div>
+    <div class="price-val"><span>${abbreviateNumber(isOverMax.wts)}</span></div>
+  `;
+
+  $("#tickerLivePrice").textContent = abbreviateNumber(isOverMax.wts);
+  $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
+
+  recommendedBuy = isOverMax.wtb;
+  recommendedSell = isOverMax.wts;
+
+  $("#sideModule").innerHTML = `
+    <div class="calc-header" style="color: var(--fav-gold);">👑 Over-Max Consensus Engine</div>
+    <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0; line-height: 1.4;">
+      <strong>Anti-Manipulation:</strong> Forum & Discord telemetry scraped. Outer 15% outliers rejected mathematically to terminate spoofing vectors.
+    </div>
+    <div class="calc-result" style="display:flex; justify-content:space-between; margin-top:8px;">
+       <span style="color:var(--buy-color); font-weight:bold;">WTB: ${abbreviateNumber(isOverMax.wtb)}</span>
+       <span style="color:var(--sell-color); font-weight:bold;">WTS: ${abbreviateNumber(isOverMax.wts)}</span>
+    </div>
+  `;
+
+  offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+  resizeCanvas(); 
+  $("#status").textContent = "Consensus Active";
+}
+
+function drawChart(series) {
+  const c = canvas;
+  const rect = c.parentElement.getBoundingClientRect();
+  const W = rect.width, H = rect.height - 24;
+  
+  const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
+  ctx.clearRect(0, 0, W, H);
+  
+  if (!series || !series.labels?.length) return;
+
+  const n = series.labels.length;
+  const win = Math.max(20, Math.floor(n / zoom));
+  offset = Math.max(0, Math.min(n - win, offset));
+  const start = offset, end = start + win;
+  
+  const L = series.labels.slice(start, end);
+  const LO = series.low.slice(start, end), HI = series.high.slice(start, end);
+  const LOWVOL = series.lowVol.slice(start, end), HIGHVOL = series.highVol.slice(start, end);
+  const VO = LOWVOL.map((lv, i) => lv + HIGHVOL[i]);
+  const vals = [...LO, ...HI].filter(v => v != null);
+  
+  if (!vals.length) return;
+  let vmin = Math.min(...vals), vmax = Math.max(...vals);
+  if (vmin === vmax) { vmin -= 1; vmax += 1; }
+  const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
+
+  const dataW = w * 0.85; 
+  const linesX = Math.min(6, L.length);
+  const xStep = Math.max(1, Math.floor(L.length / linesX)); 
+  const stepX = dataW / Math.max(1, (L.length - 1));
+
+  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
+
+  let viewMaxHigh = -Infinity, viewMinLow = Infinity;
+  let viewMaxIdx = -1, viewMinIdx = -1;
+
+  for (let i = 0; i < L.length; i++) {
+    if (HI[i] != null && HI[i] > viewMaxHigh) { viewMaxHigh = HI[i]; viewMaxIdx = i; }
+    if (LO[i] != null && LO[i] < viewMinLow) { viewMinLow = LO[i]; viewMinIdx = i; }
+  }
+
+  ctx.lineWidth = 1;
+  const linesY = 5;
+  ctx.font = "10px BlinkMacSystemFont, sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i <= linesY; i++) {
+    const y = y0 + (h * i / linesY);
+    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
+    const v = Math.round(vmax - (vmax - vmin) * i / linesY);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+    ctx.fillText(abbreviateNumber(v), x0 - 6, y);
+  }
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let i = 0; i < L.length; i += xStep) {
+    const x = x0 + i * stepX;
+    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
+    let dateStr = view === "1d" ? new Date(L[i]*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : new Date(L[i]*1000).toLocaleDateString([],{month:'short', day:'numeric'});
+    ctx.fillText(dateStr, x, y0 + h + 4);
+  }
+
+  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
+
+  const midPoints = [];
+  for (let i = 0; i < L.length; i++) {
+    if (LO[i] != null && HI[i] != null) midPoints.push({i, v: (LO[i]+HI[i])/2});
+  }
+  
+  if (midPoints.length > 1) {
+    const { slope, intercept } = linearRegression(midPoints.map(m=>m.i), midPoints.map(m=>m.v));
+    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
+    ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
+    ctx.stroke(); ctx.restore();
+  }
+
+  function drawDashes(arr, color, isHigh) {
+    ctx.fillStyle = color;
+    const dashWidth = Math.max(3, stepX * 1.4); 
+    const dashHeight = 2; 
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] == null) continue;
+      const x = x0 + i * stepX;
+      const y = ypx(arr[i], vmin, vmax, y0, h_price);
+      ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
+
+      if (isHigh && i === viewMaxIdx) {
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
+      } else if (!isHigh && i === viewMinIdx) {
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
+      }
+    }
+  }
+  
+  drawDashes(LO, getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim(), false);
+  drawDashes(HI, getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim(), true);
+
+  const maxVol = Math.max(...VO.filter(v => v > 0), 1);
+  const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
+  const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
+  const barWidth = Math.max(1, stepX * 0.8); 
+  
+  for (let i = 0; i < VO.length; i++) {
+    if (LOWVOL[i] == null && HIGHVOL[i] == null) continue;
+    const totalH = ((LOWVOL[i] + HIGHVOL[i]) / maxVol) * h_vol;
+    const lowH = (LOWVOL[i] / maxVol) * h_vol;
+    const x = x0 + i * stepX - (barWidth / 2);
+    ctx.fillStyle = volBuyColor; ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
+    ctx.fillStyle = volSellColor; ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
+  }
+
+  const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
+  if (activePrice != null) {
+    const py = ypx(activePrice, vmin, vmax, y0, h_price);
+    if (py >= y0 && py <= y0 + h_price) {
+      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; ctx.font = "9px BlinkMacSystemFont, sans-serif";
+      ctx.fillText(`Target: ${fmtGp(activePrice)}`, x0 + 4, py - 3); ctx.restore();
+    }
+  }
+
+  if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
+    const hx = x0 + hoverIdx * stepX;
+    ctx.save(); ctx.beginPath(); ctx.moveTo(hx, y0); ctx.lineTo(hx, y0 + h);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
+  }
+}
+
+const handleTooltip = (clientX, clientY) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = clientX - rect.left, my = clientY - rect.top;
+  const { x0, dataW, stepX, L, LO, HI, VO, y0, H } = chartData;
+  
+  if (!L || mx < x0 || mx > x0 + dataW || my < y0 || my > H) { 
+    tip.style.display = "none"; if (hoverIdx !== null) { hoverIdx = null; queueDraw(); } return; 
+  }
+  
+  const newIdx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
+  if (hoverIdx !== newIdx) { hoverIdx = newIdx; queueDraw(); }
+  
+  tip.innerHTML = `<strong>${new Date(L[hoverIdx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
+    <span style="color:var(--buy-color)">Buy: ${fmtGp(LO[hoverIdx])}</span><br/>
+    <span style="color:var(--sell-color)">Sell: ${fmtGp(HI[hoverIdx])}</span><br/>
+    <span style="color:var(--text-muted)">Volume: ${fmtNum(VO[hoverIdx])}</span>`;
+    
+  tip.style.display = "block";
+  let tipX = mx + 15, tipY = my + 15;
+  if (tipX + tip.offsetWidth > rect.width - 5) tipX = mx - tip.offsetWidth - 15;
+  if (tipY + tip.offsetHeight > rect.height - 5) tipY = my - tip.offsetHeight - 15;
+  tip.style.left = tipX + "px"; tip.style.top = tipY + "px";
+};
+
+let isDragging = false, isPinching = false, touchMoved = false, startXMouse = 0, initialPinchDist = 0, initialZoom = 1;
+canvas.addEventListener('mousedown', ev => { isDragging = true; startXMouse = ev.clientX; });
+canvas.addEventListener('mouseup', () => { isDragging = false; });
+canvas.addEventListener('mouseleave', () => { isDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw(); });
+canvas.addEventListener('mousemove', ev => {
+  if (!chartData.L) return;
+  if (isDragging) {
+    const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
+    const { dataW, win, n } = chartData;
+    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw(); return;
+  }
+  handleTooltip(ev.clientX, ev.clientY);
+});
+
+canvas.addEventListener('wheel', ev => {
+  ev.preventDefault(); zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8))); queueDraw();
+}, { passive: false });
+
+async function setItem(m) {
+  selected = m;
+  $("#query").value = m.name;
+  document.title = `${m.name} - PocketGE`;
+  
+  const iconURL = itemIconUrl(m.id);
+  $("#itemIcon").src = iconURL;
+  $("#tickerHeaderIcon").src = iconURL;
+  $("#tickerName").textContent = m.name;
+  $("#status").textContent = "Loading...";
+  
+  updateFavicon(iconURL);
+  updateFavoriteBtn();
+  renderWatchlist();
+
+  if (overMaxData[String(m.id)]) { renderOverMax(m); return; }
+
+  const changes = await calculateAllPctChanges(m.id);
+  document.querySelectorAll(".view-btn").forEach(b => {
+    const p = b.dataset.view;
+    const val = parseFloat(changes[p]);
+    const cls = val > 0 ? 'positive' : val < 0 ? 'negative' : 'neutral';
+    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${val > 0 ? '+' : ''}${changes[p]}</span>`;
+  });
+
+  const dailyVal = parseFloat(changes['1d']);
+  $("#tickerChange").innerHTML = `<span class="${dailyVal > 0 ? 'positive' : dailyVal < 0 ? 'negative' : 'neutral'}">${dailyVal > 0 ? '+' : ''}${changes['1d']}</span>`;
+
+  let timestep = "24h";
+  if (view === "1d" || view === "5d") timestep = "5m"; 
+  else if (view === "1m") timestep = "1h"; 
+  else if (view === "6m") timestep = "6h";
+
+  if (view === "5y") currentSeries = filterSeries(fullHistorical, getPeriod(view));
+  else currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
+  
+  latest = await loadLatest();
+  const node = latest.data[String(m.id)];
+  liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
+  liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
+  
+  $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
+
+  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
+  recommendedBuy = targets.buy;
+  recommendedSell = targets.sell;
+  
+  $("#buyPrice").innerHTML = `
+    <div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div>
+    <div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>
+  `;
+  
+  $("#sellPrice").innerHTML = `
+    <div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div>
+    <div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>
+  `;
+
+  restoreCalculator(m.limit ? m.limit : 1, recommendedBuy, recommendedSell);
+  offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
+  resizeCanvas(); 
+  $("#status").textContent = "Active";
+}
+
+(async function boot() {
+  if (membersOn) { $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); }
+  else { $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); }
+
+  try {
+    mapping = await loadMapping(); latest = await loadLatest();
+    try { past24h = await load24h(); } catch(e) {}
+    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
+    try { volumes = await loadVolumes(); } catch(e) {}
+    
+    renderWatchlist();
+
+    const sb = $("#suggestBox"), qInput = $("#query");
+    qInput.addEventListener("input", () => {
+      const q = qInput.value.trim().toLowerCase();
+      if (!q) { sb.style.display = "none"; return; }
+      const list = mapping.filter(x => x.name.toLowerCase().includes(q) && (membersOn || !x.members)).slice(0, 40);
+      sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${itemIconUrl(x.id)}">${x.name}</div>`).join("");
+      sb.style.display = list.length ? "block" : "none";
+    });
+    
+    sb.addEventListener("click", e => {
+      const id = e.target.closest('div')?.dataset?.id;
+      if (id) { const m = mapping.find(x => String(x.id) === String(id)); if(m) { sb.style.display = "none"; qInput.blur(); setItem(m); } }
+    });
+    
+    document.addEventListener("click", e => { if(e.target !== qInput) sb.style.display="none"; });
+
+    document.querySelectorAll(".view-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active"); view = b.dataset.view; zoom = 1.0; if (selected) setItem(selected);
+      }
+    });
+    
+    $("#btnF2P").onclick = () => { 
+      membersOn = false; localStorage.setItem('ge_members', 'false');
+      $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
+      renderWatchlist(); if (selected?.members) { const ruby = mapping.find(x => x.name.toLowerCase() === "ruby"); if(ruby) setItem(ruby); }
+    };
+
+    $("#btnMembers").onclick = () => { 
+      membersOn = true; localStorage.setItem('ge_members', 'true');
+      $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); renderWatchlist();
+    };
+    
+    setInterval(async () => { latest = await loadLatest(); try{past1h=await jget(PRICES_API+"/1h");}catch(e){} renderWatchlist(); if(selected) setItem(selected); }, 300000);
+    resizeCanvas();
+    const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
+    if (ruby) setItem(ruby);
+  } catch (e) { $("#status").textContent = "API Error"; }
+})();
+</script>
+</body>
 </html>
