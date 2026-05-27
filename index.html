@@ -21,32 +21,10 @@
 <meta property="og:url" content="https://pocketge.com/">
 <meta property="og:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PocketGE | OSRS Mobile GE Tracker">
-<meta name="twitter:description" content="Track live GE margins, volume spikes, and over-max rares on the go.">
-<meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "PocketGE",
-  "url": "https://pocketge.com/",
-  "description": "Live Old School RuneScape Grand Exchange tracker designed for mobile flippers. Features include smart trade engines, volume spike detection, and over-max item consensus.",
-  "applicationCategory": "GameApplication",
-  "operatingSystem": "Web, iOS, Android",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
-}
-</script>
-
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -96,7 +74,7 @@ body {
 button, input { touch-action: manipulation; }
 
 .wrap { 
-  max-width: 1600px; 
+  max-width: 1800px; 
   margin: 0 auto; 
   padding: 8px; 
   height: 100dvh; 
@@ -113,15 +91,15 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
 
-h1.brand {
-  margin: 0; padding: 0; line-height: 1;
-  font-size: 15px; font-weight: 800; color: var(--text-main); cursor: pointer;
-  letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px;
+.brand-logo {
+  font-size: 16px; font-weight: 800; color: var(--text-main); cursor: pointer;
+  letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px; user-select: none;
 }
-h1.brand span { color: var(--border-active); }
+.brand-logo span { color: var(--border-active); }
+.brand-logo:hover { opacity: 0.8; }
 
 .search-group { display: flex; align-items: center; gap: 4px; }
-.sbar { position: relative; width: 200px; }
+.sbar { position: relative; width: 220px; }
 .sbar input {
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light);
   color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px;
@@ -145,36 +123,53 @@ h1.brand span { color: var(--border-active); }
   max-height: 200px; overflow-y: auto; background: var(--bg-panel); 
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
-.suggest::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
-.suggest::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
 .suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
-.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; gap: 2px; }
-.toolbar button {
-  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
-  padding: 2px 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: all 0.15s;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
-}
-.toolbar button:hover { color: var(--text-main); }
-.toolbar button.active { background: var(--border-light); color: #fff; }
-.pct-chg { font-size: 9px; font-weight: normal; margin-top: 1px; }
-.pct-chg.positive { color: var(--positive); }
-.pct-chg.negative { color: var(--negative); }
-.pct-chg.neutral { color: var(--text-muted); }
-
-.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; }
+.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; }
 .mode-pill button {
-  background: transparent; border: none; color: var(--text-muted); padding: 4px 8px;
-  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px;
+  background: transparent; border: none; color: var(--text-muted); padding: 0 10px;
+  cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%;
 }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
 
 .status-text { font-size: 11px; color: var(--text-muted); }
 
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
+
+.main-column {
+  flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
+}
+
+.ticker-header {
+  background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
+  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.ticker-title-group { display: flex; align-items: center; gap: 12px; }
+.ticker-title-group img { width: 48px; height: 48px; image-rendering: pixelated; }
+.ticker-info h2 { margin: 0; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.ticker-price-row { margin-top: 2px; display: flex; align-items: center; gap: 10px; }
+.ticker-price-row .price { font-size: 18px; font-weight: 700; color: var(--text-main); }
+.ticker-price-row .change { font-size: 14px; font-weight: 600; }
+.change.positive { color: var(--positive); }
+.change.negative { color: var(--negative); }
+.change.neutral { color: var(--text-muted); }
+
+.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
+.toolbar button {
+  background: transparent; border: none; color: var(--text-muted); border-radius: 3px;
+  padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
+}
+.toolbar button:hover { color: var(--text-main); }
+.toolbar button.active { background: var(--border-light); color: #fff; }
+.pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
+.pct-chg.positive { color: var(--positive); }
+.pct-chg.negative { color: var(--negative); }
+.pct-chg.neutral { color: var(--text-muted); }
 
 .chart-container {
   flex: 1; display: flex; flex-direction: column; min-width: 0;
@@ -190,17 +185,17 @@ h1.brand span { color: var(--border-active); }
 }
 .chart-controls button:hover { background: var(--bg-input); border-color: #fff; }
 
-.plaque-bar { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 10; pointer-events: none; }
+.plaque-bar { position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
-  padding: 4px 8px; min-width: 130px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
+  padding: 6px 10px; min-width: 140px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s;
 }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
-.price-label { font-size: 9px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.live-val { font-weight: normal; color: var(--text-main); font-size: 9px; opacity: 0.8; text-transform: none; }
+.price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.live-val { font-weight: normal; color: var(--text-main); font-size: 10px; opacity: 0.8; text-transform: none; }
 .price-box.low .price-val { color: var(--buy-color); }
 .price-box.high .price-val { color: var(--sell-color); }
-.price-val { font-size: 13px; font-weight: bold; margin-top: 1px; }
+.price-val { font-size: 16px; font-weight: bold; margin-top: 2px; }
 
 .chart-footer {
   background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
@@ -220,35 +215,33 @@ h1.brand span { color: var(--border-active); }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 
 .watchlist-container {
-  width: 280px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
+  width: 340px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main);
   border-radius: 6px; display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- CALCULATOR STYLING --- */
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
 }
-.calc-header { font-size: 10px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
+.calc-header { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.calc-input { display: flex; flex-direction: column; gap: 4px; }
-.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
-.calc-input input { 
+.calc-container input { 
   width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); 
-  color: var(--text-main); border-radius: 4px; padding: 5px 6px; font-size: 11px; 
+  color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; 
   outline: none; font-family: inherit;
 }
-.calc-input input:focus { border-color: var(--border-active); }
+.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.calc-container input:focus { border-color: var(--border-active); }
 .calc-result { 
   display: flex; justify-content: space-between; align-items: center; 
-  font-size: 11px; background: rgba(0,0,0,0.25); padding: 6px 8px; 
+  font-size: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; 
   border-radius: 4px; border: 1px solid var(--border-main);
 }
-.calc-result .res-profit { font-weight: bold; font-size: 12px; }
+.calc-result .res-profit { font-weight: bold; font-size: 14px; }
 .calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
 
 .watchlist-header {
-  padding: 8px 10px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
+  padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
   font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
@@ -258,7 +251,7 @@ h1.brand span { color: var(--border-active); }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
-  padding: 6px 10px; font-size: 10px; font-weight: bold; color: var(--border-active);
+  padding: 8px 14px; font-size: 11px; font-weight: bold; color: var(--border-active);
   background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between;
 }
 .category-title.overmax-title { color: var(--fav-gold); }
@@ -272,62 +265,95 @@ h1.brand span { color: var(--border-active); }
 .category-list.collapsed { display: none; }
 
 .wl-item {
-  display: flex; align-items: center; justify-content: space-between; padding: 6px 10px;
-  cursor: pointer; font-size: 12px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
+  display: flex; align-items: center; justify-content: space-between; padding: 8px 14px;
+  cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
   transition: background 0.2s, border 0.2s;
 }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
 .wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
 
-/* DAY HIGH / LOW HIGHLIGHTING */
 .wl-item.at-high { background: rgba(38, 166, 154, 0.1); border-right: 3px solid var(--sell-color); }
 .wl-item.at-low { background: rgba(230, 195, 92, 0.1); border-right: 3px solid var(--buy-color); }
 .wl-item.active.at-high { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--sell-color); }
 .wl-item.active.at-low { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--buy-color); }
 
-.wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-.wl-item-left img { width: 16px; height: 16px; image-rendering: pixelated; flex-shrink: 0; }
-.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wl-item-right { display: flex; align-items: center; gap: 4px; text-align: right; }
-.wl-item-price { font-weight: 600; font-size: 11px; color: var(--text-main); }
-.wl-trend { font-size: 9px; cursor: help;}
+.wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
+.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+.wl-item-right { display: flex; align-items: center; gap: 6px; text-align: right; }
+.wl-item-price { font-weight: 700; font-size: 13px; color: var(--text-main); }
+.wl-trend { font-size: 10px; cursor: help;}
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 .wl-trend.neutral { color: var(--text-muted); }
 
 /* --- RESPONSIVE ORIENTATION RULES --- */
 
-/* LANDSCAPE (Pro Dash Mode) */
-@media (max-height: 500px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; }
-  .top-panel { padding: 3px 6px; }
-  .brand { display: none; } 
-  .sbar { width: 160px; }
-  .sbar input { padding-top: 3px; padding-bottom: 3px; }
-  .fav-btn { padding: 3px 6px; }
-  .status-text { display: none; }
-  .plaque-bar { top: 4px; left: 4px; }
-  .chart-footer { padding: 2px 8px; }
-  .watchlist-container { width: 280px; font-size: 11px; } 
-  .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 6px 8px; }
-  .calc-grid { gap: 4px; }
-  .chart-controls { bottom: 26px; right: 8px; }
-  .chart-controls button { padding: 2px 8px; font-size: 12px; }
-}
-
-/* PORTRAIT (Vertical Stacked Mode) */
-@media screen and (orientation: portrait) {
+/* MOBILE PORTRAIT (Stacked Vertical View) */
+@media screen and (max-width: 1023px) and (orientation: portrait) {
   .wrap { padding: 6px; overflow-y: auto; }
+  .top-panel { padding: 6px 8px; }
+  .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
+  
+  /* STRICT BRAND REMOVAL ON MOBILE */
+  .brand-logo { display: none !important; }
+  
+  .mode-pill { flex-shrink: 0; }
+  .search-group { flex: 1; }
+  .sbar { width: 100%; }
+
   .content-area { flex-direction: column; }
+  
+  #tickerHeaderIcon, h2#tickerName { display: none !important; }
+  .ticker-header { flex-direction: column; align-items: stretch; padding: 6px; gap: 6px; }
+  .ticker-title-group { display: block; width: 100%; }
+  .ticker-price-row { margin: 0; flex-direction: row; justify-content: space-between; width: 100%; }
+  .ticker-price-row .price { font-size: 16px; }
+  .ticker-price-row .change { font-size: 12px; }
+
+  .toolbar { width: 100%; justify-content: space-between; }
+  .toolbar button { flex: 1; padding: 4px 6px; font-size: 11px; }
+
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
-  .sbar { width: auto; flex: 1; }
-  .search-group { flex: 1; }
-  .toolbar { width: 100%; justify-content: space-between; margin-top: 4px; }
-  .toolbar button { flex: 1; }
-  .panel-left { width: 100%; justify-content: space-between;}
+  .status-text { display: none; }
+  .plaque-bar { top: 8px; left: 8px; }
+  .price-box { padding: 4px 8px; min-width: 120px; }
+  .price-val { font-size: 13px; }
+}
+
+/* MOBILE LANDSCAPE (Side-by-Side View) */
+@media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
+  .wrap { padding: 4px; gap: 4px; }
+  .top-panel { padding: 4px 8px; }
+  .panel-left { flex-wrap: nowrap; gap: 6px; }
+  
+  /* STRICT BRAND REMOVAL ON MOBILE */
+  .brand-logo { display: none !important; }
+  
+  .content-area { flex-direction: row; } 
+  
+  #tickerHeaderIcon, h2#tickerName { display: none !important; }
+  .ticker-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 4px 8px; gap: 8px; }
+  .ticker-title-group { display: flex; }
+  .ticker-price-row { margin: 0; flex-direction: row; align-items: center; gap: 8px; }
+  .ticker-price-row .price { font-size: 15px; }
+  .ticker-price-row .change { font-size: 11px; }
+
+  .toolbar { justify-content: flex-end; padding: 2px; }
+  .toolbar button { min-width: 38px; padding: 2px 6px; font-size: 11px; }
+  .pct-chg { font-size: 8px; margin: 0; }
+  
+  .sbar { width: 150px; }
+  .watchlist-container { width: 280px; font-size: 11px; } 
+  .wl-item { padding: 4px 8px; font-size: 11px; }
+  .calc-container { padding: 6px 8px; }
+  .chart-controls { bottom: 26px; right: 8px; }
+  .chart-controls button { padding: 2px 8px; font-size: 12px; }
+  .plaque-bar { top: 4px; left: 4px; }
+  .price-box { padding: 4px 8px; min-width: 120px; }
+  .price-val { font-size: 13px; }
   .status-text { display: none; }
 }
 </style>
@@ -335,10 +361,15 @@ h1.brand span { color: var(--border-active); }
 <body>
 
 <div class="wrap">
-  <div class="top-panel">
+  <div class="top-panel" id="topPanel">
     <div class="panel-left">
-      <h1 class="brand" onclick="location.reload();">Pocket<span>GE</span></h1>
-      
+      <div id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></div>
+
+      <div class="mode-pill">
+        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
+        <button data-mode="members" id="btnMembers">Members</button>
+      </div>
+
       <div class="search-group">
         <div class="sbar">
           <img id="itemIcon" src="" alt="">
@@ -351,60 +382,67 @@ h1.brand span { color: var(--border-active); }
           </svg>
         </button>
       </div>
-
-      <div class="toolbar" id="timeToolbar">
-        <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
-        <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
-        <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
-        <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
-        <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
-        <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
-      </div>
     </div>
 
-    <div class="panel-left">
-      <span id="status" class="status-text">Connecting...</span>
-      <div class="mode-pill">
-        <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-        <button data-mode="members" id="btnMembers">Members</button>
-      </div>
-    </div>
+    <span id="status" class="status-text">Connecting...</span>
   </div>
 
   <div class="content-area">
-    <div class="chart-container">
-      <div class="plaque-bar">
-        <div id="buyPrice" class="price-box low">
-          <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
-          <div class="price-val"><span>—</span></div>
-        </div>
-        <div id="sellPrice" class="price-box high selected">
-          <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
-          <div class="price-val"><span>—</span></div>
-        </div>
-      </div>
+    <div class="main-column">
       
-      <div class="chart-controls">
-        <button id="btnZoomIn" title="Zoom In">+</button>
-        <button id="btnZoomOut" title="Zoom Out">−</button>
-        <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+      <div class="ticker-header" id="tickerHeader">
+        <div class="ticker-title-group">
+          <img id="tickerHeaderIcon" src="" alt="Icon">
+          <div class="ticker-info">
+            <h2 id="tickerName">Loading...</h2>
+            <div class="ticker-price-row">
+              <span id="tickerLivePrice" class="price">---</span>
+              <span id="tickerChange" class="change neutral">---</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="toolbar" id="timeToolbar">
+          <button data-view="1d" class="view-btn">1D<span class="pct-chg">...</span></button>
+          <button data-view="5d" class="active view-btn">5D<span class="pct-chg">...</span></button>
+          <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+          <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+          <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+          <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+        </div>
       </div>
 
-      <canvas id="chart" class="chart"></canvas>
-      <div id="tip" class="chart-tip"></div>
-      
-      <div class="chart-footer legend">
-        <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
-        <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
-        <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
+      <div class="chart-container">
+        <div class="plaque-bar">
+          <div id="buyPrice" class="price-box low">
+            <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+          <div id="sellPrice" class="price-box high selected">
+            <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
+            <div class="price-val"><span>—</span></div>
+          </div>
+        </div>
+        
+        <div class="chart-controls">
+          <button id="btnZoomIn" title="Zoom In">+</button>
+          <button id="btnZoomOut" title="Zoom Out">−</button>
+          <button id="btnZoomReset" title="Reset Zoom">Reset</button>
+        </div>
+
+        <canvas id="chart" class="chart"></canvas>
+        <div id="tip" class="chart-tip"></div>
+        
+        <div class="chart-footer legend">
+          <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
+          <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
+          <div class="legend-item"><span class="legend-dash" style="background:var(--text-muted); border-top: 1px dashed #fff;"></span> Trend Line</div>
+        </div>
       </div>
     </div>
 
     <div class="watchlist-container">
-      
-      <div class="calc-container" id="sideModule">
-        </div>
-
+      <div class="calc-container" id="sideModule"></div>
       <div class="watchlist-header">
         <span>Market Scanner (24H)</span>
         <span id="wlCount" style="font-weight:normal; font-size:10px;">Loading...</span>
@@ -413,12 +451,12 @@ h1.brand span { color: var(--border-active); }
     </div>
   </div>
 </div>
+
 <script>
 const $ = s => document.querySelector(s);
 const PRICES_API = "https://prices.runescape.wiki/api/v1/osrs";
 const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 
-// CORE APP STATE
 let mapping = [], latest = null, past24h = null, past1h = null, volumes = null, selected = null;
 let currentSeries = null, view = "5d", zoom = 1.0, offset = 0;
 let hoverIdx = null; 
@@ -430,6 +468,17 @@ let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
 let liveBuyRaw = null, liveSellRaw = null;
 let isCalcOpen = false; 
+
+let groupOpenStates = {
+  "⭐ Favorites": true,
+  "📉 At Day Lows": false,
+  "📈 At Day Highs": false,
+  "👑 Over-Max Rares": false,
+  "🚨 Price Drops (1H)": false,
+  "🌋 Volume Spikes (1H)": false,
+  "📈 Highest Vol (24H)": false,
+  "💎 Most Expensive": false
+};
 
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
@@ -455,6 +504,13 @@ function queueDraw() {
       isDrawing = false;
     });
   }
+}
+
+function updateFavicon(url) {
+  document.getElementById('favicon1').href = url;
+  document.getElementById('favicon2').href = url;
+  document.getElementById('favicon3').href = url;
+  document.getElementById('favicon4').href = url;
 }
 
 $('#btnZoomIn').onclick = () => { zoom = Math.min(20, zoom * 1.5); queueDraw(); };
@@ -511,7 +567,6 @@ function updateCalculator() {
     <span>Profit: <span class="res-profit" style="color:${color}">${sign}${abbreviateNumber(totalProfit)}</span></span>
     <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
   `;
-  $('#calcResult').title = `${sign}${totalProfit.toLocaleString()} gp net profit`;
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
@@ -651,7 +706,6 @@ function renderWatchlist() {
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
     
-    // Price Drops
     if (node && p1h && p1h.avgHighPrice > 100) {
       const current = node.high || node.avgHighPrice;
       const hourAgo = p1h.avgHighPrice;
@@ -661,7 +715,6 @@ function renderWatchlist() {
       }
     }
 
-    // Smart Volume Spikes
     if (p1h && p24) {
       const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
       const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
@@ -677,18 +730,16 @@ function renderWatchlist() {
       }
     }
 
-    // Day Lows / Day Highs
-    if (node && p24 && p24.avgHighPrice > 100) {
+    if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
        const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-       if (dailyGPVolume > 5000000) {
+       if (dailyGPVolume > 10000000) {
            const currentSell = node.high;
            const currentBuy = node.low;
-           if (currentBuy > 0 && p24.avgLowPrice > 0 && currentBuy <= p24.avgLowPrice * 1.01) {
-               dayLows.push(item);
-           }
-           if (currentSell > 0 && p24.avgHighPrice > 0 && currentSell >= p24.avgHighPrice * 0.99) {
-               dayHighs.push(item);
-           }
+           const macroHighLimit = p24.avgHighPrice;
+           const macroLowLimit = p24.avgLowPrice;
+
+           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 0.96) dayLows.push(item);
+           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 1.04) dayHighs.push(item);
        }
     }
   });
@@ -703,14 +754,14 @@ function renderWatchlist() {
   dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
 
   const groups = [
-    { name: "⭐ Favorites", items: favs, open: true, className: "fav-title" },
-    { name: "📉 At Day Lows", items: dayLows.slice(0,30), open: false, className: "low-title" },
-    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), open: false, className: "high-title" },
-    { name: "👑 Over-Max Rares", items: overMaxItems, open: false, className: "overmax-title" },
-    { name: "🚨 Price Drops (1H)", items: topDrops, open: false, className: "lose-title" },
-    { name: "🌋 Volume Spikes (1H)", items: topSpikes, open: false, className: "rec-title" },
-    { name: "📈 Highest Vol (24H)", items: topVol, open: false, className: "" },
-    { name: "💎 Most Expensive", items: topPriced, open: false, className: "" }
+    { name: "⭐ Favorites", items: favs, className: "fav-title" },
+    { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
+    { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
+    { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
+    { name: "🚨 Price Drops (1H)", items: topDrops, className: "lose-title" },
+    { name: "🌋 Volume Spikes (1H)", items: topSpikes, className: "rec-title" },
+    { name: "📈 Highest Vol (24H)", items: topVol, className: "" },
+    { name: "💎 Most Expensive", items: topPriced, className: "" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -721,16 +772,19 @@ function renderWatchlist() {
     const groupDiv = document.createElement("div");
     groupDiv.className = "category-group";
 
+    const isGroupOpen = groupOpenStates[group.name] !== false;
+
     const titleDiv = document.createElement("div");
     titleDiv.className = `category-title ${group.className}`;
-    titleDiv.innerHTML = `<span>${group.name}</span><span>${group.open ? "▼" : "▶"}</span>`;
+    titleDiv.innerHTML = `<span>${group.name}</span><span>${isGroupOpen ? "▼" : "▶"}</span>`;
     
     const listDiv = document.createElement("div");
-    listDiv.className = `category-list ${group.open ? "" : "collapsed"}`;
+    listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
 
     titleDiv.onclick = () => {
-      listDiv.classList.toggle("collapsed");
-      titleDiv.querySelector("span:last-child").textContent = listDiv.classList.contains("collapsed") ? "▶" : "▼";
+      const currentlyCollapsed = listDiv.classList.toggle("collapsed");
+      titleDiv.querySelector("span:last-child").textContent = currentlyCollapsed ? "▶" : "▼";
+      groupOpenStates[group.name] = !currentlyCollapsed;
     };
 
     let innerListHTML = "";
@@ -744,19 +798,17 @@ function renderWatchlist() {
 
         const node = latest?.data?.[String(item.id)];
         const p24 = past24h?.data?.[String(item.id)];
-        
         let hlClass = "";
 
         if (overMaxData[String(item.id)]) {
           price = overMaxData[String(item.id)].wts;
-          subText = `<span class="wl-trend" style="color:var(--text-muted);" title="Calculated from consensus listings">Est. Value</span>`;
+          subText = `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>`;
           isSpecial = true;
         } else if (group.name === "🚨 Price Drops (1H)") {
           const dData = dropsData.find(d => d.item.id === item.id);
           if (dData) {
-            const val = (dData.pct * 100).toFixed(1);
             price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-            subText = `<span class="wl-trend down">${val}%</span>`;
+            subText = `<span class="wl-trend down">${(dData.pct * 100).toFixed(1)}%</span>`;
             isSpecial = true;
           }
         } else if (group.name === "🌋 Volume Spikes (1H)") {
@@ -779,17 +831,17 @@ function renderWatchlist() {
           else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
 
           if (currentMid !== null && pastMid !== null) {
-            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up" title="Trending ABOVE 24H Average">▲</span>`;
-            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down" title="Trending BELOW 24H Average">▼</span>`;
-            else subText = `<span class="wl-trend neutral" title="Neutral against 24H Average">—</span>`;
+            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
+            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
+            else subText = `<span class="wl-trend neutral">—</span>`;
           }
         }
 
         if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
            const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-           if (dailyGPVolume > 5000000) {
-               if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 0.99) hlClass = "at-high";
-               else if (node?.low > 0 && p24.avgLowPrice > 0 && node.low <= p24.avgLowPrice * 1.01) hlClass = "at-low";
+           if (dailyGPVolume > 10000000) {
+               if (node?.high > 0 && node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
+               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
            }
         }
 
@@ -936,45 +988,28 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const recentHighs = series.high.slice(-100).filter(x => x != null);
     const recentLows = series.low.slice(-100).filter(x => x != null);
     
-    const midPoints = [];
-    const len = series.labels.length;
-    for (let i = Math.max(0, len - 20); i < len; i++) {
-        if (series.low[i] && series.high[i]) midPoints.push({i, v: (series.low[i]+series.high[i])/2});
-    }
-    let slope = 0;
-    if (midPoints.length > 5) {
-       const lr = linearRegression(midPoints.map(m=>m.i), midPoints.map(m=>m.v));
-       slope = lr.slope;
-    }
-
     if (recentHighs.length > 5 && recentLows.length > 5) {
-      const support = Math.floor(percentile(recentLows, 25)); 
-      let resistance = Math.ceil(percentile(recentHighs, 75)); 
+      const support = Math.floor(percentile(recentLows, 35));
+      const resistance = Math.ceil(percentile(recentHighs, 65));
       
-      if (slope < -1) {
-          const ultraRecentHighs = series.high.slice(-10).filter(x => x != null);
-          if (ultraRecentHighs.length > 3) {
-              resistance = Math.ceil(percentile(ultraRecentHighs, 50));
-          }
+      if (rawLow > support * 1.015) {
+         targetBuy = Math.floor(support * 1.01); 
       }
-
-      targetBuy = Math.min(rawLow, support);
-      targetSell = Math.max(rawHigh, resistance);
       
-      if (targetSell > rawHigh * 1.05) {
-          targetSell = Math.ceil(rawHigh * 1.05);
+      if (rawHigh < resistance * 0.985) {
+         targetSell = Math.ceil(resistance * 0.99); 
       }
     }
   }
+
+  if (targetBuy >= targetSell) targetBuy = targetSell - 1;
+  if (targetBuy < 1) targetBuy = 1;
 
   let tax = calculateTax(targetSell);
   let profit = targetSell - targetBuy - tax;
 
   if (profit <= 0) {
     targetBuy = Math.max(1, targetSell - tax - 1);
-    if (targetBuy === 1 && targetSell <= 2) {
-       targetSell = targetBuy + tax + 1;
-    }
   }
 
   return { buy: targetBuy, sell: targetSell };
@@ -994,30 +1029,30 @@ function renderOverMax(m) {
   let currentWtb = isOverMax.wtb * 0.95;
   let currentWts = isOverMax.wts * 0.95;
   
-  for (let i = 150; i >= 0; i--) {
-     mockSeries.labels.push(now - (i * 86400 / 5));
-     currentWtb += (isOverMax.wtb - currentWtb) * 0.1 + (Math.random() - 0.5) * 200000000;
-     currentWts += (isOverMax.wts - currentWts) * 0.1 + (Math.random() - 0.5) * 200000000;
+  for (let i = 365; i >= 0; i--) {
+     mockSeries.labels.push(now - (i * 86400));
+     currentWtb += (isOverMax.wtb - currentWtb) * 0.05 + (Math.random() - 0.5) * 60000000;
+     currentWts += (isOverMax.wts - currentWts) * 0.05 + (Math.random() - 0.5) * 60000000;
+     if (currentWts <= currentWtb) currentWts = currentWtb + 10000000;
      mockSeries.low.push(currentWtb);
      mockSeries.high.push(currentWts);
-     mockSeries.lowVol.push(Math.floor(Math.random() * 2));
-     mockSeries.highVol.push(Math.floor(Math.random() * 2));
+     mockSeries.lowVol.push(Math.floor(Math.random() * 5));
+     mockSeries.highVol.push(Math.floor(Math.random() * 5));
   }
   currentSeries = filterSeries(mockSeries, getPeriod(view));
 
   $("#buyPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target WTB <span class="live-val">Aggregated</span>
-    </div>
+    <div class="price-label">Target WTB <span class="live-val">Aggregated</span></div>
     <div class="price-val"><span>${abbreviateNumber(isOverMax.wtb)}</span></div>
   `;
   
   $("#sellPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target WTS <span class="live-val">Aggregated</span>
-    </div>
+    <div class="price-label">Target WTS <span class="live-val">Aggregated</span></div>
     <div class="price-val"><span>${abbreviateNumber(isOverMax.wts)}</span></div>
   `;
+
+  $("#tickerLivePrice").textContent = abbreviateNumber(isOverMax.wts);
+  $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
 
   recommendedBuy = isOverMax.wtb;
   recommendedSell = isOverMax.wts;
@@ -1025,7 +1060,7 @@ function renderOverMax(m) {
   $("#sideModule").innerHTML = `
     <div class="calc-header" style="color: var(--fav-gold);">👑 Over-Max Consensus Engine</div>
     <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0; line-height: 1.4;">
-      <strong>Anti-Manipulation Active:</strong> Scraping active WTB/WTS forum & discord listings. Top/Bottom 15% outliers discarded to mathematically block fake trade inflation.
+      <strong>Anti-Manipulation:</strong> Forum & Discord telemetry scraped. Outer 15% outliers rejected mathematically to terminate spoofing vectors.
     </div>
     <div class="calc-result" style="display:flex; justify-content:space-between; margin-top:8px;">
        <span style="color:var(--buy-color); font-weight:bold;">WTB: ${abbreviateNumber(isOverMax.wtb)}</span>
@@ -1038,7 +1073,6 @@ function renderOverMax(m) {
   $("#status").textContent = "Consensus Active";
 }
 
-
 function drawChart(series) {
   const c = canvas;
   const rect = c.parentElement.getBoundingClientRect();
@@ -1047,10 +1081,7 @@ function drawChart(series) {
   const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
   ctx.clearRect(0, 0, W, H);
   
-  if (!series || !series.labels?.length) { 
-    ctx.fillStyle = "var(--text-muted)"; ctx.font = "bold 12px sans-serif";
-    ctx.fillText("No price metrics available", W/2 - 60, H/2); return; 
-  }
+  if (!series || !series.labels?.length) return;
 
   const n = series.labels.length;
   const win = Math.max(20, Math.floor(n / zoom));
@@ -1069,7 +1100,6 @@ function drawChart(series) {
   const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
 
   const dataW = w * 0.85; 
-  const futureW = w * 0.15; 
   const linesX = Math.min(6, L.length);
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
@@ -1078,17 +1108,10 @@ function drawChart(series) {
 
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
-  let recentHighIdx = -1, recentLowIdx = -1;
 
   for (let i = 0; i < L.length; i++) {
     if (HI[i] != null && HI[i] > viewMaxHigh) { viewMaxHigh = HI[i]; viewMaxIdx = i; }
     if (LO[i] != null && LO[i] < viewMinLow) { viewMinLow = LO[i]; viewMinIdx = i; }
-  }
-
-  for (let i = L.length - 1; i >= 0; i--) {
-      if (recentHighIdx === -1 && HI[i] != null) recentHighIdx = i;
-      if (recentLowIdx === -1 && LO[i] != null) recentLowIdx = i;
-      if (recentHighIdx !== -1 && recentLowIdx !== -1) break;
   }
 
   ctx.lineWidth = 1;
@@ -1115,31 +1138,19 @@ function drawChart(series) {
     ctx.fillText(dateStr, x, y0 + h + 4);
   }
 
-  ctx.strokeStyle = "rgba(255,255,255,0.05)";
-  ctx.setLineDash([2, 4]);
-  ctx.beginPath(); ctx.moveTo(x0 + dataW, y0); ctx.lineTo(x0 + dataW, y0 + h); ctx.stroke();
-  ctx.setLineDash([]);
-
   const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
   const midPoints = [];
   for (let i = 0; i < L.length; i++) {
     if (LO[i] != null && HI[i] != null) midPoints.push({i, v: (LO[i]+HI[i])/2});
-    else if (LO[i] != null) midPoints.push({i, v: LO[i]});
-    else if (HI[i] != null) midPoints.push({i, v: HI[i]});
   }
   
   if (midPoints.length > 1) {
     const { slope, intercept } = linearRegression(midPoints.map(m=>m.i), midPoints.map(m=>m.v));
-    ctx.save();
-    ctx.setLineDash([4, 6]);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
+    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
     ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
-    ctx.stroke();
-    ctx.restore();
+    ctx.stroke(); ctx.restore();
   }
 
   function drawDashes(arr, color, isHigh) {
@@ -1153,35 +1164,15 @@ function drawChart(series) {
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
       if (isHigh && i === viewMaxIdx) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
         ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
-        ctx.restore();
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
       } else if (!isHigh && i === viewMinIdx) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
         ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
-        ctx.restore();
-      }
-
-      if (isHigh && i === recentHighIdx && i !== viewMaxIdx) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
-        ctx.restore();
-      } else if (!isHigh && i === recentLowIdx && i !== viewMinIdx) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill();
-        ctx.restore();
+        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
       }
     }
   }
@@ -1199,43 +1190,25 @@ function drawChart(series) {
     const totalH = ((LOWVOL[i] + HIGHVOL[i]) / maxVol) * h_vol;
     const lowH = (LOWVOL[i] / maxVol) * h_vol;
     const x = x0 + i * stepX - (barWidth / 2);
-    
-    ctx.fillStyle = volBuyColor;
-    ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
-    ctx.fillStyle = volSellColor;
-    ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
+    ctx.fillStyle = volBuyColor; ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
+    ctx.fillStyle = volSellColor; ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
   }
 
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
     if (py >= y0 && py <= y0 + h_price) {
-      ctx.save();
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-      ctx.lineWidth = 1.0;
+      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
       ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
-      
-      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-      ctx.font = "9px BlinkMacSystemFont, sans-serif";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(`Target: ${fmtGp(activePrice)}`, x0 + 4, py - 3);
-      ctx.restore();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; ctx.font = "9px BlinkMacSystemFont, sans-serif";
+      ctx.fillText(`Target: ${fmtGp(activePrice)}`, x0 + 4, py - 3); ctx.restore();
     }
   }
 
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(hx, y0);
-    ctx.lineTo(hx, y0 + h);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.stroke();
-    ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.moveTo(hx, y0); ctx.lineTo(hx, y0 + h);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
   }
 }
 
@@ -1245,192 +1218,111 @@ const handleTooltip = (clientX, clientY) => {
   const { x0, dataW, stepX, L, LO, HI, VO, y0, H } = chartData;
   
   if (!L || mx < x0 || mx > x0 + dataW || my < y0 || my > H) { 
-    tip.style.display = "none"; 
-    if (hoverIdx !== null) { hoverIdx = null; queueDraw(); }
-    return; 
+    tip.style.display = "none"; if (hoverIdx !== null) { hoverIdx = null; queueDraw(); } return; 
   }
   
   const newIdx = Math.max(0, Math.min(L.length - 1, Math.round((mx - x0) / stepX)));
-  if (hoverIdx !== newIdx) {
-    hoverIdx = newIdx;
-    queueDraw();
-  }
+  if (hoverIdx !== newIdx) { hoverIdx = newIdx; queueDraw(); }
   
-  let hLow = LO[hoverIdx]; let hHigh = HI[hoverIdx];
-
   tip.innerHTML = `<strong>${new Date(L[hoverIdx]*1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</strong>
-    <span style="color:var(--buy-color)">Buy: ${fmtGp(hLow)}</span><br/>
-    <span style="color:var(--sell-color)">Sell: ${fmtGp(hHigh)}</span><br/>
+    <span style="color:var(--buy-color)">Buy: ${fmtGp(LO[hoverIdx])}</span><br/>
+    <span style="color:var(--sell-color)">Sell: ${fmtGp(HI[hoverIdx])}</span><br/>
     <span style="color:var(--text-muted)">Volume: ${fmtNum(VO[hoverIdx])}</span>`;
     
   tip.style.display = "block";
-
-  const tipW = tip.offsetWidth;
-  const tipH = tip.offsetHeight;
-  
-  let tipX = mx + 15;
-  let tipY = my + 15;
-  
-  if (tipX + tipW > rect.width - 5) { tipX = mx - tipW - 15; }
-  if (tipY + tipH > rect.height - 5) { tipY = my - tipH - 15; }
-
-  tip.style.left = tipX + "px";
-  tip.style.top = tipY + "px";
+  let tipX = mx + 15, tipY = my + 15;
+  if (tipX + tip.offsetWidth > rect.width - 5) tipX = mx - tip.offsetWidth - 15;
+  if (tipY + tip.offsetHeight > rect.height - 5) tipY = my - tip.offsetHeight - 15;
+  tip.style.left = tipX + "px"; tip.style.top = tipY + "px";
 };
 
-canvas.addEventListener('touchstart', ev => {
-  if (ev.touches.length === 2) {
-    ev.preventDefault(); 
-    isPinching = true;
-    initialPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
-    initialZoom = zoom;
-    tip.style.display = "none";
-    if (hoverIdx !== null) { hoverIdx = null; queueDraw(); }
-  } else if (ev.touches.length === 1 && !isPinching) {
-    isDragging = true; 
-    touchMoved = false;
-    startXMouse = ev.touches[0].clientX; 
-  }
-}, { passive: false });
-
-canvas.addEventListener('touchmove', ev => {
-  if (isPinching && ev.touches.length === 2) {
-    ev.preventDefault(); 
-    const currentPinchDist = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
-    zoom = Math.max(1, Math.min(20, initialZoom * (currentPinchDist / initialPinchDist)));
-    const { n } = chartData;
-    const win = Math.max(20, Math.floor(n / zoom));
-    offset = Math.max(0, Math.min(n - win, offset));
-    queueDraw();
-  } else if (isDragging && ev.touches.length === 1 && !isPinching) {
-    ev.preventDefault(); 
-    touchMoved = true;
-    const dx = ev.touches[0].clientX - startXMouse; 
-    startXMouse = ev.touches[0].clientX;
-    const { dataW, win, n } = chartData;
-    offset -= dx / (dataW / win);
-    offset = Math.max(0, Math.min(n - win, offset));
-    queueDraw();
-  }
-}, { passive: false });
-
-canvas.addEventListener('touchend', ev => {
-  if (ev.touches.length < 2) isPinching = false;
-  if (ev.touches.length === 0) {
-    isDragging = false; 
-    if (!touchMoved && ev.changedTouches.length > 0 && !isPinching) {
-      handleTooltip(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
-    } else {
-      tip.style.display = "none";
-      if (hoverIdx !== null) { hoverIdx = null; queueDraw(); }
-    }
-  }
-}, { passive: false });
-
+let isDragging = false, isPinching = false, touchMoved = false, startXMouse = 0, initialPinchDist = 0, initialZoom = 1;
 canvas.addEventListener('mousedown', ev => { isDragging = true; startXMouse = ev.clientX; });
 canvas.addEventListener('mouseup', () => { isDragging = false; });
-canvas.addEventListener('mouseleave', () => { 
-  isDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw();
-});
+canvas.addEventListener('mouseleave', () => { isDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw(); });
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
   if (isDragging) {
     const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
     const { dataW, win, n } = chartData;
-    offset -= dx / (dataW / win);
-    offset = Math.max(0, Math.min(n - win, offset));
-    queueDraw();
-    return;
+    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw(); return;
   }
   handleTooltip(ev.clientX, ev.clientY);
 });
 
 canvas.addEventListener('wheel', ev => {
-  ev.preventDefault();
-  zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
-  queueDraw();
+  ev.preventDefault(); zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8))); queueDraw();
 }, { passive: false });
 
 async function setItem(m) {
   selected = m;
   $("#query").value = m.name;
   document.title = `${m.name} - PocketGE`;
-  $("#itemIcon").src = itemIconUrl(m.id);
+  
+  const iconURL = itemIconUrl(m.id);
+  $("#itemIcon").src = iconURL;
+  $("#tickerHeaderIcon").src = iconURL;
+  $("#tickerName").textContent = m.name;
   $("#status").textContent = "Loading...";
-
+  
+  updateFavicon(iconURL);
   updateFavoriteBtn();
   renderWatchlist();
 
-  if (overMaxData[String(m.id)]) {
-     renderOverMax(m);
-     return;
-  }
+  if (overMaxData[String(m.id)]) { renderOverMax(m); return; }
 
   const changes = await calculateAllPctChanges(m.id);
   document.querySelectorAll(".view-btn").forEach(b => {
     const p = b.dataset.view;
     const val = parseFloat(changes[p]);
     const cls = val > 0 ? 'positive' : val < 0 ? 'negative' : 'neutral';
-    const prefix = val > 0 ? '+' : '';
-    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${prefix}${changes[p]}</span>`;
+    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${val > 0 ? '+' : ''}${changes[p]}</span>`;
   });
+
+  const dailyVal = parseFloat(changes['1d']);
+  $("#tickerChange").innerHTML = `<span class="${dailyVal > 0 ? 'positive' : dailyVal < 0 ? 'negative' : 'neutral'}">${dailyVal > 0 ? '+' : ''}${changes['1d']}</span>`;
 
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
   else if (view === "1m") timestep = "1h"; 
   else if (view === "6m") timestep = "6h";
 
-  if (view === "5y") {
-    currentSeries = filterSeries(fullHistorical, getPeriod(view));
-  } else {
-    currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
-  }
+  if (view === "5y") currentSeries = filterSeries(fullHistorical, getPeriod(view));
+  else currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
   
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
   
+  $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
+
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy;
   recommendedSell = targets.sell;
   
   $("#buyPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span>
-    </div>
+    <div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div>
     <div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>
   `;
   
   $("#sellPrice").innerHTML = `
-    <div class="price-label" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-      Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span>
-    </div>
+    <div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div>
     <div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>
   `;
 
-  const itemLimit = m.limit ? m.limit : 1;
-  restoreCalculator(itemLimit, recommendedBuy, recommendedSell);
-
+  restoreCalculator(m.limit ? m.limit : 1, recommendedBuy, recommendedSell);
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   resizeCanvas(); 
   $("#status").textContent = "Active";
 }
 
 (async function boot() {
-  
-  if (membersOn) {
-      $("#btnMembers").classList.add("active");
-      $("#btnF2P").classList.remove("active");
-  } else {
-      $("#btnF2P").classList.add("active");
-      $("#btnMembers").classList.remove("active");
-  }
+  if (membersOn) { $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); }
+  else { $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); }
 
   try {
-    mapping = await loadMapping();
-    latest = await loadLatest();
-    
+    mapping = await loadMapping(); latest = await loadLatest();
     try { past24h = await load24h(); } catch(e) {}
     try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
     try { volumes = await loadVolumes(); } catch(e) {}
@@ -1438,10 +1330,9 @@ async function setItem(m) {
     renderWatchlist();
 
     const sb = $("#suggestBox"), qInput = $("#query");
-    
     qInput.addEventListener("input", () => {
       const q = qInput.value.trim().toLowerCase();
-      if (!q) { sb.style.display = "none"; sb.innerHTML = ""; return; }
+      if (!q) { sb.style.display = "none"; return; }
       const list = mapping.filter(x => x.name.toLowerCase().includes(q) && (membersOn || !x.members)).slice(0, 40);
       sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${itemIconUrl(x.id)}">${x.name}</div>`).join("");
       sb.style.display = list.length ? "block" : "none";
@@ -1449,61 +1340,34 @@ async function setItem(m) {
     
     sb.addEventListener("click", e => {
       const id = e.target.closest('div')?.dataset?.id;
-      if (!id) return;
-      const m = mapping.find(x => String(x.id) === String(id));
-      if (m) { 
-        sb.style.display = "none"; 
-        qInput.blur(); 
-        setItem(m); 
-      }
+      if (id) { const m = mapping.find(x => String(x.id) === String(id)); if(m) { sb.style.display = "none"; qInput.blur(); setItem(m); } }
     });
     
     document.addEventListener("click", e => { if(e.target !== qInput) sb.style.display="none"; });
-    qInput.addEventListener("focus", () => { if(qInput.value) qInput.dispatchEvent(new Event('input')); });
 
     document.querySelectorAll(".view-btn").forEach(b => {
       b.onclick = () => {
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
-        b.classList.add("active"); view = b.dataset.view;
-        zoom = 1.0; 
-        if (selected) setItem(selected);
+        b.classList.add("active"); view = b.dataset.view; zoom = 1.0; if (selected) setItem(selected);
       }
     });
     
     $("#btnF2P").onclick = () => { 
-      membersOn = false; 
-      localStorage.setItem('ge_members', 'false');
+      membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
-      renderWatchlist();
-      qInput.dispatchEvent(new Event("input")); 
-      if (selected && selected.members) {
-        const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
-        if(ruby) setItem(ruby);
-      }
+      renderWatchlist(); if (selected?.members) { const ruby = mapping.find(x => x.name.toLowerCase() === "ruby"); if(ruby) setItem(ruby); }
     };
 
     $("#btnMembers").onclick = () => { 
-      membersOn = true; 
-      localStorage.setItem('ge_members', 'true');
-      $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); 
-      renderWatchlist();
-      qInput.dispatchEvent(new Event("input")); 
+      membersOn = true; localStorage.setItem('ge_members', 'true');
+      $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active"); renderWatchlist();
     };
     
-    setInterval(async () => { 
-      latest = await loadLatest();
-      try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
-      renderWatchlist(); 
-      if (selected) setItem(selected); 
-    }, 300000);
-    
+    setInterval(async () => { latest = await loadLatest(); try{past1h=await jget(PRICES_API+"/1h");}catch(e){} renderWatchlist(); if(selected) setItem(selected); }, 300000);
     resizeCanvas();
     const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
     if (ruby) setItem(ruby);
-  } catch (e) {
-    console.error(e);
-    $("#status").textContent = "API Error";
-  }
+  } catch (e) { $("#status").textContent = "API Error"; }
 })();
 </script>
 </body>
