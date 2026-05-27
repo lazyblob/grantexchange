@@ -69,6 +69,7 @@ body {
   color: var(--text-main); 
   font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
+  overscroll-behavior-y: none; /* Prevents double-bouncing on native pull to refresh */
 }
 
 button, input { touch-action: manipulation; }
@@ -179,13 +180,6 @@ button, input { touch-action: manipulation; }
 }
 .chart { flex: 1; width: 100%; display: block; touch-action: none; }
 
-.chart-controls { position: absolute; bottom: 34px; right: 12px; display: flex; gap: 4px; z-index: 20; }
-.chart-controls button {
-  background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); color: var(--text-main);
-  border-radius: 4px; padding: 4px 10px; cursor: pointer; backdrop-filter: blur(4px); font-size: 14px; font-weight: bold;
-}
-.chart-controls button:hover { background: var(--bg-input); border-color: #fff; }
-
 .plaque-bar { position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; z-index: 10; pointer-events: none; }
 .price-box {
   background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px;
@@ -285,8 +279,6 @@ button, input { touch-action: manipulation; }
 .wl-trend.down { color: var(--negative); }
 .wl-trend.neutral { color: var(--text-muted); }
 
-/* --- RESPONSIVE ORIENTATION RULES --- */
-
 /* PORTRAIT (Stacked Vertical View) */
 @media screen and (max-width: 1023px) and (orientation: portrait) {
   .wrap { padding: 6px; overflow-y: auto; }
@@ -308,9 +300,8 @@ button, input { touch-action: manipulation; }
   .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
   .pct-chg { display: none !important; } 
 
-  /* FIXED: Use strict proportional flex to prevent overlap on address-bar hide/show */
-  .chart-container { flex: 0 0 45%; min-height: 280px; margin-bottom: 4px; }
-  .watchlist-container { width: 100%; flex: 1; min-height: 0; } 
+  .chart-container { flex: none; height: 42vh; min-height: 280px; margin-bottom: 4px; }
+  .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .status-text { display: none; }
   .plaque-bar { top: 8px; left: 8px; }
   .price-box { padding: 4px 8px; min-width: 120px; }
@@ -319,7 +310,7 @@ button, input { touch-action: manipulation; }
 
 /* LANDSCAPE (Side-by-Side View) */
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; overflow: hidden; } /* Lock scroll on landscape */
+  .wrap { padding: 4px; gap: 4px; overflow: hidden; } 
   .content-area { flex-direction: row; } 
   
   .top-row-wrapper { flex-direction: row; gap: 4px; align-items: stretch; height: 34px; }
@@ -342,8 +333,6 @@ button, input { touch-action: manipulation; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 4px 6px; gap: 4px;}
   .calc-container input { padding: 4px 6px; font-size: 11px;}
-  .chart-controls { bottom: 26px; right: 8px; }
-  .chart-controls button { padding: 2px 8px; font-size: 12px; }
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -421,12 +410,6 @@ button, input { touch-action: manipulation; }
           </div>
         </div>
         
-        <div class="chart-controls">
-          <button id="btnZoomIn" title="Zoom In">+</button>
-          <button id="btnZoomOut" title="Zoom Out">−</button>
-          <button id="btnZoomReset" title="Reset Zoom">Reset</button>
-        </div>
-
         <canvas id="chart" class="chart"></canvas>
         <div id="tip" class="chart-tip"></div>
         
@@ -494,6 +477,32 @@ const overMaxData = {
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
 
+// PULL TO REFRESH LOGIC
+let touchStartY = 0;
+const wrapDiv = document.querySelector('.wrap');
+
+wrapDiv.addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+}, {passive: true});
+
+wrapDiv.addEventListener('touchend', e => {
+  const touchEndY = e.changedTouches[0].clientY;
+  if (wrapDiv.scrollTop <= 0 && touchEndY - touchStartY > 120) {
+    $("#status").textContent = "Refreshing...";
+    (async () => {
+      try {
+          latest = await loadLatest();
+          try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
+          renderWatchlist();
+          if (selected) setItem(selected);
+      } catch(err) {
+          $("#status").textContent = "Error";
+      }
+    })();
+  }
+}, {passive: true});
+
+
 function queueDraw() {
   if (!isDrawing && currentSeries) {
     isDrawing = true;
@@ -510,24 +519,6 @@ function updateFavicon(url) {
   document.getElementById('favicon3').href = url;
   document.getElementById('favicon4').href = url;
 }
-
-$('#btnZoomIn').onclick = () => { zoom = Math.min(20, zoom * 1.5); queueDraw(); };
-$('#btnZoomOut').onclick = () => { 
-  zoom = Math.max(1, zoom / 1.5); 
-  if(currentSeries) {
-    const n = currentSeries.labels.length;
-    const win = Math.max(20, Math.floor(n / zoom));
-    offset = Math.max(0, Math.min(n - win, offset));
-    queueDraw();
-  }
-};
-$('#btnZoomReset').onclick = () => { 
-  zoom = 1.0; 
-  if(currentSeries) {
-    offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
-    queueDraw();
-  }
-};
 
 function parseOSRSNumber(str) {
   if (!str) return 0;
@@ -645,7 +636,6 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
-// FORCE RE-CALC ON ORIENTATION FLIP TO FIX OVERLAPS
 window.addEventListener('orientationchange', () => {
   setTimeout(resizeCanvas, 150);
   setTimeout(resizeCanvas, 500); 
@@ -727,20 +717,17 @@ function renderWatchlist() {
 
     if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
        const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-       const totalVol = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
 
        if (dailyGPVolume > 10000000) {
            const currentSell = node?.high || 0;
            const currentBuy = node?.low || 0;
            
-           // TOP MARGINS (STRICT JUNK FILTER)
-           // Only flag items moving 15M+ daily, high trade velocity, and >150gp cost to eliminate penny junk
-           if (dailyGPVolume > 15000000 && totalVol > 2000 && currentBuy > 150 && currentSell > 0) {
+           // TOP MARGINS (ABSOLUTE PROFIT SORT FOR HIGH VALUE ITEMS)
+           if (currentBuy > 150 && currentSell > 0) {
                const tax = calculateTax(currentSell);
                const profit = currentSell - currentBuy - tax;
                if (profit > 0) {
-                   const roi = profit / currentBuy;
-                   marginData.push({ item, roi, profit });
+                   marginData.push({ item, profit });
                }
            }
 
@@ -756,7 +743,8 @@ function renderWatchlist() {
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
 
-  marginData.sort((a, b) => b.roi - a.roi);
+  // Sorting strictly by absolute profit to push Gilded and big-ticket items to the top
+  marginData.sort((a, b) => b.profit - a.profit);
   const topMargins = marginData.slice(0, 30).map(t => t.item);
 
   dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
@@ -817,7 +805,8 @@ function renderWatchlist() {
           const mData = marginData.find(m => m.item.id === item.id);
           if (mData) {
             price = node?.high ?? 0;
-            subText = `<span class="wl-trend up">+${(mData.roi * 100).toFixed(1)}%</span>`;
+            // Now formatting as absolute profit instead of percentage
+            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)}</span>`;
             isSpecial = true;
           }
         } else if (group.name === "🌋 Volume Spikes (1H)") {
@@ -977,30 +966,20 @@ function linearRegression(x, y) {
   return { slope, intercept };
 }
 
-function percentile(arr, p) {
-  if (!arr.length) return null;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const index = (p / 100) * (sorted.length - 1);
-  const lower = Math.floor(index);
-  const upper = Math.ceil(index);
-  const weight = index - lower;
-  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
-}
-
-// TRUE REAL-TIME TRADE ENGINE: 
-// Buys at active competitive floor. Sells at historical spike peaks.
+// TRADE ENGINE V14.2 - Less Ambitious Spikes
 function runTradeEngine(rawLow, rawHigh, series) {
   let targetBuy = rawLow || 0; 
   let targetSell = rawHigh || 0;
 
   if (series && series.high.length > 0) {
-    // Scan the last ~2 hours for aggressive volatility spikes
     const recentHighs = series.high.slice(-24).filter(x => x != null);
     if (recentHighs.length > 0) {
       const maxRecentHigh = Math.max(...recentHighs);
-      // SPIKE CAPTURE: If recent peak is significantly above the live ask, raise our sell target to fetch the volatility gap
+      
+      // SPIKE CAPTURE: Blend the active live ask with the spike peak to meet it halfway.
+      // This prevents overly ambitious sell targets from hanging in the air.
       if (maxRecentHigh > rawHigh * 1.01) {
-         targetSell = Math.max(rawHigh, Math.floor(maxRecentHigh * 0.995)); 
+         targetSell = Math.max(rawHigh, Math.floor((rawHigh + maxRecentHigh) / 2)); 
       }
     }
   }
@@ -1011,7 +990,6 @@ function runTradeEngine(rawLow, rawHigh, series) {
   let tax = calculateTax(targetSell);
   let profit = targetSell - targetBuy - tax;
 
-  // STRICT INVERSION PROTECTION: Only modify the buy price if the live margin is mathematically unprofitable
   if (profit <= 0) {
     targetBuy = Math.max(1, targetSell - tax - 1);
   }
