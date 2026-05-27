@@ -7,11 +7,32 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PocketGE">
+<meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
 <title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
-<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
+<meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day lows, and track over-max rares with our smart flipping calculator.">
+<meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
+<link rel="canonical" href="https://pocketge.com/">
 
+<meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
+<meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+
+<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-43YM2RCX1R');
+</script>
 <style>
 :root {
   --bg-base: #0B0E14; 
@@ -113,6 +134,7 @@ button, input { touch-action: manipulation; }
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
+.suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
@@ -201,15 +223,14 @@ button, input { touch-action: manipulation; }
   color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; 
   outline: none; font-family: inherit;
 }
-.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block;}
 .calc-container input:focus { border-color: var(--border-active); }
 .calc-result { 
-  display: flex; justify-content: space-between; align-items: center; 
-  font-size: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; 
-  border-radius: 4px; border: 1px solid var(--border-main);
+  display: flex; justify-content: flex-end; align-items: center; 
+  font-size: 11px; background: transparent; padding: 4px 0 0 0; 
+  border: none;
 }
-.calc-result .res-profit { font-weight: bold; font-size: 14px; }
-.calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
+.calc-result .res-tax { color: var(--text-muted); cursor: help;}
 
 .watchlist-header {
   padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
@@ -217,8 +238,6 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
-.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
-.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -263,7 +282,6 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
-  .mode-pill { flex-shrink: 0; }
   .search-group { flex: 1; }
   .sbar { width: 100%; }
   .content-area { flex-direction: column; }
@@ -299,8 +317,7 @@ button, input { touch-action: manipulation; }
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; gap: 4px;}
-  .calc-container input { padding: 4px 6px; font-size: 11px;}
+  .calc-container { padding: 4px 6px; }
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -317,7 +334,6 @@ button, input { touch-action: manipulation; }
   <div class="content-area">
     
     <div class="main-column">
-      
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
@@ -444,58 +460,6 @@ const overMaxData = {
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
 
-// GLOBAL PULL-TO-REFRESH IMPLEMENTATION
-let tsY = 0;
-let pullActive = false;
-
-window.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    tsY = e.touches[0].clientY;
-    pullActive = true;
-  }
-}, { passive: true });
-
-window.addEventListener('touchmove', e => {
-  if (!pullActive) return;
-  const currentY = e.touches[0].clientY;
-  const deltaY = currentY - tsY;
-  
-  if (deltaY > 0) {
-    const progress = Math.min(1, deltaY / 150);
-    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', e => {
-  if (!pullActive) return;
-  pullActive = false;
-  const deltaY = e.changedTouches[0].clientY - tsY;
-  
-  if (deltaY > 140) {
-    $('#refreshIndicator').style.transform = `scaleX(1)`;
-    triggerManualRefresh();
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-async function triggerManualRefresh() {
-  $("#status").textContent = "Refreshing...";
-  try {
-    latest = await loadLatest();
-    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
-    try { past24h = await load24h(); } catch(e) {}
-    renderWatchlist();
-    if (selected) await setItem(selected);
-    $("#status").textContent = "Refreshed";
-  } catch(err) {
-    $("#status").textContent = "Error";
-  }
-  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
-}
-
 function queueDraw() {
   if (!isDrawing && currentSeries) {
     isDrawing = true;
@@ -508,6 +472,9 @@ function queueDraw() {
 
 function updateFavicon(url) {
   document.getElementById('favicon1').href = url;
+  document.getElementById('favicon2').href = url;
+  document.getElementById('favicon3').href = url;
+  document.getElementById('favicon4').href = url;
 }
 
 function parseOSRSNumber(str) {
@@ -530,7 +497,9 @@ function updateCalculator() {
   const sell = parseOSRSNumber($('#calcSell').value);
 
   if (qty <= 0 || buy <= 0 || sell <= 0) {
-    $('#calcResult').innerHTML = `<span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span><span class="res-tax">Tax: 0</span>`;
+    $('#headerProfitVal').innerHTML = `0`;
+    $('#headerProfitVal').style.color = 'var(--text-muted)';
+    $('#calcTaxVal').innerHTML = `Tax: 0`;
     return;
   }
 
@@ -542,16 +511,19 @@ function updateCalculator() {
   const color = totalProfit > 0 ? 'var(--positive)' : (totalProfit < 0 ? 'var(--negative)' : 'var(--text-main)');
   const sign = totalProfit > 0 ? '+' : '';
 
-  $('#calcResult').innerHTML = `
-    <span>Profit: <span class="res-profit" style="color:${color}">${sign}${abbreviateNumber(totalProfit)}</span></span>
-    <span class="res-tax" title="${totalTax.toLocaleString()} gp tax">Tax: ${abbreviateNumber(totalTax)}</span>
-  `;
+  $('#headerProfitVal').innerHTML = `${sign}${abbreviateNumber(totalProfit)}`;
+  $('#headerProfitVal').style.color = color;
+  $('#calcTaxVal').innerHTML = `Tax: ${abbreviateNumber(totalTax)}`;
+  $('#calcTaxVal').title = `${totalTax.toLocaleString()} gp tax`;
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
   $("#sideModule").innerHTML = `
     <div class="calc-header" id="calcToggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding-bottom: ${isCalcOpen ? '8px' : '0px'};">
-      <span>Profit Calculator</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>Profit Potential</span>
+        <span id="headerProfitVal" class="res-profit" style="color:var(--text-muted); font-size: 13px;">0</span>
+      </div>
       <span id="calcToggleIcon" style="font-size:12px; color:var(--text-muted);">${isCalcOpen ? '▼' : '▶'}</span>
     </div>
     <div id="calcBodyContent" style="display: ${isCalcOpen ? 'block' : 'none'};">
@@ -569,9 +541,8 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
           <input type="text" id="calcSell" value="${recSell}" placeholder="0">
         </div>
       </div>
-      <div class="calc-result" id="calcResult" title="Net Profit after Tax" style="margin-top: 8px;">
-        <span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span>
-        <span class="res-tax">Tax: 0</span>
+      <div class="calc-result" style="margin-top: 8px; justify-content: flex-end; padding: 4px 8px; background: transparent; border: none;">
+        <span class="res-tax" id="calcTaxVal" title="Net Profit after Tax">Tax: 0</span>
       </div>
     </div>
   `;
@@ -859,7 +830,7 @@ function renderWatchlist() {
     el.onclick = () => {
       const id = el.getAttribute('data-id');
       const m = mapping.find(x => String(x.id) === String(id));
-      if(m) setItem(m, true);
+      if(m) setItem(m);
     };
   });
 }
@@ -1062,24 +1033,17 @@ function drawChart(series) {
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
+  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
+
+  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price };
+
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
-  let recentHighIdx = -1, recentLowIdx = -1;
 
   for (let i = 0; i < L.length; i++) {
     if (HI[i] != null && HI[i] > viewMaxHigh) { viewMaxHigh = HI[i]; viewMaxIdx = i; }
     if (LO[i] != null && LO[i] < viewMinLow) { viewMinLow = LO[i]; viewMinIdx = i; }
   }
-
-  for (let i = L.length - 1; i >= 0; i--) {
-      if (recentHighIdx === -1 && HI[i] != null) recentHighIdx = i;
-      if (recentLowIdx === -1 && LO[i] != null) recentLowIdx = i;
-      if (recentHighIdx !== -1 && recentLowIdx !== -1) break;
-  }
-
-  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
-
-  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price };
 
   ctx.lineWidth = 1;
   const linesY = 5;
@@ -1132,14 +1096,6 @@ function drawChart(series) {
       } else if (!isHigh && i === viewMinIdx) {
         ctx.save(); ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
         ctx.fillStyle = color; ctx.fill(); ctx.restore();
-      }
-      
-      if (isHigh && i === recentHighIdx && i !== viewMaxIdx) {
-        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill(); ctx.restore();
-      } else if (!isHigh && i === recentLowIdx && i !== viewMinIdx) {
-        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill(); ctx.restore();
       }
     }
   }
@@ -1346,7 +1302,7 @@ async function setItem(m, isNew = false) {
     $("#btnF2P").onclick = () => { 
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
-      renderWatchlist(); if (selected?.members) { const ruby = mapping.find(x => x.name.toLowerCase() === "ruby"); if(ruby) setItem(ruby, true); }
+      renderWatchlist(); if (selected?.members) { const p = mapping.find(x => x.name.toLowerCase() === "blue partyhat") || mapping.find(x => x.name.toLowerCase() === "ruby"); if(p) setItem(p, true); }
     };
 
     $("#btnMembers").onclick = () => { 
@@ -1356,8 +1312,8 @@ async function setItem(m, isNew = false) {
     
     setInterval(async () => { latest = await loadLatest(); try{past1h=await jget(PRICES_API+"/1h");}catch(e){} renderWatchlist(); if(selected) setItem(selected); }, 300000);
     resizeCanvas();
-    const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
-    if (ruby) setItem(ruby, true);
+    const defaultItem = mapping.find(x => x.name.toLowerCase() === "blue partyhat") || mapping.find(x => x.name.toLowerCase() === "ruby");
+    if (defaultItem) setItem(defaultItem, true);
   } catch (e) { $("#status").textContent = "API Error"; }
 })();
 </script>
