@@ -49,6 +49,7 @@ body {
   color: var(--text-main); 
   font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
+  overscroll-behavior-y: none;
 }
 
 button, input { touch-action: manipulation; }
@@ -106,7 +107,6 @@ button, input { touch-action: manipulation; }
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
-.suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
@@ -290,7 +290,8 @@ button, input { touch-action: manipulation; }
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; }
+  .calc-container { padding: 4px 6px; gap: 4px;}
+  .calc-container input { padding: 4px 6px; font-size: 11px;}
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -407,13 +408,13 @@ let isCalcOpen = JSON.parse(localStorage.getItem('ge_calc_open') !== 'false');
 
 let groupOpenStates = {
   "⭐ Favorites": true,
-  "💰 Top Margins": true,
+  "💰 High Vol Margins": true,
+  "💎 Low Vol Margins": true,
   "📉 At Day Lows": false,
   "📈 At Day Highs": false,
   "👑 Over-Max Rares": false,
   "🌋 Volume Spikes (1H)": false,
-  "📈 Highest Vol (24H)": false,
-  "💎 Most Expensive": false
+  "📈 Highest Vol (24H)": false
 };
 
 const canvas = document.getElementById("chart");
@@ -491,7 +492,7 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
       <span id="calcToggleIcon" style="font-size:12px; color:var(--text-muted);">${isCalcOpen ? '▼' : '▶'}</span>
     </div>
     <div id="calcBodyContent" style="display: ${isCalcOpen ? 'block' : 'none'};">
-      <div class="calc-grid">
+      <div class="calc-grid" id="calcInputs" style="margin-top: 8px;">
         <div class="calc-input">
           <label>Qty (4H)</label>
           <input type="text" id="calcQty" value="${itemLimit.toLocaleString()}" placeholder="Limit">
@@ -613,10 +614,6 @@ function renderWatchlist() {
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
 
-  const topPriced = [...activeItems]
-    .sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0))
-    .slice(0, 30);
-
   const topVol = [...activeItems]
     .sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0))
     .slice(0, 30);
@@ -625,8 +622,8 @@ function renderWatchlist() {
   const dayLows = [];
   const dayHighs = [];
   
-  const rawProfitPool = [];
-  const roiPercentagePool = [];
+  const highVolMargins = [];
+  const lowVolMargins = [];
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -646,37 +643,36 @@ function renderWatchlist() {
       }
     }
 
-    if (!overMaxData[id] && node) {
+    if (!overMaxData[id] && node && p24) {
        const currentSell = node.high || 0;
        const currentBuy = node.low || 0;
+       const totalVol = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
 
        if (currentBuy > 0 && currentSell > currentBuy) {
            const tax = calculateTax(currentSell);
            const profit = currentSell - currentBuy - tax;
-           const roi = profit / currentBuy;
-
+           
            if (profit > 0) {
-               rawProfitPool.push({ item, profit, roi });
-               roiPercentagePool.push({ item, profit, roi });
+               if (totalVol >= 3000) {
+                   highVolMargins.push({ item, profit });
+               } else if (totalVol > 10) { // Filter literal ghost items with zero volume
+                   lowVolMargins.push({ item, profit });
+               }
            }
        }
 
-       if (p24 && p24.avgHighPrice > 0) {
-           if (currentBuy > 0 && currentBuy <= p24.avgLowPrice * 0.96) dayLows.push(item);
-           if (currentSell > 0 && currentSell >= p24.avgHighPrice * 1.04) dayHighs.push(item);
+       if (p24.avgHighPrice > 0) {
+           const macroHighLimit = p24.avgHighPrice;
+           const macroLowLimit = p24.avgLowPrice;
+
+           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 0.96) dayLows.push(item);
+           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 1.04) dayHighs.push(item);
        }
     }
   });
 
-  rawProfitPool.sort((a, b) => b.profit - a.profit);
-  roiPercentagePool.sort((a, b) => b.roi - a.roi);
-
-  const combinedMarginsMap = new Map();
-  rawProfitPool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
-  roiPercentagePool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
-
-  const topMarginsList = Array.from(combinedMarginsMap.values())
-    .sort((a, b) => b.profit - a.profit);
+  highVolMargins.sort((a, b) => b.profit - a.profit);
+  lowVolMargins.sort((a, b) => b.profit - a.profit);
 
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
@@ -686,13 +682,13 @@ function renderWatchlist() {
 
   const groups = [
     { name: "⭐ Favorites", items: favs, className: "fav-title" },
-    { name: "💰 Top Margins", items: topMarginsList.map(t => t.item), className: "positive" },
+    { name: "💰 High Vol Margins", items: highVolMargins.slice(0, 30).map(t => t.item), className: "positive" },
+    { name: "💎 Low Vol Margins", items: lowVolMargins.slice(0, 30).map(t => t.item), className: "rec-title" },
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
     { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
     { name: "🌋 Volume Spikes (1H)", items: topSpikes, className: "rec-title" },
-    { name: "📈 Highest Vol (24H)", items: topVol, className: "" },
-    { name: "💎 Most Expensive", items: topPriced, className: "" }
+    { name: "📈 Highest Vol (24H)", items: topVol, className: "" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -733,12 +729,18 @@ function renderWatchlist() {
           price = overMaxData[String(item.id)].wts;
           subText = `<span class="wl-trend" style="color:var(--text-muted);">Consensus</span>`;
           isSpecial = true;
-        } else if (group.name === "💰 Top Margins") {
-          const mData = combinedMarginsMap.get(item.id);
+        } else if (group.name === "💰 High Vol Margins") {
+          const mData = highVolMargins.find(m => m.item.id === item.id);
           if (mData) {
             price = node?.high ?? node?.low ?? 0;
-            const roiPercent = (mData.roi * 100).toFixed(0);
-            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)} (${roiPercent}%)</span>`;
+            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)}</span>`;
+            isSpecial = true;
+          }
+        } else if (group.name === "💎 Low Vol Margins") {
+          const mData = lowVolMargins.find(m => m.item.id === item.id);
+          if (mData) {
+            price = node?.high ?? node?.low ?? 0;
+            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)}</span>`;
             isSpecial = true;
           }
         } else if (group.name === "🌋 Volume Spikes (1H)") {
@@ -884,38 +886,59 @@ function linearRegression(x, y) {
   return { slope: (n * sumXY - sumX * sumY) / denominator, intercept: (sumY - (n * sumXY - sumX * sumY) / denominator * sumX) / n };
 }
 
-// TRADE ENGINE V14.4 - True Execution Focus
-function runTradeEngine(rawLow, rawHigh, series) {
+function percentile(arr, p) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const index = (p / 100) * (sorted.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const weight = index - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+}
+
+// TRADE ENGINE V14.5 - Volume Aware Execution Validation
+function runTradeEngine(rawLow, rawHigh, series, p24) {
   let targetBuy = rawLow || 0; 
   let targetSell = rawHigh || 0;
+  const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
 
-  if (targetBuy === 0 && targetSell > 0) targetBuy = Math.floor(targetSell * 0.98);
-  if (targetSell === 0 && targetBuy > 0) targetSell = Math.floor(targetBuy * 1.02);
-
-  if (series && series.high.length > 0) {
-    const recentHighs = series.high.slice(-12).filter(x => x != null);
-    if (recentHighs.length > 0) {
-      const maxRecentHigh = Math.max(...recentHighs);
-      if (maxRecentHigh > targetSell * 1.01) {
-         targetSell = Math.min(maxRecentHigh, Math.floor(targetSell * 1.025));
-      }
-    }
+  // LOW VOLUME GHOST SPREAD PROTECTION
+  // If the live sell is absurdly higher than the live buy on a low volume item, ignore it.
+  if (targetBuy > 0 && targetSell > targetBuy * 1.5 && totalVol < 3000) {
+      targetBuy = p24?.avgLowPrice || targetBuy;
+      targetSell = p24?.avgHighPrice || targetSell;
   }
 
-  // Double-verify layout order boundaries to prevent inversion
-  if (targetBuy >= targetSell) targetSell = targetBuy + 1;
-  
-  // Guarantee the Buy target stays aggressive for execution.
-  // If the 2% tax rule crushes the margin, push the Ask UP instead of pulling the Buy down.
-  let tax = calculateTax(targetSell);
-  let profit = targetSell - targetBuy - tax;
+  // HIGH VOLUME FAST EXECUTION
+  if (totalVol >= 3000) {
+      let tax = calculateTax(targetSell);
+      if (targetSell - targetBuy - tax <= 0) {
+          // Live margin crashed to 0, use 24h average to find the actual spread
+          if (p24 && p24.avgHighPrice > p24.avgLowPrice) {
+              targetBuy = Math.min(targetBuy, p24.avgLowPrice);
+              targetSell = Math.max(targetSell, p24.avgHighPrice);
+          }
+      }
+  } else {
+      // LOW VOLUME PATIENCE MARGIN
+      if (series && series.high.length > 0 && series.low.length > 0) {
+          const recentHighs = series.high.slice(-60).filter(x => x != null);
+          const recentLows = series.low.slice(-60).filter(x => x != null);
+          if (recentHighs.length > 5 && recentLows.length > 5) {
+              const support = Math.floor(percentile(recentLows, 40));
+              const resistance = Math.ceil(percentile(recentHighs, 60));
+              targetBuy = Math.max(1, Math.min(targetBuy, support));
+              targetSell = Math.max(targetSell, resistance);
+          }
+      }
+  }
 
-  if (profit <= 0) {
-    if (targetBuy > 250000000) { 
-       targetSell = targetBuy + 5000001; // Tax is maxed at 5m
-    } else {
-       targetSell = Math.ceil((targetBuy + 1) / 0.98); // Mathematically offset the 2% tax to guarantee 1gp profit
-    }
+  // FINAL SAFETY ENFORCEMENT
+  if (targetBuy >= targetSell) targetSell = targetBuy + 1;
+  let finalTax = calculateTax(targetSell);
+  
+  if (targetSell - targetBuy - finalTax <= 0) {
+      targetSell = Math.ceil((targetBuy + 1) / 0.98); // Mathematically enforce 2% tax survival
   }
 
   return { buy: targetBuy, sell: targetSell };
@@ -1163,6 +1186,14 @@ async function setItem(m) {
   const dailyVal = parseFloat(changes['1d']);
   $("#tickerChange").innerHTML = `<span class="${dailyVal > 0 ? 'positive' : dailyVal < 0 ? 'negative' : 'neutral'}">${dailyVal > 0 ? '+' : ''}${changes['1d']}</span>`;
 
+  const p24 = past24h?.data?.[String(m.id)];
+  const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
+  
+  // DYNAMIC VIEW DEFAULT: High Vol = 1d, Low Vol = 5d
+  view = totalVol >= 3000 ? "1d" : "5d";
+  document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector(`.view-btn[data-view="${view}"]`).classList.add("active");
+
   let timestep = "24h";
   if (view === "1d" || view === "5d") timestep = "5m"; 
   else if (view === "1m") timestep = "1h"; 
@@ -1178,7 +1209,7 @@ async function setItem(m) {
   
   $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
 
-  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
+  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries, p24);
   recommendedBuy = targets.buy;
   recommendedSell = targets.sell;
   
