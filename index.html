@@ -256,7 +256,6 @@ button, input { touch-action: manipulation; }
 .category-title.high-title { color: var(--positive); }
 .category-title.low-title { color: var(--buy-color); }
 .category-title.fav-title { color: var(--text-main); }
-.category-title.lose-title { color: var(--negative); }
 .category-title.rec-title { color: #FF9800; }
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
@@ -309,8 +308,9 @@ button, input { touch-action: manipulation; }
   .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
   .pct-chg { display: none !important; } 
 
-  .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
-  .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
+  /* FIXED: Use strict proportional flex to prevent overlap on address-bar hide/show */
+  .chart-container { flex: 0 0 45%; min-height: 280px; margin-bottom: 4px; }
+  .watchlist-container { width: 100%; flex: 1; min-height: 0; } 
   .status-text { display: none; }
   .plaque-bar { top: 8px; left: 8px; }
   .price-box { padding: 4px 8px; min-width: 120px; }
@@ -319,7 +319,7 @@ button, input { touch-action: manipulation; }
 
 /* LANDSCAPE (Side-by-Side View) */
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; }
+  .wrap { padding: 4px; gap: 4px; overflow: hidden; } /* Lock scroll on landscape */
   .content-area { flex-direction: row; } 
   
   .top-row-wrapper { flex-direction: row; gap: 4px; align-items: stretch; height: 34px; }
@@ -338,7 +338,7 @@ button, input { touch-action: manipulation; }
   .pct-chg { display: none !important; } 
   
   .chart-container { flex: 1; height: auto; min-height: 0; }
-  .watchlist-container { width: 230px; font-size: 11px; } 
+  .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 4px 6px; gap: 4px;}
   .calc-container input { padding: 4px 6px; font-size: 11px;}
@@ -645,7 +645,7 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
-// FORCE RE-CALC ON ORIENTATION FLIP TO PREVENT COLLAPSED CANVAS
+// FORCE RE-CALC ON ORIENTATION FLIP TO FIX OVERLAPS
 window.addEventListener('orientationchange', () => {
   setTimeout(resizeCanvas, 150);
   setTimeout(resizeCanvas, 500); 
@@ -727,11 +727,15 @@ function renderWatchlist() {
 
     if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
        const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+       const totalVol = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
+
        if (dailyGPVolume > 10000000) {
            const currentSell = node?.high || 0;
            const currentBuy = node?.low || 0;
            
-           if (currentBuy > 0 && currentSell > 0) {
+           // TOP MARGINS (STRICT JUNK FILTER)
+           // Only flag items moving 15M+ daily, high trade velocity, and >150gp cost to eliminate penny junk
+           if (dailyGPVolume > 15000000 && totalVol > 2000 && currentBuy > 150 && currentSell > 0) {
                const tax = calculateTax(currentSell);
                const profit = currentSell - currentBuy - tax;
                if (profit > 0) {
@@ -760,7 +764,7 @@ function renderWatchlist() {
 
   const groups = [
     { name: "⭐ Favorites", items: favs, className: "fav-title" },
-    { name: "💰 Top Margins", items: topMargins, className: "rec-title" },
+    { name: "💰 Top Margins", items: topMargins, className: "positive" },
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
     { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
@@ -983,28 +987,21 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-// PATIENCE MARGIN TRADE ENGINE (V14.1 FIX)
+// TRUE REAL-TIME TRADE ENGINE: 
+// Buys at active competitive floor. Sells at historical spike peaks.
 function runTradeEngine(rawLow, rawHigh, series) {
-  if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
+  let targetBuy = rawLow || 0; 
+  let targetSell = rawHigh || 0;
 
-  let targetBuy = rawLow; 
-  let targetSell = rawHigh;
-
-  if (series && series.high.length > 0 && series.low.length > 0) {
-    const recentHighs = series.high.slice(-60).filter(x => x != null);
-    const recentLows = series.low.slice(-60).filter(x => x != null);
-    
-    if (recentHighs.length > 5 && recentLows.length > 5) {
-      const support = Math.floor(percentile(recentLows, 30));
-      const resistance = Math.ceil(percentile(recentHighs, 70));
-      
-      // PATIENCE MARGIN: Mathematically sit exactly between the aggressive live price and the safe historical support.
-      targetBuy = Math.floor((rawLow + support) / 2);
-      targetSell = Math.ceil((rawHigh + resistance) / 2);
-      
-      // SPIKE PROTECTION
-      if (targetBuy > support * 1.02) targetBuy = Math.floor(support * 1.01); 
-      if (targetSell < resistance * 0.98) targetSell = Math.ceil(resistance * 0.99); 
+  if (series && series.high.length > 0) {
+    // Scan the last ~2 hours for aggressive volatility spikes
+    const recentHighs = series.high.slice(-24).filter(x => x != null);
+    if (recentHighs.length > 0) {
+      const maxRecentHigh = Math.max(...recentHighs);
+      // SPIKE CAPTURE: If recent peak is significantly above the live ask, raise our sell target to fetch the volatility gap
+      if (maxRecentHigh > rawHigh * 1.01) {
+         targetSell = Math.max(rawHigh, Math.floor(maxRecentHigh * 0.995)); 
+      }
     }
   }
 
@@ -1014,6 +1011,7 @@ function runTradeEngine(rawLow, rawHigh, series) {
   let tax = calculateTax(targetSell);
   let profit = targetSell - targetBuy - tax;
 
+  // STRICT INVERSION PROTECTION: Only modify the buy price if the live margin is mathematically unprofitable
   if (profit <= 0) {
     targetBuy = Math.max(1, targetSell - tax - 1);
   }
