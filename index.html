@@ -11,28 +11,8 @@
 <meta name="theme-color" content="#0B0E14">
 
 <title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
-<meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day lows, and track over-max rares with our smart flipping calculator.">
-<meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
-<link rel="canonical" href="https://pocketge.com/">
-
-<meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
-<meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://pocketge.com/">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-
 <link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-43YM2RCX1R');
-</script>
 <style>
 :root {
   --bg-base: #0B0E14; 
@@ -73,13 +53,6 @@ body {
 }
 
 button, input { touch-action: manipulation; }
-
-#refreshIndicator {
-  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
-  background: linear-gradient(90deg, var(--border-active), var(--sell-color));
-  z-index: 9999; transform: scaleX(0); transform-origin: left;
-  transition: transform 0.1s linear; pointer-events: none;
-}
 
 .wrap { 
   max-width: 1800px; 
@@ -227,8 +200,7 @@ button, input { touch-action: manipulation; }
 .calc-container input:focus { border-color: var(--border-active); }
 .calc-result { 
   display: flex; justify-content: flex-end; align-items: center; 
-  font-size: 11px; background: transparent; padding: 4px 0 0 0; 
-  border: none;
+  font-size: 11px; background: transparent; padding: 4px 0 0 0; border: none;
 }
 .calc-result .res-tax { color: var(--text-muted); cursor: help;}
 
@@ -238,8 +210,6 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
-.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
-.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -284,7 +254,6 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
-  .mode-pill { flex-shrink: 0; }
   .search-group { flex: 1; }
   .sbar { width: 100%; }
   .content-area { flex-direction: column; }
@@ -331,8 +300,6 @@ button, input { touch-action: manipulation; }
 </style>
 </head>
 <body>
-
-<div id="refreshIndicator"></div>
 
 <div class="wrap">
   <div class="content-area">
@@ -465,57 +432,6 @@ const overMaxData = {
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
 
-let tsY = 0;
-let pullActive = false;
-
-window.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    tsY = e.touches[0].clientY;
-    pullActive = true;
-  }
-}, { passive: true });
-
-window.addEventListener('touchmove', e => {
-  if (!pullActive) return;
-  const currentY = e.touches[0].clientY;
-  const deltaY = currentY - tsY;
-  
-  if (deltaY > 0) {
-    const progress = Math.min(1, deltaY / 150);
-    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', e => {
-  if (!pullActive) return;
-  pullActive = false;
-  const deltaY = e.changedTouches[0].clientY - tsY;
-  
-  if (deltaY > 140) {
-    $('#refreshIndicator').style.transform = `scaleX(1)`;
-    triggerManualRefresh();
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-async function triggerManualRefresh() {
-  $("#status").textContent = "Refreshing...";
-  try {
-    latest = await loadLatest();
-    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
-    try { past24h = await load24h(); } catch(e) {}
-    renderWatchlist();
-    if (selected) await setItem(selected, false);
-    $("#status").textContent = "Refreshed";
-  } catch(err) {
-    $("#status").textContent = "Error";
-  }
-  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
-}
-
 function queueDraw() {
   if (!isDrawing && currentSeries) {
     isDrawing = true;
@@ -528,9 +444,6 @@ function queueDraw() {
 
 function updateFavicon(url) {
   document.getElementById('favicon1').href = url;
-  document.getElementById('favicon2').href = url;
-  document.getElementById('favicon3').href = url;
-  document.getElementById('favicon4').href = url;
 }
 
 function parseOSRSNumber(str) {
@@ -886,7 +799,7 @@ function renderWatchlist() {
     el.onclick = () => {
       const id = el.getAttribute('data-id');
       const m = mapping.find(x => String(x.id) === String(id));
-      if(m) setItem(m, true);
+      if(m) setItem(m);
     };
   });
 }
@@ -1066,7 +979,12 @@ function drawChart(series) {
   const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
   ctx.clearRect(0, 0, W, H);
   
-  if (!series || !series.labels?.length) return;
+  if (!series || !series.labels?.length) {
+    ctx.fillStyle = "var(--text-muted)"; ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("No price metrics available", W/2 + 20, H/2); 
+    return;
+  }
 
   const n = series.labels.length;
   const win = Math.max(20, Math.floor(n / zoom));
@@ -1260,6 +1178,17 @@ async function setItem(m, isNew = false) {
   
   updateFavicon(iconURL);
   updateFavoriteBtn();
+  
+  const p24 = past24h?.data?.[String(m.id)];
+  const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
+  
+  if (isNew) {
+      view = totalVol >= 3000 ? "1d" : "5d";
+  }
+  
+  document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector(`.view-btn[data-view="${view}"]`).classList.add("active");
+
   renderWatchlist();
 
   if (overMaxData[String(m.id)]) { renderOverMax(m); return; }
@@ -1275,28 +1204,27 @@ async function setItem(m, isNew = false) {
   const dailyVal = parseFloat(changes['1d']);
   $("#tickerChange").innerHTML = `<span class="${dailyVal > 0 ? 'positive' : dailyVal < 0 ? 'negative' : 'neutral'}">${dailyVal > 0 ? '+' : ''}${changes['1d']}</span>`;
 
-  const p24 = past24h?.data?.[String(m.id)];
-  const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
-  
-  if (isNew) {
-      view = totalVol >= 3000 ? "1d" : "5d";
-  }
-  
-  document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
-  document.querySelector(`.view-btn[data-view="${view}"]`).classList.add("active");
-
   let timestep = "24h";
-  if (view === "1d" || view === "5d") timestep = "5m"; 
+  if (view === "1d") timestep = "5m"; 
+  else if (view === "5d") timestep = totalVol > 1000 ? "5m" : "1h"; 
   else if (view === "1m") timestep = "1h"; 
   else if (view === "6m") timestep = "6h";
 
-  if (view === "5y") currentSeries = filterSeries(fullHistorical, getPeriod(view));
-  else currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
+  if (view === "5y" || view === "1y") {
+      currentSeries = filterSeries(fullHistorical, getPeriod(view));
+  } else {
+      currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
+      if (currentSeries.labels.length < 2) {
+          currentSeries = filterSeries(fullHistorical, getPeriod(view));
+      }
+  }
   
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
-  liveBuyRaw = node?.low ?? 0;
-  liveSellRaw = node?.high ?? 0;
+  
+  // Intelligent 24h fallback if live API dropped the rare item
+  liveBuyRaw = node?.low || p24?.avgLowPrice || 0;
+  liveSellRaw = node?.high || p24?.avgHighPrice || 0;
   
   $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
 
