@@ -107,6 +107,7 @@ button, input { touch-action: manipulation; }
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
+.suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
@@ -116,6 +117,7 @@ button, input { touch-action: manipulation; }
   cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%;
 }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
+
 .status-text { font-size: 11px; color: var(--text-muted); }
 
 .ticker-header {
@@ -138,6 +140,7 @@ button, input { touch-action: manipulation; }
   padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s;
   display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
 }
+.toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
 .pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
 .pct-chg.positive { color: var(--positive); }
@@ -211,6 +214,8 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -290,8 +295,7 @@ button, input { touch-action: manipulation; }
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; gap: 4px;}
-  .calc-container input { padding: 4px 6px; font-size: 11px;}
+  .calc-container { padding: 4px 6px; }
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -655,7 +659,7 @@ function renderWatchlist() {
            if (profit > 0) {
                if (totalVol >= 3000) {
                    highVolMargins.push({ item, profit });
-               } else if (totalVol > 10) { // Filter literal ghost items with zero volume
+               } else if (totalVol > 10) { 
                    lowVolMargins.push({ item, profit });
                }
            }
@@ -886,41 +890,25 @@ function linearRegression(x, y) {
   return { slope: (n * sumXY - sumX * sumY) / denominator, intercept: (sumY - (n * sumXY - sumX * sumY) / denominator * sumX) / n };
 }
 
-function percentile(arr, p) {
-  if (!arr.length) return null;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const index = (p / 100) * (sorted.length - 1);
-  const lower = Math.floor(index);
-  const upper = Math.ceil(index);
-  const weight = index - lower;
-  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
-}
-
-// TRADE ENGINE V14.5 - Volume Aware Execution Validation
 function runTradeEngine(rawLow, rawHigh, series, p24) {
   let targetBuy = rawLow || 0; 
   let targetSell = rawHigh || 0;
   const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
 
-  // LOW VOLUME GHOST SPREAD PROTECTION
-  // If the live sell is absurdly higher than the live buy on a low volume item, ignore it.
   if (targetBuy > 0 && targetSell > targetBuy * 1.5 && totalVol < 3000) {
       targetBuy = p24?.avgLowPrice || targetBuy;
       targetSell = p24?.avgHighPrice || targetSell;
   }
 
-  // HIGH VOLUME FAST EXECUTION
   if (totalVol >= 3000) {
       let tax = calculateTax(targetSell);
       if (targetSell - targetBuy - tax <= 0) {
-          // Live margin crashed to 0, use 24h average to find the actual spread
           if (p24 && p24.avgHighPrice > p24.avgLowPrice) {
               targetBuy = Math.min(targetBuy, p24.avgLowPrice);
               targetSell = Math.max(targetSell, p24.avgHighPrice);
           }
       }
   } else {
-      // LOW VOLUME PATIENCE MARGIN
       if (series && series.high.length > 0 && series.low.length > 0) {
           const recentHighs = series.high.slice(-60).filter(x => x != null);
           const recentLows = series.low.slice(-60).filter(x => x != null);
@@ -933,12 +921,11 @@ function runTradeEngine(rawLow, rawHigh, series, p24) {
       }
   }
 
-  // FINAL SAFETY ENFORCEMENT
   if (targetBuy >= targetSell) targetSell = targetBuy + 1;
   let finalTax = calculateTax(targetSell);
   
   if (targetSell - targetBuy - finalTax <= 0) {
-      targetSell = Math.ceil((targetBuy + 1) / 0.98); // Mathematically enforce 2% tax survival
+      targetSell = Math.ceil((targetBuy + 1) / 0.98); 
   }
 
   return { buy: targetBuy, sell: targetSell };
@@ -1016,7 +1003,9 @@ function drawChart(series) {
   const xStep = Math.max(1, Math.floor(L.length / linesX)); 
   const stepX = dataW / Math.max(1, (L.length - 1));
 
-  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price: h * 0.80 };
+  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
+
+  chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, win, n, h_price };
 
   let viewMaxHigh = -Infinity, viewMinLow = Infinity;
   let viewMaxIdx = -1, viewMinIdx = -1;
@@ -1031,7 +1020,7 @@ function drawChart(series) {
   ctx.font = "10px BlinkMacSystemFont, sans-serif";
   ctx.textAlign = "right"; ctx.textBaseline = "middle";
   for (let i = 0; i <= linesY; i++) {
-    const y = y0 + (h * i / linesY);
+    const y = y0 + (h_price * i / linesY);
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     const v = Math.round(vmax - (vmax - vmin) * i / linesY);
@@ -1047,8 +1036,6 @@ function drawChart(series) {
     let dateStr = view === "1d" ? new Date(L[i]*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : new Date(L[i]*1000).toLocaleDateString([],{month:'short', day:'numeric'});
     ctx.fillText(dateStr, x, y0 + h + 4);
   }
-
-  const h_price = h * 0.80, h_vol = h * 0.20, y0_vol = y0 + h_price;
 
   const midPoints = [];
   for (let i = 0; i < L.length; i++) {
@@ -1113,6 +1100,22 @@ function drawChart(series) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save(); ctx.beginPath(); ctx.moveTo(hx, y0); ctx.lineTo(hx, y0 + h);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.25)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
+
+    if (HI[hoverIdx] != null) {
+      const hy = ypx(HI[hoverIdx], vmin, vmax, y0, h_price);
+      ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
+      ctx.fill(); ctx.beginPath(); ctx.arc(hx, hy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
+    }
+
+    if (LO[hoverIdx] != null) {
+      const ly = ypx(LO[hoverIdx], vmin, vmax, y0, h_price);
+      ctx.save(); ctx.beginPath(); ctx.arc(hx, ly, 6, 0, Math.PI * 2);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
+      ctx.fill(); ctx.beginPath(); ctx.arc(hx, ly, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
+    }
   }
 }
 
@@ -1189,7 +1192,6 @@ async function setItem(m) {
   const p24 = past24h?.data?.[String(m.id)];
   const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
   
-  // DYNAMIC VIEW DEFAULT: High Vol = 1d, Low Vol = 5d
   view = totalVol >= 3000 ? "1d" : "5d";
   document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
   document.querySelector(`.view-btn[data-view="${view}"]`).classList.add("active");
