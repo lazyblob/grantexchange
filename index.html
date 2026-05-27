@@ -983,30 +983,39 @@ function percentile(arr, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-// REALISTIC TRADE ENGINE (STRICT LIVE ANCHORING)
+// PATIENCE MARGIN TRADE ENGINE (V14.1 FIX)
 function runTradeEngine(rawLow, rawHigh, series) {
-  let targetBuy = rawLow || 0;
-  let targetSell = rawHigh || 0;
-  let tax = calculateTax(targetSell);
+  if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
 
-  // If the active live margin is inverted or completely unprofitable (e.g. 0 gp margin),
-  // fallback to historical support/resistance to give you a profitable price to leave an overnight offer at.
-  if (targetSell - targetBuy - tax <= 0 && series && series.high.length > 0 && series.low.length > 0) {
-      const recentHighs = series.high.slice(-60).filter(x => x != null);
-      const recentLows = series.low.slice(-60).filter(x => x != null);
-      if (recentHighs.length > 5 && recentLows.length > 5) {
-          targetBuy = Math.floor(percentile(recentLows, 25));
-          targetSell = Math.ceil(percentile(recentHighs, 75));
-      }
+  let targetBuy = rawLow; 
+  let targetSell = rawHigh;
+
+  if (series && series.high.length > 0 && series.low.length > 0) {
+    const recentHighs = series.high.slice(-60).filter(x => x != null);
+    const recentLows = series.low.slice(-60).filter(x => x != null);
+    
+    if (recentHighs.length > 5 && recentLows.length > 5) {
+      const support = Math.floor(percentile(recentLows, 30));
+      const resistance = Math.ceil(percentile(recentHighs, 70));
+      
+      // PATIENCE MARGIN: Mathematically sit exactly between the aggressive live price and the safe historical support.
+      targetBuy = Math.floor((rawLow + support) / 2);
+      targetSell = Math.ceil((rawHigh + resistance) / 2);
+      
+      // SPIKE PROTECTION
+      if (targetBuy > support * 1.02) targetBuy = Math.floor(support * 1.01); 
+      if (targetSell < resistance * 0.98) targetSell = Math.ceil(resistance * 0.99); 
+    }
   }
 
-  // Final safety checks
   if (targetBuy >= targetSell) targetBuy = targetSell - 1;
   if (targetBuy < 1) targetBuy = 1;
 
-  tax = calculateTax(targetSell);
-  if (targetSell - targetBuy - tax <= 0) {
-      targetBuy = Math.max(1, targetSell - tax - 1);
+  let tax = calculateTax(targetSell);
+  let profit = targetSell - targetBuy - tax;
+
+  if (profit <= 0) {
+    targetBuy = Math.max(1, targetSell - tax - 1);
   }
 
   return { buy: targetBuy, sell: targetSell };
