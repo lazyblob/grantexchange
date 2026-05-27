@@ -347,6 +347,7 @@ let currentItemLowVol = false;
 let overMaxFull = null;
 let historyCache = {};
 let marginCache = {};
+let dayHiLoCache = {};
 let scanStatus = { history: 'idle', margin: 'idle' };
 
 let groupOpenStates = {
@@ -594,6 +595,31 @@ async function runMarginScan() {
   scanStatus.margin = 'done'; renderWatchlist();
 }
 
+/* Fetch the true intraday high/low (from 5m candles, last 24h) for specific
+   items so the day-high/low glow reflects the actual recent peak/trough — the
+   whole point of the "wow, take action" highlight on your favorites. Cached and
+   throttled; re-renders once a batch completes so the glow lights up. */
+async function scanDayExtremes(ids) {
+  const todo = [...new Set(ids.map(String))].filter(id => id && !(id in dayHiLoCache) && !overMaxData[id]);
+  if (!todo.length) return;
+  todo.forEach(id => { dayHiLoCache[id] = null; }); // reserve so we don't refetch mid-flight
+  await throttleMap(todo, async (id) => {
+    try {
+      const ts = seriesFromTS(await loadTS('5m', id));
+      const cut = Math.floor(Date.now() / 1000) - 86400;
+      let hi = 0, lo = Infinity;
+      for (let i = 0; i < ts.labels.length; i++) {
+        if (ts.labels[i] < cut) continue;
+        const H = ts.high[i], L = ts.low[i];
+        if (H != null && H > hi) hi = H;
+        if (L != null && L > 0 && L < lo) lo = L;
+      }
+      dayHiLoCache[id] = (hi > 0 && lo < Infinity) ? { hi, lo } : { hi: 0, lo: 0 };
+    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0 }; }
+  }, SCAN_CONCURRENCY);
+  renderWatchlist();
+}
+
 function trendSub(node, p24) {
   let currentMid = null;
   if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
@@ -612,14 +638,28 @@ function priceOf(item) {
   return node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
 }
 
-/* Is the item currently trading at the top ("high") or bottom ("low") of its
-   24h range? The bulk feed only gives 24h volume-weighted averages (no true
-   intraday extremes), so we locate the current mid price within the average
-   [low, high] band: top 30% = high, bottom 30% = low, middle = neutral.
-   (Comparing the high/low sides individually floods, since the insta-buy price
-   always sits near the band top and the insta-sell near the bottom.) */
-function dayState(node, p24) {
-  if (!node || !p24 || !(p24.avgHighPrice > 100)) return "";
+/* Is the item at the top ("high") or bottom ("low") of its recent range?
+   When we have the true intraday extremes (fetched per-item from 5m candles via
+   scanDayExtremes), glow "high" within ~1.5% of the 24h peak and "low" within
+   ~1.5% of the trough — that's the actionable "it's at its recent peak" signal.
+   Until those load, fall back to a coarse 24h band-position estimate so the
+   discovery lists still populate. */
+function dayState(node, p24, id) {
+  if (!node) return "";
+  const ex = id != null ? dayHiLoCache[String(id)] : null;
+  if (ex && ex.hi > 0 && ex.lo > 0 && ex.hi > ex.lo) {
+    const range = ex.hi - ex.lo;
+    if (range >= ex.lo * 0.02) { // need ≥2% daily range to be a meaningful move
+      const sell = node.high || node.avgHighPrice || 0;
+      const buy = node.low || node.avgLowPrice || 0;
+      if (sell > 0 && sell >= ex.hi * 0.985) return "high";
+      if (buy > 0 && buy <= ex.lo * 1.015) return "low";
+    }
+    return "";
+  }
+  /* fallback: locate the current mid price within the 24h average [low, high]
+     band (top 30% = high, bottom 30% = low). */
+  if (!p24 || !(p24.avgHighPrice > 100)) return "";
   const gp = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
   if (gp <= 10000000) return "";
   const aH = p24.avgHighPrice, aL = p24.avgLowPrice;
@@ -651,7 +691,7 @@ function renderWatchlist() {
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
 
-    const st = dayState(node, p24);
+    const st = dayState(node, p24, id);
     if (st === "low") dayLows.push(item);
     else if (st === "high") dayHighs.push(item);
 
@@ -752,7 +792,7 @@ function renderWatchlist() {
         const p24 = past24h?.data?.[id];
         let hlClass = "";
         if (!overMaxData[id]) {
-          const st = dayState(node, p24);
+          const st = dayState(node, p24, id);
           if (st === "high") hlClass = "at-high";
           else if (st === "low") hlClass = "at-low";
         }
@@ -785,6 +825,12 @@ function renderWatchlist() {
       if (m) { setItem._userPicked = false; setItem(m); }
     };
   });
+
+  /* fetch true intraday extremes for the visible favorites (+ the selected item)
+     so their glow reflects the actual recent peak/trough, not the coarse average. */
+  const idsToScan = favs.map(i => String(i.id));
+  if (selected) idsToScan.push(String(selected.id));
+  scanDayExtremes(idsToScan);
 }
 
 function seriesFromTS(ts) {
@@ -1379,7 +1425,7 @@ setItem._userPicked = false;
     $("#btnF2P").onclick = () => {
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
-      historyCache = {}; marginCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
       renderWatchlist();
       if (selected?.members) {
         const landing = mapping.find(x => String(x.id) === LANDING_ID);
@@ -1389,13 +1435,14 @@ setItem._userPicked = false;
     $("#btnMembers").onclick = () => {
       membersOn = true; localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
-      historyCache = {}; marginCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
       renderWatchlist();
     };
 
     setInterval(async () => {
       try {
         latest = await loadLatest();
+        dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
         renderWatchlist();
         if (selected && !overMaxData[String(selected.id)]) {
           const node = latest.data[String(selected.id)];
