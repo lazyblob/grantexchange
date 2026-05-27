@@ -54,6 +54,13 @@ body {
 
 button, input { touch-action: manipulation; }
 
+#refreshIndicator {
+  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+  background: linear-gradient(90deg, var(--border-active), var(--sell-color));
+  z-index: 9999; transform: scaleX(0); transform-origin: left;
+  transition: transform 0.1s linear; pointer-events: none;
+}
+
 .wrap { 
   max-width: 1800px; 
   margin: 0 auto; 
@@ -210,6 +217,8 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -254,6 +263,7 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
+  .mode-pill { flex-shrink: 0; }
   .search-group { flex: 1; }
   .sbar { width: 100%; }
   .content-area { flex-direction: column; }
@@ -289,7 +299,7 @@ button, input { touch-action: manipulation; }
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; gap: 4px;}
+  .calc-container { padding: 4px 6px; }
   .calc-container input { padding: 4px 6px; font-size: 11px;}
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
@@ -300,6 +310,8 @@ button, input { touch-action: manipulation; }
 </style>
 </head>
 <body>
+
+<div id="refreshIndicator"></div>
 
 <div class="wrap">
   <div class="content-area">
@@ -431,6 +443,57 @@ const overMaxData = {
   "23345": { name: "3rd age druidic cloak", wtb: 2800000000, wts: 3100000000 },
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
+
+let tsY = 0;
+let pullActive = false;
+
+window.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    tsY = e.touches[0].clientY;
+    pullActive = true;
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (!pullActive) return;
+  const currentY = e.touches[0].clientY;
+  const deltaY = currentY - tsY;
+  
+  if (deltaY > 0) {
+    const progress = Math.min(1, deltaY / 150);
+    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+  if (!pullActive) return;
+  pullActive = false;
+  const deltaY = e.changedTouches[0].clientY - tsY;
+  
+  if (deltaY > 140) {
+    $('#refreshIndicator').style.transform = `scaleX(1)`;
+    triggerManualRefresh();
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+async function triggerManualRefresh() {
+  $("#status").textContent = "Refreshing...";
+  try {
+    latest = await loadLatest();
+    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
+    try { past24h = await load24h(); } catch(e) {}
+    renderWatchlist();
+    if (selected) await setItem(selected, false);
+    $("#status").textContent = "Refreshed";
+  } catch(err) {
+    $("#status").textContent = "Error";
+  }
+  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
+}
 
 function queueDraw() {
   if (!isDrawing && currentSeries) {
@@ -595,7 +658,17 @@ const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
 const load24h = () => jget(PRICES_API + "/24h"); 
 const loadVolumes = () => jget(PRICES_API + "/volumes");
-const loadTS = (step, id) => jget(PRICES_API + `/timeseries?timestep=${step}&id=${id}`);
+
+// SAFE LOAD API FALLBACK TO PREVENT 404 CRASH ON GHOST ITEMS
+async function safeLoadTS(step, id) {
+    try {
+        const url = PRICES_API + `/timeseries?timestep=${step}&id=${id}`;
+        return await jget(url);
+    } catch (e) {
+        return { data: [] };
+    }
+}
+
 const loadHistorical = (id) => jget(WEIRD_GLOOP_API + `/all?id=${id}`);
 
 function itemIconUrl(id) {
@@ -852,9 +925,9 @@ async function calculateAllPctChanges(id) {
   const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
   for (const p of periods) {
     let ser;
-    if (p === '1d' || p === '5d') ser = seriesFromTS(await loadTS('1h', id));
-    else if (p === '1m') ser = seriesFromTS(await loadTS('6h', id));
-    else if (p === '6m') ser = seriesFromTS(await loadTS('24h', id));
+    if (p === '1d' || p === '5d') ser = seriesFromTS(await safeLoadTS('1h', id));
+    else if (p === '1m') ser = seriesFromTS(await safeLoadTS('6h', id));
+    else if (p === '6m') ser = seriesFromTS(await safeLoadTS('24h', id));
     else ser = fullHistorical;
     
     const filtered = filterSeries(ser, getPeriod(p));
@@ -979,10 +1052,10 @@ function drawChart(series) {
   const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
   ctx.clearRect(0, 0, W, H);
   
-  if (!series || !series.labels?.length) {
+  if (!series || series.labels.length < 2) {
     ctx.fillStyle = "var(--text-muted)"; ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("No price metrics available", W/2 + 20, H/2); 
+    ctx.fillText("Insufficient data for this timeframe", w/2 + x0, H/2); 
     return;
   }
 
@@ -1183,7 +1256,7 @@ async function setItem(m, isNew = false) {
   const totalVol = p24 ? ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) : 0;
   
   if (isNew) {
-      view = totalVol >= 3000 ? "1d" : "5d";
+      view = totalVol >= 3000 ? "1d" : "5y";
   }
   
   document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
@@ -1213,7 +1286,7 @@ async function setItem(m, isNew = false) {
   if (view === "5y" || view === "1y") {
       currentSeries = filterSeries(fullHistorical, getPeriod(view));
   } else {
-      currentSeries = filterSeries(seriesFromTS(await loadTS(timestep, m.id)), getPeriod(view));
+      currentSeries = filterSeries(seriesFromTS(await safeLoadTS(timestep, m.id)), getPeriod(view));
       if (currentSeries.labels.length < 2) {
           currentSeries = filterSeries(fullHistorical, getPeriod(view));
       }
@@ -1222,7 +1295,6 @@ async function setItem(m, isNew = false) {
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
   
-  // Intelligent 24h fallback if live API dropped the rare item
   liveBuyRaw = node?.low || p24?.avgLowPrice || 0;
   liveSellRaw = node?.high || p24?.avgHighPrice || 0;
   
