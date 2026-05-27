@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PocketGE">
+<meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
 <title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
@@ -48,18 +49,9 @@ body {
   color: var(--text-main); 
   font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
-  overscroll-behavior-y: none;
 }
 
 button, input { touch-action: manipulation; }
-
-/* Visual Refresh Bar Indicator */
-#refreshIndicator {
-  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
-  background: linear-gradient(90deg, var(--border-active), var(--sell-color));
-  z-index: 9999; transform: scaleX(0); transform-origin: left;
-  transition: transform 0.1s linear; pointer-events: none;
-}
 
 .wrap { 
   max-width: 1800px; 
@@ -114,6 +106,7 @@ button, input { touch-action: manipulation; }
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
+.suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
@@ -210,7 +203,7 @@ button, input { touch-action: manipulation; }
   border-radius: 4px; border: 1px solid var(--border-main);
 }
 .calc-result .res-profit { font-weight: bold; font-size: 14px; }
-.calc-result .res-tax { font-size: 10px; color: var(--text-muted); }
+.calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
 
 .watchlist-header {
   padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
@@ -307,8 +300,6 @@ button, input { touch-action: manipulation; }
 </style>
 </head>
 <body>
-
-<div id="refreshIndicator"></div>
 
 <div class="wrap">
   <div class="content-area">
@@ -441,59 +432,6 @@ const overMaxData = {
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
 
-// GLOBAL PULL-TO-REFRESH IMPLEMENTATION
-let tsY = 0;
-let pullActive = false;
-
-window.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    tsY = e.touches[0].clientY;
-    pullActive = true;
-  }
-}, { passive: true });
-
-window.addEventListener('touchmove', e => {
-  if (!pullActive) return;
-  const currentY = e.touches[0].clientY;
-  const deltaY = currentY - tsY;
-  
-  // Track continuous downward dragging from anywhere
-  if (deltaY > 0) {
-    const progress = Math.min(1, deltaY / 150);
-    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', e => {
-  if (!pullActive) return;
-  pullActive = false;
-  const deltaY = e.changedTouches[0].clientY - tsY;
-  
-  if (deltaY > 140) {
-    $('#refreshIndicator').style.transform = `scaleX(1)`;
-    triggerManualRefresh();
-  } else {
-    $('#refreshIndicator').style.transform = `scaleX(0)`;
-  }
-}, { passive: true });
-
-async function triggerManualRefresh() {
-  $("#status").textContent = "Refreshing...";
-  try {
-    latest = await loadLatest();
-    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
-    try { past24h = await load24h(); } catch(e) {}
-    renderWatchlist();
-    if (selected) await setItem(selected);
-    $("#status").textContent = "Refreshed";
-  } catch(err) {
-    $("#status").textContent = "Error";
-  }
-  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
-}
-
 function queueDraw() {
   if (!isDrawing && currentSeries) {
     isDrawing = true;
@@ -547,7 +485,6 @@ function updateCalculator() {
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
-  // Setup standard state structure 
   $("#sideModule").innerHTML = `
     <div class="calc-header" id="calcToggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding-bottom: ${isCalcOpen ? '8px' : '0px'};">
       <span>Profit Calculator</span>
@@ -627,6 +564,11 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeCanvas, 150);
+  setTimeout(resizeCanvas, 500); 
+});
+
 const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
@@ -692,7 +634,6 @@ function renderWatchlist() {
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
 
-    // Tracking 1H Spikes
     if (p1h && p24) {
       const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
       const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
@@ -715,9 +656,7 @@ function renderWatchlist() {
            const roi = profit / currentBuy;
 
            if (profit > 0) {
-               // Subpool A: Expensive raw margins (Gilded etc)
                rawProfitPool.push({ item, profit, roi });
-               // Subpool B: Cheap items with massive spikes / relative margins (Diamonds etc)
                roiPercentagePool.push({ item, profit, roi });
            }
        }
@@ -729,17 +668,13 @@ function renderWatchlist() {
     }
   });
 
-  // Balanced Smart-Merging for Top Margins Tab
   rawProfitPool.sort((a, b) => b.profit - a.profit);
   roiPercentagePool.sort((a, b) => b.roi - a.roi);
 
   const combinedMarginsMap = new Map();
-  // Grab top 15 raw high values
   rawProfitPool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
-  // Grab top 15 massive ROI spikes (Diamond spikes, materials)
   roiPercentagePool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
 
-  // Final Sort for Top Margins display list
   const topMarginsList = Array.from(combinedMarginsMap.values())
     .sort((a, b) => b.profit - a.profit);
 
@@ -809,7 +744,7 @@ function renderWatchlist() {
         } else if (group.name === "🌋 Volume Spikes (1H)") {
           const sData = spikesData.find(s => s.item.id === item.id);
           if (sData) {
-            price = node?.high ?? node?.low ?? 0;
+            price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
             subText = `<span class="wl-trend up">${sData.ratio.toFixed(1)}x Vol</span>`;
             isSpecial = true;
           }
@@ -949,12 +884,11 @@ function linearRegression(x, y) {
   return { slope: (n * sumXY - sumX * sumY) / denominator, intercept: (sumY - (n * sumXY - sumX * sumY) / denominator * sumX) / n };
 }
 
-// TRADE ENGINE V14.3 - Grounded & Spike-Protected Targets
+// TRADE ENGINE V14.4 - True Execution Focus
 function runTradeEngine(rawLow, rawHigh, series) {
   let targetBuy = rawLow || 0; 
   let targetSell = rawHigh || 0;
 
-  // Protect against mathematical anomalies when spread reports zeros
   if (targetBuy === 0 && targetSell > 0) targetBuy = Math.floor(targetSell * 0.98);
   if (targetSell === 0 && targetBuy > 0) targetSell = Math.floor(targetBuy * 1.02);
 
@@ -962,21 +896,26 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const recentHighs = series.high.slice(-12).filter(x => x != null);
     if (recentHighs.length > 0) {
       const maxRecentHigh = Math.max(...recentHighs);
-      
-      // If there's a major historical high spike, cap our target sell to 2.5% max over live sell book.
-      // This forces targets to remain strictly fluid and instantly fillable.
       if (maxRecentHigh > targetSell * 1.01) {
          targetSell = Math.min(maxRecentHigh, Math.floor(targetSell * 1.025));
       }
     }
   }
 
-  // Double-verify layout order boundaries
-  if (targetBuy >= targetSell) targetBuy = Math.max(1, targetSell - 1);
+  // Double-verify layout order boundaries to prevent inversion
+  if (targetBuy >= targetSell) targetSell = targetBuy + 1;
   
+  // Guarantee the Buy target stays aggressive for execution.
+  // If the 2% tax rule crushes the margin, push the Ask UP instead of pulling the Buy down.
   let tax = calculateTax(targetSell);
-  if (targetSell - targetBuy - tax <= 0) {
-    targetBuy = Math.max(1, targetSell - tax - 1);
+  let profit = targetSell - targetBuy - tax;
+
+  if (profit <= 0) {
+    if (targetBuy > 250000000) { 
+       targetSell = targetBuy + 5000001; // Tax is maxed at 5m
+    } else {
+       targetSell = Math.ceil((targetBuy + 1) / 0.98); // Mathematically offset the 2% tax to guarantee 1gp profit
+    }
   }
 
   return { buy: targetBuy, sell: targetSell };
