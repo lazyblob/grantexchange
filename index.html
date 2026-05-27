@@ -91,12 +91,11 @@ button, input { touch-action: manipulation; }
 
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
 
-.brand-logo {
-  font-size: 16px; font-weight: 800; color: var(--text-main); cursor: pointer;
-  letter-spacing: -0.5px; display: flex; align-items: center; gap: 2px; user-select: none;
+#logoBtn {
+  font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px;
+  font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s;
 }
-.brand-logo span { color: var(--border-active); }
-.brand-logo:hover { opacity: 0.8; }
+#logoBtn:hover { opacity: 0.8; }
 
 .search-group { display: flex; align-items: center; gap: 4px; }
 .sbar { position: relative; width: 220px; }
@@ -139,14 +138,11 @@ button, input { touch-action: manipulation; }
 
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 
-.main-column {
-  flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
-}
+.main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 
 .ticker-header {
   background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
-  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-  flex-shrink: 0;
+  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .ticker-title-group { display: flex; align-items: center; gap: 12px; }
 .ticker-title-group img { width: 48px; height: 48px; image-rendering: pixelated; }
@@ -199,8 +195,7 @@ button, input { touch-action: manipulation; }
 
 .chart-footer {
   background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px;
-  display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center;
-  flex-shrink: 0;
+  display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center; flex-shrink: 0;
 }
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dash { width: 10px; height: 2px; display: inline-block; }
@@ -246,8 +241,6 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
-.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
-.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -305,15 +298,13 @@ button, input { touch-action: manipulation; }
 
   .content-area { flex-direction: column; }
   
-  #tickerHeaderIcon, h2#tickerName { display: none !important; }
-  .ticker-header { flex-direction: column; align-items: stretch; padding: 6px; gap: 6px; }
-  .ticker-title-group { display: block; width: 100%; }
-  .ticker-price-row { margin: 0; flex-direction: row; justify-content: space-between; width: 100%; }
-  .ticker-price-row .price { font-size: 16px; }
-  .ticker-price-row .change { font-size: 12px; }
+  /* NUKES EXTRA TEXT/PRICE ON MOBILE, LEAVES ONLY TOOLBAR */
+  .ticker-title-group { display: none !important; }
+  .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; margin-bottom: -4px;}
 
   .toolbar { width: 100%; justify-content: space-between; }
   .toolbar button { flex: 1; padding: 4px 6px; font-size: 11px; }
+  .pct-chg { font-size: 8px; margin: 0; }
 
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
@@ -334,15 +325,12 @@ button, input { touch-action: manipulation; }
   
   .content-area { flex-direction: row; } 
   
-  #tickerHeaderIcon, h2#tickerName { display: none !important; }
-  .ticker-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 4px 8px; gap: 8px; }
-  .ticker-title-group { display: flex; }
-  .ticker-price-row { margin: 0; flex-direction: row; align-items: center; gap: 8px; }
-  .ticker-price-row .price { font-size: 15px; }
-  .ticker-price-row .change { font-size: 11px; }
+  /* NUKES EXTRA TEXT/PRICE ON MOBILE, LEAVES ONLY TOOLBAR */
+  .ticker-title-group { display: none !important; }
+  .ticker-header { padding: 0; border: none; background: transparent; justify-content: center; margin-bottom: -4px;}
 
-  .toolbar { justify-content: flex-end; padding: 2px; }
-  .toolbar button { min-width: 38px; padding: 2px 6px; font-size: 11px; }
+  .toolbar { justify-content: space-between; padding: 2px; width: 100%; }
+  .toolbar button { flex: 1; padding: 2px 6px; font-size: 11px; }
   .pct-chg { font-size: 8px; margin: 0; }
   
   .sbar { width: 150px; }
@@ -363,7 +351,7 @@ button, input { touch-action: manipulation; }
 <div class="wrap">
   <div class="top-panel" id="topPanel">
     <div class="panel-left">
-      <div id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></div>
+      <span id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></span>
 
       <div class="mode-pill">
         <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
