@@ -19,12 +19,12 @@
 <meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
-<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
-<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Blue_partyhat.png">
+<link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
 <script>
@@ -238,6 +238,8 @@ button, input { touch-action: manipulation; }
   display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content::-webkit-scrollbar { width: 4px; background: var(--bg-panel); }
+.watchlist-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title {
@@ -282,6 +284,7 @@ button, input { touch-action: manipulation; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
+  .mode-pill { flex-shrink: 0; }
   .search-group { flex: 1; }
   .sbar { width: 100%; }
   .content-area { flex-direction: column; }
@@ -317,7 +320,8 @@ button, input { touch-action: manipulation; }
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; }
+  .calc-container { padding: 4px 6px; gap: 4px;}
+  .calc-container input { padding: 4px 6px; font-size: 11px;}
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -334,6 +338,7 @@ button, input { touch-action: manipulation; }
   <div class="content-area">
     
     <div class="main-column">
+      
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
@@ -459,6 +464,57 @@ const overMaxData = {
   "23345": { name: "3rd age druidic cloak", wtb: 2800000000, wts: 3100000000 },
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
+
+let tsY = 0;
+let pullActive = false;
+
+window.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    tsY = e.touches[0].clientY;
+    pullActive = true;
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (!pullActive) return;
+  const currentY = e.touches[0].clientY;
+  const deltaY = currentY - tsY;
+  
+  if (deltaY > 0) {
+    const progress = Math.min(1, deltaY / 150);
+    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+  if (!pullActive) return;
+  pullActive = false;
+  const deltaY = e.changedTouches[0].clientY - tsY;
+  
+  if (deltaY > 140) {
+    $('#refreshIndicator').style.transform = `scaleX(1)`;
+    triggerManualRefresh();
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+async function triggerManualRefresh() {
+  $("#status").textContent = "Refreshing...";
+  try {
+    latest = await loadLatest();
+    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
+    try { past24h = await load24h(); } catch(e) {}
+    renderWatchlist();
+    if (selected) await setItem(selected, false);
+    $("#status").textContent = "Refreshed";
+  } catch(err) {
+    $("#status").textContent = "Error";
+  }
+  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
+}
 
 function queueDraw() {
   if (!isDrawing && currentSeries) {
@@ -830,7 +886,7 @@ function renderWatchlist() {
     el.onclick = () => {
       const id = el.getAttribute('data-id');
       const m = mapping.find(x => String(x.id) === String(id));
-      if(m) setItem(m);
+      if(m) setItem(m, true);
     };
   });
 }
@@ -1302,7 +1358,7 @@ async function setItem(m, isNew = false) {
     $("#btnF2P").onclick = () => { 
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active"); 
-      renderWatchlist(); if (selected?.members) { const p = mapping.find(x => x.name.toLowerCase() === "blue partyhat") || mapping.find(x => x.name.toLowerCase() === "ruby"); if(p) setItem(p, true); }
+      renderWatchlist(); if (selected?.members) { const p = mapping.find(x => x.name.toLowerCase() === "gilded scimitar") || mapping.find(x => x.name.toLowerCase() === "ruby"); if(p) setItem(p, true); }
     };
 
     $("#btnMembers").onclick = () => { 
@@ -1312,7 +1368,7 @@ async function setItem(m, isNew = false) {
     
     setInterval(async () => { latest = await loadLatest(); try{past1h=await jget(PRICES_API+"/1h");}catch(e){} renderWatchlist(); if(selected) setItem(selected); }, 300000);
     resizeCanvas();
-    const defaultItem = mapping.find(x => x.name.toLowerCase() === "blue partyhat") || mapping.find(x => x.name.toLowerCase() === "ruby");
+    const defaultItem = mapping.find(x => x.name.toLowerCase() === "gilded scimitar") || mapping.find(x => x.name.toLowerCase() === "ruby");
     if (defaultItem) setItem(defaultItem, true);
   } catch (e) { $("#status").textContent = "API Error"; }
 })();
