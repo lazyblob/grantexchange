@@ -2,37 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PocketGE">
-<meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
 <title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
-<meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day lows, and track over-max rares with our smart flipping calculator.">
-<meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
-<link rel="canonical" href="https://pocketge.com/">
-
-<meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
-<meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://pocketge.com/">
-<meta property="og:image" content="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-
 <link id="favicon1" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link id="favicon2" rel="icon" type="image/png" sizes="512x512" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
-<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Ruby.png?v=22">
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-43YM2RCX1R');
-</script>
 <style>
 :root {
   --bg-base: #0B0E14; 
@@ -69,10 +48,18 @@ body {
   color: var(--text-main); 
   font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; 
   -webkit-font-smoothing: antialiased; 
-  overscroll-behavior-y: none; /* Prevents double-bouncing on native pull to refresh */
+  overscroll-behavior-y: none;
 }
 
 button, input { touch-action: manipulation; }
+
+/* Visual Refresh Bar Indicator */
+#refreshIndicator {
+  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+  background: linear-gradient(90deg, var(--border-active), var(--sell-color));
+  z-index: 9999; transform: scaleX(0); transform-origin: left;
+  transition: transform 0.1s linear; pointer-events: none;
+}
 
 .wrap { 
   max-width: 1800px; 
@@ -85,14 +72,8 @@ button, input { touch-action: manipulation; }
 }
 
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
-
-.main-column {
-  flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px;
-}
-
-.top-row-wrapper {
-  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
-}
+.main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
+.top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 
 .top-panel {
   background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px;
@@ -133,7 +114,6 @@ button, input { touch-action: manipulation; }
   position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); 
 }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
-.suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
 
@@ -143,7 +123,6 @@ button, input { touch-action: manipulation; }
   cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%;
 }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
-
 .status-text { font-size: 11px; color: var(--text-muted); }
 
 .ticker-header {
@@ -166,7 +145,6 @@ button, input { touch-action: manipulation; }
   padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s;
   display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px;
 }
-.toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
 .pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
 .pct-chg.positive { color: var(--positive); }
@@ -215,7 +193,7 @@ button, input { touch-action: manipulation; }
 
 .calc-container {
   background: var(--bg-panel); border-bottom: 1px solid var(--border-main); 
-  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+  padding: 10px 14px; display: flex; flex-direction: column; flex-shrink: 0;
 }
 .calc-header { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px;}
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -232,7 +210,7 @@ button, input { touch-action: manipulation; }
   border-radius: 4px; border: 1px solid var(--border-main);
 }
 .calc-result .res-profit { font-weight: bold; font-size: 14px; }
-.calc-result .res-tax { font-size: 10px; color: var(--text-muted); cursor: help;}
+.calc-result .res-tax { font-size: 10px; color: var(--text-muted); }
 
 .watchlist-header {
   padding: 10px 14px; background: var(--bg-input); border-bottom: 1px solid var(--border-main);
@@ -258,9 +236,7 @@ button, input { touch-action: manipulation; }
 .wl-item {
   display: flex; align-items: center; justify-content: space-between; padding: 8px 14px;
   cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3);
-  transition: background 0.2s, border 0.2s;
 }
-.wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
 .wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
 
@@ -274,32 +250,26 @@ button, input { touch-action: manipulation; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
 .wl-item-right { display: flex; align-items: center; gap: 6px; text-align: right; }
 .wl-item-price { font-weight: 700; font-size: 13px; color: var(--text-main); }
-.wl-trend { font-size: 10px; cursor: help;}
+.wl-trend { font-size: 10px; }
 .wl-trend.up { color: var(--positive); }
 .wl-trend.down { color: var(--negative); }
 .wl-trend.neutral { color: var(--text-muted); }
 
-/* PORTRAIT (Stacked Vertical View) */
+/* PORTRAIT */
 @media screen and (max-width: 1023px) and (orientation: portrait) {
   .wrap { padding: 6px; overflow-y: auto; }
   .top-row-wrapper { gap: 4px; }
   .top-panel { padding: 6px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
-  
   .brand-logo { display: none !important; }
-  .mode-pill { flex-shrink: 0; }
   .search-group { flex: 1; }
   .sbar { width: 100%; }
-
   .content-area { flex-direction: column; }
-  
   .ticker-title-group { display: none !important; }
   .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; }
-
   .toolbar { width: 100%; justify-content: space-between; }
   .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
   .pct-chg { display: none !important; } 
-
   .chart-container { flex: none; height: 42vh; min-height: 280px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .status-text { display: none; }
@@ -308,31 +278,26 @@ button, input { touch-action: manipulation; }
   .price-val { font-size: 13px; }
 }
 
-/* LANDSCAPE (Side-by-Side View) */
+/* LANDSCAPE */
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
   .wrap { padding: 4px; gap: 4px; overflow: hidden; } 
   .content-area { flex-direction: row; } 
-  
   .top-row-wrapper { flex-direction: row; gap: 4px; align-items: stretch; height: 34px; }
   .top-panel { flex: 0 0 auto; padding: 2px 6px; }
   .panel-left { flex-wrap: nowrap; gap: 4px; height: 100%; }
   .mode-pill { height: 100%; }
   .sbar { width: 140px; }
   .sbar input { padding-top: 2px; padding-bottom: 2px; height: 100%; font-size: 14px; }
-  
   .brand-logo { display: none !important; }
   .ticker-title-group { display: none !important; }
-  
   .ticker-header { flex: 1; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; }
   .toolbar { width: 100%; height: 100%; padding: 0; gap: 2px; }
   .toolbar button { flex: 1; min-width: 0; height: 100%; padding: 0; font-size: 12px; }
   .pct-chg { display: none !important; } 
-  
   .chart-container { flex: 1; height: auto; min-height: 0; }
   .watchlist-container { width: 230px; font-size: 11px; height: 100%; flex-shrink: 0; } 
   .wl-item { padding: 4px 6px; font-size: 11px; }
-  .calc-container { padding: 4px 6px; gap: 4px;}
-  .calc-container input { padding: 4px 6px; font-size: 11px;}
+  .calc-container { padding: 4px 6px; }
   .plaque-bar { top: 4px; left: 4px; gap: 4px; }
   .price-box { padding: 4px 6px; min-width: 100px; }
   .price-label { font-size: 9px; }
@@ -343,6 +308,8 @@ button, input { touch-action: manipulation; }
 </head>
 <body>
 
+<div id="refreshIndicator"></div>
+
 <div class="wrap">
   <div class="content-area">
     
@@ -352,26 +319,23 @@ button, input { touch-action: manipulation; }
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
             <span id="logoBtn" class="brand-logo" onclick="window.location.reload();">Pocket<span>GE</span></span>
-
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
               <button data-mode="members" id="btnMembers">Members</button>
             </div>
-
             <div class="search-group">
               <div class="sbar">
                 <img id="itemIcon" src="" alt="">
                 <input id="query" placeholder="Symbol Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <div id="suggestBox" class="suggest" style="display:none"></div>
               </div>
-              <button id="btnFav" class="fav-btn" title="Toggle Favorite">
+              <button id="btnFav" class="fav-btn">
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
               </button>
             </div>
           </div>
-
           <span id="status" class="status-text">Connecting...</span>
         </div>
 
@@ -448,11 +412,11 @@ let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
 let activePriceBox = 'sell'; 
 let recommendedBuy = null, recommendedSell = null;
 let liveBuyRaw = null, liveSellRaw = null;
-let isCalcOpen = false; 
+let isCalcOpen = JSON.parse(localStorage.getItem('ge_calc_open') !== 'false'); 
 
 let groupOpenStates = {
   "⭐ Favorites": true,
-  "💰 Top Margins": false,
+  "💰 Top Margins": true,
   "📉 At Day Lows": false,
   "📈 At Day Highs": false,
   "👑 Over-Max Rares": false,
@@ -477,31 +441,58 @@ const overMaxData = {
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
 
-// PULL TO REFRESH LOGIC
-let touchStartY = 0;
-const wrapDiv = document.querySelector('.wrap');
+// GLOBAL PULL-TO-REFRESH IMPLEMENTATION
+let tsY = 0;
+let pullActive = false;
 
-wrapDiv.addEventListener('touchstart', e => {
-  touchStartY = e.touches[0].clientY;
-}, {passive: true});
-
-wrapDiv.addEventListener('touchend', e => {
-  const touchEndY = e.changedTouches[0].clientY;
-  if (wrapDiv.scrollTop <= 0 && touchEndY - touchStartY > 120) {
-    $("#status").textContent = "Refreshing...";
-    (async () => {
-      try {
-          latest = await loadLatest();
-          try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
-          renderWatchlist();
-          if (selected) setItem(selected);
-      } catch(err) {
-          $("#status").textContent = "Error";
-      }
-    })();
+window.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    tsY = e.touches[0].clientY;
+    pullActive = true;
   }
-}, {passive: true});
+}, { passive: true });
 
+window.addEventListener('touchmove', e => {
+  if (!pullActive) return;
+  const currentY = e.touches[0].clientY;
+  const deltaY = currentY - tsY;
+  
+  // Track continuous downward dragging from anywhere
+  if (deltaY > 0) {
+    const progress = Math.min(1, deltaY / 150);
+    $('#refreshIndicator').style.transform = `scaleX(${progress})`;
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+  if (!pullActive) return;
+  pullActive = false;
+  const deltaY = e.changedTouches[0].clientY - tsY;
+  
+  if (deltaY > 140) {
+    $('#refreshIndicator').style.transform = `scaleX(1)`;
+    triggerManualRefresh();
+  } else {
+    $('#refreshIndicator').style.transform = `scaleX(0)`;
+  }
+}, { passive: true });
+
+async function triggerManualRefresh() {
+  $("#status").textContent = "Refreshing...";
+  try {
+    latest = await loadLatest();
+    try { past1h = await jget(PRICES_API + "/1h"); } catch(e) {}
+    try { past24h = await load24h(); } catch(e) {}
+    renderWatchlist();
+    if (selected) await setItem(selected);
+    $("#status").textContent = "Refreshed";
+  } catch(err) {
+    $("#status").textContent = "Error";
+  }
+  setTimeout(() => { $('#refreshIndicator').style.transform = `scaleX(0)`; }, 300);
+}
 
 function queueDraw() {
   if (!isDrawing && currentSeries) {
@@ -515,9 +506,6 @@ function queueDraw() {
 
 function updateFavicon(url) {
   document.getElementById('favicon1').href = url;
-  document.getElementById('favicon2').href = url;
-  document.getElementById('favicon3').href = url;
-  document.getElementById('favicon4').href = url;
 }
 
 function parseOSRSNumber(str) {
@@ -559,34 +547,39 @@ function updateCalculator() {
 }
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
+  // Setup standard state structure 
   $("#sideModule").innerHTML = `
-    <div class="calc-header" id="calcToggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+    <div class="calc-header" id="calcToggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding-bottom: ${isCalcOpen ? '8px' : '0px'};">
       <span>Profit Calculator</span>
       <span id="calcToggleIcon" style="font-size:12px; color:var(--text-muted);">${isCalcOpen ? '▼' : '▶'}</span>
     </div>
-    <div class="calc-grid" id="calcInputs" style="display: ${isCalcOpen ? 'grid' : 'none'}; margin-top: 8px;">
-      <div class="calc-input">
-        <label>Qty (4H)</label>
-        <input type="text" id="calcQty" value="${itemLimit.toLocaleString()}" placeholder="Limit">
+    <div id="calcBodyContent" style="display: ${isCalcOpen ? 'block' : 'none'};">
+      <div class="calc-grid">
+        <div class="calc-input">
+          <label>Qty (4H)</label>
+          <input type="text" id="calcQty" value="${itemLimit.toLocaleString()}" placeholder="Limit">
+        </div>
+        <div class="calc-input">
+          <label>Buy (ea)</label>
+          <input type="text" id="calcBuy" value="${recBuy}" placeholder="0">
+        </div>
+        <div class="calc-input">
+          <label>Sell (ea)</label>
+          <input type="text" id="calcSell" value="${recSell}" placeholder="0">
+        </div>
       </div>
-      <div class="calc-input">
-        <label>Buy (ea)</label>
-        <input type="text" id="calcBuy" value="${recBuy}" placeholder="0">
+      <div class="calc-result" id="calcResult" title="Net Profit after Tax" style="margin-top: 8px;">
+        <span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span>
+        <span class="res-tax">Tax: 0</span>
       </div>
-      <div class="calc-input">
-        <label>Sell (ea)</label>
-        <input type="text" id="calcSell" value="${recSell}" placeholder="0">
-      </div>
-    </div>
-    <div class="calc-result" id="calcResult" title="Net Profit after Tax" style="margin-top: 8px;">
-      <span>Profit: <span class="res-profit" style="color:var(--text-muted)">0</span></span>
-      <span class="res-tax">Tax: 0</span>
     </div>
   `;
   
   $('#calcToggle').onclick = () => {
     isCalcOpen = !isCalcOpen;
-    $('#calcInputs').style.display = isCalcOpen ? 'grid' : 'none';
+    localStorage.setItem('ge_calc_open', isCalcOpen);
+    $('#calcBodyContent').style.display = isCalcOpen ? 'block' : 'none';
+    $('#calcToggle').style.paddingBottom = isCalcOpen ? '8px' : '0px';
     $('#calcToggleIcon').textContent = isCalcOpen ? '▼' : '▶';
   };
 
@@ -625,29 +618,26 @@ function updateFavoriteBtn() {
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
-  
   canvas.width = rect.width * dpr;
   canvas.height = (rect.height - 24) * dpr;
   canvas.style.width = `${rect.width}px`;
   canvas.style.height = `${rect.height - 24}px`;
-  
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   queueDraw();
 }
 window.addEventListener('resize', resizeCanvas);
 
-window.addEventListener('orientationchange', () => {
-  setTimeout(resizeCanvas, 150);
-  setTimeout(resizeCanvas, 500); 
-});
-
 const fmtGp = n => n == null ? "—" : Number(n).toLocaleString();
 const fmtNum = n => n == null ? "—" : Number(n).toLocaleString();
 const abbreviateNumber = (num) => {
-  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
-  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
-  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
-  return num.toLocaleString();
+  if (num === 0 || !num) return '0';
+  const absNum = Math.abs(num);
+  let res = absNum;
+  if (absNum >= 1e9) res = (absNum / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';
+  else if (absNum >= 1e6) res = (absNum / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
+  else if (absNum >= 1e3) res = (absNum / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  else res = absNum.toLocaleString();
+  return num < 0 ? '-' + res : res;
 };
 
 async function jget(url) {
@@ -692,7 +682,9 @@ function renderWatchlist() {
   const spikesData = [];
   const dayLows = [];
   const dayHighs = [];
-  const marginData = [];
+  
+  const rawProfitPool = [];
+  const roiPercentagePool = [];
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -700,59 +692,66 @@ function renderWatchlist() {
     const p1h = past1h?.data?.[id];
     const p24 = past24h?.data?.[id];
 
+    // Tracking 1H Spikes
     if (p1h && p24) {
       const vol1h = (p1h.highPriceVolume || 0) + (p1h.lowPriceVolume || 0);
       const vol24h = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
-      
-      if (vol1h > 100 && vol24h > 1000) { 
+      if (vol1h > 5) {
         const currentPrice = node?.high || node?.avgHighPrice || 0;
-        const gpMoved1h = vol1h * currentPrice;
-        
-        if (gpMoved1h > 10000000) {
-          const spikeRatio = (vol1h * 24) / vol24h;
-          if (spikeRatio > 2.0) spikesData.push({ item, ratio: spikeRatio });
+        if (vol1h * currentPrice > 2000000) {
+          const spikeRatio = (vol1h * 24) / Math.max(1, vol24h);
+          if (spikeRatio > 1.8) spikesData.push({ item, ratio: spikeRatio });
         }
       }
     }
 
-    if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
-       const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+    if (!overMaxData[id] && node) {
+       const currentSell = node.high || 0;
+       const currentBuy = node.low || 0;
 
-       if (dailyGPVolume > 10000000) {
-           const currentSell = node?.high || 0;
-           const currentBuy = node?.low || 0;
-           
-           // TOP MARGINS (ABSOLUTE PROFIT SORT FOR HIGH VALUE ITEMS)
-           if (currentBuy > 150 && currentSell > 0) {
-               const tax = calculateTax(currentSell);
-               const profit = currentSell - currentBuy - tax;
-               if (profit > 0) {
-                   marginData.push({ item, profit });
-               }
+       if (currentBuy > 0 && currentSell > currentBuy) {
+           const tax = calculateTax(currentSell);
+           const profit = currentSell - currentBuy - tax;
+           const roi = profit / currentBuy;
+
+           if (profit > 0) {
+               // Subpool A: Expensive raw margins (Gilded etc)
+               rawProfitPool.push({ item, profit, roi });
+               // Subpool B: Cheap items with massive spikes / relative margins (Diamonds etc)
+               roiPercentagePool.push({ item, profit, roi });
            }
+       }
 
-           const macroHighLimit = p24.avgHighPrice;
-           const macroLowLimit = p24.avgLowPrice;
-
-           if (currentBuy > 0 && macroLowLimit > 0 && currentBuy <= macroLowLimit * 0.96) dayLows.push(item);
-           if (currentSell > 0 && macroHighLimit > 0 && currentSell >= macroHighLimit * 1.04) dayHighs.push(item);
+       if (p24 && p24.avgHighPrice > 0) {
+           if (currentBuy > 0 && currentBuy <= p24.avgLowPrice * 0.96) dayLows.push(item);
+           if (currentSell > 0 && currentSell >= p24.avgHighPrice * 1.04) dayHighs.push(item);
        }
     }
   });
 
+  // Balanced Smart-Merging for Top Margins Tab
+  rawProfitPool.sort((a, b) => b.profit - a.profit);
+  roiPercentagePool.sort((a, b) => b.roi - a.roi);
+
+  const combinedMarginsMap = new Map();
+  // Grab top 15 raw high values
+  rawProfitPool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
+  // Grab top 15 massive ROI spikes (Diamond spikes, materials)
+  roiPercentagePool.slice(0, 15).forEach(x => combinedMarginsMap.set(x.item.id, x));
+
+  // Final Sort for Top Margins display list
+  const topMarginsList = Array.from(combinedMarginsMap.values())
+    .sort((a, b) => b.profit - a.profit);
+
   spikesData.sort((a, b) => b.ratio - a.ratio);
   const topSpikes = spikesData.slice(0, 30).map(t => t.item);
-
-  // Sorting strictly by absolute profit to push Gilded and big-ticket items to the top
-  marginData.sort((a, b) => b.profit - a.profit);
-  const topMargins = marginData.slice(0, 30).map(t => t.item);
 
   dayLows.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
   dayHighs.sort((a,b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0));
 
   const groups = [
     { name: "⭐ Favorites", items: favs, className: "fav-title" },
-    { name: "💰 Top Margins", items: topMargins, className: "positive" },
+    { name: "💰 Top Margins", items: topMarginsList.map(t => t.item), className: "positive" },
     { name: "📉 At Day Lows", items: dayLows.slice(0,30), className: "low-title" },
     { name: "📈 At Day Highs", items: dayHighs.slice(0,30), className: "high-title" },
     { name: "👑 Over-Max Rares", items: overMaxItems, className: "overmax-title" },
@@ -768,7 +767,6 @@ function renderWatchlist() {
 
     const groupDiv = document.createElement("div");
     groupDiv.className = "category-group";
-
     const isGroupOpen = groupOpenStates[group.name] !== false;
 
     const titleDiv = document.createElement("div");
@@ -792,59 +790,48 @@ function renderWatchlist() {
         let price = 0;
         let subText = "";
         let isSpecial = false;
-
         const node = latest?.data?.[String(item.id)];
         const p24 = past24h?.data?.[String(item.id)];
         let hlClass = "";
 
         if (overMaxData[String(item.id)]) {
           price = overMaxData[String(item.id)].wts;
-          subText = `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>`;
+          subText = `<span class="wl-trend" style="color:var(--text-muted);">Consensus</span>`;
           isSpecial = true;
         } else if (group.name === "💰 Top Margins") {
-          const mData = marginData.find(m => m.item.id === item.id);
+          const mData = combinedMarginsMap.get(item.id);
           if (mData) {
-            price = node?.high ?? 0;
-            // Now formatting as absolute profit instead of percentage
-            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)}</span>`;
+            price = node?.high ?? node?.low ?? 0;
+            const roiPercent = (mData.roi * 100).toFixed(0);
+            subText = `<span class="wl-trend up">+${abbreviateNumber(mData.profit)} (${roiPercent}%)</span>`;
             isSpecial = true;
           }
         } else if (group.name === "🌋 Volume Spikes (1H)") {
           const sData = spikesData.find(s => s.item.id === item.id);
           if (sData) {
-            price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+            price = node?.high ?? node?.low ?? 0;
             subText = `<span class="wl-trend up">${sData.ratio.toFixed(1)}x Vol</span>`;
             isSpecial = true;
           }
         }
 
-        if (!isSpecial) {
-          price = node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
-          let currentMid = null;
-          if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
-          else if (node?.high || node?.low) currentMid = node.high || node.low;
-
-          let pastMid = null;
-          if (p24?.avgHighPrice && p24?.avgLowPrice) pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
-          else if (p24?.avgHighPrice || p24?.avgLowPrice) pastMid = p24.avgHighPrice || p24.avgLowPrice;
-
-          if (currentMid !== null && pastMid !== null) {
-            if (currentMid > pastMid * 1.001) subText = `<span class="wl-trend up">▲</span>`;
-            else if (currentMid < pastMid * 0.999) subText = `<span class="wl-trend down">▼</span>`;
+        if (!isSpecial && node) {
+          price = node.high ?? node.low ?? 0;
+          if (node.high && node.low && p24?.avgHighPrice) {
+            const currentMid = (node.high + node.low) / 2;
+            const pastMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
+            if (currentMid > pastMid * 1.01) subText = `<span class="wl-trend up">▲</span>`;
+            else if (currentMid < pastMid * 0.99) subText = `<span class="wl-trend down">▼</span>`;
             else subText = `<span class="wl-trend neutral">—</span>`;
           }
         }
 
-        if (!overMaxData[String(item.id)] && p24 && p24.avgHighPrice > 100) {
-           const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-           if (dailyGPVolume > 10000000) {
-               if (node?.high > 0 && node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
-               else if (node?.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
-           }
+        if (node && p24 && p24.avgHighPrice > 0) {
+           if (node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
+           else if (node.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
         }
 
         const activeClass = selected?.id === item.id ? 'active' : '';
-        
         innerListHTML += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
@@ -892,11 +879,7 @@ function seriesFromTS(ts) {
 function seriesFromHistorical(h) {
   const src = h?.[String(selected.id)] || [];
   const rows = src.map(r => ({
-    t: Number(r.timestamp / 1000),
-    lo: r.price,
-    hi: r.price,
-    lowVol: r.volume ?? 0,
-    highVol: 0
+    t: Number(r.timestamp / 1000), lo: r.price, hi: r.price, lowVol: r.volume ?? 0, highVol: 0
   })).filter(r => r.t && r.lo != null).sort((a, b) => a.t - b.t);
   return { labels: rows.map(r => r.t), low: rows.map(r => r.lo), high: rows.map(r => r.hi), lowVol: rows.map(r => r.lowVol), highVol: rows.map(r => r.highVol) };
 }
@@ -909,22 +892,24 @@ function getPeriod(view) {
 function filterSeries(series, period) {
   const minT = Math.max(...series.labels) - period;
   const startIdx = series.labels.findIndex(t => t >= minT);
+  const idx = startIdx < 0 ? 0 : startIdx;
   return {
-    labels: series.labels.slice(startIdx), low: series.low.slice(startIdx), high: series.high.slice(startIdx),
-    lowVol: series.lowVol.slice(startIdx), highVol: series.highVol.slice(startIdx)
+    labels: series.labels.slice(idx), low: series.low.slice(idx), high: series.high.slice(idx),
+    lowVol: series.lowVol.slice(idx), highVol: series.highVol.slice(idx)
   };
 }
 
 async function calculateAllPctChanges(id) {
   if (overMaxData[String(id)]) {
-    return {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
+    return {'1d': '0.00%', '5d': '0.00%', '1m': '0.00%', '6m': '0.00%', '1y': '0.00%', '5y': '0.00%'};
   }
-
   const changes = {};
-  const historical = await loadHistorical(id);
-  fullHistorical = seriesFromHistorical(historical);
-  const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
+  try {
+    const historical = await loadHistorical(id);
+    fullHistorical = seriesFromHistorical(historical);
+  } catch(e) { fullHistorical = {labels:[],low:[],high:[],lowVol:[],highVol:[]}; }
   
+  const periods = ['1d', '5d', '1m', '6m', '1y', '5y'];
   for (const p of periods) {
     let ser;
     if (p === '1d' || p === '5d') ser = seriesFromTS(await loadTS('1h', id));
@@ -961,36 +946,36 @@ function linearRegression(x, y) {
   }
   const denominator = (n * sumX2 - sumX * sumX);
   if (denominator === 0) return { slope: 0, intercept: sumY / n };
-  const slope = (n * sumXY - sumX * sumY) / denominator;
-  const intercept = (sumY - slope * sumX) / n;
-  return { slope, intercept };
+  return { slope: (n * sumXY - sumX * sumY) / denominator, intercept: (sumY - (n * sumXY - sumX * sumY) / denominator * sumX) / n };
 }
 
-// TRADE ENGINE V14.2 - Less Ambitious Spikes
+// TRADE ENGINE V14.3 - Grounded & Spike-Protected Targets
 function runTradeEngine(rawLow, rawHigh, series) {
   let targetBuy = rawLow || 0; 
   let targetSell = rawHigh || 0;
 
+  // Protect against mathematical anomalies when spread reports zeros
+  if (targetBuy === 0 && targetSell > 0) targetBuy = Math.floor(targetSell * 0.98);
+  if (targetSell === 0 && targetBuy > 0) targetSell = Math.floor(targetBuy * 1.02);
+
   if (series && series.high.length > 0) {
-    const recentHighs = series.high.slice(-24).filter(x => x != null);
+    const recentHighs = series.high.slice(-12).filter(x => x != null);
     if (recentHighs.length > 0) {
       const maxRecentHigh = Math.max(...recentHighs);
       
-      // SPIKE CAPTURE: Blend the active live ask with the spike peak to meet it halfway.
-      // This prevents overly ambitious sell targets from hanging in the air.
-      if (maxRecentHigh > rawHigh * 1.01) {
-         targetSell = Math.max(rawHigh, Math.floor((rawHigh + maxRecentHigh) / 2)); 
+      // If there's a major historical high spike, cap our target sell to 2.5% max over live sell book.
+      // This forces targets to remain strictly fluid and instantly fillable.
+      if (maxRecentHigh > targetSell * 1.01) {
+         targetSell = Math.min(maxRecentHigh, Math.floor(targetSell * 1.025));
       }
     }
   }
 
-  if (targetBuy >= targetSell) targetBuy = targetSell - 1;
-  if (targetBuy < 1) targetBuy = 1;
-
+  // Double-verify layout order boundaries
+  if (targetBuy >= targetSell) targetBuy = Math.max(1, targetSell - 1);
+  
   let tax = calculateTax(targetSell);
-  let profit = targetSell - targetBuy - tax;
-
-  if (profit <= 0) {
+  if (targetSell - targetBuy - tax <= 0) {
     targetBuy = Math.max(1, targetSell - tax - 1);
   }
 
@@ -999,11 +984,8 @@ function runTradeEngine(rawLow, rawHigh, series) {
 
 function renderOverMax(m) {
   const isOverMax = overMaxData[String(m.id)];
-  
-  const changes = {'1d': '+0.00%', '5d': '+0.00%', '1m': '+0.00%', '6m': '+0.00%', '1y': '+0.00%', '5y': '+0.00%'};
   document.querySelectorAll(".view-btn").forEach(b => {
-    const p = b.dataset.view;
-    b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg neutral">${changes[p]}</span>`;
+    b.innerHTML = `${b.dataset.view.toUpperCase()}<br/><span class="pct-chg neutral">+0.00%</span>`;
   });
 
   const now = Math.floor(Date.now() / 1000);
@@ -1011,55 +993,41 @@ function renderOverMax(m) {
   let currentWtb = isOverMax.wtb * 0.95;
   let currentWts = isOverMax.wts * 0.95;
   
-  for (let i = 365; i >= 0; i--) {
+  for (let i = 100; i >= 0; i--) {
      mockSeries.labels.push(now - (i * 86400));
-     currentWtb += (isOverMax.wtb - currentWtb) * 0.05 + (Math.random() - 0.5) * 60000000;
-     currentWts += (isOverMax.wts - currentWts) * 0.05 + (Math.random() - 0.5) * 60000000;
-     if (currentWts <= currentWtb) currentWts = currentWtb + 10000000;
+     currentWtb += (isOverMax.wtb - currentWtb) * 0.05 + (Math.random() - 0.5) * 40000000;
+     currentWts += (isOverMax.wts - currentWts) * 0.05 + (Math.random() - 0.5) * 40000000;
+     if (currentWts <= currentWtb) currentWts = currentWtb + 5000000;
      mockSeries.low.push(currentWtb);
      mockSeries.high.push(currentWts);
-     mockSeries.lowVol.push(Math.floor(Math.random() * 5));
-     mockSeries.highVol.push(Math.floor(Math.random() * 5));
+     mockSeries.lowVol.push(1); mockSeries.highVol.push(1);
   }
   currentSeries = filterSeries(mockSeries, getPeriod(view));
 
-  $("#buyPrice").innerHTML = `
-    <div class="price-label">Target WTB <span class="live-val">Aggregated</span></div>
-    <div class="price-val"><span>${abbreviateNumber(isOverMax.wtb)}</span></div>
-  `;
-  
-  $("#sellPrice").innerHTML = `
-    <div class="price-label">Target WTS <span class="live-val">Aggregated</span></div>
-    <div class="price-val"><span>${abbreviateNumber(isOverMax.wts)}</span></div>
-  `;
-
+  $("#buyPrice").innerHTML = `<div class="price-label">Consensus WTB</div><div class="price-val"><span>${abbreviateNumber(isOverMax.wtb)}</span></div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">Consensus WTS</div><div class="price-val"><span>${abbreviateNumber(isOverMax.wts)}</span></div>`;
   $("#tickerLivePrice").textContent = abbreviateNumber(isOverMax.wts);
-  $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
+  $("#tickerChange").innerHTML = `<span class="neutral">— Telemetry Stream</span>`;
 
   recommendedBuy = isOverMax.wtb;
   recommendedSell = isOverMax.wts;
 
   $("#sideModule").innerHTML = `
-    <div class="calc-header" style="color: var(--fav-gold);">👑 Over-Max Consensus Engine</div>
-    <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0; line-height: 1.4;">
-      <strong>Anti-Manipulation:</strong> Forum & Discord telemetry scraped. Outer 15% outliers rejected mathematically to terminate spoofing vectors.
-    </div>
-    <div class="calc-result" style="display:flex; justify-content:space-between; margin-top:8px;">
-       <span style="color:var(--buy-color); font-weight:bold;">WTB: ${abbreviateNumber(isOverMax.wtb)}</span>
-       <span style="color:var(--sell-color); font-weight:bold;">WTS: ${abbreviateNumber(isOverMax.wts)}</span>
+    <div class="calc-header" style="color: var(--fav-gold);">👑 Over-Max Rare Telemetry</div>
+    <div style="font-size: 10px; color: var(--text-muted); margin: 4px 0; line-height: 1.3;">
+      Scraping forum transaction ledgers. Outer 15% manipulation spikes filtered out.
     </div>
   `;
 
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   resizeCanvas(); 
-  $("#status").textContent = "Consensus Active";
+  $("#status").textContent = "Consensus Loaded";
 }
 
 function drawChart(series) {
   const c = canvas;
   const rect = c.parentElement.getBoundingClientRect();
   const W = rect.width, H = rect.height - 24;
-  
   const x0 = 45, y0 = 60, w = W - x0 - 15, h = H - y0 - 20;
   ctx.clearRect(0, 0, W, H);
   
@@ -1099,8 +1067,7 @@ function drawChart(series) {
   ctx.lineWidth = 1;
   const linesY = 5;
   ctx.font = "10px BlinkMacSystemFont, sans-serif";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
   for (let i = 0; i <= linesY; i++) {
     const y = y0 + (h * i / linesY);
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
@@ -1110,8 +1077,7 @@ function drawChart(series) {
     ctx.fillText(abbreviateNumber(v), x0 - 6, y);
   }
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
   for (let i = 0; i < L.length; i += xStep) {
     const x = x0 + i * stepX;
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
@@ -1129,7 +1095,7 @@ function drawChart(series) {
   
   if (midPoints.length > 1) {
     const { slope, intercept } = linearRegression(midPoints.map(m=>m.i), midPoints.map(m=>m.v));
-    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 1.5;
+    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255, 255, 255, 0.15)"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
     ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
     ctx.stroke(); ctx.restore();
@@ -1146,15 +1112,11 @@ function drawChart(series) {
       ctx.fillRect(x - dashWidth/2, y - dashHeight/2, dashWidth, dashHeight);
 
       if (isHigh && i === viewMaxIdx) {
-        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill(); ctx.restore();
       } else if (!isHigh && i === viewMinIdx) {
-        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.8; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.globalAlpha = 1.0; ctx.fill(); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill(); ctx.restore();
       }
     }
   }
@@ -1165,7 +1127,7 @@ function drawChart(series) {
   const maxVol = Math.max(...VO.filter(v => v > 0), 1);
   const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
   const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
-  const barWidth = Math.max(1, stepX * 0.8); 
+  const barWidth = Math.max(1, stepX * 0.7); 
   
   for (let i = 0; i < VO.length; i++) {
     if (LOWVOL[i] == null && HIGHVOL[i] == null) continue;
@@ -1180,17 +1142,15 @@ function drawChart(series) {
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
     if (py >= y0 && py <= y0 + h_price) {
-      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
-      ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; ctx.font = "9px BlinkMacSystemFont, sans-serif";
-      ctx.fillText(`Target: ${fmtGp(activePrice)}`, x0 + 4, py - 3); ctx.restore();
+      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke(); ctx.restore();
     }
   }
 
   if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < L.length) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save(); ctx.beginPath(); ctx.moveTo(hx, y0); ctx.lineTo(hx, y0 + h);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
   }
 }
 
@@ -1218,13 +1178,13 @@ const handleTooltip = (clientX, clientY) => {
   tip.style.left = tipX + "px"; tip.style.top = tipY + "px";
 };
 
-let isDragging = false, isPinching = false, touchMoved = false, startXMouse = 0, initialPinchDist = 0, initialZoom = 1;
-canvas.addEventListener('mousedown', ev => { isDragging = true; startXMouse = ev.clientX; });
-canvas.addEventListener('mouseup', () => { isDragging = false; });
-canvas.addEventListener('mouseleave', () => { isDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw(); });
+let isDraggingMode = false, startXMouse = 0;
+canvas.addEventListener('mousedown', ev => { isDraggingMode = true; startXMouse = ev.clientX; });
+canvas.addEventListener('mouseup', () => { isDraggingMode = false; });
+canvas.addEventListener('mouseleave', () => { isDraggingMode = false; tip.style.display = "none"; hoverIdx = null; queueDraw(); });
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
-  if (isDragging) {
+  if (isDraggingMode) {
     const dx = ev.clientX - startXMouse; startXMouse = ev.clientX;
     const { dataW, win, n } = chartData;
     offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw(); return;
@@ -1274,8 +1234,8 @@ async function setItem(m) {
   
   latest = await loadLatest();
   const node = latest.data[String(m.id)];
-  liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
-  liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
+  liveBuyRaw = node?.low ?? 0;
+  liveSellRaw = node?.high ?? 0;
   
   $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
 
