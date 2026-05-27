@@ -347,11 +347,12 @@ let currentItemLowVol = false;
 let overMaxFull = null;
 let historyCache = {};
 let marginCache = {};
+let dayHiLoCache = {};
 let scanStatus = { history: 'idle', margin: 'idle' };
 
 let groupOpenStates = {
-  "⭐ Favorites": true,
-  "💰 Top Margins · High Vol (1D)": true,
+  "⭐ Favorites": false,
+  "💰 Top Margins · High Vol (1D)": false,
   "💵 Top Margins · Low Vol (1D)": false,
   "📅 Top Margins · High Vol (1M)": false,
   "🗓️ Top Margins · Low Vol (1M)": false,
@@ -594,6 +595,31 @@ async function runMarginScan() {
   scanStatus.margin = 'done'; renderWatchlist();
 }
 
+/* Fetch the true intraday high/low (from 5m candles, last 24h) for specific
+   items so the day-high/low glow reflects the actual recent peak/trough — the
+   whole point of the "wow, take action" highlight on your favorites. Cached and
+   throttled; re-renders once a batch completes so the glow lights up. */
+async function scanDayExtremes(ids) {
+  const todo = [...new Set(ids.map(String))].filter(id => id && !(id in dayHiLoCache) && !overMaxData[id]);
+  if (!todo.length) return;
+  todo.forEach(id => { dayHiLoCache[id] = null; }); // reserve so we don't refetch mid-flight
+  await throttleMap(todo, async (id) => {
+    try {
+      const ts = seriesFromTS(await loadTS('5m', id));
+      const cut = Math.floor(Date.now() / 1000) - 86400;
+      let hi = 0, lo = Infinity;
+      for (let i = 0; i < ts.labels.length; i++) {
+        if (ts.labels[i] < cut) continue;
+        const H = ts.high[i], L = ts.low[i];
+        if (H != null && H > hi) hi = H;
+        if (L != null && L > 0 && L < lo) lo = L;
+      }
+      dayHiLoCache[id] = (hi > 0 && lo < Infinity) ? { hi, lo } : { hi: 0, lo: 0 };
+    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0 }; }
+  }, SCAN_CONCURRENCY);
+  renderWatchlist();
+}
+
 function trendSub(node, p24) {
   let currentMid = null;
   if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
@@ -610,6 +636,41 @@ function trendSub(node, p24) {
 function priceOf(item) {
   const node = latest?.data?.[String(item.id)];
   return node?.high ?? node?.avgHighPrice ?? node?.low ?? 0;
+}
+
+/* Is the item at the top ("high") or bottom ("low") of its recent range?
+   When we have the true intraday extremes (fetched per-item from 5m candles via
+   scanDayExtremes), glow "high" within ~1.5% of the 24h peak and "low" within
+   ~1.5% of the trough — that's the actionable "it's at its recent peak" signal.
+   Until those load, fall back to a coarse 24h band-position estimate so the
+   discovery lists still populate. */
+function dayState(node, p24, id) {
+  if (!node) return "";
+  const ex = id != null ? dayHiLoCache[String(id)] : null;
+  if (ex && ex.hi > 0 && ex.lo > 0 && ex.hi > ex.lo) {
+    const range = ex.hi - ex.lo;
+    if (range >= ex.lo * 0.02) { // need ≥2% daily range to be a meaningful move
+      const sell = node.high || node.avgHighPrice || 0;
+      const buy = node.low || node.avgLowPrice || 0;
+      if (sell > 0 && sell >= ex.hi * 0.985) return "high";
+      if (buy > 0 && buy <= ex.lo * 1.015) return "low";
+    }
+    return "";
+  }
+  /* fallback: locate the current mid price within the 24h average [low, high]
+     band (top 30% = high, bottom 30% = low). */
+  if (!p24 || !(p24.avgHighPrice > 100)) return "";
+  const gp = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
+  if (gp <= 10000000) return "";
+  const aH = p24.avgHighPrice, aL = p24.avgLowPrice;
+  if (!(aL > 0) || !(aH > aL)) return "";
+  const sell = node.high || 0, buy = node.low || 0;
+  if (sell <= 0 && buy <= 0) return "";
+  const mid = (sell > 0 && buy > 0) ? (sell + buy) / 2 : (sell || buy);
+  const pos = (mid - aL) / (aH - aL);
+  if (pos >= 0.7) return "high";
+  if (pos <= 0.3) return "low";
+  return "";
 }
 
 function renderWatchlist() {
@@ -630,13 +691,9 @@ function renderWatchlist() {
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
 
-    if (p24 && p24.avgHighPrice > 100) {
-      const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-      if (dailyGPVolume > 10000000) {
-        if (node?.low > 0 && p24.avgLowPrice > 0 && node.low <= p24.avgLowPrice * 0.96) dayLows.push(item);
-        if (node?.high > 0 && p24.avgHighPrice > 0 && node.high >= p24.avgHighPrice * 1.04) dayHighs.push(item);
-      }
-    }
+    const st = dayState(node, p24, id);
+    if (st === "low") dayLows.push(item);
+    else if (st === "high") dayHighs.push(item);
 
     /* 1D margin from the live instant-buy/instant-sell spread — the real margin
        a flipper can capture right now. The 24h volume-weighted averages compress
@@ -734,12 +791,10 @@ function renderWatchlist() {
         const node = latest?.data?.[id];
         const p24 = past24h?.data?.[id];
         let hlClass = "";
-        if (!overMaxData[id] && p24 && p24.avgHighPrice > 100) {
-          const dailyGPVolume = ((p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0)) * p24.avgHighPrice;
-          if (dailyGPVolume > 10000000) {
-            if (node?.high > 0 && node.high >= p24.avgHighPrice * 1.04) hlClass = "at-high";
-            else if (node?.low > 0 && node.low <= p24.avgLowPrice * 0.96) hlClass = "at-low";
-          }
+        if (!overMaxData[id]) {
+          const st = dayState(node, p24, id);
+          if (st === "high") hlClass = "at-high";
+          else if (st === "low") hlClass = "at-low";
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
         inner += `
@@ -770,6 +825,12 @@ function renderWatchlist() {
       if (m) { setItem._userPicked = false; setItem(m); }
     };
   });
+
+  /* fetch true intraday extremes for the visible favorites (+ the selected item)
+     so their glow reflects the actual recent peak/trough, not the coarse average. */
+  const idsToScan = favs.map(i => String(i.id));
+  if (selected) idsToScan.push(String(selected.id));
+  scanDayExtremes(idsToScan);
 }
 
 function seriesFromTS(ts) {
@@ -968,20 +1029,34 @@ function drawChart(series) {
   /* x-axis label granularity adapts to the visible time span: intraday → time,
      up to ~6 months → month/day, up to ~2 years → month/year, longer → year. */
   const spanSec = L.length > 1 ? (L[L.length - 1] - L[0]) : 0;
+  const mutedCol = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
   const fmtAxis = (t) => {
     const d = new Date(t * 1000);
     if (spanSec <= 2 * 86400) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     if (spanSec <= 180 * 86400) return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    if (spanSec <= 730 * 86400) return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
-    return String(d.getFullYear());
+    return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
   };
-  ctx.textAlign = "center"; ctx.textBaseline = "top";
-  let lastAxisLabel = null;
-  for (let i = 0; i < L.length; i += xStep) {
-    const x = x0 + i * stepX;
-    ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
-    const dateStr = fmtAxis(L[i]);
-    if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, x, y0 + h + 4); lastAxisLabel = dateStr; }
+  ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = mutedCol;
+  if (spanSec > 730 * 86400) {
+    /* multi-year span: put one tick + label at the first point of each calendar
+       year so the year labels line up with the actual year boundaries. */
+    let lastYear = null;
+    for (let i = 0; i < L.length; i++) {
+      const yr = new Date(L[i] * 1000).getFullYear();
+      if (yr === lastYear) continue;
+      lastYear = yr;
+      const x = x0 + i * stepX;
+      ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
+      ctx.fillText(String(yr), x, y0 + h + 4);
+    }
+  } else {
+    let lastAxisLabel = null;
+    for (let i = 0; i < L.length; i += xStep) {
+      const x = x0 + i * stepX;
+      ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
+      const dateStr = fmtAxis(L[i]);
+      if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, x, y0 + h + 4); lastAxisLabel = dateStr; }
+    }
   }
 
   const midPoints = [];
@@ -997,16 +1072,26 @@ function drawChart(series) {
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
-  /* Draw a visible point marker at every data point (so high-priced/low-volume
-     series read as dotted lines, not bare lines) plus a connecting dash. */
-  function drawDashes(arr, color, isHigh) {
-    ctx.fillStyle = color;
-    const dashWidth = Math.max(3, stepX * 1.4), dashHeight = 2;
+  /* Connect consecutive points with a line (so sparse / high-priced / low-volume
+     series read as a continuous line instead of disconnected floating bars), then
+     draw a dot at every point and emphasize the period extreme. */
+  function drawSeries(arr, color, isHigh) {
     const dotR = Math.max(1.6, Math.min(3.2, stepX * 0.45));
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] == null) { started = false; continue; }
+      const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
+      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = color;
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
       const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
-      ctx.fillRect(x - dashWidth / 2, y - dashHeight / 2, dashWidth, dashHeight);
       ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2); ctx.fill();
       if ((isHigh && i === viewMaxIdx) || (!isHigh && i === viewMinIdx)) {
         ctx.save();
@@ -1018,8 +1103,8 @@ function drawChart(series) {
   }
   /* Draw highs first, then lows, so the gold (buy) markers stay visible on top
      for single-price historical series where low === high. */
-  drawDashes(HI, sellColor, true);
-  drawDashes(LO, buyColor, false);
+  drawSeries(HI, sellColor, true);
+  drawSeries(LO, buyColor, false);
 
   function ring(i, arr, color) {
     if (i < 0 || arr[i] == null) return;
@@ -1047,10 +1132,21 @@ function drawChart(series) {
   if (activePrice != null) {
     const py = ypx(activePrice, vmin, vmax, y0, h_price);
     if (py >= y0 && py <= y0 + h_price) {
-      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      const col = activePriceBox === 'buy' ? buyColor : sellColor;
+      ctx.save();
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = "9px BlinkMacSystemFont, sans-serif"; ctx.textAlign = "left";
-      ctx.fillText(`Target: ${fmtGp(activePrice)}`, x0 + 4, py - 3); ctx.restore();
+      ctx.setLineDash([]);
+      /* readable label: dark filled badge with a color-coded border + bold text */
+      const label = `Target: ${fmtGp(activePrice)}`;
+      ctx.font = "bold 10px BlinkMacSystemFont, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      const padX = 5, bh = 16, bx = x0 + 4, tw = ctx.measureText(label).width;
+      let cy = py - bh / 2 - 2;
+      if (cy - bh / 2 < y0 + 1) cy = py + bh / 2 + 2;
+      ctx.fillStyle = "rgba(11,14,20,0.92)"; ctx.fillRect(bx, cy - bh / 2, tw + padX * 2, bh);
+      ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(bx + 0.5, cy - bh / 2 + 0.5, tw + padX * 2 - 1, bh - 1);
+      ctx.fillStyle = col; ctx.fillText(label, bx + padX, cy);
+      ctx.restore();
     }
   }
 
@@ -1329,7 +1425,7 @@ setItem._userPicked = false;
     $("#btnF2P").onclick = () => {
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
-      historyCache = {}; marginCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
       renderWatchlist();
       if (selected?.members) {
         const landing = mapping.find(x => String(x.id) === LANDING_ID);
@@ -1339,13 +1435,14 @@ setItem._userPicked = false;
     $("#btnMembers").onclick = () => {
       membersOn = true; localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
-      historyCache = {}; marginCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
       renderWatchlist();
     };
 
     setInterval(async () => {
       try {
         latest = await loadLatest();
+        dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
         renderWatchlist();
         if (selected && !overMaxData[String(selected.id)]) {
           const node = latest.data[String(selected.id)];
