@@ -361,8 +361,8 @@ const WEIRD_GLOOP_API = "https://api.weirdgloop.org/exchange/history/osrs";
 
 /* tunable knobs */
 const LOW_VOL_THRESHOLD = 10000;
-const SCAN_VOL_POOL = 25;
-const SCAN_PRICE_POOL = 25;
+const SCAN_VOL_POOL = 60;
+const SCAN_PRICE_POOL = 40;
 const SCAN_CONCURRENCY = 4;
 const LANDING_ID = "12389"; /* Gilded scimitar (F2P, GE-tradeable) */
 
@@ -452,6 +452,29 @@ const abbreviateNumber = (num) => {
   else if (num >= 1e6) out = (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';
   else if (num >= 1e3) out = (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
   else out = num.toLocaleString();
+  return (neg ? '-' : '') + out;
+};
+
+/* Y-axis tick formatter with enough resolution to distinguish adjacent gridlines.
+   Below 10K we show full integers ("1,267" instead of "1.3K") so close prices
+   don't all collapse to the same label; M/B keep two decimals up to 100. */
+const fmtYAxis = (v) => {
+  if (v == null) return "—";
+  const neg = v < 0; const a = Math.abs(v);
+  let out;
+  if (a >= 1e9) {
+    const b = a / 1e9;
+    out = (b < 100 ? b.toFixed(2) : b.toFixed(0)).replace(/\.?0+$/, '') + 'B';
+  } else if (a >= 1e6) {
+    const m = a / 1e6;
+    out = (m < 100 ? m.toFixed(2) : m.toFixed(0)).replace(/\.?0+$/, '') + 'M';
+  } else if (a >= 1e5) {
+    out = Math.round(a / 1e3) + 'K';
+  } else if (a >= 1e4) {
+    out = (a / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  } else {
+    out = Math.round(a).toLocaleString();
+  }
   return (neg ? '-' : '') + out;
 };
 
@@ -734,19 +757,22 @@ function detectManipulation(ts) {
   const pNow = prices[n - 1];
   if (pNow == null || pNow <= 0) return null;
 
-  /* Pattern A: stealth accumulation */
+  /* Pattern A: stealth accumulation. The original 2.5×/<5% spec was strict
+     enough to leave the list empty most days — relaxed slightly so it surfaces
+     a steady handful of suspects while still requiring a real volume bump
+     against a flat tape. */
   const last2Vol = (vols[n - 1] + (vols[n - 2] ?? vols[n - 1])) / 2;
   const p2dAgo = prices[Math.max(0, n - 3)] ?? pNow;
   const pctChange2d = p2dAgo > 0 ? Math.abs((pNow - p2dAgo) / p2dAgo) : 0;
-  const patternA = last2Vol > avg14Vol * 2.5 && pctChange2d < 0.05;
+  const patternA = last2Vol > avg14Vol * 2.0 && pctChange2d < 0.07;
 
-  /* Pattern B: supply choke / pump */
+  /* Pattern B: supply choke / pump — loosened to 1.5σ + sub-55% volume. */
   const meanP = w14Price.reduce((a, b) => a + b, 0) / w14Price.length;
   const variance = w14Price.reduce((a, b) => a + (b - meanP) ** 2, 0) / w14Price.length;
   const stdevP = Math.sqrt(variance);
   const last3Vol = ((vols[n - 1] || 0) + (vols[n - 2] || 0) + (vols[n - 3] || 0)) / 3;
-  const priceSpike = stdevP > 0 && Math.abs(pNow - meanP) > 2 * stdevP;
-  const volCollapse = last3Vol < avg14Vol * 0.4;
+  const priceSpike = stdevP > 0 && Math.abs(pNow - meanP) > 1.5 * stdevP;
+  const volCollapse = last3Vol < avg14Vol * 0.55;
   const patternB = priceSpike && volCollapse;
 
   if (!patternA && !patternB) return null;
@@ -948,7 +974,10 @@ function renderWatchlist() {
       if (scanState === 'loading') inner = `<div class="scan-row loading">⏳ Scanning market history…</div>`;
       else inner = `<div class="scan-row" data-scan="${group.scan}">🔍 Tap to scan history (top items)</div>`;
     } else if (group.entries.length === 0) {
-      inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">None found</div>`;
+      const emptyMsg = group.scan === 'manip'
+        ? 'No clear manipulation patterns today — quiet tape'
+        : 'None found';
+      inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">${emptyMsg}</div>`;
     } else {
       group.entries.forEach(e => {
         const item = e.item, id = String(item.id);
@@ -1042,13 +1071,25 @@ function filterSeries(series, period) {
 
 /* Pick which data source feeds a given timeframe. Low-volume items use daily
    history for 1M+ so charts aren't full of gaps from sparse 5m/1h candles. */
+/* Pick the data source for a given timeframe, falling back through other
+   granularities when the preferred one is empty. The wiki returns no 5m/1h
+   candles for very illiquid items (e.g. the Gilded dragonhide set) — we used
+   to render "No trade data"; now we walk down to 6h → 24h → full daily history
+   so at least *something* shows on every timeframe. */
 function seriesForView(v, src, lowVol) {
-  if (v === '5y') return src.hist;
-  if (v === '1y') return lowVol ? src.hist : src.ts24h;
-  if (v === '6m') return lowVol ? src.hist : src.ts24h;
-  if (v === '1m') return lowVol ? src.hist : src.ts6h;
-  if (v === '5d') return src.ts1h;
-  return src.ts5m;
+  const order = {
+    '5y': ['hist', 'ts24h'],
+    '1y': lowVol ? ['hist', 'ts24h', 'ts6h'] : ['ts24h', 'hist', 'ts6h'],
+    '6m': lowVol ? ['hist', 'ts24h', 'ts6h'] : ['ts24h', 'ts6h', 'hist'],
+    '1m': lowVol ? ['hist', 'ts6h', 'ts24h', 'ts1h'] : ['ts6h', 'ts24h', 'ts1h', 'hist'],
+    '5d': ['ts1h', 'ts5m', 'ts6h', 'ts24h', 'hist'],
+    '1d': ['ts5m', 'ts1h', 'ts6h', 'ts24h', 'hist']
+  }[v] || ['hist'];
+  for (const k of order) {
+    const s = src[k];
+    if (s && s.labels && s.labels.length) return s;
+  }
+  return src.hist || emptySeries();
 }
 
 function pctChange(series, period) {
@@ -1109,25 +1150,31 @@ function percentile(arr, p) {
 /* Trade engine: anchor targets to RECENT support/resistance (last ~25% of the
    visible window), since that's what other flippers are actually trading
    against right now. Then guarantee the spread clears GE tax. */
+/* Classic OSRS +1 / -1 margining (same technique Flipping-Copilot-style tools
+   use): take the MEDIAN of the recent insta-sell prints and bid one above it
+   (you become the top of the buy queue), take the MEDIAN of the recent insta-
+   buy prints and ask one below it (you become the bottom of the sell queue).
+   Median over the last ~15% of the visible window strips outlier spikes that
+   one-off prints would drag the raw live quote toward. Falls back to the raw
+   live quote if the resulting spread isn't profitable after GE tax. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
-  let buy = rawLow, sell = rawHigh;
+  let recentLow = rawLow, recentHigh = rawHigh;
   if (series && series.high.length > 5) {
     const n = series.high.length;
-    const recentCount = Math.max(8, Math.floor(n * 0.25));
-    const rHigh = series.high.slice(-recentCount).filter(x => x != null);
-    const rLow = series.low.slice(-recentCount).filter(x => x != null);
-    if (rHigh.length >= 3 && rLow.length >= 3) {
-      const support = Math.round(percentile(rLow, 25));
-      const resistance = Math.round(percentile(rHigh, 75));
-      buy = Math.min(rawLow, Math.max(support, Math.round(rawLow * 0.95)));
-      sell = Math.max(rawHigh, Math.min(resistance, Math.round(rawHigh * 1.05)));
-    }
+    const k = Math.max(5, Math.floor(n * 0.15));
+    const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
+    const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
+    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 50));
+    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 50));
   }
-  if (buy >= sell) buy = sell - 1;
+  /* +1 to outbid the existing buy queue, -1 to undercut the existing sell queue. */
+  let buy = recentLow + 1;
+  let sell = recentHigh - 1;
+  if (buy >= sell) { buy = rawLow; sell = rawHigh; }
   if (buy < 1) buy = 1;
   const tax = calculateTax(sell);
-  if (sell - buy - tax <= 0) buy = Math.max(1, sell - tax - 1);
+  if (sell - buy - tax <= 0) { buy = rawLow; sell = rawHigh; }
   return { buy, sell };
 }
 
@@ -1192,7 +1239,7 @@ function drawChart(series) {
     ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     const v = Math.round(vmax - (vmax - vmin) * i / linesY);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-    ctx.fillText(abbreviateNumber(v), x0 - 6, y);
+    ctx.fillText(fmtYAxis(v), x0 - 6, y);
   }
 
   /* x-axis label granularity adapts to the visible time span: intraday → time,
@@ -1243,23 +1290,52 @@ function drawChart(series) {
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
-  /* Connect consecutive points with a line (so sparse / high-priced / low-volume
-     series read as a continuous line instead of disconnected floating bars), then
-     draw a dot at every point and emphasize the period extreme. */
-  function drawSeries(arr, color, isHigh) {
-    ctx.save();
-    ctx.strokeStyle = color; ctx.lineWidth = flipMode ? 2 : 1.5; ctx.lineJoin = "round"; ctx.lineCap = "round";
-    ctx.beginPath();
-    let started = false;
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] == null) { started = false; continue; }
-      const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
-      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+  /* "Hard lines" on big trade moments — draw a vertical bar spanning buy-low to
+     sell-high on candles whose total volume is ≥2.5× the median of the visible
+     window. Quiet candles stay as the bare dot scatter; spikes get emphasised. */
+  if (!flipMode) {
+    const positiveVols = VO.filter(v => v > 0);
+    if (positiveVols.length >= 4) {
+      const sortedVO = [...positiveVols].sort((a, b) => a - b);
+      const medianVol = sortedVO[Math.floor(sortedVO.length / 2)];
+      const spikeT = medianVol * 2.5;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.lineWidth = Math.max(1, Math.min(2.2, stepX * 0.5));
+      ctx.lineCap = "round";
+      for (let i = 0; i < L.length; i++) {
+        if (LO[i] == null || HI[i] == null) continue;
+        if (HI[i] === LO[i]) continue;
+        if (VO[i] <= spikeT) continue;
+        const x = x0 + i * stepX;
+        const yHi = ypx(HI[i], vmin, vmax, y0, h_price);
+        const yLo = ypx(LO[i], vmin, vmax, y0, h_price);
+        ctx.beginPath(); ctx.moveTo(x, yLo); ctx.lineTo(x, yHi); ctx.stroke();
+      }
+      ctx.restore();
     }
-    ctx.stroke();
-    ctx.restore();
-    if (flipMode) return; // Flip Mode: line only, no dots / no extreme markers
-    const dotR = Math.max(1.6, Math.min(3.2, stepX * 0.45));
+  }
+
+  /* Dots-only scatter (no connecting line — that was scribbling on dense 1D
+     charts). The volume needles above carry the "where did big trades happen"
+     signal; here we just plot every print clean and small. Flip Mode collapses
+     to a thin connecting line for ultra-clean at-a-glance reading. */
+  function drawSeries(arr, color, isHigh) {
+    if (flipMode) {
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] == null) { started = false; continue; }
+        const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    const dotR = Math.max(1.8, Math.min(3.5, stepX * 0.5));
     ctx.fillStyle = color;
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
@@ -1273,7 +1349,7 @@ function drawChart(series) {
       }
     }
   }
-  /* Draw highs first, then lows, so the gold (buy) markers stay visible on top
+  /* Draw highs first, then lows, so the gold (buy) dots stay visible on top
      for single-price historical series where low === high. */
   drawSeries(HI, sellColor, true);
   drawSeries(LO, buyColor, false);
@@ -1572,6 +1648,9 @@ setItem._userPicked = false;
     try { volumes = await loadVolumes(); } catch (e) {}
 
     renderWatchlist();
+    /* Auto-kick the manipulation scan in the background so the group has
+       results by the time the user expands it (instead of "None found"). */
+    runManipScan();
 
     const sb = $("#suggestBox"), qInput = $("#query");
     qInput.addEventListener("input", () => {
@@ -1641,8 +1720,18 @@ setItem._userPicked = false;
     }
     applyNotifBtn();
     $("#btnNotif").onclick = async () => {
-      if (typeof Notification === 'undefined') {
-        alert('This browser does not support notifications.');
+      /* iOS Safari only exposes the Notification API once the site is
+         installed as a Home Screen PWA (iOS 16.4+). Walking through it once
+         here saves a lot of "why doesn't this work" confusion. */
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true
+        || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      if (typeof Notification === 'undefined' || (isIOS && !isStandalone)) {
+        if (isIOS) {
+          alert("To enable alerts on iPhone:\n\n1. Tap the Share button (square with arrow up).\n2. Tap 'Add to Home Screen'.\n3. Open PocketGE from the home screen, then tap the bell again.\n\n(Apple only allows notifications from installed web apps.)");
+        } else {
+          alert("This browser does not support notifications. Try Chrome, Firefox, or Edge.");
+        }
         return;
       }
       if (notifEnabled) {
