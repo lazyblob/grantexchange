@@ -1,0 +1,19 @@
+{
+  "name": "PocketGE",
+  "short_name": "PocketGE",
+  "description": "Mobile-first OSRS Grand Exchange tracker — live margins, day high/low alerts, flipping calculator.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0E14",
+  "theme_color": "#0B0E14",
+  "icons": [
+    {
+      "src": "https://oldschool.runescape.wiki/images/Gilded_scimitar.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -14,6 +14,7 @@
 <meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day/year lows, and track over-max rares with our smart flipping calculator.">
 <meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
 <link rel="canonical" href="https://pocketge.com/">
+<link rel="manifest" href="/manifest.json">
 
 <meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
 <meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
@@ -76,6 +77,9 @@ button, input { touch-action: manipulation; }
 .fav-btn.active { background: rgba(255, 179, 0, 0.1); border-color: var(--fav-gold); color: var(--fav-gold); }
 .fav-btn svg { width: 16px; height: 16px; fill: none; }
 .fav-btn.active svg { fill: currentColor; }
+.icon-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 7px; cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; transition: all 0.15s ease; }
+.icon-btn:hover { color: var(--text-main); border-color: var(--border-active); }
+.icon-btn.active { background: rgba(41, 98, 255, 0.18); border-color: var(--border-active); color: #fff; }
 .suggest { margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; max-height: 200px; overflow-y: auto; background: var(--bg-panel); position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
 .suggest div:last-child { border-bottom: none; }
@@ -153,6 +157,35 @@ button, input { touch-action: manipulation; }
 .category-title.marginlo-title { color: #7FE3A6; }
 .category-title.ylow-title { color: #4FC3F7; }
 .category-title.fivey-title { color: #9C8CFF; }
+.category-title.manip-title { color: #FF6E6E; }
+.wl-manip-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
+.wl-manip-badge.accum { background: rgba(187, 134, 252, 0.18); color: #C9A8FF; border: 1px solid rgba(187, 134, 252, 0.4); }
+.wl-manip-badge.pump { background: rgba(255, 110, 110, 0.18); color: #FF8A8A; border: 1px solid rgba(255, 110, 110, 0.4); }
+/* Remote Flip Mode: ultra-clean, glanceable, stealthy at-work view. Decorative
+   chrome is hidden, prices are oversized, and the chart drops everything except
+   the price line + target. */
+body.flip-mode .toolbar,
+body.flip-mode .mode-pill,
+body.flip-mode .brand-logo,
+body.flip-mode .chart-footer,
+body.flip-mode .calc-container,
+body.flip-mode #status,
+body.flip-mode .ticker-title-group { display: none !important; }
+body.flip-mode { background: #05070C; }
+body.flip-mode .top-panel,
+body.flip-mode .ticker-header,
+body.flip-mode .chart-container,
+body.flip-mode .watchlist-container { background: #0A0D14; border-color: #1A1F2B; }
+body.flip-mode .plaque-bar { gap: 14px; top: 18px; left: 18px; right: 18px; flex-wrap: wrap; }
+body.flip-mode .price-box { padding: 14px 22px; min-width: 220px; border-width: 2px; }
+body.flip-mode .price-label { font-size: 12px; letter-spacing: 1px; }
+body.flip-mode .price-val { font-size: 38px; font-weight: 900; margin-top: 4px; letter-spacing: -1px; }
+body.flip-mode .live-val { font-size: 13px; opacity: 1; }
+body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var(--border-active); color: #fff; }
+@media screen and (max-width: 1023px) {
+  body.flip-mode .price-val { font-size: 32px; }
+  body.flip-mode .price-box { min-width: 160px; padding: 10px 14px; }
+}
 .category-title:hover { background: var(--bg-input); }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
@@ -255,6 +288,8 @@ button, input { touch-action: manipulation; }
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
               </button>
+              <button id="btnFlip" class="icon-btn" title="Remote Flip Mode — big prices, minimal chrome">👁</button>
+              <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
             </div>
           </div>
 
@@ -348,7 +383,13 @@ let overMaxFull = null;
 let historyCache = {};
 let marginCache = {};
 let dayHiLoCache = {};
-let scanStatus = { history: 'idle', margin: 'idle' };
+let manipCache = {};
+let scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
+
+let flipMode = localStorage.getItem('ge_flip') === '1';
+let notifEnabled = localStorage.getItem('ge_notif') === '1';
+let notifAlertState = JSON.parse(localStorage.getItem('ge_notifAlertState') || '{}');
+const NOTIF_COOLDOWN_MS = 10 * 60 * 1000;
 
 let groupOpenStates = {
   "⭐ Favorites": false,
@@ -360,7 +401,8 @@ let groupOpenStates = {
   "🚀 At Day Highs": false,
   "🔵 At 1-Year Lows": false,
   "🧊 At 5-Year Lows": false,
-  "👑 Over-Max Rares": false
+  "👑 Over-Max Rares": false,
+  "🚨 Market Manipulation Alerts": false
 };
 
 const canvas = document.getElementById("chart");
@@ -618,6 +660,110 @@ async function scanDayExtremes(ids) {
     } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0 }; }
   }, SCAN_CONCURRENCY);
   renderWatchlist();
+  fireFavoriteAlerts();
+}
+
+/* Fire a native browser notification when a favorite transitions into a day
+   high or low. Cooldown per item+state so we don't spam the same alert. Hooks
+   directly into the existing dayState detection — no separate signal logic. */
+function fireFavoriteAlerts() {
+  if (!notifEnabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const now = Date.now();
+  let dirty = false;
+  favorites.forEach(idStr => {
+    const id = String(idStr);
+    const item = mapping.find(m => String(m.id) === id);
+    if (!item) return;
+    if (!membersOn && item.members) return;
+    const node = latest?.data?.[id];
+    if (!node) return;
+    const p24 = past24h?.data?.[id];
+    const state = dayState(node, p24, id);
+    const prev = notifAlertState[id] || { state: '', lastFired: 0 };
+    if (!state) {
+      if (prev.state) { notifAlertState[id] = { state: '', lastFired: prev.lastFired }; dirty = true; }
+      return;
+    }
+    const transitioned = state !== prev.state;
+    const cooledDown = (now - (prev.lastFired || 0)) > NOTIF_COOLDOWN_MS;
+    if (!(transitioned && cooledDown)) return;
+    const price = state === 'high' ? (node.high ?? node.avgHighPrice ?? 0) : (node.low ?? node.avgLowPrice ?? 0);
+    const emoji = state === 'high' ? '📈' : '📉';
+    const label = state === 'high' ? 'DAY HIGH' : 'DAY LOW';
+    try {
+      const n = new Notification(`${emoji} ${item.name} at ${label}`, {
+        body: `Live: ${fmtGp(price)} gp — tap to flip`,
+        icon: itemIconUrl(item.id),
+        tag: `pocketge-${id}-${state}`,
+        renotify: false
+      });
+      n.onclick = () => { try { window.focus(); n.close(); setItem._userPicked = false; setItem(item); } catch (e) {} };
+    } catch (e) {}
+    notifAlertState[id] = { state, lastFired: now };
+    dirty = true;
+  });
+  if (dirty) {
+    try { localStorage.setItem('ge_notifAlertState', JSON.stringify(notifAlertState)); } catch (e) {}
+  }
+}
+
+/* "Merch Clan Hoarding" detector. Analyses up to ~30 days of daily candles per
+   item and flags two manipulation patterns:
+     A. Accumulation — last-2-day avg volume > 2.5× the 14-day average while
+        the price moved < 5%. Implies a buyer (clan) absorbing supply quietly.
+     B. Supply Choke / Pump — current price > 2 standard deviations off the
+        14-day mean while the last 3 days' volume collapsed to < 40% of the
+        14-day average. Implies the float dried up after a push. */
+function detectManipulation(ts) {
+  if (!ts || !ts.labels || ts.labels.length < 14) return null;
+  const n = ts.labels.length;
+  const vols = [], prices = [];
+  for (let i = 0; i < n; i++) {
+    vols.push((ts.lowVol[i] || 0) + (ts.highVol[i] || 0));
+    let p = null;
+    if (ts.low[i] != null && ts.high[i] != null) p = (ts.low[i] + ts.high[i]) / 2;
+    else p = ts.high[i] ?? ts.low[i] ?? null;
+    prices.push(p);
+  }
+  const window = Math.min(14, n);
+  const w14Vol = vols.slice(-window);
+  const w14Price = prices.slice(-window).filter(p => p != null && p > 0);
+  if (w14Price.length < 7) return null;
+  const avg14Vol = w14Vol.reduce((a, b) => a + b, 0) / w14Vol.length;
+  if (avg14Vol <= 0) return null;
+  const pNow = prices[n - 1];
+  if (pNow == null || pNow <= 0) return null;
+
+  /* Pattern A: stealth accumulation */
+  const last2Vol = (vols[n - 1] + (vols[n - 2] ?? vols[n - 1])) / 2;
+  const p2dAgo = prices[Math.max(0, n - 3)] ?? pNow;
+  const pctChange2d = p2dAgo > 0 ? Math.abs((pNow - p2dAgo) / p2dAgo) : 0;
+  const patternA = last2Vol > avg14Vol * 2.5 && pctChange2d < 0.05;
+
+  /* Pattern B: supply choke / pump */
+  const meanP = w14Price.reduce((a, b) => a + b, 0) / w14Price.length;
+  const variance = w14Price.reduce((a, b) => a + (b - meanP) ** 2, 0) / w14Price.length;
+  const stdevP = Math.sqrt(variance);
+  const last3Vol = ((vols[n - 1] || 0) + (vols[n - 2] || 0) + (vols[n - 3] || 0)) / 3;
+  const priceSpike = stdevP > 0 && Math.abs(pNow - meanP) > 2 * stdevP;
+  const volCollapse = last3Vol < avg14Vol * 0.4;
+  const patternB = priceSpike && volCollapse;
+
+  if (!patternA && !patternB) return null;
+  return { patternA, patternB, price: pNow, volRatio: last2Vol / avg14Vol };
+}
+
+async function runManipScan() {
+  if (scanStatus.manip === 'loading' || scanStatus.manip === 'done') return;
+  scanStatus.manip = 'loading'; renderWatchlist();
+  const cands = getScanCandidates().filter(m => !(String(m.id) in manipCache));
+  await throttleMap(cands, async (m) => {
+    try {
+      const ts = seriesFromTS(await loadTS('24h', m.id));
+      manipCache[m.id] = detectManipulation(ts);
+    } catch (e) { manipCache[m.id] = null; }
+  }, SCAN_CONCURRENCY);
+  scanStatus.manip = 'done'; renderWatchlist();
 }
 
 function trendSub(node, p24) {
@@ -745,6 +891,21 @@ function renderWatchlist() {
   const lowEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend" style="color:#4FC3F7;">${tag} ${r.pct <= 0.5 ? 'AT low' : '+' + r.pct.toFixed(1) + '%'}</span>` }));
   const overEntries = overMaxItems.map(item => ({ item, price: overMaxData[String(item.id)].wts, sub: `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>` }));
 
+  const manipRows = [];
+  Object.keys(manipCache).forEach(id => {
+    const flag = manipCache[id];
+    if (!flag) return;
+    const item = mapping.find(x => String(x.id) === id);
+    if (!item || (!membersOn && item.members)) return;
+    manipRows.push({ item, flag });
+  });
+  manipRows.sort((a, b) => priceOf(b.item) - priceOf(a.item));
+  const manipEntries = manipRows.slice(0, 30).map(r => {
+    const cls = r.flag.patternA ? 'accum' : 'pump';
+    const label = r.flag.patternA ? 'HOARDING' : 'PUMP/CHOKE';
+    return { item: r.item, price: priceOf(r.item), sub: `<span class="wl-manip-badge ${cls}">${label}</span>` };
+  });
+
   const groups = [
     { name: "⭐ Favorites", className: "fav-title", entries: plainEntries(favs), alwaysShow: true },
     { name: "💰 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
@@ -755,7 +916,8 @@ function renderWatchlist() {
     { name: "🚀 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
     { name: "🔵 At 1-Year Lows", className: "ylow-title", entries: lowEntries(at1yLows, "1Y"), scan: "history" },
     { name: "🧊 At 5-Year Lows", className: "fivey-title", entries: lowEntries(at5yLows, "5Y"), scan: "history" },
-    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries }
+    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries },
+    { name: "🚨 Market Manipulation Alerts", className: "manip-title", entries: manipEntries, scan: "manip" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -775,7 +937,9 @@ function renderWatchlist() {
       titleDiv.querySelector("span:last-child").textContent = nowCollapsed ? "▶" : "▼";
       groupOpenStates[group.name] = !nowCollapsed;
       if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
-        if (group.scan === 'history') runHistoryScan(); else runMarginScan();
+        if (group.scan === 'history') runHistoryScan();
+        else if (group.scan === 'margin') runMarginScan();
+        else if (group.scan === 'manip') runManipScan();
       }
     };
 
@@ -817,7 +981,12 @@ function renderWatchlist() {
   container.appendChild(fragment);
 
   container.querySelectorAll('.scan-row[data-scan]').forEach(el => {
-    el.onclick = () => { el.getAttribute('data-scan') === 'history' ? runHistoryScan() : runMarginScan(); };
+    el.onclick = () => {
+      const t = el.getAttribute('data-scan');
+      if (t === 'history') runHistoryScan();
+      else if (t === 'margin') runMarginScan();
+      else if (t === 'manip') runManipScan();
+    };
   });
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = () => {
@@ -1059,14 +1228,16 @@ function drawChart(series) {
     }
   }
 
-  const midPoints = [];
-  for (let i = 0; i < L.length; i++) if (LO[i] != null && HI[i] != null) midPoints.push({ i, v: (LO[i] + HI[i]) / 2 });
-  if (midPoints.length > 1) {
-    const { slope, intercept } = linearRegression(midPoints.map(m => m.i), midPoints.map(m => m.v));
-    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
-    ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
-    ctx.stroke(); ctx.restore();
+  if (!flipMode) {
+    const midPoints = [];
+    for (let i = 0; i < L.length; i++) if (LO[i] != null && HI[i] != null) midPoints.push({ i, v: (LO[i] + HI[i]) / 2 });
+    if (midPoints.length > 1) {
+      const { slope, intercept } = linearRegression(midPoints.map(m => m.i), midPoints.map(m => m.v));
+      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x0, ypx(intercept, vmin, vmax, y0, h_price));
+      ctx.lineTo(x0 + dataW, ypx(slope * (L.length - 1) + intercept, vmin, vmax, y0, h_price));
+      ctx.stroke(); ctx.restore();
+    }
   }
 
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
@@ -1076,9 +1247,8 @@ function drawChart(series) {
      series read as a continuous line instead of disconnected floating bars), then
      draw a dot at every point and emphasize the period extreme. */
   function drawSeries(arr, color, isHigh) {
-    const dotR = Math.max(1.6, Math.min(3.2, stepX * 0.45));
     ctx.save();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.strokeStyle = color; ctx.lineWidth = flipMode ? 2 : 1.5; ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.beginPath();
     let started = false;
     for (let i = 0; i < arr.length; i++) {
@@ -1088,6 +1258,8 @@ function drawChart(series) {
     }
     ctx.stroke();
     ctx.restore();
+    if (flipMode) return; // Flip Mode: line only, no dots / no extreme markers
+    const dotR = Math.max(1.6, Math.min(3.2, stepX * 0.45));
     ctx.fillStyle = color;
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
@@ -1112,20 +1284,22 @@ function drawChart(series) {
     ctx.save(); ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
     ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke(); ctx.restore();
   }
-  ring(recHiIdx, HI, sellColor);
-  ring(recLoIdx, LO, buyColor);
+  if (!flipMode) {
+    ring(recHiIdx, HI, sellColor);
+    ring(recLoIdx, LO, buyColor);
 
-  const maxVol = Math.max(...VO.filter(v => v > 0), 1);
-  const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
-  const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
-  const barWidth = Math.max(1, stepX * 0.8);
-  for (let i = 0; i < VO.length; i++) {
-    if (LOWVOL[i] == null && HIGHVOL[i] == null) continue;
-    const totalH = ((LOWVOL[i] + HIGHVOL[i]) / maxVol) * h_vol;
-    const lowH = (LOWVOL[i] / maxVol) * h_vol;
-    const x = x0 + i * stepX - (barWidth / 2);
-    ctx.fillStyle = volBuyColor; ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
-    ctx.fillStyle = volSellColor; ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
+    const maxVol = Math.max(...VO.filter(v => v > 0), 1);
+    const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
+    const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
+    const barWidth = Math.max(1, stepX * 0.8);
+    for (let i = 0; i < VO.length; i++) {
+      if (LOWVOL[i] == null && HIGHVOL[i] == null) continue;
+      const totalH = ((LOWVOL[i] + HIGHVOL[i]) / maxVol) * h_vol;
+      const lowH = (LOWVOL[i] / maxVol) * h_vol;
+      const x = x0 + i * stepX - (barWidth / 2);
+      ctx.fillStyle = volBuyColor; ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
+      ctx.fillStyle = volSellColor; ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
+    }
   }
 
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
@@ -1425,7 +1599,7 @@ setItem._userPicked = false;
     $("#btnF2P").onclick = () => {
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
       renderWatchlist();
       if (selected?.members) {
         const landing = mapping.find(x => String(x.id) === LANDING_ID);
@@ -1435,8 +1609,62 @@ setItem._userPicked = false;
     $("#btnMembers").onclick = () => {
       membersOn = true; localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; scanStatus = { history: 'idle', margin: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
       renderWatchlist();
+    };
+
+    /* Remote Flip Mode — large prices, hidden chrome. Persisted across sessions
+       and triggers a chart redraw so the simplified-chart branches kick in. */
+    function applyFlipMode() {
+      document.body.classList.toggle('flip-mode', flipMode);
+      $("#btnFlip").classList.toggle('active', flipMode);
+      $("#btnFlip").setAttribute('aria-pressed', flipMode ? 'true' : 'false');
+      resizeCanvas();
+    }
+    applyFlipMode();
+    $("#btnFlip").onclick = () => {
+      flipMode = !flipMode;
+      localStorage.setItem('ge_flip', flipMode ? '1' : '0');
+      applyFlipMode();
+    };
+
+    /* Browser notification toggle. Requests permission on enable; if the user
+       denies (or the API isn't available), we fall back silently and update the
+       button so it doesn't lie about the state. */
+    function applyNotifBtn() {
+      const btn = $("#btnNotif");
+      const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+      const on = notifEnabled && granted;
+      btn.classList.toggle('active', on);
+      btn.textContent = on ? '🔔' : '🔕';
+      btn.title = on ? 'Browser notifications ON — disable' : 'Enable Browser Push Notifications';
+    }
+    applyNotifBtn();
+    $("#btnNotif").onclick = async () => {
+      if (typeof Notification === 'undefined') {
+        alert('This browser does not support notifications.');
+        return;
+      }
+      if (notifEnabled) {
+        notifEnabled = false;
+        localStorage.setItem('ge_notif', '0');
+        applyNotifBtn();
+        return;
+      }
+      let perm = Notification.permission;
+      if (perm === 'default') {
+        try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; }
+      }
+      if (perm === 'granted') {
+        notifEnabled = true;
+        localStorage.setItem('ge_notif', '1');
+      } else {
+        notifEnabled = false;
+        localStorage.setItem('ge_notif', '0');
+        alert('Notifications were blocked. Enable them for pocketge.com in your browser settings.');
+      }
+      applyNotifBtn();
+      if (notifEnabled) fireFavoriteAlerts();
     };
 
     setInterval(async () => {
@@ -1474,6 +1702,15 @@ setItem._userPicked = false;
     console.error(e);
   }
 })();
+
+/* PWA: register the service worker so the app is installable to the home
+   screen (hides the iOS/Android URL bar). Failures are silent — the app still
+   works fine without it. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
