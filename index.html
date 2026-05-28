@@ -53,6 +53,14 @@
   --negative: #EF5350;
   --fav-gold: #FFB300;
   --shadow: rgba(0, 0, 0, 0.5);
+  /* RuneScape accent palette — used for favorite highlights and headline
+     callouts. Picked to read as "in-game GE" without overwhelming the dark
+     trading-style chrome. */
+  --rs-green: #4FFF8E;
+  --rs-green-deep: #1FB85C;
+  --rs-gold: #FFD24D;
+  --rs-gold-deep: #C8841C;
+  --rs-parchment: #F2D49B;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; width: 100%; position: fixed; overflow: hidden; }
@@ -179,11 +187,14 @@ button, input { touch-action: manipulation; }
 .legend .high .legend-dash, .legend .high .legend-dot { background: var(--sell-color); }
 .legend .rlow .legend-ring { border-color: var(--buy-color); }
 .legend .rhigh .legend-ring { border-color: var(--sell-color); }
-.grade-box { background: rgba(30, 34, 45, 0.92); border: 1px solid var(--border-light); border-radius: 4px; padding: 6px 12px; min-width: 96px; cursor: default; backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; pointer-events: auto; }
-.grade-box-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
-.grade-context { font-weight: normal; opacity: 0.7; font-size: 9px; text-transform: none; }
-.grade-box-num { font-size: 24px; font-weight: 900; line-height: 1; margin-top: 3px; letter-spacing: -0.5px; }
-.grade-box-verdict { font-size: 9px; font-weight: 700; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+/* Grade lives INSIDE the active price box now (not as a third overlay tile)
+   so it doesn't cover chart data. Both boxes carry a grade element; CSS only
+   shows the one whose parent is .selected. */
+.price-grade { display: none; }
+.price-box.selected .price-grade { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.18); font-size: 10px; }
+.pg-num { font-size: 17px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; }
+.pg-verdict { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1; }
+.pg-ctx { font-size: 8px; color: var(--text-muted); margin-left: auto; line-height: 1; letter-spacing: 0.4px; }
 .chart-tip { position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); padding: 8px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .watchlist-container { width: 300px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
@@ -254,10 +265,40 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
 .wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
-.wl-item.at-high { background: rgba(38, 166, 154, 0.1); border-right: 3px solid var(--sell-color); }
-.wl-item.at-low { background: rgba(230, 195, 92, 0.1); border-right: 3px solid var(--buy-color); }
-.wl-item.active.at-high { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--sell-color); }
-.wl-item.active.at-low { background: rgba(41, 98, 255, 0.15); border-right: 3px solid var(--buy-color); }
+/* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
+   reads at a glance: bright RS-green or RS-gold fill, double borders, the
+   item name flipped to a bright callout color, plus a slow inset pulse so it
+   draws the eye without being annoying. */
+.wl-item.at-high {
+  background: linear-gradient(90deg, rgba(31,184,92,0.08) 0%, rgba(79,255,142,0.28) 100%);
+  border-right: 4px solid var(--rs-green);
+  border-left: 3px solid var(--rs-green);
+  animation: rs-pulse-green 2.6s ease-in-out infinite;
+}
+.wl-item.at-high .wl-item-name { color: var(--rs-green); font-weight: 800; }
+.wl-item.at-low {
+  background: linear-gradient(90deg, rgba(200,132,28,0.08) 0%, rgba(255,210,77,0.30) 100%);
+  border-right: 4px solid var(--rs-gold);
+  border-left: 3px solid var(--rs-gold);
+  animation: rs-pulse-gold 2.6s ease-in-out infinite;
+}
+.wl-item.at-low .wl-item-name { color: var(--rs-gold); font-weight: 800; }
+.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.18) 0%, rgba(79,255,142,0.28) 100%); }
+.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.18) 0%, rgba(255,210,77,0.30) 100%); }
+.hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
+.hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
+.hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
+@keyframes rs-pulse-green {
+  0%, 100% { box-shadow: inset 0 0 8px rgba(79,255,142,0.18); }
+  50%      { box-shadow: inset 0 0 20px rgba(79,255,142,0.42); }
+}
+@keyframes rs-pulse-gold {
+  0%, 100% { box-shadow: inset 0 0 8px rgba(255,210,77,0.20); }
+  50%      { box-shadow: inset 0 0 20px rgba(255,210,77,0.48); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wl-item.at-high, .wl-item.at-low { animation: none; }
+}
 .wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
@@ -385,15 +426,12 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
           <div id="buyPrice" class="price-box low">
             <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
             <div class="price-val"><span>—</span></div>
+            <div class="price-grade" id="buyGrade"></div>
           </div>
           <div id="sellPrice" class="price-box high selected">
             <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
             <div class="price-val"><span>—</span></div>
-          </div>
-          <div id="gradeBox" class="grade-box" style="display:none">
-            <div class="grade-box-label">Grade <span id="gradeContext" class="grade-context">—</span></div>
-            <div class="grade-box-num" id="gradeNum">—</div>
-            <div class="grade-box-verdict" id="gradeVerdict">—</div>
+            <div class="price-grade" id="sellGrade"></div>
           </div>
         </div>
 
@@ -1088,6 +1126,8 @@ function renderWatchlist() {
           else if (st === "low") hlClass = "at-low";
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
+        const hlBadge = hlClass === 'at-high' ? `<span class="hl-badge high">▲ HIGH</span>`
+                     : hlClass === 'at-low'  ? `<span class="hl-badge low">▼ LOW</span>` : '';
         inner += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
@@ -1095,6 +1135,7 @@ function renderWatchlist() {
               <span class="wl-item-name">${item.name}</span>
             </div>
             <div class="wl-item-right">
+              ${hlBadge}
               <span class="wl-item-price">${abbreviateNumber(e.price)}</span>
               ${e.sub}
             </div>
@@ -1350,26 +1391,28 @@ function computeGrade(item, side) {
 
   const grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore)));
   let verdict, color;
-  if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#26E0A6'; }
-  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#7CD992'; }
-  else if (grade >= 50) { verdict = 'Fair'; color = '#E6C35C'; }
+  /* Verdict colors lean on the RuneScape palette: bright RS-green for the
+     elite tier, RS-gold for the middle, scaling down to red. */
+  if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#4FFF8E'; }
+  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#1FB85C'; }
+  else if (grade >= 50) { verdict = 'Fair'; color = '#FFD24D'; }
   else if (grade >= 30) { verdict = 'Wait'; color = '#FF9F43'; }
   else { verdict = 'Avoid'; color = '#EF5350'; }
   return { grade, verdict, color };
 }
 
 function updateGradeBadge() {
-  const box = $('#gradeBox');
-  if (!selected || !currentSeries || overMaxData[String(selected.id)]) { box.style.display = 'none'; return; }
-  const g = computeGrade(selected, activePriceBox);
-  if (!g) { box.style.display = 'none'; return; }
-  box.style.display = 'flex';
-  $('#gradeContext').textContent = `${view.toUpperCase()} · ${activePriceBox === 'buy' ? 'BUY' : 'SELL'}`;
-  $('#gradeNum').textContent = g.grade;
-  $('#gradeNum').style.color = g.color;
-  $('#gradeVerdict').textContent = g.verdict;
-  $('#gradeVerdict').style.color = g.color;
-  box.style.borderColor = g.color;
+  const buyDiv = $('#buyGrade'), sellDiv = $('#sellGrade');
+  const clear = () => { if (buyDiv) buyDiv.innerHTML = ''; if (sellDiv) sellDiv.innerHTML = ''; };
+  if (!selected || !currentSeries || overMaxData[String(selected.id)]) { clear(); return; }
+  function fill(div, side) {
+    if (!div) return;
+    const g = computeGrade(selected, side);
+    if (!g) { div.innerHTML = ''; return; }
+    div.innerHTML = `<span class="pg-num" style="color:${g.color}">${g.grade}</span><span class="pg-verdict" style="color:${g.color}">${g.verdict}</span><span class="pg-ctx">${view.toUpperCase()}</span>`;
+  }
+  fill(buyDiv, 'buy');
+  fill(sellDiv, 'sell');
 }
 
 /* ── Trade Ledger ─────────────────────────────────────────────────────────
@@ -1896,8 +1939,8 @@ function refreshChart() {
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
-  $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
   restoreCalculator(selected.limit ? selected.limit : 1, recommendedBuy, recommendedSell);
   updateGradeBadge();
   resizeCanvas();
@@ -1947,8 +1990,8 @@ async function setItem(m) {
 
   const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
-  $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
 
   restoreCalculator(m.limit ? m.limit : 1, recommendedBuy, recommendedSell);
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
@@ -2134,8 +2177,8 @@ setItem._userPicked = false;
           $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
           const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
           recommendedBuy = targets.buy; recommendedSell = targets.sell;
-          $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>`;
-          $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>`;
+          $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
+          $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
           updateGradeBadge();
           queueDraw();
         }
