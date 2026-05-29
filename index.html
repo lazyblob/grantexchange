@@ -146,8 +146,8 @@ button, input { touch-action: manipulation; }
 .suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
-.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; }
-.mode-pill button { background: transparent; border: none; color: var(--text-muted); padding: 0 10px; cursor: pointer; font-weight: 600; font-size: 11px; border-radius: 3px; height: 100%; }
+.mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; flex-shrink: 0; }
+.mode-pill button { background: transparent; border: none; color: var(--text-muted); padding: 0 7px; cursor: pointer; font-weight: 700; font-size: 11px; border-radius: 3px; height: 100%; letter-spacing: 0.3px; }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
 .status-text { font-size: 11px; color: var(--text-muted); }
 .ticker-header { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -170,7 +170,12 @@ button, input { touch-action: manipulation; }
 .pct-chg.neutral { color: var(--text-muted); }
 .chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-main); border-radius: 6px; position: relative; overflow: hidden; }
 .chart { flex: 1; width: 100%; display: block; touch-action: none; }
-.plaque-bar { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 8px; flex-wrap: wrap; z-index: 10; pointer-events: none; }
+/* The price strip lives above the chart now (not as an overlay) so the
+   target / grade boxes can never cover chart data. The flex-row puts buy +
+   sell side by side; on narrow widths they wrap and the chart simply moves
+   down a little. */
+.price-strip { display: flex; gap: 8px; padding: 0; flex-shrink: 0; flex-wrap: wrap; }
+.price-strip .price-box { flex: 1 1 0; min-width: 0; }
 .price-box { background: rgba(30, 34, 45, 0.85); border: 1px solid var(--border-light); border-radius: 4px; padding: 6px 10px; min-width: 140px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px); transition: border-color 0.15s; }
 .price-box.selected { border-color: #fff; background: rgba(42, 46, 57, 0.95); }
 .price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -178,7 +183,7 @@ button, input { touch-action: manipulation; }
 .price-box.low .price-val { color: var(--buy-color); }
 .price-box.high .price-val { color: var(--sell-color); }
 .price-val { font-size: 16px; font-weight: bold; margin-top: 2px; }
-.chart-footer { background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 4px 10px; display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+.chart-footer { background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 3px 10px; display: flex; gap: 10px; font-size: 9px; color: var(--text-muted); align-items: center; flex-shrink: 0; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dash { width: 10px; height: 2px; display: inline-block; }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -245,7 +250,7 @@ body.flip-mode .top-panel,
 body.flip-mode .ticker-header,
 body.flip-mode .chart-container,
 body.flip-mode .watchlist-container { background: #0A0D14; border-color: #1A1F2B; }
-body.flip-mode .plaque-bar { gap: 14px; top: 18px; left: 18px; right: 18px; flex-wrap: wrap; }
+body.flip-mode .price-strip { gap: 14px; padding: 4px 0; }
 body.flip-mode .price-box { padding: 14px 22px; min-width: 220px; border-width: 2px; }
 body.flip-mode .price-label { font-size: 12px; letter-spacing: 1px; }
 body.flip-mode .price-val { font-size: 38px; font-weight: 900; margin-top: 4px; letter-spacing: -1px; }
@@ -329,8 +334,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .status-text { display: none; }
-  .plaque-bar { top: 8px; left: 8px; }
-  .price-box { padding: 4px 8px; min-width: 120px; }
+  .price-strip { gap: 6px; }
+  .price-box { padding: 4px 8px; min-width: 0; }
   .price-val { font-size: 13px; }
   .calc-container input { font-size: 16px; }
 }
@@ -353,8 +358,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 4px 6px; gap: 4px;}
   .calc-container input { padding: 4px 6px; font-size: 16px;}
-  .plaque-bar { top: 4px; left: 4px; gap: 4px; }
-  .price-box { padding: 4px 6px; min-width: 100px; }
+  .price-strip { gap: 4px; }
+  .price-box { padding: 4px 6px; min-width: 0; }
   .price-label { font-size: 9px; }
   .price-val { font-size: 12px; margin-top: 0px; }
   .status-text { display: none; }
@@ -375,7 +380,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
-              <button data-mode="members" id="btnMembers">Members</button>
+              <button data-mode="members" id="btnMembers" title="Members (Pay-to-Play)">P2P</button>
             </div>
 
             <div class="search-group">
@@ -421,20 +426,20 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
         </div>
       </div>
 
-      <div class="chart-container">
-        <div class="plaque-bar">
-          <div id="buyPrice" class="price-box low">
-            <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
-            <div class="price-val"><span>—</span></div>
-            <div class="price-grade" id="buyGrade"></div>
-          </div>
-          <div id="sellPrice" class="price-box high selected">
-            <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
-            <div class="price-val"><span>—</span></div>
-            <div class="price-grade" id="sellGrade"></div>
-          </div>
+      <div class="price-strip">
+        <div id="buyPrice" class="price-box low">
+          <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Live: —</span></div>
+          <div class="price-val"><span>—</span></div>
+          <div class="price-grade" id="buyGrade"></div>
         </div>
+        <div id="sellPrice" class="price-box high selected">
+          <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Live: —</span></div>
+          <div class="price-val"><span>—</span></div>
+          <div class="price-grade" id="sellGrade"></div>
+        </div>
+      </div>
 
+      <div class="chart-container">
         <canvas id="chart" class="chart"></canvas>
         <div id="tip" class="chart-tip"></div>
 
@@ -1651,30 +1656,32 @@ function drawChart(series) {
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
-  /* "Hard lines" on big trade moments — draw a vertical bar spanning buy-low to
-     sell-high on candles whose total volume is ≥2.5× the median of the visible
-     window. Quiet candles stay as the bare dot scatter; spikes get emphasised. */
+  /* Spread band — a soft translucent fill between the buy-low envelope and
+     the sell-high envelope, giving the chart a modern "channel" feel without
+     adding noise. Each consecutive pair of points contributes a slim
+     quadrilateral; gaps in the data cleanly skip. Drawn first so dots and
+     markers paint on top. */
   if (!flipMode) {
-    const positiveVols = VO.filter(v => v > 0);
-    if (positiveVols.length >= 4) {
-      const sortedVO = [...positiveVols].sort((a, b) => a - b);
-      const medianVol = sortedVO[Math.floor(sortedVO.length / 2)];
-      const spikeT = medianVol * 2.5;
-      ctx.save();
-      ctx.strokeStyle = "rgba(255,255,255,0.55)";
-      ctx.lineWidth = Math.max(1, Math.min(2.2, stepX * 0.5));
-      ctx.lineCap = "round";
-      for (let i = 0; i < L.length; i++) {
-        if (LO[i] == null || HI[i] == null) continue;
-        if (HI[i] === LO[i]) continue;
-        if (VO[i] <= spikeT) continue;
-        const x = x0 + i * stepX;
-        const yHi = ypx(HI[i], vmin, vmax, y0, h_price);
-        const yLo = ypx(LO[i], vmin, vmax, y0, h_price);
-        ctx.beginPath(); ctx.moveTo(x, yLo); ctx.lineTo(x, yHi); ctx.stroke();
+    ctx.save();
+    ctx.fillStyle = "rgba(38, 166, 154, 0.07)";
+    let segStart = -1;
+    for (let i = 0; i <= L.length; i++) {
+      const valid = i < L.length && LO[i] != null && HI[i] != null;
+      if (valid && segStart < 0) segStart = i;
+      if ((!valid || i === L.length) && segStart >= 0 && i - segStart >= 2) {
+        ctx.beginPath();
+        const xs = (k) => x0 + k * stepX;
+        ctx.moveTo(xs(segStart), ypx(HI[segStart], vmin, vmax, y0, h_price));
+        for (let k = segStart + 1; k < i; k++) ctx.lineTo(xs(k), ypx(HI[k], vmin, vmax, y0, h_price));
+        for (let k = i - 1; k >= segStart; k--) ctx.lineTo(xs(k), ypx(LO[k], vmin, vmax, y0, h_price));
+        ctx.closePath();
+        ctx.fill();
+        segStart = -1;
+      } else if (!valid) {
+        segStart = -1;
       }
-      ctx.restore();
     }
+    ctx.restore();
   }
 
   /* Dots-only scatter (no connecting line — that was scribbling on dense 1D
@@ -1725,17 +1732,17 @@ function drawChart(series) {
     ring(recHiIdx, HI, sellColor);
     ring(recLoIdx, LO, buyColor);
 
+    /* Unified volume bars — one muted color, no two-tone stack. The earlier
+       gold/teal split echoed colors that already carry meaning above, which
+       made the bottom strip read as cluttered. Modern: quiet, glanceable. */
     const maxVol = Math.max(...VO.filter(v => v > 0), 1);
-    const volBuyColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-buy').trim();
-    const volSellColor = getComputedStyle(document.documentElement).getPropertyValue('--vol-sell').trim();
-    const barWidth = Math.max(1, stepX * 0.8);
+    const barWidth = Math.max(1, stepX * 0.85);
+    ctx.fillStyle = "rgba(135, 145, 165, 0.32)";
     for (let i = 0; i < VO.length; i++) {
       if (LOWVOL[i] == null && HIGHVOL[i] == null) continue;
       const totalH = ((LOWVOL[i] + HIGHVOL[i]) / maxVol) * h_vol;
-      const lowH = (LOWVOL[i] / maxVol) * h_vol;
       const x = x0 + i * stepX - (barWidth / 2);
-      ctx.fillStyle = volBuyColor; ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
-      ctx.fillStyle = volSellColor; ctx.fillRect(x, y0_vol + h_vol - totalH + lowH, barWidth, totalH - lowH);
+      ctx.fillRect(x, y0_vol + h_vol - totalH, barWidth, totalH);
     }
   }
 
