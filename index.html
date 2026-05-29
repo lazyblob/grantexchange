@@ -117,6 +117,18 @@ button, input { touch-action: manipulation; }
 .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
 .modal-close:hover { color: #fff; }
 .modal-body { padding: 14px 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.glossary-section { margin-top: 14px; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid var(--border-main); }
+.glossary-section:first-of-type { margin-top: 0; }
+.glossary-row { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 8px 4px; font-size: 12px; color: var(--text-main); align-items: center; line-height: 1.4; }
+.glossary-row > :first-child { justify-self: start; }
+.calc-log-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.calc-log-btn { background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.calc-log-btn.buy:hover { border-color: var(--buy-color); color: var(--buy-color); }
+.calc-log-btn.sell:hover { border-color: var(--sell-color); color: var(--sell-color); }
+.calc-log-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.calc-ledger-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; font-size: 12px; line-height: 1; transition: all 0.15s ease; }
+.calc-ledger-btn:hover { color: var(--text-main); border-color: var(--border-active); }
+.calc-log-confirm { font-size: 10px; color: var(--positive); margin-top: 4px; min-height: 12px; text-align: center; }
 .ledger-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
 .ledger-stat { background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 4px; padding: 8px 10px; text-align: center; }
 .ledger-stat-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -260,13 +272,16 @@ button, input { touch-action: manipulation; }
 /* Remote Flip Mode: ultra-clean, glanceable, stealthy at-work view. Decorative
    chrome is hidden, prices are oversized, and the chart drops everything except
    the price line + target. */
-body.flip-mode .toolbar,
 body.flip-mode .mode-pill,
 body.flip-mode .brand-logo,
 body.flip-mode .chart-footer,
 body.flip-mode .calc-container,
 body.flip-mode #status,
 body.flip-mode .ticker-title-group { display: none !important; }
+/* Keep the time toolbar visible in Glance Mode, but compact, so you can still
+   switch between 1D / 5D / 1M / etc. while in the clean-prices view. */
+body.flip-mode .toolbar { padding: 2px; gap: 3px; }
+body.flip-mode .toolbar button { padding: 4px 8px; font-size: 12px; min-width: 36px; }
 body.flip-mode { background: #05070C; }
 body.flip-mode .top-panel,
 body.flip-mode .ticker-header,
@@ -291,10 +306,11 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3); transition: background 0.2s, border 0.2s; }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
-/* Selected row uses a thin top + bottom hairline border (TradingView style)
-   instead of a heavy blue fill — keeps the row's content reading clean and
-   doesn't fight with the at-high / at-low highlight underneath. */
-.wl-item.active { background: rgba(41, 98, 255, 0.06); box-shadow: inset 0 1px 0 var(--border-active), inset 0 -1px 0 var(--border-active); }
+/* Selected row uses TradingView-style outline accents that read on top of
+   plain rows AND at-high / at-low gradient rows. A bold 3px left accent
+   stripe is the can't-miss "this is selected" cue, with thin top + bottom
+   borders to close the outline. */
+.wl-item.active { background: rgba(41, 98, 255, 0.08); box-shadow: inset 3px 0 0 var(--border-active), inset 0 1.5px 0 var(--border-active), inset 0 -1.5px 0 var(--border-active); }
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -422,9 +438,9 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
               </button>
-              <button id="btnFlip" class="icon-btn" title="Remote Flip Mode — big prices, minimal chrome">👁</button>
+              <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome">🔍</button>
               <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
-              <button id="btnLedger" class="icon-btn" title="Trade Ledger — log your flips, see realized P&amp;L">📒</button>
+              <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary.">❓</button>
             </div>
           </div>
 
@@ -488,6 +504,42 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="watchlist-content" id="watchlistContent"></div>
     </div>
 
+  </div>
+</div>
+
+<div id="helpModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>❓ Badge &amp; Signal Glossary</h3>
+      <button class="modal-close" id="closeHelp" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="glossary-section">Row highlights</div>
+      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>Item is currently trading at or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
+      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>Currently at or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
+
+      <div class="glossary-section">Manipulation alerts</div>
+      <div class="glossary-row"><span class="wl-manip-badge accum">HOARDING</span><span>Last 2 days' volume is &gt;2× the 14-day average while price moved &lt;7%. Hints a buyer cluster (often a clan) absorbing supply quietly.</span></div>
+      <div class="glossary-row"><span class="wl-manip-badge pump">PUMP/CHOKE</span><span>Price &gt;1.5σ off the 14-day mean while last 3 days' volume collapsed to &lt;55% of average. Hints the float dried up after a push.</span></div>
+
+      <div class="glossary-section">Margin tags</div>
+      <div class="glossary-row"><span class="wl-trend up">+1.2M ea</span><span>Estimated per-item margin from the live insta-buy / insta-sell spread, after the 2% GE tax.</span></div>
+      <div class="glossary-row"><span class="wl-trend up">+450K ea avg</span><span>30-day average per-item margin (for 1M lists). More stable than a one-day snapshot.</span></div>
+      <div class="glossary-row"><span class="wl-trend" style="color:#4FC3F7;">1Y AT low</span><span>Within 5% of the lowest price in the last 365 days. Long-term buy opportunity.</span></div>
+
+      <div class="glossary-section">Trend arrows</div>
+      <div class="glossary-row"><span class="wl-trend up">▲</span><span>Item's current mid-price is above its 24-hour average — short-term uptrend.</span></div>
+      <div class="glossary-row"><span class="wl-trend down">▼</span><span>Below the 24-hour average — short-term downtrend.</span></div>
+
+      <div class="glossary-section">Grade box</div>
+      <div class="glossary-row"><span class="pg-num" style="color:#4FFF8E;font-size:14px;">85+</span><span>Steal Buy / Top Sell — elite entry or exit for the active side and timeframe.</span></div>
+      <div class="glossary-row"><span class="pg-num" style="color:#FFD24D;font-size:14px;">50–69</span><span>Fair — middling opportunity; nothing wrong but nothing extraordinary.</span></div>
+      <div class="glossary-row"><span class="pg-num" style="color:#EF5350;font-size:14px;">&lt;30</span><span>Avoid — the price sits at the wrong end of the range for your active side.</span></div>
+
+      <div class="glossary-section">Target prices</div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>+1 above the 25th-percentile of recent insta-sell prints — sits at the realised lower edge of the order flow.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 75th-percentile of recent insta-buy prints — sits at the realised upper edge of the order flow.</span></div>
+    </div>
   </div>
 </div>
 
@@ -680,6 +732,11 @@ function updateCalculator() {
   const qty = parseOSRSNumber(qtyInput.value);
   const buy = parseOSRSNumber($('#calcBuy').value);
   const sell = parseOSRSNumber($('#calcSell').value);
+  /* Surface the current buy / sell back into the "Log Buy @ X" / "Log Sell @ X"
+     button labels so quick-logging shows the exact price about to be saved. */
+  const bpx = $('#calcLogBuyPx'), spx = $('#calcLogSellPx');
+  if (bpx) bpx.textContent = buy > 0 ? buy.toLocaleString() : '—';
+  if (spx) spx.textContent = sell > 0 ? sell.toLocaleString() : '—';
   if (qty <= 0 || buy <= 0 || sell <= 0) {
     headline.textContent = "—"; headline.style.color = "var(--text-muted)";
     const bd = $('#calcBreakdown');
@@ -706,13 +763,14 @@ function updateCalculator() {
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
   $("#sideModule").innerHTML = `
-    <div class="calc-headline" id="calcToggle">
-      <div class="calc-headline-left">
+    <div class="calc-headline">
+      <div class="calc-headline-left" id="calcToggle">
         <span class="calc-headline-label">Potential Profit</span>
         <span class="calc-headline-sub">${(itemLimit || 1).toLocaleString()} units @ 4h limit · tap to edit</span>
       </div>
       <div class="calc-headline-right">
         <span class="res-profit" id="calcProfitValue">—</span>
+        <button id="calcOpenLedger" class="calc-ledger-btn" type="button" title="Trade Ledger — log your flips, see realized P&amp;L">📒</button>
         <span id="calcToggleIcon" class="calc-caret">${isCalcOpen ? '▼' : '▶'}</span>
       </div>
     </div>
@@ -723,15 +781,46 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
         <div class="calc-input"><label>Sell (ea)</label><input type="text" id="calcSell" value="${recSell || 0}" placeholder="0"></div>
       </div>
       <div class="calc-breakdown" id="calcBreakdown"></div>
+      <div class="calc-log-row">
+        <button type="button" class="calc-log-btn buy" id="calcLogBuy">📒 Log Buy @ <span id="calcLogBuyPx">—</span></button>
+        <button type="button" class="calc-log-btn sell" id="calcLogSell">📒 Log Sell @ <span id="calcLogSellPx">—</span></button>
+      </div>
+      <div class="calc-log-confirm" id="calcLogConfirm"></div>
     </div>`;
+  /* Headline-left toggles open/close; the 📒 lives in the headline-right but
+     opens the full Ledger modal without triggering the toggle. */
   $('#calcToggle').onclick = () => {
     isCalcOpen = !isCalcOpen;
     $('#calcInputs').style.display = isCalcOpen ? 'block' : 'none';
     $('#calcToggleIcon').textContent = isCalcOpen ? '▼' : '▶';
   };
+  $('#calcOpenLedger').onclick = (ev) => { ev.stopPropagation(); openLedger(); };
   $('#calcQty').addEventListener('input', updateCalculator);
   $('#calcBuy').addEventListener('input', updateCalculator);
   $('#calcSell').addEventListener('input', updateCalculator);
+
+  /* Log a trade straight from the calc inputs — uses the qty + buy or sell
+     value the user has dialed in. No need to open the modal for routine logs. */
+  function quickLog(side) {
+    if (!selected || overMaxData[String(selected.id)]) {
+      $('#calcLogConfirm').textContent = 'Select a regular item to log a trade.';
+      $('#calcLogConfirm').style.color = 'var(--negative)';
+      return;
+    }
+    const qty = parseOSRSNumber($('#calcQty').value);
+    const px  = parseOSRSNumber(side === 'buy' ? $('#calcBuy').value : $('#calcSell').value);
+    if (qty <= 0 || px <= 0) {
+      $('#calcLogConfirm').textContent = 'Enter a positive qty and price first.';
+      $('#calcLogConfirm').style.color = 'var(--negative)';
+      return;
+    }
+    ledger.push({ ts: Date.now(), itemId: String(selected.id), itemName: selected.name, side, qty, price: px });
+    saveLedger();
+    $('#calcLogConfirm').textContent = `Logged ${side.toUpperCase()} ${qty.toLocaleString()} ${selected.name} @ ${px.toLocaleString()} gp ea`;
+    $('#calcLogConfirm').style.color = 'var(--positive)';
+  }
+  $('#calcLogBuy').onclick = () => quickLog('buy');
+  $('#calcLogSell').onclick = () => quickLog('sell');
   updateCalculator();
 }
 
@@ -1069,12 +1158,17 @@ function renderWatchlist() {
   marginLow1m.sort((a, b) => b.margin - a.margin);
 
   const at1yLows = [], at5yLows = [];
+  /* Junk filter: skip items priced under 1,000gp from the long-term-lows lists.
+     Penny items (feathers, raw fish, low-tier runes) clutter the list with
+     non-actionable rows that all read as "AT low" because their price barely
+     moves in absolute terms. */
+  const LOW_LIST_MIN_PRICE = 1000;
   Object.keys(historyCache).forEach(id => {
     const hc = historyCache[id];
     const item = mapping.find(x => String(x.id) === id);
     if (!item || (!membersOn && item.members)) return;
     const cur = priceOf(item);
-    if (!cur) return;
+    if (!cur || cur < LOW_LIST_MIN_PRICE) return;
     if (hc.min1y && cur <= hc.min1y * 1.05) at1yLows.push({ item, pct: (cur / hc.min1y - 1) * 100, low: hc.min1y });
     if (hc.min5y && cur <= hc.min5y * 1.08) at5yLows.push({ item, pct: (cur / hc.min5y - 1) * 100, low: hc.min5y });
   });
@@ -1092,27 +1186,35 @@ function renderWatchlist() {
     if (!flag) return;
     const item = mapping.find(x => String(x.id) === id);
     if (!item || (!membersOn && item.members)) return;
+    /* Skip sub-100gp prints; clan-hoarding-a-penny-item is not a useful alert. */
+    if (priceOf(item) < 100) return;
     manipRows.push({ item, flag });
   });
   manipRows.sort((a, b) => priceOf(b.item) - priceOf(a.item));
   const manipEntries = manipRows.slice(0, 30).map(r => {
     const cls = r.flag.patternA ? 'accum' : 'pump';
     const label = r.flag.patternA ? 'HOARDING' : 'PUMP/CHOKE';
-    return { item: r.item, price: priceOf(r.item), sub: `<span class="wl-manip-badge ${cls}">${label}</span>` };
+    const tip = r.flag.patternA
+      ? 'HOARDING: last 2 days volume >2× the 14-day average while price barely moved (<7%) — possible clan accumulation.'
+      : 'PUMP/CHOKE: price >1.5σ off the 14-day mean while last 3 days volume collapsed to <55% of average — supply choke after a push.';
+    return { item: r.item, price: priceOf(r.item), sub: `<span class="wl-manip-badge ${cls}" title="${tip}">${label}</span>` };
   });
 
+  /* Order tuned by actionability — favorites first, then "act now" signals
+     (day highs / lows), then bread-and-butter live margins, then manipulation
+     hints, then strategic long-term and 1M-averaged lists, then niche over-max.
+     The previous 5Y-Lows and 1M-Low-Vol groups were dropped: 5Y Lows mostly
+     overlaps the 1Y list, and 1M Low-Vol margins were rarely worth the wait. */
   const groups = [
     { name: "⭐ Favorites", className: "fav-title", entries: plainEntries(favs), alwaysShow: true },
+    { name: "🚀 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
+    { name: "📉 At Day Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)) },
     { name: "💰 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
     { name: "💵 Top Margins · Low Vol (1D)", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
-    { name: "📅 Top Margins · High Vol (1M)", className: "margin-title", entries: marginEntries(marginHigh1m, "ea avg"), scan: "margin" },
-    { name: "🗓️ Top Margins · Low Vol (1M)", className: "marginlo-title", entries: marginEntries(marginLow1m, "ea avg"), scan: "margin" },
-    { name: "📉 At Day Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)) },
-    { name: "🚀 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
+    { name: "🚨 Market Manipulation Alerts", className: "manip-title", entries: manipEntries, scan: "manip" },
     { name: "🔵 At 1-Year Lows", className: "ylow-title", entries: lowEntries(at1yLows, "1Y"), scan: "history" },
-    { name: "🧊 At 5-Year Lows", className: "fivey-title", entries: lowEntries(at5yLows, "5Y"), scan: "history" },
-    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries },
-    { name: "🚨 Market Manipulation Alerts", className: "manip-title", entries: manipEntries, scan: "manip" }
+    { name: "📅 Top Margins · High Vol (1M)", className: "margin-title", entries: marginEntries(marginHigh1m, "ea avg"), scan: "margin" },
+    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -1159,8 +1261,8 @@ function renderWatchlist() {
           else if (st === "low") hlClass = "at-low";
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
-        const hlBadge = hlClass === 'at-high' ? `<span class="hl-badge high">▲ HIGH</span>`
-                     : hlClass === 'at-low'  ? `<span class="hl-badge low">▼ LOW</span>` : '';
+        const hlBadge = hlClass === 'at-high' ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
+                     : hlClass === 'at-low'  ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
         inner += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
@@ -1327,25 +1429,26 @@ function percentile(arr, p) {
 /* Trade engine: anchor targets to RECENT support/resistance (last ~25% of the
    visible window), since that's what other flippers are actually trading
    against right now. Then guarantee the spread clears GE tax. */
-/* Classic OSRS +1 / -1 margining (same technique Flipping-Copilot-style tools
-   use): take the MEDIAN of the recent insta-sell prints and bid one above it
-   (you become the top of the buy queue), take the MEDIAN of the recent insta-
-   buy prints and ask one below it (you become the bottom of the sell queue).
-   Median over the last ~15% of the visible window strips outlier spikes that
-   one-off prints would drag the raw live quote toward. Falls back to the raw
-   live quote if the resulting spread isn't profitable after GE tax. */
+/* Trade engine — anchor to the realized EDGES of recent prints, not the
+   middle. The old median-based version produced overly conservative targets
+   (sell sat at the typical print, ignoring the better prices that already
+   filled in the last hour). Now: take the 75th percentile of recent insta-
+   buy prints for the sell target (price 25% of recent buyers actually paid
+   or higher) and the 25th percentile of recent insta-sell prints for the
+   buy target (price 25% of recent sellers actually accepted or lower). Then
+   apply the classic +1 / -1 to outbid / undercut at the edge. Falls back to
+   the raw live quote if the resulting spread isn't tax-positive. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
   if (series && series.high.length > 5) {
     const n = series.high.length;
-    const k = Math.max(5, Math.floor(n * 0.15));
+    const k = Math.max(8, Math.floor(n * 0.20));
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
-    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 50));
-    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 50));
+    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 25));
+    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 75));
   }
-  /* +1 to outbid the existing buy queue, -1 to undercut the existing sell queue. */
   let buy = recentLow + 1;
   let sell = recentHigh - 1;
   if (buy >= sell) { buy = rawLow; sell = rawHigh; }
@@ -2163,8 +2266,12 @@ setItem._userPicked = false;
       if (notifEnabled) fireFavoriteAlerts();
     };
 
-    /* Trade Ledger wiring — open, side toggle, submit, backdrop close. */
-    $('#btnLedger').onclick = () => openLedger();
+    /* Help / glossary modal wiring. */
+    $('#btnHelp').onclick = () => { $('#helpModal').style.display = 'flex'; };
+    $('#closeHelp').onclick = () => { $('#helpModal').style.display = 'none'; };
+    $('#helpModal').addEventListener('click', (ev) => { if (ev.target === $('#helpModal')) $('#helpModal').style.display = 'none'; });
+
+    /* Trade Ledger wiring — open from the calc 📒 button, plus close + backdrop. */
     $('#closeLedger').onclick = () => closeLedger();
     $('#ledgerModal').addEventListener('click', (ev) => {
       if (ev.target === $('#ledgerModal')) closeLedger();
