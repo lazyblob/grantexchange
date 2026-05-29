@@ -30,10 +30,10 @@
 <meta name="twitter:description" content="Track live GE margins, spot day highs/lows, and flip OSRS items from your phone.">
 <meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
-<link id="favicon1" rel="icon" type="image/png" sizes="32x32" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon1" rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link id="favicon2" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 <link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<link id="favicon4" rel="shortcut icon" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon4" rel="shortcut icon" href="/favicon.png">
 
 <script type="application/ld+json">
 {
@@ -291,7 +291,10 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3); transition: background 0.2s, border 0.2s; }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
-.wl-item.active { background: rgba(41, 98, 255, 0.15); border-left: 2px solid var(--border-active); }
+/* Selected row uses a thin top + bottom hairline border (TradingView style)
+   instead of a heavy blue fill — keeps the row's content reading clean and
+   doesn't fight with the at-high / at-low highlight underneath. */
+.wl-item.active { background: rgba(41, 98, 255, 0.06); box-shadow: inset 0 1px 0 var(--border-active), inset 0 -1px 0 var(--border-active); }
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -310,8 +313,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   animation: rs-pulse-gold 2.6s ease-in-out infinite;
 }
 .wl-item.at-low .wl-item-name { color: var(--rs-gold); font-weight: 800; }
-.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.18) 0%, rgba(79,255,142,0.28) 100%); }
-.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.18) 0%, rgba(255,210,77,0.30) 100%); }
+.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.06) 0%, rgba(79,255,142,0.28) 100%); }
+.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.06) 0%, rgba(255,210,77,0.30) 100%); }
 .hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
 .hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
 .hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
@@ -1240,20 +1243,25 @@ function filterSeries(series, period) {
 
 /* Pick which data source feeds a given timeframe. Low-volume items use daily
    history for 1M+ so charts aren't full of gaps from sparse 5m/1h candles. */
-/* Pick the data source for a given timeframe, falling back through other
-   granularities when the preferred one is empty. The wiki returns no 5m/1h
-   candles for very illiquid items (e.g. the Gilded dragonhide set) — we used
-   to render "No trade data"; now we walk down to 6h → 24h → full daily history
-   so at least *something* shows on every timeframe. */
+/* Pick the data source for a given timeframe. We now prefer the wiki
+   timeseries endpoints (which track separate insta-buy and insta-sell
+   prints) over weirdgloop's daily-consensus history wherever both exist,
+   so the chart shows both gold (buy) and teal (sell) dots instead of a
+   single-color scatter on low-volume items. Requires at least 5 points in
+   a source before considering it valid; falls back to anything available. */
 function seriesForView(v, src, lowVol) {
   const order = {
-    '5y': ['hist', 'ts24h'],
-    '1y': lowVol ? ['hist', 'ts24h', 'ts6h'] : ['ts24h', 'hist', 'ts6h'],
-    '6m': lowVol ? ['hist', 'ts24h', 'ts6h'] : ['ts24h', 'ts6h', 'hist'],
-    '1m': lowVol ? ['hist', 'ts6h', 'ts24h', 'ts1h'] : ['ts6h', 'ts24h', 'ts1h', 'hist'],
+    '5y': ['hist'],
+    '1y': ['ts24h', 'hist'],
+    '6m': ['ts24h', 'ts6h', 'hist'],
+    '1m': ['ts6h', 'ts24h', 'ts1h', 'hist'],
     '5d': ['ts1h', 'ts5m', 'ts6h', 'ts24h', 'hist'],
     '1d': ['ts5m', 'ts1h', 'ts6h', 'ts24h', 'hist']
   }[v] || ['hist'];
+  for (const k of order) {
+    const s = src[k];
+    if (s && s.labels && s.labels.length >= 5) return s;
+  }
   for (const k of order) {
     const s = src[k];
     if (s && s.labels && s.labels.length) return s;
