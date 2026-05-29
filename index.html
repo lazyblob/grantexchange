@@ -1327,25 +1327,26 @@ function percentile(arr, p) {
 /* Trade engine: anchor targets to RECENT support/resistance (last ~25% of the
    visible window), since that's what other flippers are actually trading
    against right now. Then guarantee the spread clears GE tax. */
-/* Classic OSRS +1 / -1 margining (same technique Flipping-Copilot-style tools
-   use): take the MEDIAN of the recent insta-sell prints and bid one above it
-   (you become the top of the buy queue), take the MEDIAN of the recent insta-
-   buy prints and ask one below it (you become the bottom of the sell queue).
-   Median over the last ~15% of the visible window strips outlier spikes that
-   one-off prints would drag the raw live quote toward. Falls back to the raw
-   live quote if the resulting spread isn't profitable after GE tax. */
+/* Trade engine — anchor to the realized EDGES of recent prints, not the
+   middle. The old median-based version produced overly conservative targets
+   (sell sat at the typical print, ignoring the better prices that already
+   filled in the last hour). Now: take the 75th percentile of recent insta-
+   buy prints for the sell target (price 25% of recent buyers actually paid
+   or higher) and the 25th percentile of recent insta-sell prints for the
+   buy target (price 25% of recent sellers actually accepted or lower). Then
+   apply the classic +1 / -1 to outbid / undercut at the edge. Falls back to
+   the raw live quote if the resulting spread isn't tax-positive. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
   if (series && series.high.length > 5) {
     const n = series.high.length;
-    const k = Math.max(5, Math.floor(n * 0.15));
+    const k = Math.max(8, Math.floor(n * 0.20));
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
-    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 50));
-    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 50));
+    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 25));
+    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 75));
   }
-  /* +1 to outbid the existing buy queue, -1 to undercut the existing sell queue. */
   let buy = recentLow + 1;
   let sell = recentHigh - 1;
   if (buy >= sell) { buy = rawLow; sell = rawHigh; }
