@@ -306,11 +306,12 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3); transition: background 0.2s, border 0.2s; }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
-/* Selected row uses TradingView-style outline accents that read on top of
-   plain rows AND at-high / at-low gradient rows. A bold 3px left accent
-   stripe is the can't-miss "this is selected" cue, with thin top + bottom
-   borders to close the outline. */
-.wl-item.active { background: rgba(41, 98, 255, 0.08); box-shadow: inset 3px 0 0 var(--border-active), inset 0 1.5px 0 var(--border-active), inset 0 -1.5px 0 var(--border-active); }
+/* Selected row uses a REAL left border in the active blue (4px) so it wins
+   over the at-high / at-low border-left via the cascade. The previous inset
+   box-shadow trick rendered under the at-high's solid border-left and got
+   visually swallowed — so a selected at-high row read identical to a plain
+   at-high row. Top + bottom borders fill in the rest of the outline. */
+.wl-item.active { background: rgba(41, 98, 255, 0.12); border-left: 4px solid var(--border-active); box-shadow: inset 0 1.5px 0 var(--border-active), inset 0 -1.5px 0 var(--border-active); }
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -329,8 +330,12 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   animation: rs-pulse-gold 2.6s ease-in-out infinite;
 }
 .wl-item.at-low .wl-item-name { color: var(--rs-gold); font-weight: 800; }
-.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.06) 0%, rgba(79,255,142,0.28) 100%); }
-.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.06) 0%, rgba(255,210,77,0.30) 100%); }
+/* Compound .active.at-high / .active.at-low: explicitly re-state the blue
+   left border so the compound-selector specificity beats the at-high single
+   class. Keeps the green / gold gradient + right border so the row still
+   reads as "at HIGH and SELECTED" simultaneously. */
+.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.12) 0%, rgba(79,255,142,0.28) 100%); border-left: 4px solid var(--border-active); }
+.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.12) 0%, rgba(255,210,77,0.30) 100%); border-left: 4px solid var(--border-active); }
 .hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
 .hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
 .hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
