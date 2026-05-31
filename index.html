@@ -126,8 +126,8 @@ button, input { touch-action: manipulation; }
 .calc-log-btn.buy:hover { border-color: var(--buy-color); color: var(--buy-color); }
 .calc-log-btn.sell:hover { border-color: var(--sell-color); color: var(--sell-color); }
 .calc-log-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.calc-ledger-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; font-size: 12px; line-height: 1; transition: all 0.15s ease; }
-.calc-ledger-btn:hover { color: var(--text-main); border-color: var(--border-active); }
+.calc-ledger-link { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; padding: 7px 8px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.15s ease; }
+.calc-ledger-link:hover { color: var(--text-main); border-color: var(--border-active); }
 .calc-log-confirm { font-size: 10px; color: var(--positive); margin-top: 4px; min-height: 12px; text-align: center; }
 .ledger-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
 .ledger-stat { background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 4px; padding: 8px 10px; text-align: center; }
@@ -255,13 +255,15 @@ button, input { touch-action: manipulation; }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .watchlist-container { width: 300px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
 .calc-container { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-.calc-headline { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; }
+.calc-headline { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; border-radius: 4px; padding: 2px; margin: -2px; transition: background 0.15s ease; -webkit-tap-highlight-color: rgba(41,98,255,0.2); }
+.calc-headline:hover { background: rgba(255,255,255,0.04); }
+.calc-headline:active { background: rgba(41,98,255,0.12); }
 .calc-headline-left { display: flex; flex-direction: column; }
 .calc-headline-label { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px; }
 .calc-headline-sub { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
 .calc-headline-right { display: flex; align-items: center; gap: 8px; }
 .calc-headline .res-profit { font-size: 16px; font-weight: bold; }
-.calc-caret { font-size: 11px; color: var(--text-muted); }
+.calc-caret { font-size: 13px; color: var(--border-active); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(41,98,255,0.12); flex-shrink: 0; }
 .calc-body { margin-top: 10px; }
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .calc-container input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; outline: none; font-family: inherit; }
@@ -779,14 +781,13 @@ function updateCalculator() {
 
 function restoreCalculator(itemLimit, recBuy, recSell) {
   $("#sideModule").innerHTML = `
-    <div class="calc-headline">
-      <div class="calc-headline-left" id="calcToggle">
+    <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
+      <div class="calc-headline-left">
         <span class="calc-headline-label">Potential Profit</span>
-        <span class="calc-headline-sub">${(itemLimit || 1).toLocaleString()} units @ 4h limit · tap to edit</span>
+        <span class="calc-headline-sub">${(itemLimit || 1).toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}</span>
       </div>
       <div class="calc-headline-right">
         <span class="res-profit" id="calcProfitValue">—</span>
-        <button id="calcOpenLedger" class="calc-ledger-btn" type="button" title="Trade Ledger — log your flips, see realized P&amp;L">📒</button>
         <span id="calcToggleIcon" class="calc-caret">${isCalcOpen ? '▼' : '▶'}</span>
       </div>
     </div>
@@ -802,15 +803,23 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
         <button type="button" class="calc-log-btn sell" id="calcLogSell">📒 Log Sell @ <span id="calcLogSellPx">—</span></button>
       </div>
       <div class="calc-log-confirm" id="calcLogConfirm"></div>
+      <button type="button" class="calc-ledger-link" id="calcOpenLedger">📒 Open Trade Ledger</button>
     </div>`;
-  /* Headline-left toggles open/close; the 📒 lives in the headline-right but
-     opens the full Ledger modal without triggering the toggle. */
-  $('#calcToggle').onclick = () => {
+  /* The WHOLE header toggles (label, profit value, and caret are all one big
+     tap target) — keyboard accessible too. The ledger button now lives inside
+     the expanded body so it can't be tapped by accident while expanding. */
+  const toggleCalc = () => {
     isCalcOpen = !isCalcOpen;
     $('#calcInputs').style.display = isCalcOpen ? 'block' : 'none';
     $('#calcToggleIcon').textContent = isCalcOpen ? '▼' : '▶';
+    const hl = $('#calcToggle');
+    if (hl) hl.setAttribute('aria-expanded', isCalcOpen);
+    const sub = hl && hl.querySelector('.calc-headline-sub');
+    if (sub) sub.textContent = `${(itemLimit || 1).toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
   };
-  $('#calcOpenLedger').onclick = (ev) => { ev.stopPropagation(); openLedger(); };
+  $('#calcToggle').onclick = toggleCalc;
+  $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
+  $('#calcOpenLedger').onclick = () => openLedger();
   $('#calcQty').addEventListener('input', updateCalculator);
   $('#calcBuy').addEventListener('input', updateCalculator);
   $('#calcSell').addEventListener('input', updateCalculator);
@@ -1442,18 +1451,36 @@ function percentile(arr, p) {
   return sorted[lo] * (1 - w) + sorted[hi] * w;
 }
 
-/* Trade engine: anchor targets to RECENT support/resistance (last ~25% of the
-   visible window), since that's what other flippers are actually trading
-   against right now. Then guarantee the spread clears GE tax. */
+/* Find the most extreme repeated price level in the array. A percentile
+   smooths away cluster behaviour (e.g. "4 recent prints at 1,346" gets
+   buried below the 75th-percentile boundary), but a flipper looking at the
+   chart sees that repeat as proof the price actually trades. This finds
+   the highest (or lowest) integer-rounded price that appears ≥ minCount
+   times — single-print outliers are filtered out, real clusters surface. */
+function findRepeatedExtreme(arr, wantHighest, minCount) {
+  const counts = new Map();
+  for (const v of arr) {
+    const k = Math.round(v);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  let best = null;
+  for (const [k, c] of counts) {
+    if (c < minCount) continue;
+    if (best === null || (wantHighest ? k > best : k < best)) best = k;
+  }
+  return best;
+}
+
 /* Trade engine — anchor to the realized EDGES of recent prints, not the
-   middle. The old median-based version produced overly conservative targets
-   (sell sat at the typical print, ignoring the better prices that already
-   filled in the last hour). Now: take the 75th percentile of recent insta-
-   buy prints for the sell target (price 25% of recent buyers actually paid
-   or higher) and the 25th percentile of recent insta-sell prints for the
-   buy target (price 25% of recent sellers actually accepted or lower). Then
-   apply the classic +1 / -1 to outbid / undercut at the edge. Falls back to
-   the raw live quote if the resulting spread isn't tax-positive. */
+   middle. Two complementary signals:
+     1. 75th / 25th percentile of recent insta-buys / insta-sells (smooths
+        out single-print spikes).
+     2. Cluster detection: highest / lowest integer price with ≥3 prints
+        in the recent window (captures repeated levels the percentile
+        averages away).
+   Take whichever is MORE aggressive on each side (max for sell, min for
+   buy), then apply +1 / -1 to outbid / undercut at the edge. Falls back
+   to the raw live quote if the spread isn't tax-positive. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
@@ -1462,8 +1489,18 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const k = Math.max(8, Math.floor(n * 0.20));
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
-    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 25));
-    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 75));
+    if (rLow.length >= 3) {
+      const p25 = Math.round(percentile(rLow, 25));
+      const cluster = findRepeatedExtreme(rLow, false, 3);
+      /* Buy side: take the LOWER of the two — more aggressive bid. */
+      recentLow = (cluster !== null && cluster < p25) ? cluster : p25;
+    }
+    if (rHigh.length >= 3) {
+      const p75 = Math.round(percentile(rHigh, 75));
+      const cluster = findRepeatedExtreme(rHigh, true, 3);
+      /* Sell side: take the HIGHER of the two — more aggressive ask. */
+      recentHigh = (cluster !== null && cluster > p75) ? cluster : p75;
+    }
   }
   let buy = recentLow + 1;
   let sell = recentHigh - 1;
