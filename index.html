@@ -1471,35 +1471,57 @@ function findRepeatedExtreme(arr, wantHighest, minCount) {
   return best;
 }
 
-/* Trade engine — anchor to the realized EDGES of recent prints, not the
-   middle. Two complementary signals:
+/* Trade engine — anchor to RECENT prints only (last ~7% of the visible
+   window, roughly the last ~1.5 hours on 1D). The previous 20% window let
+   old extremes drag targets toward stale prices: a peak that happened 3
+   hours ago would still pull the sell target up even after the market had
+   trended back down past it, and the same in reverse for buy targets when
+   prices trended up. Two complementary signals on the tight window:
      1. 75th / 25th percentile of recent insta-buys / insta-sells (smooths
-        out single-print spikes).
-     2. Cluster detection: highest / lowest integer price with ≥3 prints
-        in the recent window (captures repeated levels the percentile
-        averages away).
-   Take whichever is MORE aggressive on each side (max for sell, min for
-   buy), then apply +1 / -1 to outbid / undercut at the edge. Falls back
-   to the raw live quote if the spread isn't tax-positive. */
+        single-print spikes).
+     2. Cluster detection: highest / lowest integer price with ≥3 prints in
+        the recent window. Since the window is now tight, a 3-print cluster
+        means the level is CURRENTLY trading (not just historically).
+   Plus a trend bias: if the very-recent (last 3%) mean diverges from the
+   anchor, blend toward the recent mean so trends shift the target with the
+   market instead of waiting for the percentile to catch up. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
   if (series && series.high.length > 5) {
     const n = series.high.length;
-    const k = Math.max(8, Math.floor(n * 0.20));
+    const k = Math.max(8, Math.floor(n * 0.07));
+    const k2 = Math.max(4, Math.floor(n * 0.03));
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
+    const vLow = series.low.slice(-k2).filter(x => x != null && x > 0);
+    const vHigh = series.high.slice(-k2).filter(x => x != null && x > 0);
+    const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
     if (rLow.length >= 3) {
       const p25 = Math.round(percentile(rLow, 25));
       const cluster = findRepeatedExtreme(rLow, false, 3);
-      /* Buy side: take the LOWER of the two — more aggressive bid. */
-      recentLow = (cluster !== null && cluster < p25) ? cluster : p25;
+      let anchor = (cluster !== null && cluster < p25) ? cluster : p25;
+      /* Trend bias: if very-recent insta-sells have drifted up past the
+         anchor, the old low is stale — bidding there won't fill. Pull the
+         anchor up toward where prices actually are right now. */
+      if (vLow.length >= 3) {
+        const vMean = mean(vLow);
+        if (vMean > anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
+      }
+      recentLow = anchor;
     }
     if (rHigh.length >= 3) {
       const p75 = Math.round(percentile(rHigh, 75));
       const cluster = findRepeatedExtreme(rHigh, true, 3);
-      /* Sell side: take the HIGHER of the two — more aggressive ask. */
-      recentHigh = (cluster !== null && cluster > p75) ? cluster : p75;
+      let anchor = (cluster !== null && cluster > p75) ? cluster : p75;
+      /* Trend bias: if very-recent insta-buys have drifted down past the
+         anchor, the peak is in the past — asking at the old high won't fill.
+         Pull the anchor down toward the current trend. */
+      if (vHigh.length >= 3) {
+        const vMean = mean(vHigh);
+        if (vMean < anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
+      }
+      recentHigh = anchor;
     }
   }
   let buy = recentLow + 1;
