@@ -1442,18 +1442,36 @@ function percentile(arr, p) {
   return sorted[lo] * (1 - w) + sorted[hi] * w;
 }
 
-/* Trade engine: anchor targets to RECENT support/resistance (last ~25% of the
-   visible window), since that's what other flippers are actually trading
-   against right now. Then guarantee the spread clears GE tax. */
+/* Find the most extreme repeated price level in the array. A percentile
+   smooths away cluster behaviour (e.g. "4 recent prints at 1,346" gets
+   buried below the 75th-percentile boundary), but a flipper looking at the
+   chart sees that repeat as proof the price actually trades. This finds
+   the highest (or lowest) integer-rounded price that appears ≥ minCount
+   times — single-print outliers are filtered out, real clusters surface. */
+function findRepeatedExtreme(arr, wantHighest, minCount) {
+  const counts = new Map();
+  for (const v of arr) {
+    const k = Math.round(v);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  let best = null;
+  for (const [k, c] of counts) {
+    if (c < minCount) continue;
+    if (best === null || (wantHighest ? k > best : k < best)) best = k;
+  }
+  return best;
+}
+
 /* Trade engine — anchor to the realized EDGES of recent prints, not the
-   middle. The old median-based version produced overly conservative targets
-   (sell sat at the typical print, ignoring the better prices that already
-   filled in the last hour). Now: take the 75th percentile of recent insta-
-   buy prints for the sell target (price 25% of recent buyers actually paid
-   or higher) and the 25th percentile of recent insta-sell prints for the
-   buy target (price 25% of recent sellers actually accepted or lower). Then
-   apply the classic +1 / -1 to outbid / undercut at the edge. Falls back to
-   the raw live quote if the resulting spread isn't tax-positive. */
+   middle. Two complementary signals:
+     1. 75th / 25th percentile of recent insta-buys / insta-sells (smooths
+        out single-print spikes).
+     2. Cluster detection: highest / lowest integer price with ≥3 prints
+        in the recent window (captures repeated levels the percentile
+        averages away).
+   Take whichever is MORE aggressive on each side (max for sell, min for
+   buy), then apply +1 / -1 to outbid / undercut at the edge. Falls back
+   to the raw live quote if the spread isn't tax-positive. */
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
@@ -1462,8 +1480,18 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const k = Math.max(8, Math.floor(n * 0.20));
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
-    if (rLow.length >= 3) recentLow = Math.round(percentile(rLow, 25));
-    if (rHigh.length >= 3) recentHigh = Math.round(percentile(rHigh, 75));
+    if (rLow.length >= 3) {
+      const p25 = Math.round(percentile(rLow, 25));
+      const cluster = findRepeatedExtreme(rLow, false, 3);
+      /* Buy side: take the LOWER of the two — more aggressive bid. */
+      recentLow = (cluster !== null && cluster < p25) ? cluster : p25;
+    }
+    if (rHigh.length >= 3) {
+      const p75 = Math.round(percentile(rHigh, 75));
+      const cluster = findRepeatedExtreme(rHigh, true, 3);
+      /* Sell side: take the HIGHER of the two — more aggressive ask. */
+      recentHigh = (cluster !== null && cluster > p75) ? cluster : p75;
+    }
   }
   let buy = recentLow + 1;
   let sell = recentHigh - 1;
