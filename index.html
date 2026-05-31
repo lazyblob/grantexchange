@@ -170,12 +170,36 @@ button, input { touch-action: manipulation; }
 .ledger-by-row .lb-pos { font-size: 10px; color: var(--text-muted); }
 .ledger-totalpl-pos { color: var(--positive); }
 .ledger-totalpl-neg { color: var(--negative); }
+/* Portfolio */
+.pf-form-grid { display: grid; grid-template-columns: 1fr 1fr 0.7fr auto; gap: 6px; align-items: stretch; }
+.pf-form-grid input { background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 13px; outline: none; font-family: inherit; min-width: 0; }
+.pf-form-grid input:focus { border-color: var(--border-active); }
+.pf-pull-btn { width: 100%; margin-top: 6px; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.15s ease; }
+.pf-pull-btn:hover { color: var(--text-main); border-color: var(--border-active); }
+.pf-pull-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pf-row { display: grid; grid-template-columns: 24px 1fr auto auto auto; gap: 8px; padding: 8px 10px; font-size: 12px; border-bottom: 1px solid rgba(42,46,57,0.4); align-items: center; }
+.pf-row:last-child { border-bottom: none; }
+.pf-row img { width: 20px; height: 20px; image-rendering: pixelated; }
+.pf-row .pf-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-row .pf-sub { font-size: 9px; color: var(--text-muted); }
+.pf-row .pf-val { text-align: right; font-weight: 700; }
+.pf-row .pf-pl { text-align: right; font-weight: 800; min-width: 64px; }
+.pf-row .pf-pl.pos { color: var(--positive); }
+.pf-row .pf-pl.neg { color: var(--negative); }
+.pf-row .pf-del { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0 4px; font-size: 14px; }
+.pf-row .pf-del:hover { color: var(--negative); }
+.pf-row.empty { display: block; text-align: center; color: var(--text-muted); padding: 12px; }
+.pf-icon { display: inline-block; vertical-align: middle; }
 @media screen and (max-width: 640px) {
   .ledger-form-grid { grid-template-columns: 1fr 1fr; }
   .ledger-side-pill { grid-column: 1 / -1; justify-content: center; }
   .ledger-submit { grid-column: 1 / -1; padding: 8px; }
   .ledger-row { grid-template-columns: 1fr auto auto auto; }
   .ledger-row .lr-when { display: none; }
+  .pf-form-grid { grid-template-columns: 1fr 1fr; }
+  .pf-form-grid .ledger-submit, .pf-form-grid button[type="submit"] { grid-column: 1 / -1; padding: 8px; }
+  .pf-row { grid-template-columns: 22px 1fr auto auto; }
+  .pf-row .pf-val { display: none; }
 }
 .suggest { margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; max-height: 200px; overflow-y: auto; background: var(--bg-panel); position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
@@ -200,6 +224,13 @@ button, input { touch-action: manipulation; }
 .change.neutral { color: var(--text-muted); }
 .toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
 .toolbar button { background: transparent; border: none; color: var(--text-muted); border-radius: 3px; padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; }
+/* Desktop has way more horizontal space than the toolbar was using. Beef up
+   the time-range buttons so they're a primary affordance, not a tiny strip. */
+@media (min-width: 1024px) {
+  .toolbar { padding: 6px; gap: 6px; }
+  .toolbar button { padding: 10px 20px; font-size: 16px; min-width: 80px; font-weight: 700; letter-spacing: 0.5px; }
+  .toolbar button .pct-chg { font-size: 11px; margin-top: 4px; }
+}
 .toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
 .pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
@@ -363,6 +394,32 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
 .hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
 .hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
+/* 5D tier — brighter / more saturated than the day-tier so a real
+   multi-day peak / trough stands out from a routine intraday move. */
+.hl-badge.high5d { background: #00FF7A; color: #001a0e; box-shadow: 0 0 10px rgba(0,255,122,0.65); }
+.hl-badge.low5d  { background: #FFB300; color: #1a1100; box-shadow: 0 0 10px rgba(255,179,0,0.65); }
+.wl-item.at-high5d {
+  background: linear-gradient(90deg, rgba(0,255,122,0.10) 0%, rgba(0,255,122,0.36) 100%);
+  border-right: 4px solid #00FF7A;
+  border-left: 3px solid #00FF7A;
+  animation: rs-pulse-green-bright 2.2s ease-in-out infinite;
+}
+.wl-item.at-high5d .wl-item-name { color: #00FF7A; font-weight: 800; }
+.wl-item.at-low5d {
+  background: linear-gradient(90deg, rgba(255,179,0,0.10) 0%, rgba(255,179,0,0.36) 100%);
+  border-right: 4px solid #FFB300;
+  border-left: 3px solid #FFB300;
+  animation: rs-pulse-gold-bright 2.2s ease-in-out infinite;
+}
+.wl-item.at-low5d .wl-item-name { color: #FFB300; font-weight: 800; }
+@keyframes rs-pulse-green-bright {
+  0%, 100% { box-shadow: inset 0 0 10px rgba(0,255,122,0.25); }
+  50%      { box-shadow: inset 0 0 26px rgba(0,255,122,0.55); }
+}
+@keyframes rs-pulse-gold-bright {
+  0%, 100% { box-shadow: inset 0 0 10px rgba(255,179,0,0.28); }
+  50%      { box-shadow: inset 0 0 26px rgba(255,179,0,0.6); }
+}
 @keyframes rs-pulse-green {
   0%, 100% { box-shadow: inset 0 0 8px rgba(79,255,142,0.18); }
   50%      { box-shadow: inset 0 0 20px rgba(79,255,142,0.42); }
@@ -372,7 +429,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   50%      { box-shadow: inset 0 0 20px rgba(255,210,77,0.48); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wl-item.at-high, .wl-item.at-low { animation: none; }
+  .wl-item.at-high, .wl-item.at-low, .wl-item.at-high5d, .wl-item.at-low5d { animation: none; }
 }
 .wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
@@ -385,37 +442,42 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-trend.neutral { color: var(--text-muted); }
 
 @media screen and (max-width: 1023px) and (orientation: portrait) {
-  .wrap { padding: 6px; overflow-y: auto; }
-  .top-row-wrapper { gap: 4px; }
-  .top-panel { padding: 6px 8px; }
+  /* Mobile portrait: tighten every gap above the chart so the chart starts
+     higher up the screen. main-column gap 8px -> 4px, wrap padding 6px -> 4px,
+     top-row gap 4px -> 2px, price strip pulled flush. */
+  .wrap { padding: 4px; overflow-y: auto; gap: 4px; }
+  .main-column { gap: 4px; }
+  .top-row-wrapper { gap: 2px; }
+  .top-panel { padding: 4px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
   .mode-pill { flex-shrink: 0; }
-  .search-group { flex: 1; }
-  .sbar { flex: 1 1 0; min-width: 80px; width: auto; }
   .search-group { flex: 1; min-width: 0; }
+  .sbar { flex: 1 1 0; min-width: 80px; width: auto; }
   .icon-btn { flex: 0 0 auto; }
-  .content-area { flex-direction: column; }
+  .content-area { flex-direction: column; gap: 4px; }
   .ticker-title-group { display: none !important; }
   .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; }
   .toolbar { width: 100%; justify-content: space-between; }
   .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
   .pct-chg { display: none !important; }
-  .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
+  .chart-container { flex: none; height: 44vh; min-height: 280px; margin-bottom: 0; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .status-text { display: none; }
-  .price-strip { gap: 6px; }
-  .price-box { padding: 4px 8px; min-width: 0; }
+  .price-strip { gap: 4px; }
+  .price-box { padding: 3px 8px; min-width: 0; }
   .price-val { font-size: 13px; }
   .calc-container input { font-size: 16px; }
 }
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; }
-  .content-area { flex-direction: row; }
+  /* Mobile landscape: every gap collapsed so chart starts higher up. */
+  .wrap { padding: 3px; gap: 3px; }
+  .main-column { gap: 3px; }
+  .content-area { flex-direction: row; gap: 4px; }
   /* Stack the top-panel (search + icons) above its own dedicated time-toolbar
      row so the 1D/5D/1M/6M/1Y/5Y buttons get the full width — previously
      they shared a row with the search and were crammed into ~30px each. */
-  .top-row-wrapper { flex-direction: column; gap: 3px; height: auto; }
+  .top-row-wrapper { flex-direction: column; gap: 2px; height: auto; }
   .top-panel { flex: 0 0 auto; padding: 3px 6px; }
   .panel-left { flex-wrap: nowrap; gap: 4px; }
   .mode-pill { height: 28px; }
@@ -469,6 +531,13 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
               </button>
               <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome">🔍</button>
               <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
+              <button id="btnPortfolio" class="icon-btn" title="Portfolio — track your holdings & total stack value">
+                <svg class="pf-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d="M12 2.5 A9.5 9.5 0 1 0 21.5 12 L12 12 Z" fill="#26A69A"></path>
+                  <path d="M12 2.5 L12 12 L21.5 12 A9.5 9.5 0 0 0 12 2.5 Z" fill="#E6C35C"></path>
+                  <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.5"></circle>
+                </svg>
+              </button>
               <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span>❓</span><span class="icon-label">Help</span></button>
             </div>
           </div>
@@ -544,8 +613,10 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
     </div>
     <div class="modal-body">
       <div class="glossary-section">Row highlights</div>
-      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>Item is currently trading at or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
-      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>Currently at or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
+      <div class="glossary-row"><span class="hl-badge high5d">▲▲ 5D HIGH</span><span>At or near the 5-day high — a notable peak, not just an intraday wiggle. Brighter glow + double arrow means the move is real.</span></div>
+      <div class="glossary-row"><span class="hl-badge low5d">▼▼ 5D LOW</span><span>At or near the 5-day low — a notable trough across the last 5 days. Stronger signal than a routine day low.</span></div>
+      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>At or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
+      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>At or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
 
       <div class="glossary-section">Manipulation alerts</div>
       <div class="glossary-row"><span class="wl-manip-badge accum">HOARDING</span><span>Last 2 days' volume is &gt;2× the 14-day average while price moved &lt;7%. Hints a buyer cluster (often a clan) absorbing supply quietly.</span></div>
@@ -568,6 +639,9 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-section">Target prices</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>+1 above the 25th-percentile of recent insta-sell prints — sits at the realised lower edge of the order flow.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 75th-percentile of recent insta-buy prints — sits at the realised upper edge of the order flow.</span></div>
+
+      <div class="glossary-section">Portfolio</div>
+      <div class="glossary-row"><svg class="pf-icon" viewBox="0 0 24 24" width="18" height="18"><path d="M12 2.5 A9.5 9.5 0 1 0 21.5 12 L12 12 Z" fill="#26A69A"></path><path d="M12 2.5 L12 12 L21.5 12 A9.5 9.5 0 0 0 12 2.5 Z" fill="#E6C35C"></path></svg><span>Track stacks you hold. Enter qty + average cost; live value uses the insta-sell price net of GE tax. Set an optional ±% to get notified when a stack's value swings past that threshold vs your cost.</span></div>
     </div>
   </div>
 </div>
@@ -600,6 +674,34 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="ledger-entries" id="ledgerEntries"></div>
       <div class="ledger-section-title">By Item · Realized P&amp;L</div>
       <div class="ledger-bystock" id="ledgerByItem"></div>
+    </div>
+  </div>
+</div>
+
+<div id="portfolioModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><svg class="pf-icon" viewBox="0 0 24 24" width="18" height="18" style="vertical-align:-3px;margin-right:4px"><path d="M12 2.5 A9.5 9.5 0 1 0 21.5 12 L12 12 Z" fill="#26A69A"></path><path d="M12 2.5 L12 12 L21.5 12 A9.5 9.5 0 0 0 12 2.5 Z" fill="#E6C35C"></path></svg>Portfolio</h3>
+      <button class="modal-close" id="closePortfolio" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="ledger-stats" id="pfStats"></div>
+      <form class="ledger-form" id="pfForm" autocomplete="off">
+        <div class="ledger-item-row">
+          <img id="pfItemIcon" class="ledger-item-icon" src="" alt="">
+          <span class="ledger-item-name" id="pfItemName">No item selected</span>
+        </div>
+        <div class="pf-form-grid">
+          <input id="pfQty" placeholder="Qty held" inputmode="numeric" type="text">
+          <input id="pfCost" placeholder="Avg cost ea (gp)" inputmode="numeric" type="text">
+          <input id="pfAlert" placeholder="Alert ±%" inputmode="numeric" type="text">
+          <button type="submit" class="ledger-submit">+ Add / Update</button>
+        </div>
+        <button type="button" class="pf-pull-btn" id="pfPullLedger">📒 Pull qty &amp; avg cost from my logged buys</button>
+        <div class="ledger-hint" id="pfHint"></div>
+      </form>
+      <div class="ledger-section-title">Holdings · live value</div>
+      <div class="ledger-bystock" id="pfHoldings"></div>
     </div>
   </div>
 </div>
@@ -643,7 +745,7 @@ let notifAlertState = JSON.parse(localStorage.getItem('ge_notifAlertState') || '
 const NOTIF_COOLDOWN_MS = 10 * 60 * 1000;
 
 let groupOpenStates = {
-  "⭐ Favorites": false,
+  "⭐ Favorites": true,
   "💰 Top Margins · High Vol (1D)": false,
   "💵 Top Margins · Low Vol (1D)": false,
   "📅 Top Margins · High Vol (1M)": false,
@@ -831,6 +933,11 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
   };
   $('#calcToggle').onclick = toggleCalc;
   $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
+  /* Defensive: also bind the caret span directly so clicks on the arrow
+     fire the toggle even if bubbling fails for any reason. stopPropagation
+     prevents the parent handler from running a second time. */
+  const caretEl = $('#calcToggleIcon');
+  if (caretEl) caretEl.addEventListener('click', (ev) => { ev.stopPropagation(); toggleCalc(); });
   $('#calcOpenLedger').onclick = () => openLedger();
   $('#calcQty').addEventListener('input', updateCalculator);
   $('#calcBuy').addEventListener('input', updateCalculator);
@@ -965,17 +1072,31 @@ async function scanDayExtremes(ids) {
   todo.forEach(id => { dayHiLoCache[id] = null; }); // reserve so we don't refetch mid-flight
   await throttleMap(todo, async (id) => {
     try {
-      const ts = seriesFromTS(await loadTS('5m', id));
-      const cut = Math.floor(Date.now() / 1000) - 86400;
-      let hi = 0, lo = Infinity;
+      /* Use 1h candles instead of 5m — 1h goes back ~15 days, so we can
+         compute both the 24h and 5-day extremes from the same fetch and
+         power the new ▲▲ 5D HIGH / ▼▼ 5D LOW tier without doubling API load. */
+      const ts = seriesFromTS(await loadTS('1h', id));
+      const now = Math.floor(Date.now() / 1000);
+      const cut1d = now - 86400, cut5d = now - 5 * 86400;
+      let hi = 0, lo = Infinity, hi5d = 0, lo5d = Infinity;
       for (let i = 0; i < ts.labels.length; i++) {
-        if (ts.labels[i] < cut) continue;
-        const H = ts.high[i], L = ts.low[i];
-        if (H != null && H > hi) hi = H;
-        if (L != null && L > 0 && L < lo) lo = L;
+        const t = ts.labels[i], H = ts.high[i], L = ts.low[i];
+        if (t >= cut5d) {
+          if (H != null && H > hi5d) hi5d = H;
+          if (L != null && L > 0 && L < lo5d) lo5d = L;
+        }
+        if (t >= cut1d) {
+          if (H != null && H > hi) hi = H;
+          if (L != null && L > 0 && L < lo) lo = L;
+        }
       }
-      dayHiLoCache[id] = (hi > 0 && lo < Infinity) ? { hi, lo } : { hi: 0, lo: 0 };
-    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0 }; }
+      dayHiLoCache[id] = {
+        hi: hi > 0 ? hi : 0,
+        lo: lo < Infinity ? lo : 0,
+        hi5d: hi5d > 0 ? hi5d : 0,
+        lo5d: lo5d < Infinity ? lo5d : 0
+      };
+    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0 }; }
   }, SCAN_CONCURRENCY);
   renderWatchlist();
   fireFavoriteAlerts();
@@ -1115,10 +1236,17 @@ function dayState(node, p24, id) {
   if (!node) return "";
   const ex = id != null ? dayHiLoCache[String(id)] : null;
   if (ex && ex.hi > 0 && ex.lo > 0 && ex.hi > ex.lo) {
-    const range = ex.hi - ex.lo;
-    if (range >= ex.lo * 0.02) { // need ≥2% daily range to be a meaningful move
-      const sell = node.high || node.avgHighPrice || 0;
-      const buy = node.low || node.avgLowPrice || 0;
+    const sell = node.high || node.avgHighPrice || 0;
+    const buy = node.low || node.avgLowPrice || 0;
+    /* 5D tier first — only fires when the price is at an extreme that's
+       NOTABLE over the wider 5-day window, not just the last 24h. Requires a
+       meaningful 5D range (>=3% of the price) so flat items don't trigger. */
+    if (ex.hi5d > 0 && ex.lo5d > 0 && ex.hi5d - ex.lo5d >= ex.lo5d * 0.03) {
+      if (sell > 0 && sell >= ex.hi5d * 0.99)  return "high5d";
+      if (buy > 0  && buy  <= ex.lo5d * 1.01)  return "low5d";
+    }
+    /* Then the regular 24h tier — same logic as before. */
+    if (ex.hi - ex.lo >= ex.lo * 0.02) {
       if (sell > 0 && sell >= ex.hi * 0.985) return "high";
       if (buy > 0 && buy <= ex.lo * 1.015) return "low";
     }
@@ -1294,12 +1422,17 @@ function renderWatchlist() {
         let hlClass = "";
         if (!overMaxData[id]) {
           const st = dayState(node, p24, id);
-          if (st === "high") hlClass = "at-high";
+          if (st === "high5d") hlClass = "at-high5d";
+          else if (st === "low5d") hlClass = "at-low5d";
+          else if (st === "high") hlClass = "at-high";
           else if (st === "low") hlClass = "at-low";
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
-        const hlBadge = hlClass === 'at-high' ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
-                     : hlClass === 'at-low'  ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
+        const hlBadge =
+            hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days, not just today.">▲▲ 5D HIGH</span>`
+          : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days, not just today.">▼▼ 5D LOW</span>`
+          : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
+          : hlClass === 'at-low'    ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
         inner += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
@@ -1620,33 +1753,56 @@ function computeGrade(item, side) {
     longScore = Math.max(0, Math.min(5, (1.5 - ratio) * 10));
   }
 
-  /* 5) Margin health — the most important factor for a FLIP. The engine's
-     buy/sell targets define the realistic spread; after the 2% GE tax, that
-     spread as a % of the buy price tells us if the flip is even worth doing.
-     <=0% is a guaranteed loss (cap the grade hard, verdict "No Margin");
-     ~2%+ earns full marks. This is what stops a 1gp-spread item from ever
-     reading "Fair". */
-  let marginScore = 0, marginPct = null;
+  /* 5) Margin health — use the BETTER of two signals:
+       a. The right-now engine spread (recommendedSell - recommendedBuy - tax).
+       b. The visible-window potential margin (timeframe's max - min - tax) —
+          captures the day's realised range, so a chart like Ruby that shows
+          850→920 daily prints scores as a good flip even when the right-now
+          tight spread is unprofitable.
+     The grade only gets hard-pinned to "No Margin" when BOTH signals are
+     unprofitable (i.e. the timeframe genuinely doesn't have a flip in it). */
+  let currentMarginPct = null, dayMarginPct = null;
   if (recommendedBuy > 0 && recommendedSell > 0) {
     const tax = calculateTax(recommendedSell);
-    const net = recommendedSell - recommendedBuy - tax;
-    marginPct = net / recommendedBuy;
-    marginScore = Math.max(0, Math.min(25, (marginPct / 0.02) * 25));
+    currentMarginPct = (recommendedSell - recommendedBuy - tax) / recommendedBuy;
   }
+  let dayHi = -Infinity, dayLo = Infinity;
+  for (let i = 0; i < currentSeries.high.length; i++) {
+    const H = currentSeries.high[i], L = currentSeries.low[i];
+    if (H != null && H > 0 && H > dayHi) dayHi = H;
+    if (L != null && L > 0 && L < dayLo) dayLo = L;
+  }
+  if (isFinite(dayHi) && isFinite(dayLo) && dayHi > dayLo) {
+    const dayTax = calculateTax(dayHi);
+    dayMarginPct = (dayHi - dayLo - dayTax) / dayLo;
+  }
+  const bestMarginPct = Math.max(currentMarginPct ?? -Infinity, dayMarginPct ?? -Infinity);
+  const marginScore = bestMarginPct > -Infinity
+    ? Math.max(0, Math.min(25, (bestMarginPct / 0.02) * 25))
+    : 0;
 
   let grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore + marginScore)));
 
   let verdict, color;
-  /* Hard gate: no profitable spread means it's not a flip right now,
-     regardless of where it sits in its range. */
-  if (marginPct != null && marginPct <= 0) {
+  /* Hard gate: only when BOTH right-now and day-potential are unprofitable
+     — that means the timeframe genuinely has no flip in it. */
+  const bothNegative = (currentMarginPct ?? 0) <= 0 && (dayMarginPct ?? 0) <= 0;
+  const bothThin = (currentMarginPct ?? 0) < 0.005 && (dayMarginPct ?? 0) < 0.005;
+  if (bothNegative) {
     grade = Math.min(grade, 22);
     verdict = 'No Margin'; color = '#EF5350';
     return { grade, verdict, color };
   }
-  if (marginPct != null && marginPct < 0.005) {
+  if (bothThin) {
     grade = Math.min(grade, 42);
     verdict = 'Thin — Hold'; color = '#FF9F43';
+    return { grade, verdict, color };
+  }
+  /* Right-now is tight but the timeframe shows a real range — tell the user
+     the opportunity is there if they're patient (don't hide it behind "Fair"). */
+  if ((currentMarginPct ?? 1) <= 0 && (dayMarginPct ?? 0) > 0.01) {
+    verdict = side === 'buy' ? 'Patient Bid' : 'Patient Ask';
+    color = grade >= 70 ? '#1FB85C' : '#FFD24D';
     return { grade, verdict, color };
   }
   /* Verdict colors lean on the RuneScape palette: bright RS-green for the
@@ -1796,6 +1952,157 @@ function openLedger() {
 }
 
 function closeLedger() { $('#ledgerModal').style.display = 'none'; }
+
+/* ── Portfolio / Holdings ─────────────────────────────────────────────────
+   A bank-tab style asset tracker. Each holding: { itemId, name, qty, cost
+   (avg cost ea), alertPct (optional ± threshold for notifications),
+   alertedDir (which direction we last alerted, to avoid spamming) }.
+   Current value uses the live insta-sell price. Persisted in localStorage. */
+let portfolio = JSON.parse(localStorage.getItem('ge_portfolio') || '[]');
+function savePortfolio() { try { localStorage.setItem('ge_portfolio', JSON.stringify(portfolio)); } catch (e) {} }
+
+/* Derive the still-open position for an item from the Trade Ledger using the
+   same FIFO matching as ledgerStats: sells consume the oldest buy lots, so
+   what's left in the queue is the qty you still hold and its cost-weighted
+   average. Returns null if there are no logged buys / nothing open. */
+function ledgerOpenPosition(itemId) {
+  const stats = ledgerStats();
+  const it = stats.byItem[String(itemId)];
+  if (!it || !it.queue.length) return null;
+  let qty = 0, costSum = 0;
+  for (const lot of it.queue) { qty += lot.qty; costSum += lot.qty * lot.price; }
+  if (qty <= 0) return null;
+  return { qty, avgCost: Math.round(costSum / qty) };
+}
+
+/* Live value of a holding from the latest insta-sell (fallback to avg high
+   then cost). Returns { value, cost, pl, plPct } — pl is unrealized, net of
+   the 2% GE tax you'd pay to liquidate. */
+function pfMetrics(h) {
+  const node = latest?.data?.[String(h.itemId)];
+  const px = node?.high ?? node?.avgHighPrice ?? node?.low ?? h.cost;
+  const tax = Math.min(5000000, Math.floor(px * 0.02));
+  const netEach = px - tax;
+  const value = netEach * h.qty;
+  const cost = h.cost * h.qty;
+  const pl = value - cost;
+  const plPct = cost > 0 ? (pl / cost) * 100 : 0;
+  return { px, value, cost, pl, plPct };
+}
+
+function renderPortfolio() {
+  let totalValue = 0, totalCost = 0;
+  portfolio.forEach(h => { const m = pfMetrics(h); totalValue += m.value; totalCost += m.cost; });
+  const totalPL = totalValue - totalCost;
+  const totalPctNum = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
+  const sign = totalPL > 0 ? '+' : '';
+  const plCls = totalPL > 0 ? 'ledger-totalpl-pos' : (totalPL < 0 ? 'ledger-totalpl-neg' : '');
+  $('#pfStats').innerHTML = `
+    <div class="ledger-stat"><div class="ledger-stat-label">Total Value</div><div class="ledger-stat-val">${abbreviateNumber(Math.round(totalValue))}</div></div>
+    <div class="ledger-stat"><div class="ledger-stat-label">Unrealized P&L</div><div class="ledger-stat-val ${plCls}">${sign}${abbreviateNumber(Math.round(totalPL))}</div></div>
+    <div class="ledger-stat"><div class="ledger-stat-label">Return</div><div class="ledger-stat-val ${plCls}">${sign}${totalPctNum.toFixed(1)}%</div></div>
+  `;
+
+  const holdingsEl = $('#pfHoldings');
+  if (!portfolio.length) {
+    holdingsEl.innerHTML = `<div class="pf-row empty">No holdings yet. Select an item, enter how many you hold + your average cost, and tap Add. Set an optional ±% to get a notification when the stack value swings.</div>`;
+    return;
+  }
+  const rows = portfolio.map((h, idx) => {
+    const m = pfMetrics(h);
+    const s = m.pl > 0 ? '+' : '';
+    const cls = m.pl > 0 ? 'pos' : (m.pl < 0 ? 'neg' : '');
+    const alertTxt = h.alertPct ? ` · alert ±${h.alertPct}%` : '';
+    return `<div class="pf-row" data-idx="${idx}">
+      <img src="${itemIconUrl(h.itemId)}" alt="" loading="lazy">
+      <div style="overflow:hidden">
+        <div class="pf-name">${h.name}</div>
+        <div class="pf-sub">${h.qty.toLocaleString()} @ ${abbreviateNumber(h.cost)}${alertTxt}</div>
+      </div>
+      <span class="pf-val">${abbreviateNumber(Math.round(m.value))}</span>
+      <span class="pf-pl ${cls}">${s}${m.plPct.toFixed(1)}%<br><span style="font-weight:600;font-size:10px">${s}${abbreviateNumber(Math.round(m.pl))}</span></span>
+      <button class="pf-del" data-idx="${idx}" title="Remove">×</button>
+    </div>`;
+  }).join('');
+  holdingsEl.innerHTML = rows;
+  holdingsEl.querySelectorAll('.pf-del').forEach(b => {
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      const i = parseInt(b.getAttribute('data-idx'), 10);
+      if (!Number.isFinite(i)) return;
+      portfolio.splice(i, 1); savePortfolio(); renderPortfolio();
+    };
+  });
+  /* Tapping a holding row jumps to that item's chart. */
+  holdingsEl.querySelectorAll('.pf-row[data-idx]').forEach(r => {
+    r.onclick = () => {
+      const i = parseInt(r.getAttribute('data-idx'), 10);
+      const h = portfolio[i]; if (!h) return;
+      const m = mapping.find(x => String(x.id) === String(h.itemId));
+      if (m) { closePortfolio(); setItem._userPicked = false; setItem(m); }
+    };
+  });
+}
+
+function openPortfolio() {
+  if (selected && !overMaxData[String(selected.id)]) {
+    $('#pfItemIcon').src = itemIconUrl(selected.id);
+    $('#pfItemName').textContent = selected.name;
+    const existing = portfolio.find(h => String(h.itemId) === String(selected.id));
+    if (existing) {
+      $('#pfQty').value = existing.qty.toLocaleString();
+      $('#pfCost').value = existing.cost.toString();
+      $('#pfAlert').value = existing.alertPct || '';
+    } else {
+      if (!$('#pfCost').value && recommendedBuy) $('#pfCost').value = recommendedBuy.toString();
+    }
+    /* Enable the "pull from ledger" button only when there's an open
+       position logged for this item. */
+    const pull = $('#pfPullLedger');
+    const open = ledgerOpenPosition(selected.id);
+    pull.disabled = !open;
+    pull.textContent = open
+      ? `📒 Pull from Ledger: ${open.qty.toLocaleString()} held @ ${open.avgCost.toLocaleString()} gp`
+      : '📒 No logged buys for this item';
+  } else {
+    $('#pfItemIcon').src = '';
+    $('#pfItemName').textContent = 'Select an item first to add it';
+    $('#pfPullLedger').disabled = true;
+    $('#pfPullLedger').textContent = '📒 Pull qty & avg cost from my logged buys';
+  }
+  $('#pfHint').textContent = '';
+  $('#pfHint').classList.remove('error');
+  renderPortfolio();
+  $('#portfolioModal').style.display = 'flex';
+}
+function closePortfolio() { $('#portfolioModal').style.display = 'none'; }
+
+/* Fire notifications when a holding's stack value crosses its ±% threshold
+   versus cost. One alert per direction until value returns inside the band. */
+function firePortfolioAlerts() {
+  if (!notifEnabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  let dirty = false;
+  portfolio.forEach(h => {
+    if (!h.alertPct || h.alertPct <= 0) return;
+    const m = pfMetrics(h);
+    const up = m.plPct >= h.alertPct;
+    const down = m.plPct <= -h.alertPct;
+    const dir = up ? 'up' : (down ? 'down' : null);
+    if (!dir) { if (h.alertedDir) { h.alertedDir = null; dirty = true; } return; }
+    if (h.alertedDir === dir) return; // already alerted this direction
+    const item = mapping.find(x => String(x.id) === String(h.itemId));
+    try {
+      const n = new Notification(`${up ? '📈' : '📉'} ${h.name} stack ${up ? 'up' : 'down'} ${Math.abs(m.plPct).toFixed(0)}%`, {
+        body: `${h.qty.toLocaleString()} held · now worth ${abbreviateNumber(Math.round(m.value))} (${m.pl > 0 ? '+' : ''}${abbreviateNumber(Math.round(m.pl))})`,
+        icon: itemIconUrl(h.itemId),
+        tag: `pocketge-pf-${h.itemId}`
+      });
+      n.onclick = () => { try { window.focus(); n.close(); if (item) { setItem._userPicked = false; setItem(item); } } catch (e) {} };
+    } catch (e) {}
+    h.alertedDir = dir; dirty = true;
+  });
+  if (dirty) savePortfolio();
+}
 
 function drawChart(series) {
   const rect = canvas.parentElement.getBoundingClientRect();
@@ -2409,6 +2716,49 @@ setItem._userPicked = false;
     $('#closeHelp').onclick = () => { $('#helpModal').style.display = 'none'; };
     $('#helpModal').addEventListener('click', (ev) => { if (ev.target === $('#helpModal')) $('#helpModal').style.display = 'none'; });
 
+    /* Portfolio wiring. */
+    $('#btnPortfolio').onclick = () => openPortfolio();
+    $('#closePortfolio').onclick = () => closePortfolio();
+    $('#portfolioModal').addEventListener('click', (ev) => { if (ev.target === $('#portfolioModal')) closePortfolio(); });
+    $('#pfPullLedger').onclick = () => {
+      if (!selected) return;
+      const open = ledgerOpenPosition(selected.id);
+      if (!open) {
+        $('#pfHint').textContent = 'No open buys logged for this item in the Ledger.';
+        $('#pfHint').classList.add('error');
+        return;
+      }
+      $('#pfQty').value = open.qty.toLocaleString();
+      $('#pfCost').value = open.avgCost.toString();
+      $('#pfHint').classList.remove('error');
+      $('#pfHint').textContent = `Pulled ${open.qty.toLocaleString()} @ ${open.avgCost.toLocaleString()} gp from your Ledger — adjust if needed, then Add / Update.`;
+    };
+    $('#pfForm').onsubmit = (ev) => {
+      ev.preventDefault();
+      const hint = $('#pfHint');
+      hint.classList.remove('error');
+      if (!selected || overMaxData[String(selected.id)]) {
+        hint.textContent = 'Select a regular GE item first.'; hint.classList.add('error'); return;
+      }
+      const qty = parseOSRSNumber($('#pfQty').value);
+      const cost = parseOSRSNumber($('#pfCost').value);
+      const alertRaw = $('#pfAlert').value.trim();
+      const alertPct = alertRaw ? Math.abs(parseFloat(alertRaw.replace('%', ''))) : 0;
+      if (qty <= 0) { hint.textContent = 'Enter a positive quantity held.'; hint.classList.add('error'); return; }
+      if (cost <= 0) { hint.textContent = 'Enter your average cost per item.'; hint.classList.add('error'); return; }
+      const existing = portfolio.find(h => String(h.itemId) === String(selected.id));
+      if (existing) {
+        existing.qty = qty; existing.cost = cost;
+        existing.alertPct = alertPct || 0; existing.alertedDir = null;
+      } else {
+        portfolio.push({ itemId: String(selected.id), name: selected.name, qty, cost, alertPct: alertPct || 0, alertedDir: null });
+      }
+      savePortfolio();
+      $('#pfQty').value = ''; $('#pfCost').value = ''; $('#pfAlert').value = '';
+      hint.textContent = `Saved ${selected.name} — ${qty.toLocaleString()} @ ${cost.toLocaleString()} gp ea`;
+      renderPortfolio();
+    };
+
     /* Trade Ledger wiring — open from the calc 📒 button, plus close + backdrop. */
     $('#closeLedger').onclick = () => closeLedger();
     $('#ledgerModal').addEventListener('click', (ev) => {
@@ -2458,6 +2808,8 @@ setItem._userPicked = false;
         latest = await loadLatest();
         dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
         renderWatchlist();
+        firePortfolioAlerts();
+        if ($('#portfolioModal').style.display === 'flex') renderPortfolio();
         if (selected && !overMaxData[String(selected.id)]) {
           const node = latest.data[String(selected.id)];
           liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
