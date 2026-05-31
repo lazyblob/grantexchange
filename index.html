@@ -200,6 +200,13 @@ button, input { touch-action: manipulation; }
 .change.neutral { color: var(--text-muted); }
 .toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
 .toolbar button { background: transparent; border: none; color: var(--text-muted); border-radius: 3px; padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; }
+/* Desktop has way more horizontal space than the toolbar was using. Beef up
+   the time-range buttons so they're a primary affordance, not a tiny strip. */
+@media (min-width: 1024px) {
+  .toolbar { padding: 6px; gap: 6px; }
+  .toolbar button { padding: 10px 20px; font-size: 16px; min-width: 80px; font-weight: 700; letter-spacing: 0.5px; }
+  .toolbar button .pct-chg { font-size: 11px; margin-top: 4px; }
+}
 .toolbar button:hover { color: var(--text-main); }
 .toolbar button.active { background: var(--border-light); color: #fff; }
 .pct-chg { font-size: 9px; font-weight: normal; margin-top: 2px; }
@@ -363,6 +370,32 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
 .hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
 .hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
+/* 5D tier — brighter / more saturated than the day-tier so a real
+   multi-day peak / trough stands out from a routine intraday move. */
+.hl-badge.high5d { background: #00FF7A; color: #001a0e; box-shadow: 0 0 10px rgba(0,255,122,0.65); }
+.hl-badge.low5d  { background: #FFB300; color: #1a1100; box-shadow: 0 0 10px rgba(255,179,0,0.65); }
+.wl-item.at-high5d {
+  background: linear-gradient(90deg, rgba(0,255,122,0.10) 0%, rgba(0,255,122,0.36) 100%);
+  border-right: 4px solid #00FF7A;
+  border-left: 3px solid #00FF7A;
+  animation: rs-pulse-green-bright 2.2s ease-in-out infinite;
+}
+.wl-item.at-high5d .wl-item-name { color: #00FF7A; font-weight: 800; }
+.wl-item.at-low5d {
+  background: linear-gradient(90deg, rgba(255,179,0,0.10) 0%, rgba(255,179,0,0.36) 100%);
+  border-right: 4px solid #FFB300;
+  border-left: 3px solid #FFB300;
+  animation: rs-pulse-gold-bright 2.2s ease-in-out infinite;
+}
+.wl-item.at-low5d .wl-item-name { color: #FFB300; font-weight: 800; }
+@keyframes rs-pulse-green-bright {
+  0%, 100% { box-shadow: inset 0 0 10px rgba(0,255,122,0.25); }
+  50%      { box-shadow: inset 0 0 26px rgba(0,255,122,0.55); }
+}
+@keyframes rs-pulse-gold-bright {
+  0%, 100% { box-shadow: inset 0 0 10px rgba(255,179,0,0.28); }
+  50%      { box-shadow: inset 0 0 26px rgba(255,179,0,0.6); }
+}
 @keyframes rs-pulse-green {
   0%, 100% { box-shadow: inset 0 0 8px rgba(79,255,142,0.18); }
   50%      { box-shadow: inset 0 0 20px rgba(79,255,142,0.42); }
@@ -372,7 +405,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   50%      { box-shadow: inset 0 0 20px rgba(255,210,77,0.48); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wl-item.at-high, .wl-item.at-low { animation: none; }
+  .wl-item.at-high, .wl-item.at-low, .wl-item.at-high5d, .wl-item.at-low5d { animation: none; }
 }
 .wl-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
@@ -385,37 +418,42 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-trend.neutral { color: var(--text-muted); }
 
 @media screen and (max-width: 1023px) and (orientation: portrait) {
-  .wrap { padding: 6px; overflow-y: auto; }
-  .top-row-wrapper { gap: 4px; }
-  .top-panel { padding: 6px 8px; }
+  /* Mobile portrait: tighten every gap above the chart so the chart starts
+     higher up the screen. main-column gap 8px -> 4px, wrap padding 6px -> 4px,
+     top-row gap 4px -> 2px, price strip pulled flush. */
+  .wrap { padding: 4px; overflow-y: auto; gap: 4px; }
+  .main-column { gap: 4px; }
+  .top-row-wrapper { gap: 2px; }
+  .top-panel { padding: 4px 8px; }
   .panel-left { width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .brand-logo { display: none !important; }
   .mode-pill { flex-shrink: 0; }
-  .search-group { flex: 1; }
-  .sbar { flex: 1 1 0; min-width: 80px; width: auto; }
   .search-group { flex: 1; min-width: 0; }
+  .sbar { flex: 1 1 0; min-width: 80px; width: auto; }
   .icon-btn { flex: 0 0 auto; }
-  .content-area { flex-direction: column; }
+  .content-area { flex-direction: column; gap: 4px; }
   .ticker-title-group { display: none !important; }
   .ticker-header { padding: 0; border: none; background: transparent; gap: 0; height: auto; }
   .toolbar { width: 100%; justify-content: space-between; }
   .toolbar button { flex: 1; padding: 6px 4px; font-size: 12px; }
   .pct-chg { display: none !important; }
-  .chart-container { flex: none; height: 42vh; min-height: 300px; margin-bottom: 4px; }
+  .chart-container { flex: none; height: 44vh; min-height: 280px; margin-bottom: 0; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   .status-text { display: none; }
-  .price-strip { gap: 6px; }
-  .price-box { padding: 4px 8px; min-width: 0; }
+  .price-strip { gap: 4px; }
+  .price-box { padding: 3px 8px; min-width: 0; }
   .price-val { font-size: 13px; }
   .calc-container input { font-size: 16px; }
 }
 @media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
-  .wrap { padding: 4px; gap: 4px; }
-  .content-area { flex-direction: row; }
+  /* Mobile landscape: every gap collapsed so chart starts higher up. */
+  .wrap { padding: 3px; gap: 3px; }
+  .main-column { gap: 3px; }
+  .content-area { flex-direction: row; gap: 4px; }
   /* Stack the top-panel (search + icons) above its own dedicated time-toolbar
      row so the 1D/5D/1M/6M/1Y/5Y buttons get the full width — previously
      they shared a row with the search and were crammed into ~30px each. */
-  .top-row-wrapper { flex-direction: column; gap: 3px; height: auto; }
+  .top-row-wrapper { flex-direction: column; gap: 2px; height: auto; }
   .top-panel { flex: 0 0 auto; padding: 3px 6px; }
   .panel-left { flex-wrap: nowrap; gap: 4px; }
   .mode-pill { height: 28px; }
@@ -544,8 +582,10 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
     </div>
     <div class="modal-body">
       <div class="glossary-section">Row highlights</div>
-      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>Item is currently trading at or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
-      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>Currently at or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
+      <div class="glossary-row"><span class="hl-badge high5d">▲▲ 5D HIGH</span><span>At or near the 5-day high — a notable peak, not just an intraday wiggle. Brighter glow + double arrow means the move is real.</span></div>
+      <div class="glossary-row"><span class="hl-badge low5d">▼▼ 5D LOW</span><span>At or near the 5-day low — a notable trough across the last 5 days. Stronger signal than a routine day low.</span></div>
+      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>At or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
+      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>At or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
 
       <div class="glossary-section">Manipulation alerts</div>
       <div class="glossary-row"><span class="wl-manip-badge accum">HOARDING</span><span>Last 2 days' volume is &gt;2× the 14-day average while price moved &lt;7%. Hints a buyer cluster (often a clan) absorbing supply quietly.</span></div>
@@ -643,7 +683,7 @@ let notifAlertState = JSON.parse(localStorage.getItem('ge_notifAlertState') || '
 const NOTIF_COOLDOWN_MS = 10 * 60 * 1000;
 
 let groupOpenStates = {
-  "⭐ Favorites": false,
+  "⭐ Favorites": true,
   "💰 Top Margins · High Vol (1D)": false,
   "💵 Top Margins · Low Vol (1D)": false,
   "📅 Top Margins · High Vol (1M)": false,
@@ -831,6 +871,11 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
   };
   $('#calcToggle').onclick = toggleCalc;
   $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
+  /* Defensive: also bind the caret span directly so clicks on the arrow
+     fire the toggle even if bubbling fails for any reason. stopPropagation
+     prevents the parent handler from running a second time. */
+  const caretEl = $('#calcToggleIcon');
+  if (caretEl) caretEl.addEventListener('click', (ev) => { ev.stopPropagation(); toggleCalc(); });
   $('#calcOpenLedger').onclick = () => openLedger();
   $('#calcQty').addEventListener('input', updateCalculator);
   $('#calcBuy').addEventListener('input', updateCalculator);
@@ -965,17 +1010,31 @@ async function scanDayExtremes(ids) {
   todo.forEach(id => { dayHiLoCache[id] = null; }); // reserve so we don't refetch mid-flight
   await throttleMap(todo, async (id) => {
     try {
-      const ts = seriesFromTS(await loadTS('5m', id));
-      const cut = Math.floor(Date.now() / 1000) - 86400;
-      let hi = 0, lo = Infinity;
+      /* Use 1h candles instead of 5m — 1h goes back ~15 days, so we can
+         compute both the 24h and 5-day extremes from the same fetch and
+         power the new ▲▲ 5D HIGH / ▼▼ 5D LOW tier without doubling API load. */
+      const ts = seriesFromTS(await loadTS('1h', id));
+      const now = Math.floor(Date.now() / 1000);
+      const cut1d = now - 86400, cut5d = now - 5 * 86400;
+      let hi = 0, lo = Infinity, hi5d = 0, lo5d = Infinity;
       for (let i = 0; i < ts.labels.length; i++) {
-        if (ts.labels[i] < cut) continue;
-        const H = ts.high[i], L = ts.low[i];
-        if (H != null && H > hi) hi = H;
-        if (L != null && L > 0 && L < lo) lo = L;
+        const t = ts.labels[i], H = ts.high[i], L = ts.low[i];
+        if (t >= cut5d) {
+          if (H != null && H > hi5d) hi5d = H;
+          if (L != null && L > 0 && L < lo5d) lo5d = L;
+        }
+        if (t >= cut1d) {
+          if (H != null && H > hi) hi = H;
+          if (L != null && L > 0 && L < lo) lo = L;
+        }
       }
-      dayHiLoCache[id] = (hi > 0 && lo < Infinity) ? { hi, lo } : { hi: 0, lo: 0 };
-    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0 }; }
+      dayHiLoCache[id] = {
+        hi: hi > 0 ? hi : 0,
+        lo: lo < Infinity ? lo : 0,
+        hi5d: hi5d > 0 ? hi5d : 0,
+        lo5d: lo5d < Infinity ? lo5d : 0
+      };
+    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0 }; }
   }, SCAN_CONCURRENCY);
   renderWatchlist();
   fireFavoriteAlerts();
@@ -1115,10 +1174,17 @@ function dayState(node, p24, id) {
   if (!node) return "";
   const ex = id != null ? dayHiLoCache[String(id)] : null;
   if (ex && ex.hi > 0 && ex.lo > 0 && ex.hi > ex.lo) {
-    const range = ex.hi - ex.lo;
-    if (range >= ex.lo * 0.02) { // need ≥2% daily range to be a meaningful move
-      const sell = node.high || node.avgHighPrice || 0;
-      const buy = node.low || node.avgLowPrice || 0;
+    const sell = node.high || node.avgHighPrice || 0;
+    const buy = node.low || node.avgLowPrice || 0;
+    /* 5D tier first — only fires when the price is at an extreme that's
+       NOTABLE over the wider 5-day window, not just the last 24h. Requires a
+       meaningful 5D range (>=3% of the price) so flat items don't trigger. */
+    if (ex.hi5d > 0 && ex.lo5d > 0 && ex.hi5d - ex.lo5d >= ex.lo5d * 0.03) {
+      if (sell > 0 && sell >= ex.hi5d * 0.99)  return "high5d";
+      if (buy > 0  && buy  <= ex.lo5d * 1.01)  return "low5d";
+    }
+    /* Then the regular 24h tier — same logic as before. */
+    if (ex.hi - ex.lo >= ex.lo * 0.02) {
       if (sell > 0 && sell >= ex.hi * 0.985) return "high";
       if (buy > 0 && buy <= ex.lo * 1.015) return "low";
     }
@@ -1294,12 +1360,17 @@ function renderWatchlist() {
         let hlClass = "";
         if (!overMaxData[id]) {
           const st = dayState(node, p24, id);
-          if (st === "high") hlClass = "at-high";
+          if (st === "high5d") hlClass = "at-high5d";
+          else if (st === "low5d") hlClass = "at-low5d";
+          else if (st === "high") hlClass = "at-high";
           else if (st === "low") hlClass = "at-low";
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
-        const hlBadge = hlClass === 'at-high' ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
-                     : hlClass === 'at-low'  ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
+        const hlBadge =
+            hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days, not just today.">▲▲ 5D HIGH</span>`
+          : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days, not just today.">▼▼ 5D LOW</span>`
+          : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
+          : hlClass === 'at-low'    ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
         inner += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
             <div class="wl-item-left">
@@ -1620,33 +1691,56 @@ function computeGrade(item, side) {
     longScore = Math.max(0, Math.min(5, (1.5 - ratio) * 10));
   }
 
-  /* 5) Margin health — the most important factor for a FLIP. The engine's
-     buy/sell targets define the realistic spread; after the 2% GE tax, that
-     spread as a % of the buy price tells us if the flip is even worth doing.
-     <=0% is a guaranteed loss (cap the grade hard, verdict "No Margin");
-     ~2%+ earns full marks. This is what stops a 1gp-spread item from ever
-     reading "Fair". */
-  let marginScore = 0, marginPct = null;
+  /* 5) Margin health — use the BETTER of two signals:
+       a. The right-now engine spread (recommendedSell - recommendedBuy - tax).
+       b. The visible-window potential margin (timeframe's max - min - tax) —
+          captures the day's realised range, so a chart like Ruby that shows
+          850→920 daily prints scores as a good flip even when the right-now
+          tight spread is unprofitable.
+     The grade only gets hard-pinned to "No Margin" when BOTH signals are
+     unprofitable (i.e. the timeframe genuinely doesn't have a flip in it). */
+  let currentMarginPct = null, dayMarginPct = null;
   if (recommendedBuy > 0 && recommendedSell > 0) {
     const tax = calculateTax(recommendedSell);
-    const net = recommendedSell - recommendedBuy - tax;
-    marginPct = net / recommendedBuy;
-    marginScore = Math.max(0, Math.min(25, (marginPct / 0.02) * 25));
+    currentMarginPct = (recommendedSell - recommendedBuy - tax) / recommendedBuy;
   }
+  let dayHi = -Infinity, dayLo = Infinity;
+  for (let i = 0; i < currentSeries.high.length; i++) {
+    const H = currentSeries.high[i], L = currentSeries.low[i];
+    if (H != null && H > 0 && H > dayHi) dayHi = H;
+    if (L != null && L > 0 && L < dayLo) dayLo = L;
+  }
+  if (isFinite(dayHi) && isFinite(dayLo) && dayHi > dayLo) {
+    const dayTax = calculateTax(dayHi);
+    dayMarginPct = (dayHi - dayLo - dayTax) / dayLo;
+  }
+  const bestMarginPct = Math.max(currentMarginPct ?? -Infinity, dayMarginPct ?? -Infinity);
+  const marginScore = bestMarginPct > -Infinity
+    ? Math.max(0, Math.min(25, (bestMarginPct / 0.02) * 25))
+    : 0;
 
   let grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore + marginScore)));
 
   let verdict, color;
-  /* Hard gate: no profitable spread means it's not a flip right now,
-     regardless of where it sits in its range. */
-  if (marginPct != null && marginPct <= 0) {
+  /* Hard gate: only when BOTH right-now and day-potential are unprofitable
+     — that means the timeframe genuinely has no flip in it. */
+  const bothNegative = (currentMarginPct ?? 0) <= 0 && (dayMarginPct ?? 0) <= 0;
+  const bothThin = (currentMarginPct ?? 0) < 0.005 && (dayMarginPct ?? 0) < 0.005;
+  if (bothNegative) {
     grade = Math.min(grade, 22);
     verdict = 'No Margin'; color = '#EF5350';
     return { grade, verdict, color };
   }
-  if (marginPct != null && marginPct < 0.005) {
+  if (bothThin) {
     grade = Math.min(grade, 42);
     verdict = 'Thin — Hold'; color = '#FF9F43';
+    return { grade, verdict, color };
+  }
+  /* Right-now is tight but the timeframe shows a real range — tell the user
+     the opportunity is there if they're patient (don't hide it behind "Fair"). */
+  if ((currentMarginPct ?? 1) <= 0 && (dayMarginPct ?? 0) > 0.01) {
+    verdict = side === 'buy' ? 'Patient Bid' : 'Patient Ask';
+    color = grade >= 70 ? '#1FB85C' : '#FFD24D';
     return { grade, verdict, color };
   }
   /* Verdict colors lean on the RuneScape palette: bright RS-green for the
