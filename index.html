@@ -107,7 +107,9 @@ button, input { touch-action: manipulation; }
 .fav-btn.active { background: rgba(255, 179, 0, 0.1); border-color: var(--fav-gold); color: var(--fav-gold); }
 .fav-btn svg { width: 16px; height: 16px; fill: none; }
 .fav-btn.active svg { fill: currentColor; }
-.icon-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 7px; cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; transition: all 0.15s ease; }
+.icon-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 7px; cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px; }
+.icon-btn .icon-label { display: none; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
+@media (min-width: 1024px) { .icon-btn .icon-label { display: inline; } }
 .icon-btn:hover { color: var(--text-main); border-color: var(--border-active); }
 .icon-btn.active { background: rgba(41, 98, 255, 0.18); border-color: var(--border-active); color: #fff; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(5, 7, 12, 0.75); backdrop-filter: blur(3px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; overscroll-behavior: contain; }
@@ -180,6 +182,8 @@ button, input { touch-action: manipulation; }
 .suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
 .suggest img { width: 16px; height: 16px; image-rendering: pixelated; }
+.suggest .suggest-header { padding: 4px 10px; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-muted); text-transform: uppercase; background: rgba(0,0,0,0.25); cursor: default; }
+.suggest .suggest-header:hover { background: rgba(0,0,0,0.25); color: var(--text-muted); }
 .mode-pill { display: flex; background: var(--bg-input); border-radius: 4px; padding: 2px; height: 28px; flex-shrink: 0; }
 .mode-pill button { background: transparent; border: none; color: var(--text-muted); padding: 0 7px; cursor: pointer; font-weight: 700; font-size: 11px; border-radius: 3px; height: 100%; letter-spacing: 0.3px; }
 .mode-pill button.active { background: var(--border-active); color: #fff; }
@@ -251,7 +255,8 @@ button, input { touch-action: manipulation; }
   .price-grade .pg-ctx { margin-left: 2px; }
   .price-grade .pg-num { font-size: 20px; }
 }
-.chart-tip { position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); padding: 8px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; }
+.chart-tip { position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); padding: 8px 10px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; }
+@media (min-width: 1024px) { .chart-tip { font-size: 12px; padding: 10px 12px; } }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .watchlist-container { width: 300px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
 .calc-container { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
@@ -263,6 +268,12 @@ button, input { touch-action: manipulation; }
 .calc-headline-sub { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
 .calc-headline-right { display: flex; align-items: center; gap: 8px; }
 .calc-headline .res-profit { font-size: 16px; font-weight: bold; }
+@media (min-width: 1024px) {
+  .calc-headline { padding: 4px; }
+  .calc-headline-label { font-size: 13px; }
+  .calc-headline-sub { font-size: 10px; }
+  .calc-headline .res-profit { font-size: 22px; letter-spacing: -0.5px; }
+}
 .calc-caret { font-size: 13px; color: var(--border-active); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(41,98,255,0.12); flex-shrink: 0; }
 .calc-body { margin-top: 10px; }
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -458,7 +469,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
               </button>
               <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome">🔍</button>
               <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
-              <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary.">❓</button>
+              <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span>❓</span><span class="icon-label">Help</span></button>
             </div>
           </div>
 
@@ -612,6 +623,7 @@ let selectedAbsIdx = null;
 let membersOn = localStorage.getItem('ge_members') === 'true';
 let fullHistorical = null;
 let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
+let recentItems = JSON.parse(localStorage.getItem('ge_recentItems') || '[]');
 let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
 let liveBuyRaw = null, liveSellRaw = null;
@@ -1526,10 +1538,13 @@ function runTradeEngine(rawLow, rawHigh, series) {
   }
   let buy = recentLow + 1;
   let sell = recentHigh - 1;
+  /* Inverted spread shouldn't happen but if it does, fall back to raw. */
   if (buy >= sell) { buy = rawLow; sell = rawHigh; }
   if (buy < 1) buy = 1;
-  const tax = calculateTax(sell);
-  if (sell - buy - tax <= 0) { buy = rawLow; sell = rawHigh; }
+  /* Keep the calculated tight spread even when it isn't tax-positive — the
+     Grade's margin-health gate will surface "No Margin" / "Thin — Hold" so
+     the user can see the truth. Previously we widened to the raw quote here,
+     which produced a phantom-looking profitable spread that wasn't real. */
   return { buy, sell };
 }
 
@@ -1586,27 +1601,54 @@ function computeGrade(item, side) {
   }
 
   // 3) Liquidity (log-scale GP/24h)
-  let liqScore = 6;
+  let liqScore = 5;
   const p24 = past24h?.data?.[id];
   if (p24) {
     const vol = (p24.highPriceVolume || 0) + (p24.lowPriceVolume || 0);
     const gp = vol * (p24.avgHighPrice || 0);
     if (gp > 1000) {
       const logGp = Math.log10(gp);
-      liqScore = Math.max(0, Math.min(20, (logGp - 4) * 5));
+      liqScore = Math.max(0, Math.min(15, (logGp - 4) * 4));
     }
   }
 
   // 4) Long-term context vs 1Y low (buy-side bonus only)
-  let longScore = 5;
+  let longScore = 3;
   const hc = historyCache[id];
   if (hc && side === 'buy' && hc.min1y && hc.min1y > 0) {
     const ratio = current / hc.min1y;
-    longScore = Math.max(0, Math.min(10, (1.5 - ratio) * 20));
+    longScore = Math.max(0, Math.min(5, (1.5 - ratio) * 10));
   }
 
-  const grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore)));
+  /* 5) Margin health — the most important factor for a FLIP. The engine's
+     buy/sell targets define the realistic spread; after the 2% GE tax, that
+     spread as a % of the buy price tells us if the flip is even worth doing.
+     <=0% is a guaranteed loss (cap the grade hard, verdict "No Margin");
+     ~2%+ earns full marks. This is what stops a 1gp-spread item from ever
+     reading "Fair". */
+  let marginScore = 0, marginPct = null;
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    const tax = calculateTax(recommendedSell);
+    const net = recommendedSell - recommendedBuy - tax;
+    marginPct = net / recommendedBuy;
+    marginScore = Math.max(0, Math.min(25, (marginPct / 0.02) * 25));
+  }
+
+  let grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore + marginScore)));
+
   let verdict, color;
+  /* Hard gate: no profitable spread means it's not a flip right now,
+     regardless of where it sits in its range. */
+  if (marginPct != null && marginPct <= 0) {
+    grade = Math.min(grade, 22);
+    verdict = 'No Margin'; color = '#EF5350';
+    return { grade, verdict, color };
+  }
+  if (marginPct != null && marginPct < 0.005) {
+    grade = Math.min(grade, 42);
+    verdict = 'Thin — Hold'; color = '#FF9F43';
+    return { grade, verdict, color };
+  }
   /* Verdict colors lean on the RuneScape palette: bright RS-green for the
      elite tier, RS-gold for the middle, scaling down to red. */
   if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#4FFF8E'; }
@@ -1810,7 +1852,9 @@ function drawChart(series) {
 
   ctx.lineWidth = 1;
   const linesY = 5;
-  ctx.font = "10px BlinkMacSystemFont, sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  /* Bigger axis labels on desktop where the chart is wide — 10px gets lost. */
+  const axisFontPx = W >= 800 ? 12 : 10;
+  ctx.font = `${axisFontPx}px BlinkMacSystemFont, sans-serif`; ctx.textAlign = "right"; ctx.textBaseline = "middle";
   for (let i = 0; i <= linesY; i++) {
     const y = y0 + (h_price * i / linesY);
     ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
@@ -2166,6 +2210,12 @@ function refreshChart() {
 
 async function setItem(m) {
   selected = m;
+  /* Persist the last-viewed item so refresh / reopen lands you back on it
+     instead of the default landing item. Recent items list tracks the last
+     ~10 picks so the search bar can offer quick-toggle between them. */
+  try { localStorage.setItem('ge_lastItem', String(m.id)); } catch (e) {}
+  recentItems = [String(m.id), ...recentItems.filter(id => id !== String(m.id))].slice(0, 10);
+  try { localStorage.setItem('ge_recentItems', JSON.stringify(recentItems)); } catch (e) {}
   $("#query").value = m.name;
   document.title = `${m.name} - PocketGE`;
   const iconURL = itemIconUrl(m.id);
@@ -2238,13 +2288,26 @@ setItem._userPicked = false;
     runManipScan();
 
     const sb = $("#suggestBox"), qInput = $("#query");
+    /* Empty-input focus → show recently-viewed items so you can hop back
+       between two or three items without retyping. */
+    function showRecents() {
+      const items = recentItems
+        .map(id => mapping.find(x => String(x.id) === id))
+        .filter(x => x && (membersOn || !x.members))
+        .slice(0, 10);
+      if (!items.length) { sb.style.display = "none"; return; }
+      sb.innerHTML = `<div class="suggest-header">Recent</div>`
+        + items.map(x => `<div data-id="${x.id}"><img src="${itemIconUrl(x.id)}">${x.name}</div>`).join("");
+      sb.style.display = "block";
+    }
     qInput.addEventListener("input", () => {
       const q = qInput.value.trim().toLowerCase();
-      if (!q) { sb.style.display = "none"; return; }
+      if (!q) { showRecents(); return; }
       const list = mapping.filter(x => x.name.toLowerCase().includes(q) && (membersOn || !x.members)).slice(0, 40);
       sb.innerHTML = list.map(x => `<div data-id="${x.id}"><img src="${itemIconUrl(x.id)}">${x.name}</div>`).join("");
       sb.style.display = list.length ? "block" : "none";
     });
+    qInput.addEventListener("focus", () => { if (!qInput.value.trim()) showRecents(); });
     sb.addEventListener("click", e => {
       const id = e.target.closest('div')?.dataset?.id;
       if (id) { const m = mapping.find(x => String(x.id) === String(id)); if (m) { sb.style.display = "none"; qInput.blur(); setItem._userPicked = false; setItem(m); } }
@@ -2412,14 +2475,18 @@ setItem._userPicked = false;
 
     resizeCanvas();
 
-    /* Landing item: Gilded scimitar. Timeframe defaults by volume (low → 1M, high → 1D). */
-    const landing = mapping.find(x => String(x.id) === LANDING_ID);
+    /* Landing item: prefer the last item the user viewed (persisted across
+       refreshes), then the Gilded scimitar default, then Ruby as a last resort.
+       Honors the F2P / Members mode — won't restore a members item in F2P. */
+    const lastId = (() => { try { return localStorage.getItem('ge_lastItem'); } catch (e) { return null; } })();
+    const eligible = (m) => m && (membersOn || !m.members);
+    const last = lastId ? mapping.find(x => String(x.id) === lastId) : null;
+    const landing = eligible(last) ? last
+                  : eligible(mapping.find(x => String(x.id) === LANDING_ID)) ? mapping.find(x => String(x.id) === LANDING_ID)
+                  : mapping.find(x => x.name.toLowerCase() === "ruby");
     if (landing) {
       setItem._userPicked = false;
       setItem(landing);
-    } else {
-      const ruby = mapping.find(x => x.name.toLowerCase() === "ruby");
-      if (ruby) { setItem._userPicked = false; setItem(ruby); }
     }
   } catch (e) {
     $("#status").textContent = "API Error";
