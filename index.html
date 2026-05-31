@@ -174,6 +174,9 @@ button, input { touch-action: manipulation; }
 .pf-form-grid { display: grid; grid-template-columns: 1fr 1fr 0.7fr auto; gap: 6px; align-items: stretch; }
 .pf-form-grid input { background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 13px; outline: none; font-family: inherit; min-width: 0; }
 .pf-form-grid input:focus { border-color: var(--border-active); }
+.pf-pull-btn { width: 100%; margin-top: 6px; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.15s ease; }
+.pf-pull-btn:hover { color: var(--text-main); border-color: var(--border-active); }
+.pf-pull-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .pf-row { display: grid; grid-template-columns: 24px 1fr auto auto auto; gap: 8px; padding: 8px 10px; font-size: 12px; border-bottom: 1px solid rgba(42,46,57,0.4); align-items: center; }
 .pf-row:last-child { border-bottom: none; }
 .pf-row img { width: 20px; height: 20px; image-rendering: pixelated; }
@@ -694,6 +697,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
           <input id="pfAlert" placeholder="Alert ±%" inputmode="numeric" type="text">
           <button type="submit" class="ledger-submit">+ Add / Update</button>
         </div>
+        <button type="button" class="pf-pull-btn" id="pfPullLedger">📒 Pull qty &amp; avg cost from my logged buys</button>
         <div class="ledger-hint" id="pfHint"></div>
       </form>
       <div class="ledger-section-title">Holdings · live value</div>
@@ -1957,6 +1961,20 @@ function closeLedger() { $('#ledgerModal').style.display = 'none'; }
 let portfolio = JSON.parse(localStorage.getItem('ge_portfolio') || '[]');
 function savePortfolio() { try { localStorage.setItem('ge_portfolio', JSON.stringify(portfolio)); } catch (e) {} }
 
+/* Derive the still-open position for an item from the Trade Ledger using the
+   same FIFO matching as ledgerStats: sells consume the oldest buy lots, so
+   what's left in the queue is the qty you still hold and its cost-weighted
+   average. Returns null if there are no logged buys / nothing open. */
+function ledgerOpenPosition(itemId) {
+  const stats = ledgerStats();
+  const it = stats.byItem[String(itemId)];
+  if (!it || !it.queue.length) return null;
+  let qty = 0, costSum = 0;
+  for (const lot of it.queue) { qty += lot.qty; costSum += lot.qty * lot.price; }
+  if (qty <= 0) return null;
+  return { qty, avgCost: Math.round(costSum / qty) };
+}
+
 /* Live value of a holding from the latest insta-sell (fallback to avg high
    then cost). Returns { value, cost, pl, plPct } — pl is unrealized, net of
    the 2% GE tax you'd pay to liquidate. */
@@ -2038,9 +2056,19 @@ function openPortfolio() {
     } else {
       if (!$('#pfCost').value && recommendedBuy) $('#pfCost').value = recommendedBuy.toString();
     }
+    /* Enable the "pull from ledger" button only when there's an open
+       position logged for this item. */
+    const pull = $('#pfPullLedger');
+    const open = ledgerOpenPosition(selected.id);
+    pull.disabled = !open;
+    pull.textContent = open
+      ? `📒 Pull from Ledger: ${open.qty.toLocaleString()} held @ ${open.avgCost.toLocaleString()} gp`
+      : '📒 No logged buys for this item';
   } else {
     $('#pfItemIcon').src = '';
     $('#pfItemName').textContent = 'Select an item first to add it';
+    $('#pfPullLedger').disabled = true;
+    $('#pfPullLedger').textContent = '📒 Pull qty & avg cost from my logged buys';
   }
   $('#pfHint').textContent = '';
   $('#pfHint').classList.remove('error');
@@ -2692,6 +2720,19 @@ setItem._userPicked = false;
     $('#btnPortfolio').onclick = () => openPortfolio();
     $('#closePortfolio').onclick = () => closePortfolio();
     $('#portfolioModal').addEventListener('click', (ev) => { if (ev.target === $('#portfolioModal')) closePortfolio(); });
+    $('#pfPullLedger').onclick = () => {
+      if (!selected) return;
+      const open = ledgerOpenPosition(selected.id);
+      if (!open) {
+        $('#pfHint').textContent = 'No open buys logged for this item in the Ledger.';
+        $('#pfHint').classList.add('error');
+        return;
+      }
+      $('#pfQty').value = open.qty.toLocaleString();
+      $('#pfCost').value = open.avgCost.toString();
+      $('#pfHint').classList.remove('error');
+      $('#pfHint').textContent = `Pulled ${open.qty.toLocaleString()} @ ${open.avgCost.toLocaleString()} gp from your Ledger — adjust if needed, then Add / Update.`;
+    };
     $('#pfForm').onsubmit = (ev) => {
       ev.preventDefault();
       const hint = $('#pfHint');
