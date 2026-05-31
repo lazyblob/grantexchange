@@ -234,6 +234,23 @@ button, input { touch-action: manipulation; }
 .pg-num { font-size: 17px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; }
 .pg-verdict { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1; }
 .pg-ctx { font-size: 8px; color: var(--text-muted); margin-left: auto; line-height: 1; letter-spacing: 0.4px; }
+/* Desktop (≥1024px): lay each price box out horizontally so Target Buy / Sell
+   read as compact quote bars that use the full width, and show BOTH grades
+   inline at the right edge — fills the empty middle the two tall boxes had.
+   Mobile (<1024px) keeps the original stacked layout, untouched. */
+@media screen and (min-width: 1024px) {
+  .price-strip { gap: 10px; }
+  .price-box { display: flex; align-items: center; gap: 18px; padding: 9px 18px; }
+  .price-label { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex-shrink: 0; }
+  .price-val { font-size: 23px; margin-top: 0; flex-shrink: 0; white-space: nowrap; }
+  .price-grade, .price-box.selected .price-grade {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 0 auto; padding: 2px 0 2px 16px;
+    border-top: none; border-left: 1px dashed rgba(255,255,255,0.18); font-size: 11px;
+  }
+  .price-grade .pg-ctx { margin-left: 2px; }
+  .price-grade .pg-num { font-size: 20px; }
+}
 .chart-tip { position: absolute; display: none; background: rgba(19, 23, 34, 0.95); color: var(--text-main); padding: 8px; border-radius: 4px; font-size: 10px; pointer-events: none; white-space: nowrap; border: 1px solid var(--border-light); box-shadow: 0 4px 12px var(--shadow); z-index: 50; }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .watchlist-container { width: 300px; flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
@@ -306,12 +323,10 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(42, 46, 57, 0.3); transition: background 0.2s, border 0.2s; }
 .wl-item:last-child { border-bottom: none; }
 .wl-item:hover { background: var(--bg-input); }
-/* Selected row uses a REAL left border in the active blue (4px) so it wins
-   over the at-high / at-low border-left via the cascade. The previous inset
-   box-shadow trick rendered under the at-high's solid border-left and got
-   visually swallowed — so a selected at-high row read identical to a plain
-   at-high row. Top + bottom borders fill in the rest of the outline. */
-.wl-item.active { background: rgba(41, 98, 255, 0.12); border-left: 4px solid var(--border-active); box-shadow: inset 0 1.5px 0 var(--border-active), inset 0 -1.5px 0 var(--border-active); }
+/* Selected row uses a white OUTLINE (not a border) so it paints on top of the
+   at-high / at-low green/gold borders + pulse box-shadow and reads identically
+   on every list. outline-offset pulls it just inside the row edge. */
+.wl-item.active { background: rgba(255,255,255,0.05); outline: 2px solid #fff; outline-offset: -2px; }
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -330,12 +345,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
   animation: rs-pulse-gold 2.6s ease-in-out infinite;
 }
 .wl-item.at-low .wl-item-name { color: var(--rs-gold); font-weight: 800; }
-/* Compound .active.at-high / .active.at-low: explicitly re-state the blue
-   left border so the compound-selector specificity beats the at-high single
-   class. Keeps the green / gold gradient + right border so the row still
-   reads as "at HIGH and SELECTED" simultaneously. */
-.wl-item.active.at-high { background: linear-gradient(90deg, rgba(41,98,255,0.12) 0%, rgba(79,255,142,0.28) 100%); border-left: 4px solid var(--border-active); }
-.wl-item.active.at-low  { background: linear-gradient(90deg, rgba(41,98,255,0.12) 0%, rgba(255,210,77,0.30) 100%); border-left: 4px solid var(--border-active); }
+/* Selected at-high / at-low rows keep their green/gold gradient + the white
+   .active outline (painted on top) carries the "selected" cue. */
 .hl-badge { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.6px; line-height: 1.3; }
 .hl-badge.high { background: var(--rs-green); color: #002a12; box-shadow: 0 0 8px rgba(79,255,142,0.45); }
 .hl-badge.low  { background: var(--rs-gold);  color: #2a1a00; box-shadow: 0 0 8px rgba(255,210,77,0.5); }
