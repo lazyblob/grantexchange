@@ -599,8 +599,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="pg-num" style="color:#EF5350;font-size:14px;">&lt;30</span><span>Avoid — the price sits at the wrong end of the range for your active side.</span></div>
 
       <div class="glossary-section">Target prices</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>+1 above the 15th-percentile of insta-sell prints in the last ~90 minutes of wall-clock time, nudged toward the very-recent realised low (capped at 0.9%). Same number regardless of which chart timeframe you're looking at.</span></div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, nudged toward the very-recent realised high (capped at 0.9%). Always computed from the finest data available, so 1D / 5D / 1M views show the same target.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low (capped at 0.9%). The honest bid — no queue-leapfrog padding, just what realistic sellers have been accepting. Same number on every chart timeframe.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at (live insta-buy − 1) so we never recommend selling below where buyers are demonstrably paying right now. Same number on every chart timeframe.</span></div>
 
       <div class="glossary-section">Bank of Gielinor</div>
       <div class="glossary-row"><svg class="bk-icon" viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse><ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse><ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse><ellipse cx="12" cy="8" rx="8" ry="2.2" fill="#FFD24D"></ellipse><ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse></svg><span>Stash whatever you're holding — just qty is required, cost is optional. Total Wealth headline shows the live insta-sell value of every stack net of the 2% GE tax. Add a cost basis to track growth; set ±% for swing notifications.</span></div>
@@ -1611,8 +1611,17 @@ function runTradeEngine(rawLow, rawHigh, series) {
       recentHigh = anchor;
     }
   }
-  let buy = recentLow + 1;
-  let sell = recentHigh - 1;
+  /* Targets:
+     - Buy: anchor as-is (no +1 padding). The +1 was for queue priority but
+       it inflated the displayed bid above the realistic fill price; trades
+       match at the older offer's price anyway, so showing anchor is honest.
+     - Sell: anchor -1 to front-of-queue, BUT floored at (live insta-buy -1)
+       so we never suggest selling below where buyers are demonstrably
+       paying right now. Buyers paid `rawHigh` — selling 5gp under that is
+       leaving guaranteed money on the table.
+     Hard rails: positive integers + spread invariant.  */
+  let buy = recentLow;
+  let sell = Math.max(recentHigh - 1, rawHigh - 1);
   if (buy >= sell) { buy = rawLow; sell = rawHigh; }
   if (buy < 1) buy = 1;
   /* Keep the calculated tight spread even when it isn't tax-positive — the
