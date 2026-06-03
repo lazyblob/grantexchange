@@ -599,8 +599,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="pg-num" style="color:#EF5350;font-size:14px;">&lt;30</span><span>Avoid — the price sits at the wrong end of the range for your active side.</span></div>
 
       <div class="glossary-section">Target prices</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>+1 above the 20th-percentile of recent insta-sell prints, nudged toward the very-recent realised low (capped at 0.6%). An ambitious bid that still sits inside actual order flow.</span></div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 80th-percentile of recent insta-buy prints, nudged toward the very-recent realised high (capped at 0.6%). Stretches for the upper edge without chasing single-spike outliers.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>+1 above the 15th-percentile of insta-sell prints in the last ~90 minutes of wall-clock time, nudged toward the very-recent realised low (capped at 0.9%). Same number regardless of which chart timeframe you're looking at.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, nudged toward the very-recent realised high (capped at 0.9%). Always computed from the finest data available, so 1D / 5D / 1M views show the same target.</span></div>
 
       <div class="glossary-section">Bank of Gielinor</div>
       <div class="glossary-row"><svg class="bk-icon" viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse><ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse><ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse><ellipse cx="12" cy="8" rx="8" ry="2.2" fill="#FFD24D"></ellipse><ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse></svg><span>Stash whatever you're holding — just qty is required, cost is optional. Total Wealth headline shows the live insta-sell value of every stack net of the 2% GE tax. Add a cost basis to track growth; set ±% for swing notifications.</span></div>
@@ -1524,13 +1524,45 @@ function findRepeatedExtreme(arr, wantHighest, minCount) {
    (price is currently above your buy anchor or below your sell anchor),
    blend toward the recent mean so a moving market doesn't leave the target
    stale. Then ±1 to undercut / outbid by a tick. */
+
+/* Pick the finest-grain timeseries available for the engine — independent
+   of which timeframe is currently being CHARTED. The trade engine is about
+   "what should I bid/ask RIGHT NOW", and "now" should mean the last ~hour
+   of wall-clock activity regardless of whether the user is looking at the
+   1D or 5D view. Previously the engine read the visible series, so on 5D
+   the "recent 7%" slice was 8h of 1h candles, dragging targets backwards. */
+function pickEngineSeries(src) {
+  if (!src) return null;
+  for (const k of ['ts5m', 'ts1h', 'ts6h', 'ts24h', 'hist']) {
+    const s = src[k];
+    if (s && s.labels && s.labels.length >= 8) return s;
+  }
+  return null;
+}
+
 function runTradeEngine(rawLow, rawHigh, series) {
   if (!rawLow || !rawHigh) return { buy: rawLow || 0, sell: rawHigh || 0 };
   let recentLow = rawLow, recentHigh = rawHigh;
   if (series && series.high.length > 5) {
-    const n = series.high.length;
-    const k = Math.max(8, Math.floor(n * 0.07));
-    const k2 = Math.max(4, Math.floor(n * 0.03));
+    /* Slice to a real wall-clock window (last ~90 min for the percentile
+       anchor, last ~30 min for the very-recent ambition / trend signals)
+       when the series has timestamps. Falls back to 7% / 3% by count for
+       single-price historical series that lack proper minute-resolution. */
+    const labels = series.labels || [];
+    const now = labels.length ? labels[labels.length - 1] : 0;
+    let k, k2;
+    if (now > 0) {
+      const cutR = now - 90 * 60;
+      const cutV = now - 30 * 60;
+      let iR = labels.length, iV = labels.length;
+      while (iR > 0 && labels[iR - 1] >= cutR) iR--;
+      while (iV > 0 && labels[iV - 1] >= cutV) iV--;
+      k  = Math.max(8, labels.length - iR);
+      k2 = Math.max(4, labels.length - iV);
+    } else {
+      k  = Math.max(8, Math.floor(series.high.length * 0.07));
+      k2 = Math.max(4, Math.floor(series.high.length * 0.03));
+    }
     const rLow = series.low.slice(-k).filter(x => x != null && x > 0);
     const rHigh = series.high.slice(-k).filter(x => x != null && x > 0);
     const vLow = series.low.slice(-k2).filter(x => x != null && x > 0);
@@ -1538,18 +1570,19 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
     if (rLow.length >= 3) {
-      const p20 = Math.round(percentile(rLow, 20));
+      /* Buy side: 15th-percentile slice + cluster (lower wins, more
+         ambitious bid), then nudge toward the very-recent realised low
+         capped at 0.9% under the anchor so a single spike can't run away. */
+      const p15 = Math.round(percentile(rLow, 15));
       const cluster = findRepeatedExtreme(rLow, false, 3);
-      let anchor = (cluster !== null && cluster < p20) ? cluster : p20;
-      /* Ambition nudge: pull the buy anchor slightly toward the very-recent
-         realised low (capped so a single spike can't take us off-realised). */
+      let anchor = (cluster !== null && cluster < p15) ? cluster : p15;
       if (vLow.length >= 2) {
         const vMin = Math.min(...vLow);
-        const cap = Math.round(anchor * 0.994); // never more than 0.6% under anchor
+        const cap = Math.round(anchor * 0.991);
         if (vMin < anchor) anchor = Math.max(vMin, cap);
       }
-      /* Trend bias: if very-recent insta-sells have drifted UP past the anchor,
-         the old low is stale — pull the anchor up toward current activity. */
+      /* Trend bias: if very-recent insta-sells have drifted UP past the
+         anchor, the old low is stale — pull anchor up toward current. */
       if (vLow.length >= 3) {
         const vMean = mean(vLow);
         if (vMean > anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
@@ -1558,18 +1591,19 @@ function runTradeEngine(rawLow, rawHigh, series) {
     }
 
     if (rHigh.length >= 3) {
-      const p80 = Math.round(percentile(rHigh, 80));
+      /* Sell side: 85th-percentile slice + cluster (higher wins, more
+         ambitious ask), then nudge toward the very-recent realised high
+         capped at 0.9% over the anchor. */
+      const p85 = Math.round(percentile(rHigh, 85));
       const cluster = findRepeatedExtreme(rHigh, true, 3);
-      let anchor = (cluster !== null && cluster > p80) ? cluster : p80;
-      /* Ambition nudge: push the sell anchor slightly toward the very-recent
-         realised high (capped so we don't chase a single spike). */
+      let anchor = (cluster !== null && cluster > p85) ? cluster : p85;
       if (vHigh.length >= 2) {
         const vMax = Math.max(...vHigh);
-        const cap = Math.round(anchor * 1.006); // never more than 0.6% over anchor
+        const cap = Math.round(anchor * 1.009);
         if (vMax > anchor) anchor = Math.min(vMax, cap);
       }
-      /* Trend bias: if very-recent insta-buys have drifted DOWN past the anchor,
-         the peak is in the past — pull anchor down toward current activity. */
+      /* Trend bias: if very-recent insta-buys have drifted DOWN past the
+         anchor, the peak is in the past — pull anchor down. */
       if (vHigh.length >= 3) {
         const vMean = mean(vHigh);
         if (vMean < anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
@@ -2276,7 +2310,7 @@ function refreshChart() {
   currentSeries = filterSeries(seriesForView(view, currentItemSrc, currentItemLowVol), getPeriod(view));
   selectedAbsIdx = null;
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
-  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
+  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, pickEngineSeries(currentItemSrc) || currentSeries);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
   $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
   $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
@@ -2336,7 +2370,7 @@ async function setItem(m) {
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
   $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
 
-  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
+  const targets = runTradeEngine(liveBuyRaw, liveSellRaw, pickEngineSeries(currentItemSrc) || currentSeries);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
   $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
   $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
@@ -2530,7 +2564,7 @@ setItem._userPicked = false;
           liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
           liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
           $("#tickerLivePrice").textContent = abbreviateNumber(liveSellRaw);
-          const targets = runTradeEngine(liveBuyRaw, liveSellRaw, currentSeries);
+          const targets = runTradeEngine(liveBuyRaw, liveSellRaw, pickEngineSeries(currentItemSrc) || currentSeries);
           recommendedBuy = targets.buy; recommendedSell = targets.sell;
           $("#buyPrice").innerHTML = `<div class="price-label">Target Buy <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div><div class="price-grade" id="buyGrade"></div>`;
           $("#sellPrice").innerHTML = `<div class="price-label">Target Sell <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div><div class="price-grade" id="sellGrade"></div>`;
