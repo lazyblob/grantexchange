@@ -1131,12 +1131,15 @@ function dayState(node, p24, id) {
   if (ex && ex.hi > 0 && ex.lo > 0 && ex.hi > ex.lo) {
     const sell = node.high || node.avgHighPrice || 0;
     const buy = node.low || node.avgLowPrice || 0;
-    /* 5D tier first — only fires when the price is at an extreme that's
-       NOTABLE over the wider 5-day window, not just the last 24h. Requires a
-       meaningful 5D range (>=3% of the price) so flat items don't trigger. */
+    /* 5D tier first — only fires when the price is CURRENTLY at the edge of
+       the 5-day range, not just "happened to dip within 1% of it days ago."
+       Range-position math: bottom 8% of the actual 5D high-low band = at
+       5D low; top 8% = at 5D high. Requires a meaningful 5D range (>=3% of
+       price) so flat items don't trigger on a single-gp wiggle. */
     if (ex.hi5d > 0 && ex.lo5d > 0 && ex.hi5d - ex.lo5d >= ex.lo5d * 0.03) {
-      if (sell > 0 && sell >= ex.hi5d * 0.99)  return "high5d";
-      if (buy > 0  && buy  <= ex.lo5d * 1.01)  return "low5d";
+      const range5d = ex.hi5d - ex.lo5d;
+      if (sell > 0 && (ex.hi5d - sell) / range5d <= 0.08) return "high5d";
+      if (buy > 0  && (buy - ex.lo5d) / range5d <= 0.08) return "low5d";
     }
     /* Then the regular 24h tier — same logic as before. */
     if (ex.hi - ex.lo >= ex.lo * 0.02) {
