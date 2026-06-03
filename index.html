@@ -1702,13 +1702,15 @@ function runTradeEngine(rawLow, rawHigh, series) {
      - Buy: anchor as-is (no +1 padding). The +1 was for queue priority but
        it inflated the displayed bid above the realistic fill price; trades
        match at the older offer's price anyway, so showing anchor is honest.
-     - Sell: anchor -1 to front-of-queue, BUT floored at (live insta-buy -1)
-       so we never suggest selling below where buyers are demonstrably
-       paying right now. Buyers paid `rawHigh` — selling 5gp under that is
-       leaving guaranteed money on the table.
-     Hard rails: positive integers + spread invariant.  */
+     - Sell: anchor -1 for front-of-queue, BUT floored at the LIVE insta-buy
+       (rawHigh) so we never recommend selling below where buyers are
+       demonstrably paying right now. The previous floor of (rawHigh - 1)
+       still undercut the live quote and surprised users. Posting AT rawHigh
+       matches against an existing buyer at their price → you receive
+       rawHigh, the highest fillable.
+     Hard rails: positive integers + spread invariant. */
   let buy = recentLow;
-  let sell = Math.max(recentHigh - 1, rawHigh - 1);
+  let sell = Math.max(recentHigh - 1, rawHigh);
   if (buy >= sell) { buy = rawLow; sell = rawHigh; }
   if (buy < 1) buy = 1;
   /* Keep the calculated tight spread even when it isn't tax-positive — the
@@ -1812,10 +1814,18 @@ function computeGrade(item, side) {
     const dayTax = calculateTax(dayHi);
     dayMarginPct = (dayHi - dayLo - dayTax) / dayLo;
   }
+  /* Margin score weighted by side-appropriate range position so the same
+     timeframe range can't simultaneously hand out 25/25 to BOTH buy and
+     sell sides (which previously let a mid-range item read as "Top Sell"
+     AND "Steal Buy" at the same time). At pos = 0.6 a SELL keeps 60% of
+     the margin credit and a BUY keeps 40% — neither maxes unless the item
+     is genuinely at the right end of the range for the side being graded. */
   const bestMarginPct = Math.max(currentMarginPct ?? -Infinity, dayMarginPct ?? -Infinity);
-  const marginScore = bestMarginPct > -Infinity
+  const rawMarginScore = bestMarginPct > -Infinity
     ? Math.max(0, Math.min(25, (bestMarginPct / 0.02) * 25))
     : 0;
+  const sideWeight = side === 'buy' ? (1 - pos) : pos;
+  const marginScore = rawMarginScore * (0.35 + sideWeight * 0.65);
 
   let grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore + marginScore)));
 
