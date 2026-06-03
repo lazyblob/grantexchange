@@ -619,7 +619,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="pg-num" style="color:#EF5350;font-size:14px;">&lt;30</span><span>Avoid — the price sits at the wrong end of the range for your active side.</span></div>
 
       <div class="glossary-section">Target prices</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low (capped at 0.9%). The honest bid — no queue-leapfrog padding, just what realistic sellers have been accepting. Same number on every chart timeframe.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips. Same number on every chart timeframe.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at (live insta-buy − 1) so we never recommend selling below where buyers are demonstrably paying right now. Same number on every chart timeframe.</span></div>
 
       <div class="glossary-section">Bank of Gielinor</div>
@@ -1656,6 +1656,27 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const vHigh = series.high.slice(-k2).filter(x => x != null && x > 0);
     const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
+    /* Wider 24h slice for "patient" context. The 90-minute window catches
+       what's filling RIGHT NOW, but a volatile item (bonds, expensive
+       supplies) regularly dips below the 90-min cluster — a patient bid
+       can target those dips. We only use this floor when the 24h band is
+       wide (>4% range), so tight-spread items stay anchored to current
+       activity. */
+    let day24Lo = null, day24Range = 0;
+    if (labels.length > 0 && labels[labels.length - 1] > 0) {
+      const now = labels[labels.length - 1];
+      const cut24h = now - 24 * 60 * 60;
+      let i24 = labels.length;
+      while (i24 > 0 && labels[i24 - 1] >= cut24h) i24--;
+      const d24Low = series.low.slice(i24).filter(x => x != null && x > 0);
+      const d24Hi  = series.high.slice(i24).filter(x => x != null && x > 0);
+      if (d24Low.length >= 8 && d24Hi.length >= 8) {
+        day24Lo = Math.min(...d24Low);
+        const dh = Math.max(...d24Hi);
+        day24Range = day24Lo > 0 ? (dh - day24Lo) / day24Lo : 0;
+      }
+    }
+
     if (rLow.length >= 3) {
       /* Buy side: 15th-percentile slice + cluster (lower wins, more
          ambitious bid), then nudge toward the very-recent realised low
@@ -1673,6 +1694,20 @@ function runTradeEngine(rawLow, rawHigh, series) {
       if (vLow.length >= 3) {
         const vMean = mean(vLow);
         if (vMean > anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
+      }
+      /* Patient-bid floor: for items whose 24h band is genuinely wide
+         (>4% range), the 90-minute anchor leaves multi-hour dips on the
+         table. Drop the anchor toward a price 0.5% above the 24h low so a
+         patient bid can catch those dips. Scaled by how volatile the item
+         is — a 4% range gets a mild blend, 12%+ gets the full patient
+         floor. Capped so the anchor never falls below the actual 24h low. */
+      if (day24Lo && day24Lo > 0 && day24Range > 0.04) {
+        const patientFloor = Math.round(day24Lo * 1.005);
+        if (patientFloor < anchor) {
+          const t = Math.min(1, (day24Range - 0.04) / 0.08); // 0 at 4%, 1 at 12%
+          anchor = Math.round(anchor * (1 - t) + patientFloor * t);
+          if (anchor < day24Lo) anchor = day24Lo;
+        }
       }
       recentLow = anchor;
     }
