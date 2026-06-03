@@ -102,11 +102,13 @@ button, input { touch-action: manipulation; }
 .sbar input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px; font-size: 16px; outline: none; transition: border-color 0.15s ease; }
 .sbar input:focus { border-color: var(--border-active); }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
-.fav-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 5px 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+.fav-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 5px 8px; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s ease; }
 .fav-btn:hover { border-color: var(--fav-gold); color: var(--fav-gold); }
 .fav-btn.active { background: rgba(255, 179, 0, 0.1); border-color: var(--fav-gold); color: var(--fav-gold); }
 .fav-btn svg { width: 16px; height: 16px; fill: none; }
 .fav-btn.active svg { fill: currentColor; }
+.fav-btn .icon-label { display: none; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
+@media (min-width: 1024px) { .fav-btn .icon-label { display: inline; } }
 .icon-btn { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 7px; cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px; }
 .icon-btn .icon-label { display: none; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
 @media (min-width: 1024px) { .icon-btn .icon-label { display: inline; } }
@@ -395,6 +397,23 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
 .wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
 .wl-item-right { display: flex; align-items: center; gap: 6px; text-align: right; }
+/* Per-row remove-from-favorites button. Only rendered inside the Favorites
+   group. Always visible on touch devices, hover-revealed on desktop. The
+   row's content slides left when the user drags it to expose a confirm bg. */
+.wl-item { position: relative; touch-action: pan-y; }
+.wl-fav-remove { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; width: 22px; height: 22px; cursor: pointer; line-height: 1; font-size: 15px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; opacity: 0; }
+.wl-item:hover .wl-fav-remove,
+.wl-item.swipe-revealed .wl-fav-remove { opacity: 1; }
+.wl-fav-remove:hover { color: var(--negative); border-color: var(--negative); background: rgba(239,83,80,0.12); }
+/* On touch devices (no hover capability) keep the button visible so users
+   discover it without needing to guess at a hover affordance. */
+@media (hover: none) { .wl-fav-remove { opacity: 0.7; } }
+.wl-item.swiping { transition: none; }
+.wl-item .wl-item-left, .wl-item .wl-item-right { transition: transform 0.18s ease; }
+.wl-item.swipe-revealed .wl-item-left,
+.wl-item.swipe-revealed .wl-item-right { transform: translateX(-56px); }
+.wl-item .wl-swipe-bg { position: absolute; top: 0; right: 0; bottom: 0; width: 56px; display: flex; align-items: center; justify-content: center; background: var(--negative); color: #fff; font-weight: 800; font-size: 11px; letter-spacing: 0.5px; pointer-events: none; opacity: 0; transition: opacity 0.18s ease; }
+.wl-item.swipe-revealed .wl-swipe-bg { opacity: 1; }
 .wl-item-price { font-weight: 700; font-size: 13px; color: var(--text-main); }
 .wl-trend { font-size: 10px; cursor: help;}
 .wl-trend.up { color: var(--positive); }
@@ -488,6 +507,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
+                <span class="icon-label">Favorite</span>
               </button>
               <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome">🔍</button>
               <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
@@ -1311,6 +1331,7 @@ function renderWatchlist() {
         : 'None found';
       inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">${emptyMsg}</div>`;
     } else {
+      const isFavGroup = group.name === "⭐ Favorites";
       group.entries.forEach(e => {
         const item = e.item, id = String(item.id);
         const node = latest?.data?.[id];
@@ -1329,8 +1350,14 @@ function renderWatchlist() {
           : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days, not just today.">▼▼ 5D LOW</span>`
           : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
           : hlClass === 'at-low'    ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
+        /* Favorites rows get a × quick-remove button (hover-revealed on desktop,
+           always-visible on touch) plus a swipe-left-to-remove gesture. The
+           swipe target is a red "REMOVE" backdrop revealed under the row. */
+        const removeBtn = isFavGroup ? `<button type="button" class="wl-fav-remove" data-fav-id="${item.id}" title="Remove from favorites" aria-label="Remove ${item.name} from favorites">×</button>` : '';
+        const swipeBg = isFavGroup ? `<span class="wl-swipe-bg">REMOVE</span>` : '';
         inner += `
-          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}">
+          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}" ${isFavGroup ? 'data-fav-row="1"' : ''}>
+            ${swipeBg}
             <div class="wl-item-left">
               <img src="${itemIconUrl(item.id)}" alt="" loading="lazy">
               <span class="wl-item-name">${item.name}</span>
@@ -1339,6 +1366,7 @@ function renderWatchlist() {
               ${hlBadge}
               <span class="wl-item-price">${abbreviateNumber(e.price)}</span>
               ${e.sub}
+              ${removeBtn}
             </div>
           </div>`;
       });
@@ -1358,10 +1386,66 @@ function renderWatchlist() {
     };
   });
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
-    el.onclick = () => {
+    el.onclick = (ev) => {
+      /* Don't navigate when the user clicks the per-row × or after a swipe
+         has revealed the remove backdrop. */
+      if (ev.target.closest('.wl-fav-remove')) return;
+      if (el.classList.contains('swipe-revealed')) {
+        el.classList.remove('swipe-revealed');
+        return;
+      }
       const m = mapping.find(x => String(x.id) === String(el.getAttribute('data-id')));
       if (m) { setItem._userPicked = false; setItem(m); }
     };
+  });
+
+  /* Quick-remove from favorites — clicking the per-row × unfavorites without
+     navigating. Updates localStorage, re-renders, refreshes the top star. */
+  function unfavorite(idStr) {
+    if (!favorites.includes(idStr)) return;
+    favorites = favorites.filter(x => x !== idStr);
+    localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+    updateFavoriteBtn();
+    renderWatchlist();
+  }
+  container.querySelectorAll('.wl-fav-remove').forEach(b => {
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      unfavorite(String(b.getAttribute('data-fav-id')));
+    };
+  });
+
+  /* Swipe-left to remove on touch devices. Threshold of 40px reveals the
+     "REMOVE" backdrop and animates the row content out of the way; releasing
+     past 80px commits the unfavorite, otherwise it snaps back. */
+  container.querySelectorAll('.wl-item[data-fav-row="1"]').forEach(row => {
+    let startX = 0, startY = 0, dx = 0, dragging = false, revealed = false;
+    const left = row.querySelector('.wl-item-left');
+    const right = row.querySelector('.wl-item-right');
+    const apply = (px) => {
+      if (left)  left.style.transform  = `translateX(${px}px)`;
+      if (right) right.style.transform = `translateX(${px}px)`;
+    };
+    row.addEventListener('touchstart', (ev) => {
+      const t = ev.touches[0]; startX = t.clientX; startY = t.clientY;
+      dx = 0; dragging = false;
+      revealed = row.classList.contains('swipe-revealed');
+      row.classList.add('swiping');
+    }, { passive: true });
+    row.addEventListener('touchmove', (ev) => {
+      const t = ev.touches[0]; const x = t.clientX - startX; const y = t.clientY - startY;
+      if (!dragging && Math.abs(x) > Math.abs(y) + 4 && Math.abs(x) > 6) dragging = true;
+      if (!dragging) return;
+      dx = Math.min(0, Math.max(-110, x + (revealed ? -56 : 0)));
+      apply(dx);
+    }, { passive: true });
+    row.addEventListener('touchend', () => {
+      row.classList.remove('swiping');
+      if (!dragging) return;
+      if (dx < -80) { unfavorite(String(row.getAttribute('data-id'))); return; }
+      if (dx < -28) { row.classList.add('swipe-revealed'); apply(''); return; }
+      row.classList.remove('swipe-revealed'); apply('');
+    });
   });
 
   /* fetch true intraday extremes for the visible favorites (+ the selected item)
