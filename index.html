@@ -515,8 +515,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
                 </svg>
                 <span class="icon-label">Favorite</span>
               </button>
-              <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome">🔍</button>
-              <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications">🔕</button>
+              <button id="btnFlip" class="icon-btn" title="Glance Mode — large prices, minimal chrome"><span>🔍</span><span class="icon-label">Glance</span></button>
+              <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications"><span>🔕</span><span class="icon-label">Alerts</span></button>
               <button id="btnPortfolio" class="icon-btn" title="Bank of Gielinor — track your stacks &amp; total wealth">
                 <svg class="bk-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                   <ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse>
@@ -525,6 +525,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
                   <ellipse cx="12" cy="8"  rx="8" ry="2.2" fill="#FFD24D"></ellipse>
                   <ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse>
                 </svg>
+                <span class="icon-label">Bank</span>
               </button>
               <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span>❓</span><span class="icon-label">Help</span></button>
             </div>
@@ -628,7 +629,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 
       <div class="glossary-section">Target prices</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips. Same number on every chart timeframe.</span></div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at (live insta-buy − 1) so we never recommend selling below where buyers are demonstrably paying right now. Same number on every chart timeframe.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at live insta-buy so we never recommend selling below where buyers are paying right now. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% below the 24h high, so a patient ask can catch multi-hour peaks. Same number on every chart timeframe.</span></div>
 
       <div class="glossary-section">Bank of Gielinor</div>
       <div class="glossary-row"><svg class="bk-icon" viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse><ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse><ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse><ellipse cx="12" cy="8" rx="8" ry="2.2" fill="#FFD24D"></ellipse><ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse></svg><span>Stash whatever you're holding — just qty is required, cost is optional. Total Wealth headline shows the live insta-sell value of every stack net of the 2% GE tax. Add a cost basis to track growth; set ±% for swing notifications.</span></div>
@@ -1762,7 +1763,7 @@ function runTradeEngine(rawLow, rawHigh, series) {
        can target those dips. We only use this floor when the 24h band is
        wide (>4% range), so tight-spread items stay anchored to current
        activity. */
-    let day24Lo = null, day24Range = 0;
+    let day24Lo = null, day24Hi = null, day24Range = 0;
     if (labels.length > 0 && labels[labels.length - 1] > 0) {
       const now = labels[labels.length - 1];
       const cut24h = now - 24 * 60 * 60;
@@ -1772,8 +1773,8 @@ function runTradeEngine(rawLow, rawHigh, series) {
       const d24Hi  = series.high.slice(i24).filter(x => x != null && x > 0);
       if (d24Low.length >= 8 && d24Hi.length >= 8) {
         day24Lo = Math.min(...d24Low);
-        const dh = Math.max(...d24Hi);
-        day24Range = day24Lo > 0 ? (dh - day24Lo) / day24Lo : 0;
+        day24Hi = Math.max(...d24Hi);
+        day24Range = day24Lo > 0 ? (day24Hi - day24Lo) / day24Lo : 0;
       }
     }
 
@@ -1829,6 +1830,19 @@ function runTradeEngine(rawLow, rawHigh, series) {
       if (vHigh.length >= 3) {
         const vMean = mean(vHigh);
         if (vMean < anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
+      }
+      /* Patient-ask ceiling: mirror of the buy-side patient floor. For items
+         with a wide 24h band (>4%), the 90-minute anchor can sit well below
+         multi-hour peaks. Blend toward 0.5% below the 24h high, scaled
+         linearly from 0% blend at 4% range to 100% at 12%+ range. Capped
+         at the actual 24h high so we never chase a price that hasn't traded. */
+      if (day24Hi && day24Hi > 0 && day24Range > 0.04) {
+        const patientCeiling = Math.round(day24Hi * 0.995);
+        if (patientCeiling > anchor) {
+          const t = Math.min(1, (day24Range - 0.04) / 0.08);
+          anchor = Math.round(anchor * (1 - t) + patientCeiling * t);
+          if (anchor > day24Hi) anchor = day24Hi;
+        }
       }
       recentHigh = anchor;
     }
@@ -2586,11 +2600,13 @@ async function setItem(m) {
   currentItemSrc = await buildSeriesForItem(m.id);
   currentItemLowVol = isLowVolume(m.id);
 
-  /* default timeframe by volume: high-vol → 1D, low-vol → 1M (unless user changed it) */
-  if (!setItem._userPicked) {
-    view = currentItemLowVol ? '1m' : '1d';
-    document.querySelectorAll(".view-btn").forEach(b => b.classList.toggle('active', b.dataset.view === view));
-  }
+  /* The view-timeframe (1D / 5D / 1M / ...) is treated as a USER preference
+     that persists across item changes. Previously, switching items
+     auto-jumped 1D for high-vol items and 1M for low-vol — which was
+     surprising every time you clicked a row. Whatever timeframe is active
+     stays active; the user explicitly clicks 1D / 5D / etc. when they want
+     to switch. */
+  document.querySelectorAll(".view-btn").forEach(b => b.classList.toggle('active', b.dataset.view === view));
 
   const changes = computeAllChanges(currentItemSrc, currentItemLowVol);
   document.querySelectorAll(".view-btn").forEach(b => {
