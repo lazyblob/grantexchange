@@ -402,8 +402,14 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
    row's content slides left when the user drags it to expose a confirm bg. */
 .wl-item { position: relative; touch-action: pan-y; }
 .wl-fav-remove { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; width: 22px; height: 22px; cursor: pointer; line-height: 1; font-size: 15px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; opacity: 0; }
+.wl-fav-reorder { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s ease; }
+.wl-fav-reorder button { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; width: 22px; height: 12px; cursor: pointer; padding: 0; font-size: 8px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+.wl-fav-reorder button:hover:not(:disabled) { color: var(--text-main); border-color: var(--border-active); }
+.wl-fav-reorder button:disabled { opacity: 0.25; cursor: not-allowed; }
 .wl-item:hover .wl-fav-remove,
+.wl-item:hover .wl-fav-reorder,
 .wl-item.swipe-revealed .wl-fav-remove { opacity: 1; }
+@media (hover: none) { .wl-fav-reorder { opacity: 0.7; } }
 .wl-fav-remove:hover { color: var(--negative); border-color: var(--negative); background: rgba(239,83,80,0.12); }
 /* On touch devices (no hover capability) keep the button visible so users
    discover it without needing to guess at a hover affordance. */
@@ -600,6 +606,9 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>At or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
       <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>At or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
 
+      <div class="glossary-section">Browser notifications</div>
+      <div class="glossary-row"><span class="hl-badge high">📈 BREAK</span><span>Browser notifications only fire when a favorite's live price BREAKS PAST its tracked 24h or 5D extreme — a genuine new high/low, not a lingering "near the edge" state. Watermarks update automatically so the next alert needs an even bigger move. 5D breaks are flagged separately because they're rarer / bigger deal.</span></div>
+
       <div class="glossary-section">Manipulation alerts</div>
       <div class="glossary-row"><span class="wl-manip-badge accum">HOARDING</span><span>Last 2 days' volume is &gt;2× the 14-day average while price moved &lt;7%. Hints a buyer cluster (often a clan) absorbing supply quietly.</span></div>
       <div class="glossary-row"><span class="wl-manip-badge pump">PUMP/CHOKE</span><span>Price &gt;1.5σ off the 14-day mean while last 3 days' volume collapsed to &lt;55% of average. Hints the float dried up after a push.</span></div>
@@ -609,9 +618,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="wl-trend up">+450K ea avg</span><span>30-day average per-item margin (for 1M lists). More stable than a one-day snapshot.</span></div>
       <div class="glossary-row"><span class="wl-trend" style="color:#4FC3F7;">1Y AT low</span><span>Within 5% of the lowest price in the last 365 days. Long-term buy opportunity.</span></div>
 
-      <div class="glossary-section">Trend arrows</div>
-      <div class="glossary-row"><span class="wl-trend up">▲</span><span>Item's current mid-price is above its 24-hour average — short-term uptrend.</span></div>
-      <div class="glossary-row"><span class="wl-trend down">▼</span><span>Below the 24-hour average — short-term downtrend.</span></div>
+      <div class="glossary-section">Favorite reorder</div>
+      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">▲ / ▼</span><span>Move a favorite up or down inside the Favorites list (tap the small chevrons on hover-revealed reorder controls). Tap × on a row to remove it, or swipe-left on touch.</span></div>
 
       <div class="glossary-section">Grade box</div>
       <div class="glossary-row"><span class="pg-num" style="color:#4FFF8E;font-size:14px;">85+</span><span>Steal Buy / Top Sell — elite entry or exit for the active side and timeframe.</span></div>
@@ -619,7 +627,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-row"><span class="pg-num" style="color:#EF5350;font-size:14px;">&lt;30</span><span>Avoid — the price sits at the wrong end of the range for your active side.</span></div>
 
       <div class="glossary-section">Target prices</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low (capped at 0.9%). The honest bid — no queue-leapfrog padding, just what realistic sellers have been accepting. Same number on every chart timeframe.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips. Same number on every chart timeframe.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>-1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at (live insta-buy − 1) so we never recommend selling below where buyers are demonstrably paying right now. Same number on every chart timeframe.</span></div>
 
       <div class="glossary-section">Bank of Gielinor</div>
@@ -673,7 +681,20 @@ let hoverIdx = null;
 let selectedAbsIdx = null;
 let membersOn = localStorage.getItem('ge_members') === 'true';
 let fullHistorical = null;
-let favorites = JSON.parse(localStorage.getItem('ge_favorites') || '[]');
+/* Default favorites seeded for first-time users — a high-value rare (Zulrah's
+   scales), a staple flip (Diamond), and the site mascot (Gilded scimitar).
+   Only applied when the localStorage key is genuinely empty / missing, so
+   existing users with an empty favorites list don't get their state stomped
+   when they reload. */
+const FAVORITES_DEFAULTS = ['12934', '1601', '12389'];
+let favorites = (() => {
+  const raw = localStorage.getItem('ge_favorites');
+  if (raw == null) {
+    localStorage.setItem('ge_favorites', JSON.stringify(FAVORITES_DEFAULTS));
+    return FAVORITES_DEFAULTS.slice();
+  }
+  try { return JSON.parse(raw); } catch (e) { return []; }
+})();
 let recentItems = JSON.parse(localStorage.getItem('ge_recentItems') || '[]');
 let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
@@ -908,12 +929,22 @@ function resizeCanvas() {
   /* Skip transient zero/tiny sizes (mid-rotation, or when the on-screen keyboard
      collapses the layout) — sizing the canvas to those values breaks the chart. */
   if (rect.width < 10 || rect.height < 60) return;
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = (rect.height - 24) * dpr;
-  canvas.style.width = `${rect.width}px`;
-  canvas.style.height = `${rect.height - 24}px`;
+  /* HD canvas. devicePixelRatio scaling makes text + lines render at native
+     pixel density. Round the backing-store dimensions to whole pixels so we
+     don't paint into fractional pixels (which is what makes text look blurred). */
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const cssW = Math.floor(rect.width);
+  const cssH = Math.floor(rect.height - 24);
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  canvas.style.width = `${cssW}px`;
+  canvas.style.height = `${cssH}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  /* Tell the renderer to prefer legibility over speed on whatever it
+     supports — Chromium honors textRendering, font smoothing carries over
+     from CSS. Keeps glyph hinting at small sizes. */
+  if ('textRendering' in ctx) ctx.textRendering = 'geometricPrecision';
+  if ('fontKerning' in ctx) ctx.fontKerning = 'normal';
   queueDraw();
 }
 let _resizeTimer = null;
@@ -1015,9 +1046,21 @@ async function scanDayExtremes(ids) {
   fireFavoriteAlerts();
 }
 
-/* Fire a native browser notification when a favorite transitions into a day
-   high or low. Cooldown per item+state so we don't spam the same alert. Hooks
-   directly into the existing dayState detection — no separate signal logic. */
+/* Fire a native browser notification only on TRUE breakout / breakdown
+   events: when a favorite's live insta-buy actually exceeds its tracked
+   high-water mark, or the live insta-sell drops below the tracked low-water
+   mark. Used to fire on every "near the extreme" state — far too noisy.
+   Now persists watermarks per favorite so the alert only triggers on
+   genuine new extremes, not on lingering "at-extreme" states.
+
+   Tier (per favorite, per direction):
+   • 5D break — current price beats the last-known 5-day extreme (rare,
+     big-deal event)
+   • 24h break — current price beats the last-known 24h extreme (still
+     meaningful; can happen daily)
+
+   Cooldown remains as a safety net so the same break can't double-fire if
+   the cache jitters around the threshold. */
 function fireFavoriteAlerts() {
   if (!notifEnabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   const now = Date.now();
@@ -1029,30 +1072,54 @@ function fireFavoriteAlerts() {
     if (!membersOn && item.members) return;
     const node = latest?.data?.[id];
     if (!node) return;
-    const p24 = past24h?.data?.[id];
-    const state = dayState(node, p24, id);
-    const prev = notifAlertState[id] || { state: '', lastFired: 0 };
-    if (!state) {
-      if (prev.state) { notifAlertState[id] = { state: '', lastFired: prev.lastFired }; dirty = true; }
-      return;
-    }
-    const transitioned = state !== prev.state;
+    const ex = dayHiLoCache[id];
+    if (!ex || !ex.hi || !ex.lo) return;
+    const sell = node.high || node.avgHighPrice || 0; // insta-buy = you can sell here
+    const buy  = node.low  || node.avgLowPrice  || 0; // insta-sell = you can buy here
+
+    const prev = notifAlertState[id] || {};
+    /* Seed watermarks on first observation so we don't fire alerts for
+       extremes that were already in place when the user favorited. */
+    const hiMark = prev.hiMark ?? ex.hi;
+    const loMark = prev.loMark ?? ex.lo;
+    const hi5dMark = prev.hi5dMark ?? (ex.hi5d || ex.hi);
+    const lo5dMark = prev.lo5dMark ?? (ex.lo5d || ex.lo);
+    let tier = null;          // '5d' | '1d'
+    let direction = null;     // 'high' | 'low'
+    let price = 0, breakOf = 0;
+    if (sell > hi5dMark)      { tier = '5d'; direction = 'high'; price = sell; breakOf = hi5dMark; }
+    else if (sell > hiMark)   { tier = '1d'; direction = 'high'; price = sell; breakOf = hiMark; }
+    else if (buy  < lo5dMark) { tier = '5d'; direction = 'low';  price = buy;  breakOf = lo5dMark; }
+    else if (buy  < loMark)   { tier = '1d'; direction = 'low';  price = buy;  breakOf = loMark; }
+
+    /* Update watermarks every cycle so future alerts only fire on FURTHER
+       breaks past the new extreme. */
+    notifAlertState[id] = {
+      hiMark: Math.max(hiMark, sell),
+      loMark: loMark > 0 && buy > 0 ? Math.min(loMark, buy) : (loMark || buy),
+      hi5dMark: Math.max(hi5dMark, sell),
+      lo5dMark: lo5dMark > 0 && buy > 0 ? Math.min(lo5dMark, buy) : (lo5dMark || buy),
+      lastFired: prev.lastFired || 0
+    };
+    dirty = true;
+    if (!tier) return;
     const cooledDown = (now - (prev.lastFired || 0)) > NOTIF_COOLDOWN_MS;
-    if (!(transitioned && cooledDown)) return;
-    const price = state === 'high' ? (node.high ?? node.avgHighPrice ?? 0) : (node.low ?? node.avgLowPrice ?? 0);
-    const emoji = state === 'high' ? '📈' : '📉';
-    const label = state === 'high' ? 'DAY HIGH' : 'DAY LOW';
+    if (!cooledDown) return;
+    notifAlertState[id].lastFired = now;
+
+    const emoji = direction === 'high' ? '📈' : '📉';
+    const titleTier = tier === '5d' ? '5D' : '24H';
+    const verb = direction === 'high' ? 'broke above' : 'broke below';
+    const sideHint = direction === 'high' ? 'Sell into strength' : 'Buy the dip';
     try {
-      const n = new Notification(`${emoji} ${item.name} at ${label}`, {
-        body: `Live: ${fmtGp(price)} gp — tap to flip`,
+      const n = new Notification(`${emoji} ${item.name} ${verb} ${titleTier} ${direction === 'high' ? 'high' : 'low'}`, {
+        body: `Live ${direction === 'high' ? 'sell' : 'buy'}: ${fmtGp(price)} gp (prev ${titleTier} ${direction === 'high' ? 'high' : 'low'}: ${fmtGp(breakOf)}) — ${sideHint}`,
         icon: itemIconUrl(item.id),
-        tag: `pocketge-${id}-${state}`,
+        tag: `pocketge-${id}-${tier}-${direction}`,
         renotify: false
       });
       n.onclick = () => { try { window.focus(); n.close(); setItem._userPicked = false; setItem(item); } catch (e) {} };
     } catch (e) {}
-    notifAlertState[id] = { state, lastFired: now };
-    dirty = true;
   });
   if (dirty) {
     try { localStorage.setItem('ge_notifAlertState', JSON.stringify(notifAlertState)); } catch (e) {}
@@ -1190,7 +1257,10 @@ function renderWatchlist() {
 
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
 
-  const favs = activeItems.filter(item => favorites.includes(String(item.id)));
+  /* Favorites are ordered to MATCH the favorites array (user-reorderable),
+     so up/down moves persist in the visible list. */
+  const favsById = new Map(activeItems.map(it => [String(it.id), it]));
+  const favs = favorites.map(id => favsById.get(String(id))).filter(Boolean);
   const overMaxKeys = Object.keys(overMaxData);
   const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
 
@@ -1256,7 +1326,11 @@ function renderWatchlist() {
   at1yLows.sort((a, b) => a.pct - b.pct);
   at5yLows.sort((a, b) => a.pct - b.pct);
 
-  const plainEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: trendSub(latest?.data?.[String(item.id)], past24h?.data?.[String(item.id)]) }));
+  /* plainEntries used to embed a per-row 24h trend arrow (trendSub), but it
+     duplicated the at-high / at-low badge signal and clashed visually with
+     the new reorder ▲/▼ buttons. Dropped — the row's color glow + price
+     already communicate direction; the badge tier carries the rest. */
+  const plainEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: '' }));
   const marginEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend up">+${abbreviateNumber(r.margin)} ${tag}</span>` }));
   const lowEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend" style="color:#4FC3F7;">${tag} ${r.pct <= 0.5 ? 'AT low' : '+' + r.pct.toFixed(1) + '%'}</span>` }));
   const overEntries = overMaxItems.map(item => ({ item, price: overMaxData[String(item.id)].wts, sub: `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>` }));
@@ -1350,9 +1424,16 @@ function renderWatchlist() {
           : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days, not just today.">▼▼ 5D LOW</span>`
           : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲ HIGH</span>`
           : hlClass === 'at-low'    ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼ LOW</span>` : '';
-        /* Favorites rows get a × quick-remove button (hover-revealed on desktop,
-           always-visible on touch) plus a swipe-left-to-remove gesture. The
-           swipe target is a red "REMOVE" backdrop revealed under the row. */
+        /* Favorites rows get reorder buttons (▲ / ▼), a × quick-remove button
+           (hover-revealed on desktop, always-visible on touch), plus a swipe-
+           left gesture. The swipe target is a red "REMOVE" backdrop revealed
+           under the row. */
+        const favIdx = isFavGroup ? favorites.indexOf(String(item.id)) : -1;
+        const reorderBtns = isFavGroup ? `
+          <div class="wl-fav-reorder">
+            <button type="button" class="wl-fav-up" data-fav-id="${item.id}" ${favIdx === 0 ? 'disabled' : ''} title="Move up" aria-label="Move ${item.name} up">▲</button>
+            <button type="button" class="wl-fav-down" data-fav-id="${item.id}" ${favIdx === favorites.length - 1 ? 'disabled' : ''} title="Move down" aria-label="Move ${item.name} down">▼</button>
+          </div>` : '';
         const removeBtn = isFavGroup ? `<button type="button" class="wl-fav-remove" data-fav-id="${item.id}" title="Remove from favorites" aria-label="Remove ${item.name} from favorites">×</button>` : '';
         const swipeBg = isFavGroup ? `<span class="wl-swipe-bg">REMOVE</span>` : '';
         inner += `
@@ -1366,6 +1447,7 @@ function renderWatchlist() {
               ${hlBadge}
               <span class="wl-item-price">${abbreviateNumber(e.price)}</span>
               ${e.sub}
+              ${reorderBtns}
               ${removeBtn}
             </div>
           </div>`;
@@ -1389,7 +1471,7 @@ function renderWatchlist() {
     el.onclick = (ev) => {
       /* Don't navigate when the user clicks the per-row × or after a swipe
          has revealed the remove backdrop. */
-      if (ev.target.closest('.wl-fav-remove')) return;
+      if (ev.target.closest('.wl-fav-remove, .wl-fav-reorder')) return;
       if (el.classList.contains('swipe-revealed')) {
         el.classList.remove('swipe-revealed');
         return;
@@ -1413,6 +1495,24 @@ function renderWatchlist() {
       ev.stopPropagation();
       unfavorite(String(b.getAttribute('data-fav-id')));
     };
+  });
+
+  /* Up / down reorder buttons. Swap the favorite with its neighbour in the
+     favorites array, save, re-render. Works on every device — no drag-and-
+     drop complexity, just two taps. */
+  function moveFavorite(idStr, delta) {
+    const i = favorites.indexOf(idStr);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= favorites.length) return;
+    const tmp = favorites[i]; favorites[i] = favorites[j]; favorites[j] = tmp;
+    localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+    renderWatchlist();
+  }
+  container.querySelectorAll('.wl-fav-up').forEach(b => {
+    b.onclick = (ev) => { ev.stopPropagation(); moveFavorite(String(b.getAttribute('data-fav-id')), -1); };
+  });
+  container.querySelectorAll('.wl-fav-down').forEach(b => {
+    b.onclick = (ev) => { ev.stopPropagation(); moveFavorite(String(b.getAttribute('data-fav-id')), 1); };
   });
 
   /* Swipe-left to remove on touch devices. Threshold of 40px reveals the
@@ -1656,6 +1756,27 @@ function runTradeEngine(rawLow, rawHigh, series) {
     const vHigh = series.high.slice(-k2).filter(x => x != null && x > 0);
     const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
+    /* Wider 24h slice for "patient" context. The 90-minute window catches
+       what's filling RIGHT NOW, but a volatile item (bonds, expensive
+       supplies) regularly dips below the 90-min cluster — a patient bid
+       can target those dips. We only use this floor when the 24h band is
+       wide (>4% range), so tight-spread items stay anchored to current
+       activity. */
+    let day24Lo = null, day24Range = 0;
+    if (labels.length > 0 && labels[labels.length - 1] > 0) {
+      const now = labels[labels.length - 1];
+      const cut24h = now - 24 * 60 * 60;
+      let i24 = labels.length;
+      while (i24 > 0 && labels[i24 - 1] >= cut24h) i24--;
+      const d24Low = series.low.slice(i24).filter(x => x != null && x > 0);
+      const d24Hi  = series.high.slice(i24).filter(x => x != null && x > 0);
+      if (d24Low.length >= 8 && d24Hi.length >= 8) {
+        day24Lo = Math.min(...d24Low);
+        const dh = Math.max(...d24Hi);
+        day24Range = day24Lo > 0 ? (dh - day24Lo) / day24Lo : 0;
+      }
+    }
+
     if (rLow.length >= 3) {
       /* Buy side: 15th-percentile slice + cluster (lower wins, more
          ambitious bid), then nudge toward the very-recent realised low
@@ -1673,6 +1794,20 @@ function runTradeEngine(rawLow, rawHigh, series) {
       if (vLow.length >= 3) {
         const vMean = mean(vLow);
         if (vMean > anchor) anchor = Math.round(anchor * 0.3 + vMean * 0.7);
+      }
+      /* Patient-bid floor: for items whose 24h band is genuinely wide
+         (>4% range), the 90-minute anchor leaves multi-hour dips on the
+         table. Drop the anchor toward a price 0.5% above the 24h low so a
+         patient bid can catch those dips. Scaled by how volatile the item
+         is — a 4% range gets a mild blend, 12%+ gets the full patient
+         floor. Capped so the anchor never falls below the actual 24h low. */
+      if (day24Lo && day24Lo > 0 && day24Range > 0.04) {
+        const patientFloor = Math.round(day24Lo * 1.005);
+        if (patientFloor < anchor) {
+          const t = Math.min(1, (day24Range - 0.04) / 0.08); // 0 at 4%, 1 at 12%
+          anchor = Math.round(anchor * (1 - t) + patientFloor * t);
+          if (anchor < day24Lo) anchor = day24Lo;
+        }
       }
       recentLow = anchor;
     }
@@ -2077,7 +2212,7 @@ function drawChart(series) {
     ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     const v = Math.round(vmax - (vmax - vmin) * i / linesY);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-    ctx.fillText(fmtYAxis(v), x0 - 6, y);
+    ctx.fillText(fmtYAxis(v), Math.round(x0 - 6), Math.round(y));
   }
 
   /* x-axis label granularity adapts to the visible time span: intraday → time,
@@ -2101,7 +2236,7 @@ function drawChart(series) {
       lastYear = yr;
       const x = x0 + i * stepX;
       ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
-      ctx.fillText(String(yr), x, y0 + h + 4);
+      ctx.fillText(String(yr), Math.round(x), Math.round(y0 + h + 4));
     }
   } else {
     let lastAxisLabel = null;
@@ -2109,7 +2244,7 @@ function drawChart(series) {
       const x = x0 + i * stepX;
       ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
       const dateStr = fmtAxis(L[i]);
-      if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, x, y0 + h + 4); lastAxisLabel = dateStr; }
+      if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, Math.round(x), Math.round(y0 + h + 4)); lastAxisLabel = dateStr; }
     }
   }
 
@@ -2235,7 +2370,7 @@ function drawChart(series) {
       if (cy - bh / 2 < y0 + 1) cy = py + bh / 2 + 2;
       ctx.fillStyle = "rgba(11,14,20,0.92)"; ctx.fillRect(bx, cy - bh / 2, tw + padX * 2, bh);
       ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(bx + 0.5, cy - bh / 2 + 0.5, tw + padX * 2 - 1, bh - 1);
-      ctx.fillStyle = col; ctx.fillText(label, bx + padX, cy);
+      ctx.fillStyle = col; ctx.fillText(label, Math.round(bx + padX), Math.round(cy));
       ctx.restore();
     }
   }
