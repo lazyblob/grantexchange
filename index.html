@@ -1260,6 +1260,29 @@ function dayState(node, p24, id) {
   return "";
 }
 
+/* Tab-title breakout badge — count favorites currently at an actionable
+   24h/5D peak or floor (same dayState that drives the ▲/▼ glow chips). When
+   the user is on another tab, the "(3) Ruby - PocketGE" prefix tells them
+   at a glance that something in their watchlist needs eyes. */
+function countFavoriteBreakouts() {
+  if (!Array.isArray(favorites) || favorites.length === 0) return 0;
+  let count = 0;
+  for (const idStr of favorites) {
+    const id = String(idStr);
+    if (overMaxData[id]) continue;
+    const node = latest?.data?.[id];
+    const p24 = past24h?.data?.[id];
+    if (dayState(node, p24, id)) count++;
+  }
+  return count;
+}
+
+function applyTitleBadge() {
+  const base = selected ? `${selected.name} - PocketGE` : 'PocketGE';
+  const n = countFavoriteBreakouts();
+  document.title = n > 0 ? `(${n}) ${base}` : base;
+}
+
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
@@ -1562,6 +1585,11 @@ function renderWatchlist() {
   const idsToScan = favs.map(i => String(i.id));
   if (selected) idsToScan.push(String(selected.id));
   scanDayExtremes(idsToScan);
+
+  /* Refresh the tab-title (N) badge against the same data the watchlist
+     just rendered against. scanDayExtremes will re-render the watchlist
+     once it resolves, so this is called again then with the fresh cache. */
+  applyTitleBadge();
 }
 
 function seriesFromTS(ts) {
@@ -2591,7 +2619,7 @@ async function setItem(m) {
   recentItems = [String(m.id), ...recentItems.filter(id => id !== String(m.id))].slice(0, 10);
   try { localStorage.setItem('ge_recentItems', JSON.stringify(recentItems)); } catch (e) {}
   $("#query").value = m.name;
-  document.title = `${m.name} - PocketGE`;
+  applyTitleBadge();
   const iconURL = itemIconUrl(m.id);
   $("#itemIcon").src = iconURL;
   $("#tickerHeaderIcon").src = iconURL;
