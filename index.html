@@ -1261,9 +1261,10 @@ function dayState(node, p24, id) {
 }
 
 /* Tab-title breakout badge — count favorites currently at an actionable
-   24h/5D peak or floor (same dayState that drives the ▲/▼ glow chips). When
-   the user is on another tab, the "(3) Ruby - PocketGE" prefix tells them
-   at a glance that something in their watchlist needs eyes. */
+   5D peak or floor (same dayState that drives the ▲▲/▼▼ glow chips). 24h
+   highs/lows are deliberately ignored: those wiggle multiple times per day
+   and would make the (N) prefix nearly always non-zero, defeating the
+   purpose of a "look at this NOW" signal. */
 function countFavoriteBreakouts() {
   if (!Array.isArray(favorites) || favorites.length === 0) return 0;
   let count = 0;
@@ -1272,7 +1273,8 @@ function countFavoriteBreakouts() {
     if (overMaxData[id]) continue;
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
-    if (dayState(node, p24, id)) count++;
+    const st = dayState(node, p24, id);
+    if (st === 'high5d' || st === 'low5d') count++;
   }
   return count;
 }
