@@ -288,7 +288,6 @@ button, input { touch-action: manipulation; }
 .watchlist-content { flex: 1; overflow-y: auto; }
 .category-group { border-bottom: 1px solid var(--border-main); }
 .category-title { padding: 8px 14px; font-size: 11px; font-weight: bold; color: var(--border-active); background: rgba(42, 46, 57, 0.4); cursor: pointer; display: flex; justify-content: space-between; }
-.category-title.overmax-title { color: var(--fav-gold); }
 .category-title.high-title { color: var(--positive); }
 .category-title.low-title { color: var(--buy-color); }
 .category-title.fav-title { color: var(--text-main); }
@@ -296,12 +295,6 @@ button, input { touch-action: manipulation; }
 .category-title.rec-title { color: #FF9800; }
 .category-title.margin-title { color: #2ECC71; }
 .category-title.marginlo-title { color: #7FE3A6; }
-.category-title.ylow-title { color: #4FC3F7; }
-.category-title.fivey-title { color: #9C8CFF; }
-.category-title.manip-title { color: #FF6E6E; }
-.wl-manip-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
-.wl-manip-badge.accum { background: rgba(187, 134, 252, 0.18); color: #C9A8FF; border: 1px solid rgba(187, 134, 252, 0.4); }
-.wl-manip-badge.pump { background: rgba(255, 110, 110, 0.18); color: #FF8A8A; border: 1px solid rgba(255, 110, 110, 0.4); }
 /* Remote Flip Mode: ultra-clean, glanceable, stealthy at-work view. Decorative
    chrome is hidden, prices are oversized, and the chart drops everything except
    the price line + target. */
@@ -618,10 +611,6 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="glossary-section">Browser notifications</div>
       <div class="glossary-row"><span class="hl-badge high">📈 BREAK</span><span>Browser notifications only fire when a favorite's live price BREAKS PAST its tracked 24h or 5D extreme — a genuine new high/low, not a lingering "near the edge" state. Watermarks update automatically so the next alert needs an even bigger move. 5D breaks are flagged separately because they're rarer / bigger deal.</span></div>
 
-      <div class="glossary-section">Manipulation alerts</div>
-      <div class="glossary-row"><span class="wl-manip-badge accum">HOARDING</span><span>Last 2 days' volume is &gt;2× the 14-day average while price moved &lt;7%. Hints a buyer cluster (often a clan) absorbing supply quietly.</span></div>
-      <div class="glossary-row"><span class="wl-manip-badge pump">PUMP/CHOKE</span><span>Price &gt;1.5σ off the 14-day mean while last 3 days' volume collapsed to &lt;55% of average. Hints the float dried up after a push.</span></div>
-
       <div class="glossary-section">Margin tags</div>
       <div class="glossary-row"><span class="wl-trend up">+1.2M ea</span><span>Estimated per-item margin from the live insta-buy / insta-sell spread, after the 2% GE tax.</span></div>
       <div class="glossary-row"><span class="wl-trend up">+450K ea avg</span><span>30-day average per-item margin (for 1M lists). More stable than a one-day snapshot.</span></div>
@@ -712,11 +701,8 @@ let isCalcOpen = false;
 let currentItemSrc = null;
 let currentItemLowVol = false;
 let overMaxFull = null;
-let historyCache = {};
-let marginCache = {};
 let dayHiLoCache = {};
-let manipCache = {};
-let scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
+let scanStatus = { fived: 'idle' };
 
 let flipMode = localStorage.getItem('ge_flip') === '1';
 let notifEnabled = localStorage.getItem('ge_notif') === '1';
@@ -725,16 +711,10 @@ const NOTIF_COOLDOWN_MS = 10 * 60 * 1000;
 
 let groupOpenStates = {
   "⭐ Favorites": true,
-  "💰 Top Margins · High Vol (1D)": false,
-  "💵 Top Margins · Low Vol (1D)": false,
-  "📅 Top Margins · High Vol (1M)": false,
-  "🗓️ Top Margins · Low Vol (1M)": false,
-  "📉 At 5D Lows": false,
+  "💰 High Vol Margins": false,
+  "💎 Low Vol Margins": false,
   "📈 At 5D Highs": false,
-  "🔵 At 1-Year Lows": false,
-  "🧊 At 5-Year Lows": false,
-  "👑 Over-Max Rares": false,
-  "🚨 Market Manipulation Alerts": false
+  "📉 At 5D Lows": false
 };
 
 const canvas = document.getElementById("chart");
@@ -984,37 +964,6 @@ async function throttleMap(items, fn, concurrency) {
   await Promise.all(Array.from({ length: concurrency }, worker));
 }
 
-async function runHistoryScan() {
-  if (scanStatus.history === 'loading' || scanStatus.history === 'done') return;
-  scanStatus.history = 'loading'; renderWatchlist();
-  const cands = getScanCandidates().filter(m => !(String(m.id) in historyCache));
-  await throttleMap(cands, async (m) => {
-    const h = await loadHistorical(m.id);
-    const arr = h?.[String(m.id)] || [];
-    const prices = arr.map(r => r.price).filter(p => p > 0);
-    if (!prices.length) { historyCache[m.id] = { min1y: null, min5y: null }; return; }
-    historyCache[m.id] = { min1y: Math.min(...prices.slice(-365)), min5y: Math.min(...prices.slice(-1825)) };
-  }, SCAN_CONCURRENCY);
-  scanStatus.history = 'done'; renderWatchlist();
-}
-
-async function runMarginScan() {
-  if (scanStatus.margin === 'loading' || scanStatus.margin === 'done') return;
-  scanStatus.margin = 'loading'; renderWatchlist();
-  const cands = getScanCandidates().filter(m => !(String(m.id) in marginCache));
-  await throttleMap(cands, async (m) => {
-    const ts = seriesFromTS(await loadTS('24h', m.id));
-    const days = Math.min(30, ts.labels.length);
-    let sum = 0, cnt = 0;
-    for (let i = ts.labels.length - days; i < ts.labels.length; i++) {
-      const hi = ts.high[i], lo = ts.low[i];
-      if (hi != null && lo != null && hi > lo) { sum += (hi - lo - calculateTax(hi)); cnt++; }
-    }
-    marginCache[m.id] = { margin: cnt ? Math.round(sum / cnt) : null };
-  }, SCAN_CONCURRENCY);
-  scanStatus.margin = 'done'; renderWatchlist();
-}
-
 /* Fetch the true intraday high/low (from 5m candles, last 24h) for specific
    items so the day-high/low glow reflects the actual recent peak/trough — the
    whole point of the "wow, take action" highlight on your favorites. Cached and
@@ -1135,68 +1084,6 @@ function fireFavoriteAlerts() {
   }
 }
 
-/* "Merch Clan Hoarding" detector. Analyses up to ~30 days of daily candles per
-   item and flags two manipulation patterns:
-     A. Accumulation — last-2-day avg volume > 2.5× the 14-day average while
-        the price moved < 5%. Implies a buyer (clan) absorbing supply quietly.
-     B. Supply Choke / Pump — current price > 2 standard deviations off the
-        14-day mean while the last 3 days' volume collapsed to < 40% of the
-        14-day average. Implies the float dried up after a push. */
-function detectManipulation(ts) {
-  if (!ts || !ts.labels || ts.labels.length < 14) return null;
-  const n = ts.labels.length;
-  const vols = [], prices = [];
-  for (let i = 0; i < n; i++) {
-    vols.push((ts.lowVol[i] || 0) + (ts.highVol[i] || 0));
-    let p = null;
-    if (ts.low[i] != null && ts.high[i] != null) p = (ts.low[i] + ts.high[i]) / 2;
-    else p = ts.high[i] ?? ts.low[i] ?? null;
-    prices.push(p);
-  }
-  const window = Math.min(14, n);
-  const w14Vol = vols.slice(-window);
-  const w14Price = prices.slice(-window).filter(p => p != null && p > 0);
-  if (w14Price.length < 7) return null;
-  const avg14Vol = w14Vol.reduce((a, b) => a + b, 0) / w14Vol.length;
-  if (avg14Vol <= 0) return null;
-  const pNow = prices[n - 1];
-  if (pNow == null || pNow <= 0) return null;
-
-  /* Pattern A: stealth accumulation. The original 2.5×/<5% spec was strict
-     enough to leave the list empty most days — relaxed slightly so it surfaces
-     a steady handful of suspects while still requiring a real volume bump
-     against a flat tape. */
-  const last2Vol = (vols[n - 1] + (vols[n - 2] ?? vols[n - 1])) / 2;
-  const p2dAgo = prices[Math.max(0, n - 3)] ?? pNow;
-  const pctChange2d = p2dAgo > 0 ? Math.abs((pNow - p2dAgo) / p2dAgo) : 0;
-  const patternA = last2Vol > avg14Vol * 2.0 && pctChange2d < 0.07;
-
-  /* Pattern B: supply choke / pump — loosened to 1.5σ + sub-55% volume. */
-  const meanP = w14Price.reduce((a, b) => a + b, 0) / w14Price.length;
-  const variance = w14Price.reduce((a, b) => a + (b - meanP) ** 2, 0) / w14Price.length;
-  const stdevP = Math.sqrt(variance);
-  const last3Vol = ((vols[n - 1] || 0) + (vols[n - 2] || 0) + (vols[n - 3] || 0)) / 3;
-  const priceSpike = stdevP > 0 && Math.abs(pNow - meanP) > 1.5 * stdevP;
-  const volCollapse = last3Vol < avg14Vol * 0.55;
-  const patternB = priceSpike && volCollapse;
-
-  if (!patternA && !patternB) return null;
-  return { patternA, patternB, price: pNow, volRatio: last2Vol / avg14Vol };
-}
-
-async function runManipScan() {
-  if (scanStatus.manip === 'loading' || scanStatus.manip === 'done') return;
-  scanStatus.manip = 'loading'; renderWatchlist();
-  const cands = getScanCandidates().filter(m => !(String(m.id) in manipCache));
-  await throttleMap(cands, async (m) => {
-    try {
-      const ts = seriesFromTS(await loadTS('24h', m.id));
-      manipCache[m.id] = detectManipulation(ts);
-    } catch (e) { manipCache[m.id] = null; }
-  }, SCAN_CONCURRENCY);
-  scanStatus.manip = 'done'; renderWatchlist();
-}
-
 /* 5-day breakout scan — populates dayHiLoCache.hi5d / lo5d for the
    bounded candidate pool (top volume + top price ~100 items). Reuses
    scanDayExtremes (1h-candle endpoint → 5-day VWAP highs/lows from the
@@ -1309,8 +1196,6 @@ function renderWatchlist() {
      so up/down moves persist in the visible list. */
   const favsById = new Map(activeItems.map(it => [String(it.id), it]));
   const favs = favorites.map(id => favsById.get(String(id))).filter(Boolean);
-  const overMaxKeys = Object.keys(overMaxData);
-  const overMaxItems = activeItems.filter(item => overMaxKeys.includes(String(item.id)));
 
   const dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [];
 
@@ -1354,80 +1239,23 @@ function renderWatchlist() {
   marginHigh1d.sort((a, b) => b.margin - a.margin);
   marginLow1d.sort((a, b) => b.margin - a.margin);
 
-  const marginHigh1m = [], marginLow1m = [];
-  Object.keys(marginCache).forEach(id => {
-    const mc = marginCache[id];
-    if (!mc || mc.margin == null || mc.margin <= 0) return;
-    const item = mapping.find(x => String(x.id) === id);
-    if (!item || (!membersOn && item.members)) return;
-    const row = { item, margin: mc.margin };
-    if (isLowVolume(item.id)) marginLow1m.push(row); else marginHigh1m.push(row);
-  });
-  marginHigh1m.sort((a, b) => b.margin - a.margin);
-  marginLow1m.sort((a, b) => b.margin - a.margin);
-
-  const at1yLows = [], at5yLows = [];
-  /* Junk filter: skip items priced under 1,000gp from the long-term-lows lists.
-     Penny items (feathers, raw fish, low-tier runes) clutter the list with
-     non-actionable rows that all read as "AT low" because their price barely
-     moves in absolute terms. */
-  const LOW_LIST_MIN_PRICE = 1000;
-  Object.keys(historyCache).forEach(id => {
-    const hc = historyCache[id];
-    const item = mapping.find(x => String(x.id) === id);
-    if (!item || (!membersOn && item.members)) return;
-    const cur = priceOf(item);
-    if (!cur || cur < LOW_LIST_MIN_PRICE) return;
-    if (hc.min1y && cur <= hc.min1y * 1.05) at1yLows.push({ item, pct: (cur / hc.min1y - 1) * 100, low: hc.min1y });
-    if (hc.min5y && cur <= hc.min5y * 1.08) at5yLows.push({ item, pct: (cur / hc.min5y - 1) * 100, low: hc.min5y });
-  });
-  at1yLows.sort((a, b) => a.pct - b.pct);
-  at5yLows.sort((a, b) => a.pct - b.pct);
-
-  /* plainEntries used to embed a per-row 24h trend arrow (trendSub), but it
-     duplicated the at-high / at-low badge signal and clashed visually with
-     the new reorder ▲/▼ buttons. Dropped — the row's color glow + price
-     already communicate direction; the badge tier carries the rest. */
+  /* plainEntries used to embed a per-row 24h trend arrow, but it duplicated
+     the at-high / at-low badge signal and clashed visually with the reorder
+     ▲/▼ buttons. The row's color glow + price already communicate direction. */
   const plainEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: '' }));
   const marginEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend up">+${abbreviateNumber(r.margin)} ${tag}</span>` }));
-  const lowEntries = (rows, tag) => rows.slice(0, 30).map(r => ({ item: r.item, price: priceOf(r.item), sub: `<span class="wl-trend" style="color:#4FC3F7;">${tag} ${r.pct <= 0.5 ? 'AT low' : '+' + r.pct.toFixed(1) + '%'}</span>` }));
-  const overEntries = overMaxItems.map(item => ({ item, price: overMaxData[String(item.id)].wts, sub: `<span class="wl-trend" style="color:var(--text-muted);">Est. Value</span>` }));
 
-  const manipRows = [];
-  Object.keys(manipCache).forEach(id => {
-    const flag = manipCache[id];
-    if (!flag) return;
-    const item = mapping.find(x => String(x.id) === id);
-    if (!item || (!membersOn && item.members)) return;
-    /* Skip sub-100gp prints; clan-hoarding-a-penny-item is not a useful alert. */
-    if (priceOf(item) < 100) return;
-    manipRows.push({ item, flag });
-  });
-  manipRows.sort((a, b) => priceOf(b.item) - priceOf(a.item));
-  const manipEntries = manipRows.slice(0, 30).map(r => {
-    const cls = r.flag.patternA ? 'accum' : 'pump';
-    const label = r.flag.patternA ? 'HOARDING' : 'PUMP/CHOKE';
-    const tip = r.flag.patternA
-      ? 'HOARDING: last 2 days volume >2× the 14-day average while price barely moved (<7%) — possible clan accumulation.'
-      : 'PUMP/CHOKE: price >1.5σ off the 14-day mean while last 3 days volume collapsed to <55% of average — supply choke after a push.';
-    return { item: r.item, price: priceOf(r.item), sub: `<span class="wl-manip-badge ${cls}" title="${tip}">${label}</span>` };
-  });
-
-  /* Order tuned by actionability — favorites first, then "act now" signals
-     (day highs / lows), then bread-and-butter live margins, then manipulation
-     hints, then strategic long-term and 1M-averaged lists, then niche over-max.
-     The previous 5Y-Lows and 1M-Low-Vol groups were dropped: 5Y Lows mostly
-     overlaps the 1Y list, and 1M Low-Vol margins were rarely worth the wait. */
+  /* Final scanner ordering — favorites pinned on top, then current live
+     margins (the bread-and-butter "flip now" view), then the 5-day extreme
+     breakouts. Long-term lows, 1M-averaged margins, manipulation hints, and
+     over-max rares were dropped: clutter that drifted from the core flipping
+     workflow. */
   const groups = [
     { name: "⭐ Favorites", className: "fav-title", entries: plainEntries(favs), alwaysShow: true },
+    { name: "💰 High Vol Margins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
+    { name: "💎 Low Vol Margins", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
     { name: "📈 At 5D Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived" },
-    { name: "📉 At 5D Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived" },
-    { name: "💰 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
-    { name: "💵 Top Margins · Low Vol (1D)", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
-    { name: "🚨 Market Manipulation Alerts", className: "manip-title", entries: manipEntries, scan: "manip" },
-    { name: "🔵 At 1-Year Lows", className: "ylow-title", entries: lowEntries(at1yLows, "1Y"), scan: "history" },
-    { name: "📅 Top Margins · High Vol (1M)", className: "margin-title", entries: marginEntries(marginHigh1m, "ea avg"), scan: "margin" },
-    { name: "👑 Over-Max Rares", className: "overmax-title", entries: overEntries }
+    { name: "📉 At 5D Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -1446,27 +1274,17 @@ function renderWatchlist() {
       const nowCollapsed = listDiv.classList.toggle("collapsed");
       titleDiv.querySelector("span:last-child").textContent = nowCollapsed ? "▶" : "▼";
       groupOpenStates[group.name] = !nowCollapsed;
-      if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
-        if (group.scan === 'history') runHistoryScan();
-        else if (group.scan === 'margin') runMarginScan();
-        else if (group.scan === 'manip') runManipScan();
-        else if (group.scan === 'fived') runFiveDayScan();
+      if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle' && group.scan === 'fived') {
+        runFiveDayScan();
       }
     };
 
     let inner = "";
     if (hasScan && scanState !== 'done' && group.entries.length === 0) {
-      const loadLabel = group.scan === 'fived' ? 'Scanning 5-day extremes…' : 'Scanning market history…';
-      const idleLabel = group.scan === 'fived' ? 'Tap to scan 5-day extremes (top items)' : 'Tap to scan history (top items)';
-      if (scanState === 'loading') inner = `<div class="scan-row loading">⏳ ${loadLabel}</div>`;
-      else inner = `<div class="scan-row" data-scan="${group.scan}">🔍 ${idleLabel}</div>`;
+      if (scanState === 'loading') inner = `<div class="scan-row loading">⏳ Scanning 5-day extremes…</div>`;
+      else inner = `<div class="scan-row" data-scan="${group.scan}">🔍 Tap to scan 5-day extremes (top items)</div>`;
     } else if (group.entries.length === 0) {
-      const emptyMsg = group.scan === 'manip'
-        ? 'No clear manipulation patterns today — quiet tape'
-        : group.scan === 'fived'
-        ? 'Nothing at a 5-day extreme right now'
-        : 'None found';
-      inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">${emptyMsg}</div>`;
+      inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">Nothing at a 5-day extreme right now</div>`;
     } else {
       const isFavGroup = group.name === "⭐ Favorites";
       group.entries.forEach(e => {
@@ -1522,14 +1340,8 @@ function renderWatchlist() {
   });
   container.appendChild(fragment);
 
-  container.querySelectorAll('.scan-row[data-scan]').forEach(el => {
-    el.onclick = () => {
-      const t = el.getAttribute('data-scan');
-      if (t === 'history') runHistoryScan();
-      else if (t === 'margin') runMarginScan();
-      else if (t === 'manip') runManipScan();
-      else if (t === 'fived') runFiveDayScan();
-    };
+  container.querySelectorAll('.scan-row[data-scan="fived"]').forEach(el => {
+    el.onclick = () => runFiveDayScan();
   });
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = (ev) => {
@@ -2000,13 +1812,9 @@ function computeGrade(item, side) {
     }
   }
 
-  // 4) Long-term context vs 1Y low (buy-side bonus only)
-  let longScore = 3;
-  const hc = historyCache[id];
-  if (hc && side === 'buy' && hc.min1y && hc.min1y > 0) {
-    const ratio = current / hc.min1y;
-    longScore = Math.max(0, Math.min(5, (1.5 - ratio) * 10));
-  }
+  // 4) Long-term context — fixed baseline contribution. The 1Y-low buy-side
+  //    bonus that used to live here was tied to the deleted history scanner.
+  const longScore = 3;
 
   /* 5) Margin health — use the BETTER of two signals:
        a. The right-now engine spread (recommendedSell - recommendedBuy - tax).
@@ -2727,11 +2535,10 @@ setItem._userPicked = false;
     try { volumes = await loadVolumes(); } catch (e) {}
 
     renderWatchlist();
-    /* Auto-kick the manipulation scan + 5-day extremes scan in the background
-       so both groups have results by the time the user expands them (instead
-       of "None found"). Both are throttled via SCAN_CONCURRENCY against the
-       bounded ~100-item candidate pool — never the full 4500-item mapping. */
-    runManipScan();
+    /* Auto-kick the 5-day extremes scan in the background so the 5D Highs /
+       5D Lows groups have results by the time the user looks. Throttled via
+       SCAN_CONCURRENCY against a bounded ~100-item candidate pool (top vol +
+       top price), never the full 4500-item mapping. */
     runFiveDayScan();
 
     const sb = $("#suggestBox"), qInput = $("#query");
@@ -2773,7 +2580,7 @@ setItem._userPicked = false;
     $("#btnF2P").onclick = () => {
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
+      dayHiLoCache = {}; scanStatus = { fived: 'idle' };
       renderWatchlist();
       if (selected?.members) {
         const landing = mapping.find(x => String(x.id) === LANDING_ID);
@@ -2783,7 +2590,7 @@ setItem._userPicked = false;
     $("#btnMembers").onclick = () => {
       membersOn = true; localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
+      dayHiLoCache = {}; scanStatus = { fived: 'idle' };
       renderWatchlist();
     };
 
