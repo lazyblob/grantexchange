@@ -1181,10 +1181,15 @@ function dayState(node, p24, id) {
       if (sell > 0 && (ex.hi5d - sell) / range5d <= 0.08) return "high5d";
       if (buy > 0  && (buy - ex.lo5d) / range5d <= 0.08) return "low5d";
     }
-    /* Then the regular 24h tier — same logic as before. */
-    if (ex.hi - ex.lo >= ex.lo * 0.02) {
-      if (sell > 0 && sell >= ex.hi * 0.985) return "high";
-      if (buy > 0 && buy <= ex.lo * 1.015) return "low";
+    /* 24h tier — STRICT. Live price must literally meet or break the highest
+       (or lowest) 1h VWAP bucket recorded across the last 24 hours. The old
+       "within 1.5%" fuzz was flagging items that were just hanging out near
+       their daily edges, so almost every favorite wore a ▲/▼ badge all the
+       time. Strict equality + a 4% range floor (up from 2%) reserves the
+       badge for items literally pressing against their true 24h extreme. */
+    if (ex.hi - ex.lo >= ex.lo * 0.04) {
+      if (sell > 0 && sell >= ex.hi) return "high";
+      if (buy > 0 && buy <= ex.lo) return "low";
     }
     return "";
   }
