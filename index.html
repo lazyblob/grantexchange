@@ -716,7 +716,7 @@ let historyCache = {};
 let marginCache = {};
 let dayHiLoCache = {};
 let manipCache = {};
-let scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
+let scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
 
 let flipMode = localStorage.getItem('ge_flip') === '1';
 let notifEnabled = localStorage.getItem('ge_notif') === '1';
@@ -729,8 +729,8 @@ let groupOpenStates = {
   "💵 Top Margins · Low Vol (1D)": false,
   "📅 Top Margins · High Vol (1M)": false,
   "🗓️ Top Margins · Low Vol (1M)": false,
-  "📉 At Day Lows": false,
-  "🚀 At Day Highs": false,
+  "📉 At 5D Lows": false,
+  "📈 At 5D Highs": false,
   "🔵 At 1-Year Lows": false,
   "🧊 At 5-Year Lows": false,
   "👑 Over-Max Rares": false,
@@ -1197,6 +1197,20 @@ async function runManipScan() {
   scanStatus.manip = 'done'; renderWatchlist();
 }
 
+/* 5-day breakout scan — populates dayHiLoCache.hi5d / lo5d for the
+   bounded candidate pool (top volume + top price ~100 items). Reuses
+   scanDayExtremes (1h-candle endpoint → 5-day VWAP highs/lows from the
+   API's volume-weighted bucket data). Throttled via SCAN_CONCURRENCY so
+   we never blast 4500 per-item requests at once. */
+async function runFiveDayScan() {
+  if (scanStatus.fived === 'loading' || scanStatus.fived === 'done') return;
+  scanStatus.fived = 'loading'; renderWatchlist();
+  const cands = getScanCandidates();
+  const ids = cands.map(m => String(m.id)).filter(id => !(id in dayHiLoCache));
+  if (ids.length) await scanDayExtremes(ids);
+  scanStatus.fived = 'done'; renderWatchlist();
+}
+
 function trendSub(node, p24) {
   let currentMid = null;
   if (node?.high && node?.low) currentMid = (node.high + node.low) / 2;
@@ -1306,9 +1320,19 @@ function renderWatchlist() {
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
 
-    const st = dayState(node, p24, id);
-    if (st === "low") dayLows.push(item);
-    else if (st === "high") dayHighs.push(item);
+    /* 5D breakout test — use the API's rolling 1h volume-weighted high/low
+       across the last 5 days, NOT the 24h band. Item only qualifies when the
+       live competitive price is testing or breaching the actual 5-day outer
+       extreme (within 0.5%, or above/below it). Requires a meaningful 5D
+       range (>= 3% of price) so flat items don't trigger on rounding noise.
+       Only items in the bounded scan-candidate pool have a populated
+       dayHiLoCache entry — others are silently skipped (no per-item fetch). */
+    const ex = dayHiLoCache[id];
+    if (ex && ex.hi5d > 0 && ex.lo5d > 0 && (ex.hi5d - ex.lo5d) >= ex.lo5d * 0.03) {
+      const sell = node?.high || 0, buy = node?.low || 0;
+      if (sell > 0 && sell >= ex.hi5d * 0.995) dayHighs.push(item);
+      else if (buy > 0 && buy <= ex.lo5d * 1.005) dayLows.push(item);
+    }
 
     /* 1D margin from the live instant-buy/instant-sell spread — the real margin
        a flipper can capture right now. The 24h volume-weighted averages compress
@@ -1396,8 +1420,8 @@ function renderWatchlist() {
      overlaps the 1Y list, and 1M Low-Vol margins were rarely worth the wait. */
   const groups = [
     { name: "⭐ Favorites", className: "fav-title", entries: plainEntries(favs), alwaysShow: true },
-    { name: "🚀 At Day Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)) },
-    { name: "📉 At Day Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)) },
+    { name: "📈 At 5D Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived" },
+    { name: "📉 At 5D Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived" },
     { name: "💰 Top Margins · High Vol (1D)", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
     { name: "💵 Top Margins · Low Vol (1D)", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
     { name: "🚨 Market Manipulation Alerts", className: "manip-title", entries: manipEntries, scan: "manip" },
@@ -1426,16 +1450,21 @@ function renderWatchlist() {
         if (group.scan === 'history') runHistoryScan();
         else if (group.scan === 'margin') runMarginScan();
         else if (group.scan === 'manip') runManipScan();
+        else if (group.scan === 'fived') runFiveDayScan();
       }
     };
 
     let inner = "";
     if (hasScan && scanState !== 'done' && group.entries.length === 0) {
-      if (scanState === 'loading') inner = `<div class="scan-row loading">⏳ Scanning market history…</div>`;
-      else inner = `<div class="scan-row" data-scan="${group.scan}">🔍 Tap to scan history (top items)</div>`;
+      const loadLabel = group.scan === 'fived' ? 'Scanning 5-day extremes…' : 'Scanning market history…';
+      const idleLabel = group.scan === 'fived' ? 'Tap to scan 5-day extremes (top items)' : 'Tap to scan history (top items)';
+      if (scanState === 'loading') inner = `<div class="scan-row loading">⏳ ${loadLabel}</div>`;
+      else inner = `<div class="scan-row" data-scan="${group.scan}">🔍 ${idleLabel}</div>`;
     } else if (group.entries.length === 0) {
       const emptyMsg = group.scan === 'manip'
         ? 'No clear manipulation patterns today — quiet tape'
+        : group.scan === 'fived'
+        ? 'Nothing at a 5-day extreme right now'
         : 'None found';
       inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">${emptyMsg}</div>`;
     } else {
@@ -1499,6 +1528,7 @@ function renderWatchlist() {
       if (t === 'history') runHistoryScan();
       else if (t === 'margin') runMarginScan();
       else if (t === 'manip') runManipScan();
+      else if (t === 'fived') runFiveDayScan();
     };
   });
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
@@ -2697,9 +2727,12 @@ setItem._userPicked = false;
     try { volumes = await loadVolumes(); } catch (e) {}
 
     renderWatchlist();
-    /* Auto-kick the manipulation scan in the background so the group has
-       results by the time the user expands it (instead of "None found"). */
+    /* Auto-kick the manipulation scan + 5-day extremes scan in the background
+       so both groups have results by the time the user expands them (instead
+       of "None found"). Both are throttled via SCAN_CONCURRENCY against the
+       bounded ~100-item candidate pool — never the full 4500-item mapping. */
     runManipScan();
+    runFiveDayScan();
 
     const sb = $("#suggestBox"), qInput = $("#query");
     /* Empty-input focus → show recently-viewed items so you can hop back
@@ -2740,7 +2773,7 @@ setItem._userPicked = false;
     $("#btnF2P").onclick = () => {
       membersOn = false; localStorage.setItem('ge_members', 'false');
       $("#btnF2P").classList.add("active"); $("#btnMembers").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
       renderWatchlist();
       if (selected?.members) {
         const landing = mapping.find(x => String(x.id) === LANDING_ID);
@@ -2750,7 +2783,7 @@ setItem._userPicked = false;
     $("#btnMembers").onclick = () => {
       membersOn = true; localStorage.setItem('ge_members', 'true');
       $("#btnMembers").classList.add("active"); $("#btnF2P").classList.remove("active");
-      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle' };
+      historyCache = {}; marginCache = {}; dayHiLoCache = {}; manipCache = {}; scanStatus = { history: 'idle', margin: 'idle', manip: 'idle', fived: 'idle' };
       renderWatchlist();
     };
 
@@ -2859,6 +2892,8 @@ setItem._userPicked = false;
       try {
         latest = await loadLatest();
         dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
+        scanStatus.fived = 'idle'; // let runFiveDayScan re-populate against fresh extremes
+        runFiveDayScan();
         renderWatchlist();
         firePortfolioAlerts();
         if ($('#portfolioModal').style.display === 'flex') renderPortfolio();
