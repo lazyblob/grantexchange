@@ -147,6 +147,37 @@ button, input { touch-action: manipulation; }
 .bk-hint { font-size: 10px; color: var(--text-muted); margin-top: 4px; min-height: 14px; }
 .bk-hint.error { color: var(--negative); }
 .bk-section-title { margin-top: 16px; margin-bottom: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Notification Center modal */
+.nc-section { margin-bottom: 18px; }
+.nc-section-title { font-size: 13px; font-weight: 800; color: #fff; margin: 0 0 4px; }
+.nc-section-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin: 0 0 8px; }
+.nc-master { background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 6px; padding: 12px 14px; }
+.nc-master-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.nc-master-label { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.nc-master-state { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.nc-master-state.granted { color: var(--positive); }
+.nc-master-state.denied { color: var(--negative); }
+.nc-test-btn { margin-top: 10px; background: transparent; border: 1px solid var(--border-light); color: var(--text-main); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.nc-test-btn:hover:not(:disabled) { border-color: var(--border-active); color: #fff; }
+.nc-test-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.nc-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.nc-toggle input { opacity: 0; width: 0; height: 0; }
+.nc-toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #2a2e39; border: 1px solid var(--border-main); transition: 0.2s; border-radius: 24px; }
+.nc-toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; top: 2px; background: var(--text-muted); transition: 0.2s; border-radius: 50%; }
+.nc-toggle input:checked + .nc-toggle-slider { background: rgba(0, 200, 100, 0.25); border-color: var(--positive); }
+.nc-toggle input:checked + .nc-toggle-slider:before { transform: translateX(20px); background: var(--positive); }
+.nc-list { border: 1px solid var(--border-main); border-radius: 4px; overflow: hidden; }
+.nc-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); background: var(--bg-input); font-size: 12px; }
+.nc-row:last-child { border-bottom: none; }
+.nc-row img { width: 22px; height: 22px; image-rendering: pixelated; flex-shrink: 0; }
+.nc-row-name { font-weight: 700; color: var(--text-main); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-row-caption { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.nc-row-name-stack { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.nc-pct-input { width: 56px; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 3px; padding: 4px 6px; font-size: 12px; outline: none; text-align: right; }
+.nc-pct-input:focus { border-color: var(--border-active); }
+.nc-pct-suffix { font-size: 11px; color: var(--text-muted); }
+.nc-empty { padding: 12px; font-size: 12px; color: var(--text-muted); text-align: center; background: var(--bg-input); border: 1px dashed var(--border-main); border-radius: 4px; }
 .bk-holdings { border: 1px solid var(--border-main); border-radius: 4px; overflow: hidden; }
 .bk-row { display: grid; grid-template-columns: 24px 1fr auto auto auto; gap: 8px; padding: 8px 10px; font-size: 12px; border-bottom: 1px solid rgba(42,46,57,0.4); align-items: center; cursor: pointer; }
 .bk-row:hover { background: var(--bg-input); }
@@ -630,6 +661,18 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 
       <div class="glossary-section">Bank of Gielinor</div>
       <div class="glossary-row"><svg class="bk-icon" viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse><ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse><ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse><ellipse cx="12" cy="8" rx="8" ry="2.2" fill="#FFD24D"></ellipse><ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse></svg><span>Stash whatever you're holding — just qty is required, cost is optional. Total Wealth headline shows the live insta-sell value of every stack net of the 2% GE tax. Add a cost basis to track growth; set ±% for swing notifications.</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="notifCenterModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>🔔 Notification Center</h3>
+      <button class="modal-close" id="closeNotifCenter" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="notifCenterBody">
+      <!-- populated by renderNotifCenter() -->
     </div>
   </div>
 </div>
@@ -2039,6 +2082,173 @@ function firePortfolioAlerts() {
   if (dirty) savePortfolio();
 }
 
+/* Notification Center — visibility + on/off + Bank threshold edit. The bell
+   button opens this modal; nothing is configured per-favorite (favorites
+   alert automatically — favoriting an item is itself the opt-in). Bank
+   thresholds ARE per-item because they depend on the user's cost basis. */
+function openNotifCenter() { renderNotifCenter(); $('#notifCenterModal').style.display = 'flex'; }
+function closeNotifCenter() { $('#notifCenterModal').style.display = 'none'; }
+
+function notifPermissionState() {
+  if (typeof Notification === 'undefined') return 'unsupported';
+  return Notification.permission; // 'default' | 'granted' | 'denied'
+}
+
+async function setNotifMaster(on) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true
+    || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if (typeof Notification === 'undefined' || (isIOS && !isStandalone)) {
+    if (isIOS) alert("To enable alerts on iPhone:\n\n1. Tap the Share button.\n2. Tap 'Add to Home Screen'.\n3. Open PocketGE from the home screen, then re-open this panel.\n\n(Apple only allows notifications from installed web apps.)");
+    else alert("This browser does not support notifications. Try Chrome, Firefox, or Edge.");
+    return false;
+  }
+  if (!on) {
+    notifEnabled = false;
+    localStorage.setItem('ge_notif', '0');
+    applyNotifBtn();
+    return false;
+  }
+  let perm = Notification.permission;
+  if (perm === 'default') {
+    try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; }
+  }
+  if (perm === 'granted') {
+    notifEnabled = true;
+    localStorage.setItem('ge_notif', '1');
+    applyNotifBtn();
+    fireFavoriteAlerts();
+    return true;
+  }
+  notifEnabled = false;
+  localStorage.setItem('ge_notif', '0');
+  applyNotifBtn();
+  if (perm === 'denied') alert('Notifications were blocked. Enable them for pocketge.com in your browser settings.');
+  return false;
+}
+
+function applyNotifBtn() {
+  const btn = $("#btnNotif");
+  if (!btn) return;
+  const granted = notifPermissionState() === 'granted';
+  const on = notifEnabled && granted;
+  btn.classList.toggle('active', on);
+  /* Preserve the desktop "Alerts" label — only swap the bell glyph. */
+  const labelEl = btn.querySelector('.icon-label');
+  const labelHTML = labelEl ? labelEl.outerHTML : '';
+  btn.innerHTML = `<span>${on ? '🔔' : '🔕'}</span>${labelHTML}`;
+  btn.title = on ? 'Notification Center (alerts ON)' : 'Notification Center (alerts off)';
+}
+
+function sendTestNotification() {
+  if (!notifEnabled || notifPermissionState() !== 'granted') {
+    alert('Turn on notifications first.');
+    return;
+  }
+  try {
+    const n = new Notification('🔔 PocketGE test alert', {
+      body: 'If you can see this, browser notifications are working. Real alerts fire when a favorite breaks above/below its 24H or 5D extreme, or when a Bank stack crosses its ±% threshold.',
+      icon: itemIconUrl(selected?.id || 12389),
+      tag: 'pocketge-test'
+    });
+    n.onclick = () => { try { window.focus(); n.close(); } catch (e) {} };
+  } catch (e) { alert('Test notification failed: ' + e.message); }
+}
+
+function renderNotifCenter() {
+  const body = $('#notifCenterBody');
+  if (!body) return;
+  const perm = notifPermissionState();
+  const masterChecked = notifEnabled && perm === 'granted';
+  const permLabel = perm === 'unsupported' ? 'not supported by this browser'
+                  : perm === 'granted' ? 'granted ✓'
+                  : perm === 'denied' ? 'blocked — fix in browser settings'
+                  : 'not yet requested';
+  const permCls = perm === 'granted' ? 'granted' : perm === 'denied' ? 'denied' : '';
+
+  const favItems = favorites
+    .map(id => mapping.find(m => String(m.id) === String(id)))
+    .filter(m => m && (membersOn || !m.members));
+  const favHTML = favItems.length
+    ? `<div class="nc-list">${favItems.map(m => `
+        <div class="nc-row">
+          <img src="${itemIconUrl(m.id)}" alt="">
+          <div class="nc-row-name-stack">
+            <span class="nc-row-name">${m.name}</span>
+            <span class="nc-row-caption">24H break + 5D break (auto)</span>
+          </div>
+        </div>`).join('')}</div>`
+    : `<div class="nc-empty">No favorites yet — star an item from the search bar to start tracking it.</div>`;
+
+  const bankItems = portfolio.filter(h => h && h.itemId);
+  const bankHTML = bankItems.length
+    ? `<div class="nc-list">${bankItems.map(h => {
+        const pct = Number(h.alertPct) > 0 ? Number(h.alertPct) : 0;
+        const caption = h.cost > 0
+          ? (pct > 0 ? `Alerts when PnL crosses ±${pct}% of cost` : 'No alert — set ±% to arm')
+          : 'No cost basis — alerts need a cost ea to compare against';
+        return `
+          <div class="nc-row" data-bk-id="${h.itemId}">
+            <img src="${itemIconUrl(h.itemId)}" alt="">
+            <div class="nc-row-name-stack">
+              <span class="nc-row-name">${h.name}</span>
+              <span class="nc-row-caption">${caption}</span>
+            </div>
+            <input type="number" class="nc-pct-input" data-bk-pct="${h.itemId}" value="${pct || ''}" placeholder="0" min="0" max="999" ${h.cost > 0 ? '' : 'disabled'}>
+            <span class="nc-pct-suffix">%</span>
+          </div>`;
+      }).join('')}</div>`
+    : `<div class="nc-empty">No Bank stacks yet — add items via the 🪙 Bank button to set per-stack alerts.</div>`;
+
+  body.innerHTML = `
+    <div class="nc-section">
+      <div class="nc-master">
+        <div class="nc-master-row">
+          <div>
+            <div class="nc-master-label">Browser notifications</div>
+            <div class="nc-master-state ${permCls}">Permission: ${permLabel}</div>
+          </div>
+          <label class="nc-toggle">
+            <input type="checkbox" id="ncMasterToggle" ${masterChecked ? 'checked' : ''} ${perm === 'unsupported' ? 'disabled' : ''}>
+            <span class="nc-toggle-slider"></span>
+          </label>
+        </div>
+        <button type="button" class="nc-test-btn" id="ncTestBtn" ${masterChecked ? '' : 'disabled'}>Send test notification</button>
+      </div>
+    </div>
+
+    <div class="nc-section">
+      <div class="nc-section-title">⭐ Favorites Alerts</div>
+      <p class="nc-section-desc">Every favorite below alerts you automatically when its live price breaks above its 24H high (or 5D high — flagged separately) or below its 24H/5D low. Favoriting an item is the opt-in; remove from favorites to stop alerting.</p>
+      ${favHTML}
+    </div>
+
+    <div class="nc-section">
+      <div class="nc-section-title">🎒 Bank Stacks Alerts</div>
+      <p class="nc-section-desc">Per-stack threshold against your cost basis. Edit the ± % inline — set to 0 to mute that stack. Stacks without a cost ea can't alert (nothing to compare against).</p>
+      ${bankHTML}
+    </div>
+  `;
+
+  $('#ncMasterToggle').onchange = async (ev) => {
+    await setNotifMaster(ev.target.checked);
+    renderNotifCenter();
+  };
+  $('#ncTestBtn').onclick = sendTestNotification;
+  body.querySelectorAll('input[data-bk-pct]').forEach(inp => {
+    inp.onchange = () => {
+      const id = inp.getAttribute('data-bk-pct');
+      const h = portfolio.find(x => String(x.itemId) === String(id));
+      if (!h) return;
+      const raw = parseFloat(inp.value);
+      h.alertPct = isNaN(raw) || raw < 0 ? 0 : Math.min(999, raw);
+      h.alertedDir = null; // re-arm: threshold changed
+      savePortfolio();
+      renderNotifCenter();
+    };
+  });
+}
+
 function drawChart(series) {
   const rect = canvas.parentElement.getBoundingClientRect();
   const W = rect.width, H = rect.height - 24;
@@ -2609,54 +2819,14 @@ setItem._userPicked = false;
       applyFlipMode();
     };
 
-    /* Browser notification toggle. Requests permission on enable; if the user
-       denies (or the API isn't available), we fall back silently and update the
-       button so it doesn't lie about the state. */
-    function applyNotifBtn() {
-      const btn = $("#btnNotif");
-      const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
-      const on = notifEnabled && granted;
-      btn.classList.toggle('active', on);
-      btn.textContent = on ? '🔔' : '🔕';
-      btn.title = on ? 'Browser notifications ON — disable' : 'Enable Browser Push Notifications';
-    }
+    /* Bell now opens the Notification Center modal. The master toggle,
+       permission request, test-fire button, and per-Bank-stack thresholds
+       all live inside that panel — see openNotifCenter / renderNotifCenter
+       further up. The bell icon glyph still flips 🔔 / 🔕 to reflect state. */
     applyNotifBtn();
-    $("#btnNotif").onclick = async () => {
-      /* iOS Safari only exposes the Notification API once the site is
-         installed as a Home Screen PWA (iOS 16.4+). Walking through it once
-         here saves a lot of "why doesn't this work" confusion. */
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isStandalone = window.navigator.standalone === true
-        || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      if (typeof Notification === 'undefined' || (isIOS && !isStandalone)) {
-        if (isIOS) {
-          alert("To enable alerts on iPhone:\n\n1. Tap the Share button (square with arrow up).\n2. Tap 'Add to Home Screen'.\n3. Open PocketGE from the home screen, then tap the bell again.\n\n(Apple only allows notifications from installed web apps.)");
-        } else {
-          alert("This browser does not support notifications. Try Chrome, Firefox, or Edge.");
-        }
-        return;
-      }
-      if (notifEnabled) {
-        notifEnabled = false;
-        localStorage.setItem('ge_notif', '0');
-        applyNotifBtn();
-        return;
-      }
-      let perm = Notification.permission;
-      if (perm === 'default') {
-        try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; }
-      }
-      if (perm === 'granted') {
-        notifEnabled = true;
-        localStorage.setItem('ge_notif', '1');
-      } else {
-        notifEnabled = false;
-        localStorage.setItem('ge_notif', '0');
-        alert('Notifications were blocked. Enable them for pocketge.com in your browser settings.');
-      }
-      applyNotifBtn();
-      if (notifEnabled) fireFavoriteAlerts();
-    };
+    $("#btnNotif").onclick = () => openNotifCenter();
+    $('#closeNotifCenter').onclick = () => closeNotifCenter();
+    $('#notifCenterModal').addEventListener('click', (ev) => { if (ev.target === $('#notifCenterModal')) closeNotifCenter(); });
 
     /* Help / glossary modal wiring. */
     $('#btnHelp').onclick = () => { $('#helpModal').style.display = 'flex'; };
@@ -2704,6 +2874,7 @@ setItem._userPicked = false;
         renderWatchlist();
         firePortfolioAlerts();
         if ($('#portfolioModal').style.display === 'flex') renderPortfolio();
+        if ($('#notifCenterModal').style.display === 'flex') renderNotifCenter();
         if (selected && !overMaxData[String(selected.id)]) {
           const node = latest.data[String(selected.id)];
           liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
