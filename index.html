@@ -10,14 +10,14 @@
 <meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
-<title>PocketGE | Live OSRS Mobile Tracker & Flipping Tool</title>
-<meta name="description" content="The ultimate mobile-first OSRS Grand Exchange tracker. Spot live volume spikes, catch day/year lows, and track over-max rares with our smart flipping calculator.">
-<meta name="keywords" content="OSRS GE tracker, OSRS flipping, Old School RuneScape prices, OSRS mobile tools, Grand Exchange margins, OSRS volume spikes, OSRS 3rd age prices">
+<title>PocketGE | Live OSRS Mobile Flipping Tool & Bank Tracker</title>
+<meta name="description" content="Mobile-first OSRS Grand Exchange tracker — live margins with GE tax, 5-day breakout scanner, Bank stack tracker, and push notifications for favorite breakouts.">
+<meta name="keywords" content="OSRS GE tracker, OSRS flipping app, Old School RuneScape price alerts, OSRS bank portfolio tracker, OSRS live margins, OSRS 5-day price breakouts, Grand Exchange tax calculator, OSRS merchanting tools">
 <link rel="canonical" href="https://pocketge.com/">
 <link rel="manifest" href="/manifest.json">
 
-<meta property="og:title" content="PocketGE | OSRS Mobile GE Tracker">
-<meta property="og:description" content="Track live GE margins, spot volume spikes, and monitor over-max rares on the go. The ultimate mobile flipping companion for Old School RuneScape.">
+<meta property="og:title" content="PocketGE | Live OSRS Mobile Flipping Tool & Bank Tracker">
+<meta property="og:description" content="Live OSRS margins with GE tax baked in, 5-day breakout scanner, Bank stack alerts, and push notifications when your favorites break out. Built mobile-first.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/">
 <meta property="og:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
@@ -26,8 +26,8 @@
 <meta property="og:site_name" content="PocketGE">
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PocketGE | OSRS Mobile GE Tracker">
-<meta name="twitter:description" content="Track live GE margins, spot day highs/lows, and flip OSRS items from your phone.">
+<meta name="twitter:title" content="PocketGE | Live OSRS Flipping Tool & Bank Tracker">
+<meta name="twitter:description" content="Live OSRS margins, 5-day breakout scanner, Bank stack alerts, and push notifications. Mobile-first.">
 <meta name="twitter:image" content="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
 
 <link id="favicon1" rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
@@ -43,7 +43,7 @@
   "url": "https://pocketge.com/",
   "applicationCategory": "FinanceApplication",
   "operatingSystem": "Any",
-  "description": "Mobile-first OSRS Grand Exchange tracker — live margins, day high/low alerts, flipping calculator, Bank of Gielinor stack tracker, and market manipulation alerts.",
+  "description": "Mobile-first OSRS Grand Exchange tracker — live margins with 2% GE tax baked in, 5-day breakout scanner split by high vs low volume, Bank of Gielinor stack tracker with per-stack alerts, and browser push notifications when favorites break above/below their 24H or 5D extremes.",
   "image": "https://oldschool.runescape.wiki/images/Gilded_scimitar.png",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
@@ -88,6 +88,19 @@
 html, body { height: 100%; width: 100%; position: fixed; overflow: hidden; }
 body { margin: 0; background: var(--bg-base); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; -webkit-font-smoothing: antialiased; }
 button, input { touch-action: manipulation; }
+/* Visually-hidden but readable to screen readers and search-engine crawlers.
+   Used for the page H1 so the app keeps its dense dashboard layout without
+   sacrificing semantic structure. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+/* About-PocketGE section — sits below the app viewport. Visible to anyone who
+   scrolls past the dashboard, and crawler-indexable for organic search. */
+.about-section { max-width: 880px; margin: 32px auto 64px; padding: 0 20px; color: var(--text-muted); font-size: 13px; line-height: 1.65; }
+.about-section h2 { color: var(--text-main); font-size: 18px; margin: 28px 0 8px; font-weight: 700; }
+.about-section h2:first-of-type { margin-top: 0; }
+.about-section p { margin: 0 0 12px; }
+.about-section a { color: var(--border-active); text-decoration: none; }
+.about-section a:hover { text-decoration: underline; }
+.about-section .about-intro { font-size: 14px; color: var(--text-main); padding-bottom: 12px; border-bottom: 1px solid var(--border-main); margin-bottom: 20px; }
 .wrap { max-width: 1800px; margin: 0 auto; padding: 8px; height: 100dvh; display: flex; flex-direction: column; gap: 8px; }
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
@@ -516,6 +529,8 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
 </head>
 <body>
 
+<h1 class="sr-only">PocketGE: The Mobile-First OSRS Grand Exchange Margin &amp; Bank Tracker</h1>
+
 <div class="wrap">
   <div class="content-area">
 
@@ -524,7 +539,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">Pocket<span>GE</span></span>
+            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon">Pocket<span>GE</span></span>
 
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active">F2P</button>
@@ -565,7 +580,7 @@ body.flip-mode #btnFlip { background: rgba(41, 98, 255, 0.25); border-color: var
         <div class="ticker-header" id="tickerHeader">
           <div class="ticker-title-group">
             <a id="tickerHeaderIconLink" class="ticker-wiki-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" aria-label="Open OSRS Wiki page for this item">
-              <img id="tickerHeaderIcon" src="" alt="Icon">
+              <img id="tickerHeaderIcon" src="" alt="Live OSRS Grand Exchange price tracker — selected item icon">
             </a>
             <div class="ticker-info">
               <a id="tickerNameLink" class="ticker-wiki-link ticker-name-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/">
@@ -2925,5 +2940,30 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<section class="about-section" aria-label="About PocketGE">
+  <p class="about-intro">PocketGE is a free, mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup, no ads.</p>
+
+  <h2>Live OSRS margins with the 2% GE tax built in</h2>
+  <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins.</p>
+
+  <h2>5-day breakout scanner: true extremes, not noise</h2>
+  <p>The sidebar's <strong>📈 At 5D Highs</strong> and <strong>📉 At 5D Lows</strong> lists are built from rolling 1-hour volume-weighted price buckets fetched from the OSRS Wiki API. An item only appears when its live competitive price is within 0.5% of (or breaching) its actual 5-day extreme, with a minimum 3% 5-day range required so flat items don't false-positive. The scan runs against a bounded ~100-item candidate pool (top volume + top price) so it never floods the API with per-item requests.</p>
+
+  <h2>Margin lists split by daily volume</h2>
+  <p>Live 1-day margins are split into <strong>💰 High Vol Margins</strong> (items trading 100,000+ units a day — gems, ores, bars, arrows, runes, cannonballs) and <strong>💎 Low Vol Margins</strong> (slower-moving items with bigger absolute spreads — quest stuff, rare gear, niche commodities). Sort is absolute gp profit per flip, after GE tax. Volume tier comes from the OSRS Wiki bulk volumes endpoint, so the categorisation matches the real tape.</p>
+
+  <h2>Bank of Gielinor — portfolio tracker with per-stack alerts</h2>
+  <p>The 🪙 Bank button opens a portfolio panel where you log stacks with their quantity and (optionally) average cost. Live valuations update on every 5-minute refresh, with running P&amp;L per stack and a total bank value at the top. Each stack can have a custom ±% alert threshold: when its value crosses the threshold versus your cost basis, a browser notification fires. Useful for long-term holds where you want to know if your sigil stack drops 10% without staring at the chart all day.</p>
+
+  <h2>Browser push notifications you can actually see and control</h2>
+  <p>The 🔔 button opens a Notification Center that shows exactly what's armed: every favorite (auto-alerts when its live price breaks above/below its 24-hour or 5-day extreme — 5D breaks are flagged separately because they're rarer and bigger), and every Bank stack with its ±% threshold inline-editable. There's a master on/off, a test-fire button so you can verify the browser permission actually works, and a tab-title <code>(N)</code> badge that counts how many favorites are currently at a 5-day extreme — so a background PocketGE tab tells you at a glance when something needs eyes.</p>
+
+  <h2>Built for the phone, fast enough on desktop</h2>
+  <p>The layout is mobile-first: dense vertical stack on phones, full three-column dashboard on tablets and desktops. Installable as a PWA via the browser's Add-to-Home-Screen, with a service worker so the shell loads instantly and the home-screen icon hides the URL bar like a native app. iOS requires the Add-to-Home-Screen step for browser notifications to work — the bell button walks you through it if you haven't done that yet.</p>
+
+  <h2>Free, no signup, runs entirely in your browser</h2>
+  <p>PocketGE never asks for an account or game credentials. All your favorites, Bank stacks, alert thresholds, and notification settings live in your browser's localStorage — wipe your cache and they're gone, which also means none of it leaves your device. Prices come from the public <a href="https://prices.runescape.wiki/" rel="noopener">OSRS Wiki real-time prices API</a>; historical context comes from the public <a href="https://api.weirdgloop.org/" rel="noopener">Weird Gloop exchange history</a>. Open the help (❓) inside the app for the badge / verdict glossary.</p>
+</section>
+
 </body>
 </html>
