@@ -546,7 +546,7 @@ button, input { touch-action: manipulation; }
    flex-wrap is the no-clip guarantee: if a long item name + the toolbar
    ever can't share the row, the toolbar drops below instead of running
    off the right edge of the panel. */
-.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; }
+.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 .ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ticker-header .toolbar { flex-shrink: 0; }
 /* Desktop: space-between was centering the Save button in the empty middle
@@ -556,12 +556,6 @@ button, input { touch-action: manipulation; }
    their own arrangement (title group hidden, Save leads the row). */
 @media (min-width: 1024px) {
   .ticker-header { justify-content: flex-start; }
-  /* Timeframe selector gets its OWN full-width row beneath the name/Save,
-     with its buttons spread evenly edge-to-edge (segmented-control look) and
-     a little breathing room above it. flex-basis:100% forces it onto its own
-     line regardless of how wide the column is. */
-  .ticker-header .toolbar { flex: 1 1 100%; margin-top: 8px; gap: 4px; }
-  .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
   /* TradingView's company page gives the logo real presence — a sizeable
      mark in its own rounded chip beside the name, not a small inline icon.
      Match that proportion: a bigger backdrop chip (item sprites are small,
@@ -1479,6 +1473,22 @@ button, input { touch-action: manipulation; }
   .ins-meter { flex: 1 1 52%; max-width: none; margin: 0; }
   .ins-divider { display: block; flex: 0 0 1px; align-self: stretch; background: var(--border-main); }
   .ins-text { flex: 1 1 48%; margin: 0; max-width: none; font-size: 12px; text-align: left; }
+}
+/* Timeframe row: stays on the SAME line as the name/Save whenever there's
+   room — that's the common case. Only when the header genuinely can't fit
+   everything (a dragged-wide sidebar squeezing the main column, or a very
+   long item name) does it drop to its own row, and ONLY then do we spread
+   the buttons full-width and add breathing room above — a plain flex-wrap
+   would do the "drop to its own row" part for free, but can't conditionally
+   change the row's own styling based on whether wrapping actually happened.
+   A container query on the header's rendered width can. 700px was picked
+   empirically: the narrowest natural wrap point across item names from
+   "Coal" to long members names, so this never forces an EARLIER wrap than
+   flex-wrap would have caused on its own — it only dresses up a wrap once
+   it's already unavoidable. */
+@container tickerhdr (max-width: 700px) {
+  .ticker-header .toolbar { flex: 1 1 100%; margin-top: 8px; gap: 4px; }
+  .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
 }
 </style>
 </head>
