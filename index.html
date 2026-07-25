@@ -1163,7 +1163,7 @@ button, input { touch-action: manipulation; }
   /* Ticker header carries the Save button + timeframe toolbar (item name
      lives in the search box above). */
   .ticker-title-group { display: none !important; }
-  .ticker-header { flex: 1 1 56%; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; align-items: center; gap: 4px; }
+  .ticker-header { flex: 1 1 56%; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
   /* Icon-only Save button in landscape — the star + gold color already
      signal "favorite", and the "Save"/"Saved" label doesn't fit next to a
      6-button toolbar in a ~470 px header. Tap area stays big enough. */
