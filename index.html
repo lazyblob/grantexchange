@@ -6303,7 +6303,10 @@ setItem._userPicked = false;
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (typeof resizeCanvas === 'function') resizeCanvas(); });
   };
   const begin = (clientX) => {
-    if (window.innerWidth < 1024) return;
+    // Matches the CSS breakpoint that shows .wl-resize (see .wl-resize's
+    // min-width:640px rule) — was stuck at the old 1024px threshold, so the
+    // handle was visible but inert between 640-1023px.
+    if (window.innerWidth < 640) return;
     dragging = true; startX = clientX; startW = wl.getBoundingClientRect().width;
     handle.classList.add('dragging');
     document.body.style.userSelect = 'none'; document.body.style.cursor = 'col-resize';
