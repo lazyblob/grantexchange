@@ -1010,7 +1010,7 @@ button, input { touch-action: manipulation; }
 .col-menu-row:hover { background: var(--bg-input); }
 .col-menu-row input { margin: 0; accent-color: var(--border-active); cursor: pointer; }
 
-@media screen and (max-width: 1023px) and (orientation: portrait) {
+@media screen and (max-width: 640px) and (orientation: portrait) {
   /* Portrait: the new 30-day meter + summary run edge-to-edge otherwise;
      give them a little horizontal breathing room like the rest of content. */
   .item-insight { padding-left: 12px; padding-right: 12px; margin-left: 0; margin-right: 0; }
@@ -1920,7 +1920,7 @@ function updateHeaderChange() {
 }
 /* Portrait phones get the y-axis on the RIGHT edge (thumb side). */
 function yAxisOnRight() {
-  return window.matchMedia('(max-width: 1023px) and (orientation: portrait)').matches;
+  return window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
 }
 /* The 30-day insight sits below the chart on desktop (a full-width band), but
    in portrait-mobile it belongs BELOW the Potential Profit / Analyst Rating
@@ -1929,7 +1929,7 @@ function yAxisOnRight() {
    in .watchlist-container), so a plain CSS `order` can't swap them — relocate
    the node by media query instead. renderItemInsight targets it by id, so
    moving it never breaks the live updates. */
-const _insightPortraitMQ = window.matchMedia('(max-width: 1023px) and (orientation: portrait)');
+const _insightPortraitMQ = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
 const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape)');
 function placeItemInsight() {
   const insight = document.getElementById('itemInsight');
