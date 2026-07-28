@@ -1124,7 +1124,7 @@ button, input { touch-action: manipulation; }
   .price-val { font-size: 17px; margin-top: 0; margin-left: auto; flex-shrink: 1; white-space: nowrap; line-height: 1.1; letter-spacing: -0.4px; overflow: hidden; text-overflow: ellipsis; }
   .calc-container input { font-size: 16px; }
 }
-@media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
+@media screen and (max-height: 600px) and (orientation: landscape) {
   /* Mobile landscape: vertical space is the scarce axis (~390px tall) while
      width is abundant (~844px). So DON'T stack — put the top panel (search +
      icons) and the ticker (name + timeframe) side by side on ONE row, and
@@ -1337,7 +1337,7 @@ button, input { touch-action: manipulation; }
    rules) so it wins on source order; media queries add no specificity. The
    short landscape sidebar can't afford the full card, so shrink it and put
    Profit / Est-per-4h / Daily-vol on ONE inline line. */
-@media screen and (max-width: 1023px) and (orientation: landscape), screen and (max-height: 600px) and (orientation: landscape) {
+@media screen and (max-height: 600px) and (orientation: landscape) {
   .flip-finder { padding: 4px 4px 0; }
   .flip-card { margin: 4px; padding: 6px 8px; }
   .flip-card .fc-why { display: none; }
@@ -1470,8 +1470,7 @@ button, input { touch-action: manipulation; }
    where there's room — same side-by-side layout as desktop, centered to the
    about-section's content width. This block is after the desktop one so it
    wins when a viewport matches both (e.g. a short, wide window). */
-@media (max-width: 1023px) and (orientation: landscape),
-       (max-height: 600px) and (orientation: landscape) {
+@media (max-height: 600px) and (orientation: landscape) {
   .item-insight {
     display: flex; align-items: center; gap: 22px; text-align: left;
     max-width: 880px; margin: 14px auto; padding: 13px 20px; border-top: none;
@@ -1931,7 +1930,7 @@ function yAxisOnRight() {
    the node by media query instead. renderItemInsight targets it by id, so
    moving it never breaks the live updates. */
 const _insightPortraitMQ = window.matchMedia('(max-width: 1023px) and (orientation: portrait)');
-const _insightLandscapeMQ = window.matchMedia('(max-width: 1023px) and (orientation: landscape), (max-height: 600px) and (orientation: landscape)');
+const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape)');
 function placeItemInsight() {
   const insight = document.getElementById('itemInsight');
   const sideModule = document.getElementById('sideModule');
@@ -4612,7 +4611,7 @@ function flipCollapsed(){
     // No explicit user preference yet — default to collapsed in the cramped
     // mobile-landscape column so Favorites isn't scrolled off-screen below
     // the fully-expanded card.
-    return window.matchMedia('(max-width: 1023px) and (orientation: landscape), (max-height: 600px) and (orientation: landscape)').matches;
+    return window.matchMedia('(max-height: 600px) and (orientation: landscape)').matches;
   } catch (e) { return false; }
 }
 function setFlipCollapsed(v){ try { localStorage.setItem('ge_flipCollapsed', v ? '1' : '0'); } catch (e) {} }
