@@ -2342,9 +2342,11 @@ function updateSelection() {
 $('#btnFav').onclick = () => {
   if (!selected) return;
   const idStr = String(selected.id);
-  if (favorites.includes(idStr)) favorites = favorites.filter(id => id !== idStr);
+  const wasFavorited = favorites.includes(idStr);
+  if (wasFavorited) favorites = favorites.filter(id => id !== idStr);
   else favorites.push(idStr);
   localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+  rlPostFavorite(idStr, selected.name, wasFavorited);
   updateFavoriteBtn();
   renderWatchlist();
 };
@@ -3308,6 +3310,7 @@ function renderWatchlist() {
     if (!favorites.includes(idStr)) return;
     favorites = favorites.filter(x => x !== idStr);
     localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+    rlPostFavorite(idStr, '', true);
     updateFavoriteBtn();
     renderWatchlist();
   }
@@ -4967,6 +4970,19 @@ function rlApply(data) {
   if (favIdsChanged || wasConnected !== rlConnected) {
     renderWatchlist();
   }
+}
+/* Push a favorite change TO the plugin so the link works both directions —
+   star something here and it's added in-game too, not just the reverse.
+   Best-effort: a dropped write just means it stays browser-only until the
+   next successful one, same as any other opportunistic sync. */
+function rlPostFavorite(id, name, remove) {
+  if (!rlWanted || !rlConnected) return;
+  fetch(RL_BRIDGE_URL + '/favorites', {
+    method: 'POST',
+    mode: 'cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: Number(id), name: name || '', remove: !!remove })
+  }).catch(() => {});
 }
 async function rlPoll() {
   try {
