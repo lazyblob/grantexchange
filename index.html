@@ -321,11 +321,6 @@ button, input { touch-action: manipulation; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 .top-panel { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
-/* Lives inside .search-group (right after the more-menu button) rather than
-   as a separate flex item of .top-panel, so it travels with the search row
-   instead of landing on a stray line of its own whenever .panel-left wraps
-   at a narrow width — see the markup move next to #btnMore. */
-.search-group .status-text { flex-shrink: 0; white-space: nowrap; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
@@ -342,11 +337,7 @@ button, input { touch-action: manipulation; }
 .sbar input:focus { border-color: var(--border-active); box-shadow: 0 0 0 2px rgba(201,166,77,0.18); }
 /* Desktop: keep the whole top panel on ONE row when a maxed sidebar narrows
    the column. Placed after the base .panel-left / .sbar rules so these
-   overrides win on source order. ("Live" itself no longer strands on its
-   own line below 1024px — it now lives inside .search-group, right next to
-   the more-menu button, so it travels with that row instead of being a
-   separate flex item that wraps on its own; see the #status move next to
-   .more-wrap in the markup and the .search-group .status-text rule below.) */
+   overrides win on source order. */
 @media (min-width: 1024px) {
   .top-panel { flex-wrap: nowrap; }
   .panel-left { min-width: 0; flex-wrap: nowrap; }
@@ -562,9 +553,6 @@ button, input { touch-action: manipulation; }
   color: #FFD97A;
   box-shadow: inset 0 -2px 0 var(--fav-gold);
 }
-.status-text { font-size: 11px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; }
-.status-text.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--positive); box-shadow: 0 0 6px var(--positive); animation: status-pulse 2s ease-in-out infinite; }
-@keyframes status-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 /* Keep this row lean — every px of chrome here is a px the chart loses.
    flex-wrap is the no-clip guarantee: if a long item name + the toolbar
    ever can't share the row, the toolbar drops below instead of running
@@ -1140,7 +1128,6 @@ button, input { touch-action: manipulation; }
   .pct-chg { display: none !important; }
   .chart-container { flex: none; height: 52vh; min-height: 320px; min-width: 0; margin-bottom: 0; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
-  .status-text { display: none; }
   /* Target Buy + Target Sell SIDE BY SIDE on one line (was two stacked
      full-width rows — double the height for the same two numbers). Each box:
      tiny label stack on the left, big value, grade number on the right.
@@ -1235,7 +1222,6 @@ button, input { touch-action: manipulation; }
   .price-label { flex-direction: column; align-items: flex-start; gap: 0; flex-shrink: 0; font-size: 9px; }
   .live-val { font-size: 9px; }
   .price-val { font-size: 15px; margin-top: 0; margin-left: auto; flex-shrink: 0; white-space: nowrap; line-height: 1.1; letter-spacing: -0.3px; }
-  .status-text { display: none; }
   /* NOTE: the compact recommended-flip-card overrides for landscape live in
      their own media block AFTER the .flip-card base styles (search
      "landscape flip-card compaction") — placing them here would lose to the
@@ -1674,7 +1660,6 @@ button, input { touch-action: manipulation; }
                   <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
                 </div>
               </div>
-              <span id="status" class="status-text">Connecting...</span>
             </div>
           </div>
         </div>
@@ -5859,7 +5844,6 @@ function renderOverMax(m) {
   
   refreshItemInsights(m, null);
   resizeCanvas();
-  $("#status").textContent = "Live"; $("#status").classList.add("live");
 }
 
 /* Re-render only the chart + targets when the user changes timeframe.
@@ -5982,7 +5966,6 @@ async function setItem(m, opts = {}) {
      so the item appears once, and the search stays usable. */
   $("#sbarItem").textContent = m.name;
   $("#sbarWiki").href = wikiURL;
-  $("#status").textContent = "Loading..."; $("#status").classList.remove("live");
   updateFavoriteBtn();
   renderWatchlist();
 
@@ -6050,7 +6033,6 @@ async function setItem(m, opts = {}) {
   
   refreshItemInsights(m, node);
   resizeCanvas();
-  $("#status").textContent = "Live"; $("#status").classList.add("live");
 }
 setItem._userPicked = false;
 
@@ -6330,7 +6312,6 @@ setItem._userPicked = false;
       };
     }
   } catch (e) {
-    $("#status").textContent = "API Error"; $("#status").classList.remove("live");
     console.error(e);
   }
 })();
