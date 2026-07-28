@@ -425,6 +425,11 @@ button, input { touch-action: manipulation; }
 .rl-flip .rl-nums { flex-shrink: 0; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .rl-flip .pos { color: var(--rs-green-deep); font-weight: 700; }
 .rl-flip .neg { color: var(--negative); font-weight: 700; }
+/* Small "Linked" pill on the sidebar's Favorites title when the RuneLite
+   bridge is actively merging in plugin favorites — reuses .rl-dot so the
+   same green pulse means the same thing in both places. */
+.rl-linked-badge { display: inline-flex; align-items: center; margin-left: 6px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--rs-green-deep); }
+.rl-linked-badge .rl-dot { margin-right: 4px; }
 /* Bank of Gielinor — shared form / stats / row scaffolding (the `bk-` prefix
    is used across this whole feature; CSS reused by the modal header etc.). */
 .bk-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
@@ -2996,7 +3001,13 @@ function renderWatchlist() {
   /* Favorites are ordered to MATCH the favorites array (user-reorderable),
      so up/down moves persist in the visible list. */
   const favsById = new Map(activeItems.map(it => [String(it.id), it]));
-  const favs = favorites.map(id => favsById.get(String(id))).filter(Boolean);
+  /* When linked to RuneLite, the plugin's Favorites are unioned in for
+     display — never written to ge_favorites, so they simply drop back out
+     if the link goes away and never touch the user's own saved order. */
+  const mergedFavIds = rlWanted && rlFavoriteIds.length
+    ? Array.from(new Set([...favorites.map(String), ...rlFavoriteIds.map(String)]))
+    : favorites;
+  const favs = mergedFavIds.map(id => favsById.get(String(id))).filter(Boolean);
 
   const dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [], movers = [];
   const mover1dPct = {}; // id -> % (live mid vs 24h avg mid), for inline fav badges
@@ -3195,7 +3206,8 @@ function renderWatchlist() {
     /* No Edit button anymore — the per-row × reveals on hover (desktop) /
        is always shown (touch), TradingView-style. Header is just the
        title + collapse chevron. */
-    titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${group.name}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+    const rlBadge = (isFavTitle && rlConnected) ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites"><span class="rl-dot on"></span>Linked</span>` : '';
+    titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${group.name}${rlBadge}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
     const listDiv = document.createElement("div");
     listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
     titleDiv.onclick = () => {
@@ -4889,20 +4901,31 @@ function openPortfolio() {
 function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(); }
 
 /* ── RuneLite bridge (PocketGE Flip Tracker plugin) ──────────────────────
-   The plugin can serve this session's flips on 127.0.0.1 (opt-in, loopback
-   only — see runelite-plugin/). When the user taps Connect we poll it while
-   the Bank modal is open and render live in-game flips. Browsers exempt
-   loopback from mixed-content blocking (Safari being the holdout), and the
-   plugin answers the CORS + Private-Network-Access preflight. */
+   The plugin can serve this session on 127.0.0.1 (opt-in, loopback only —
+   see runelite-plugin/). Once the user opts in (the Bank modal's Connect
+   toggle), this polls in the BACKGROUND — not gated on that modal being
+   open — because the whole point is that the site's own sidebar (Favorites
+   in particular) stays live-linked to the plugin, not just a panel buried
+   in a modal. Session profit / lifetime / portfolio value / recent flips
+   still render inside the Bank modal (that's literally what it's for);
+   Recommended Flip is deliberately NOT mirrored here — the sidebar already
+   has its own live flip-finder, and showing a second, different
+   recommendation from a different engine in a second place was confusing
+   rather than useful. Browsers exempt loopback from mixed-content blocking
+   (Safari being the holdout), and the plugin answers the CORS +
+   Private-Network-Access preflight. */
 const RL_BRIDGE_URL = 'http://127.0.0.1:8477';
+const RL_POLL_MS = 15000;
 let rlTimer = null;
 let rlWanted = (() => { try { return localStorage.getItem('ge_rl_bridge') === '1'; } catch (e) { return false; } })();
-function rlRender(data) {
+let rlConnected = false;
+let rlFavoriteIds = [];
+function rlRenderModal(data) {
   const dot = $('#rlDot'), body = $('#rlBody');
   if (!dot || !body) return;
   if (!rlWanted) {
     dot.classList.remove('on');
-    body.innerHTML = `<div class="rl-hint">Flip in-game? Install the <strong>PocketGE Flip Tracker</strong> RuneLite plugin, enable its "Local website bridge", then tap Connect — your live flips appear here. Local-only: nothing leaves your computer.</div>`;
+    body.innerHTML = `<div class="rl-hint">Flip in-game? Install the <strong>PocketGE Flip Tracker</strong> RuneLite plugin, enable its "Local website bridge", then tap Connect — your live flips, portfolio value, and Favorites appear here (and your Favorites merge straight into the sidebar). Local-only: nothing leaves your computer.</div>`;
     return;
   }
   if (!data) {
@@ -4921,23 +4944,7 @@ function rlRender(data) {
   if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
   }
-  const rec = data.topRecommendation;
-  if (rec && rec.name) {
-    const verb = rec.type === 'SELL' ? 'Sell' : rec.type === 'ADJUST_BUY' ? 'Raise your bid on' : rec.type === 'ADJUST_SELL' ? 'Lower your ask on' : 'Buy';
-    html += `<div class="rl-flip" data-rl-item="${String(rec.name).replace(/"/g, '&quot;')}" title="Open the live chart">
-      <span class="rl-name">⚡ ${verb} ${rec.name}</span>
-      <span class="rl-nums">${abbreviateNumber(rec.price)} gp${rec.expectedProfit > 0 ? ` <span class="pos">+${abbreviateNumber(rec.expectedProfit)}</span>` : ''}</span>
-    </div>`;
-  }
-  const favs = (data.favorites || []).filter(f => f && f.name);
-  if (favs.length) {
-    html += `<div class="rl-hint" style="margin:8px 0 4px">★ Favorites from RuneLite</div>`;
-    html += favs.slice(0, 10).map(f => `
-      <div class="rl-flip" data-rl-item="${(f.name || '').replace(/"/g, '&quot;')}" title="Open the live chart">
-        <span class="rl-name">${f.name}</span>
-        <span class="rl-nums">${f.price > 0 ? abbreviateNumber(f.price) + ' gp' : '—'}${f.changePct ? ` <span class="${f.changePct >= 0 ? 'pos' : 'neg'}">${f.changePct >= 0 ? '+' : ''}${f.changePct.toFixed(1)}%</span>` : ''}</span>
-      </div>`).join('');
-  }
+  html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Favorites are live-linked in the sidebar</div>`;
   if (!flips.length) {
     html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
   } else {
@@ -4958,26 +4965,43 @@ function rlRender(data) {
     };
   });
 }
+function rlApply(data) {
+  const wasConnected = rlConnected;
+  rlConnected = !!data;
+  const newFavIds = data && Array.isArray(data.favorites) ? data.favorites.map(f => String(f.id)) : [];
+  const favIdsChanged = newFavIds.join(',') !== rlFavoriteIds.join(',');
+  rlFavoriteIds = newFavIds;
+  rlRenderModal(data);
+  // Only re-render the (potentially large) watchlist when something it
+  // actually depends on changed, not on every 15s poll tick.
+  if (favIdsChanged || wasConnected !== rlConnected) {
+    renderWatchlist();
+  }
+}
 async function rlPoll() {
   try {
     const res = await fetch(RL_BRIDGE_URL + '/flips', { cache: 'no-store', mode: 'cors' });
     if (!res.ok) throw new Error('bridge ' + res.status);
-    rlRender(await res.json());
+    rlApply(await res.json());
   } catch (e) {
-    rlRender(null);
+    rlApply(null);
   }
 }
-/* Poll ONLY while the Bank modal is open and the user opted in — no
-   background localhost noise for everyone else. */
+/* Background poll whenever opted in — independent of the Bank modal being
+   open, since the sidebar link is the whole point now, not just a modal
+   panel. */
 function rlSync() {
   const btn = $('#rlToggle');
   if (btn) btn.textContent = rlWanted ? 'Disconnect' : 'Connect';
-  const modalOpen = $('#portfolioModal').style.display === 'flex';
-  if (rlWanted && modalOpen) {
-    if (!rlTimer) { rlPoll(); rlTimer = setInterval(rlPoll, 5000); }
-  } else {
-    if (rlTimer) { clearInterval(rlTimer); rlTimer = null; }
-    rlRender(rlWanted ? null : undefined);
+  if (rlWanted) {
+    if (!rlTimer) {
+      rlRenderModal(null); // "waiting for RuneLite…" immediately; rlPoll() below fills in real data once the fetch settles
+      rlPoll();
+      rlTimer = setInterval(rlPoll, RL_POLL_MS);
+    }
+  } else if (rlTimer) {
+    clearInterval(rlTimer); rlTimer = null;
+    rlApply(null); // clears favorites merge + shows the "install the plugin" hint
   }
 }
 $('#rlToggle').onclick = () => {
@@ -4985,6 +5009,9 @@ $('#rlToggle').onclick = () => {
   try { localStorage.setItem('ge_rl_bridge', rlWanted ? '1' : '0'); } catch (e) {}
   rlSync();
 };
+// Resume the link on page load if the user was previously connected — no
+// need to re-open the Bank modal and hit Connect again every visit.
+rlSync();
 
 /* Fire notifications when a stack's value crosses its ±% threshold vs cost.
    Only meaningful when a cost basis was entered. One alert per direction
