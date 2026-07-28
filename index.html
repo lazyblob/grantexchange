@@ -322,15 +322,17 @@ button, input { touch-action: manipulation; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 .top-panel { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
 .top-panel .status-text { margin-left: auto; flex-shrink: 0; white-space: nowrap; }
-.panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+.panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
 #logoBtn:hover { opacity: 0.8; }
-.search-group { display: flex; align-items: center; gap: 4px; }
-/* Desktop search: wide + gold-tinted border so the single most important
-   control on the page is findable at a glance instead of blending into the
-   toolbar chrome. (Mobile blocks below override width with flex.) */
-.sbar { position: relative; width: clamp(220px, 28vw, 420px); }
+.search-group { display: flex; align-items: center; gap: 4px; flex: 1 1 auto; min-width: 0; }
+/* Search fills whatever room the row has (up to a sane cap so it doesn't
+   sprawl on an ultrawide monitor) instead of sitting at a fixed width with
+   dead space beside it — the search box is the single most-used control on
+   the page, so it should get first claim on the row. Gold-tinted border so
+   it's findable at a glance instead of blending into the toolbar chrome. */
+.sbar { position: relative; flex: 1 1 220px; min-width: 0; max-width: 640px; }
 .sbar input { width: 100%; background: var(--bg-input); border: 1px solid rgba(201,166,77,0.45); color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px; font-size: 16px; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 .sbar input:hover { border-color: rgba(201,166,77,0.7); }
 .sbar input:focus { border-color: var(--border-active); box-shadow: 0 0 0 2px rgba(201,166,77,0.18); }
@@ -380,13 +382,23 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1280px) { .icon-btn .icon-label { display: inline; } }
 .icon-btn:hover { color: var(--text-main); border-color: var(--border-active); }
 .icon-btn.active { background: rgba(201, 166, 77, 0.16); border-color: var(--border-active); color: #F4E3B0; }
-/* Overflow menu — on desktop the wrapper and its inner container are
-   "display: contents" so the four action buttons lay out inline in the
-   row exactly as before, and the ⋯ toggle is hidden. The mobile media
-   query below converts .more-actions into a tap-to-open dropdown. */
-.more-wrap { display: contents; }
-.more-actions { display: contents; }
-.more-toggle { display: none; }
+/* Overflow menu — Alerts/Bank/Help collapse into a ⋯ dropdown at every
+   width (not just mobile) so the header stays to one clean row and the
+   search bar — the one control people actually reach for on every visit —
+   gets the room instead of splitting it three ways with icon buttons used
+   far less often. */
+.more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
+.more-toggle { display: inline-flex; font-size: 16px; line-height: 1; padding: 4px 8px; min-width: 34px; justify-content: center; }
+.more-actions {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
+  flex-direction: column; gap: 2px; min-width: 168px; padding: 6px;
+  background: var(--bg-panel); border: 1px solid var(--border-light);
+  border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+}
+.more-actions.open { display: flex; }
+.more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 14px; border-color: transparent; background: transparent; }
+.more-actions .icon-btn:hover, .more-actions .icon-btn:active { background: var(--bg-input); }
+.more-actions .icon-label { display: inline; font-size: 13px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(5, 7, 12, 0.75); backdrop-filter: blur(3px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; overscroll-behavior: contain; }
 .modal-card { background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 8px; width: 100%; max-width: 640px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px var(--shadow); overflow: hidden; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-main); flex-shrink: 0; }
@@ -703,13 +715,21 @@ button, input { touch-action: manipulation; }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .chart-tip .tip-marker { font-weight: 800; letter-spacing: 0.2px; }
 .watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
-/* Draggable divider between chart and sidebar (desktop only). Hidden by
-   default; shown when the layout is the side-by-side row at >=1024px. */
+/* Draggable divider between chart and sidebar. Hidden by default (real
+   phones, where the sidebar stacks below the chart instead of beside it);
+   shown any time the layout is the side-by-side row, which since the
+   min-width:1024px gate isn't the only place that happens anymore (a
+   wide-but-<1024px window falls into this same row layout on its base
+   styles) starts at 640px, not 1024px. Explicitly re-hidden inside the
+   short-landscape breakpoint below, where the sidebar is a fixed compact
+   width rather than the --wl-width variable this drags. */
 .wl-resize { display: none; }
-@media (min-width: 1024px) {
+@media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
   .wl-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 30px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, height 0.15s; }
   .wl-resize:hover::before, .wl-resize.dragging::before { background: var(--border-active); height: 52px; }
+}
+@media (min-width: 1024px) {
   /* Desktop: let the page grow a hair past the viewport so the 30-day insight
      + description sit BELOW the chart instead of stealing its height. The chart
      is floored to fill the first screen down to the quick-facts strip (which
@@ -1188,6 +1208,9 @@ button, input { touch-action: manipulation; }
      container). Let the WHOLE sidebar scroll as one unit instead, so the
      flip card, calculator, then every watchlist row are all reachable. */
   .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  /* Fixed compact width here (not --wl-width), so the drag handle has
+     nothing meaningful to resize — keep it hidden in this cramped view. */
+  .wl-resize { display: none; }
   .watchlist-content { flex: 0 0 auto; overflow: visible; }
   .wl-item { padding: 4px 6px; font-size: 11px; }
   .calc-container { padding: 4px 6px; gap: 3px; }
