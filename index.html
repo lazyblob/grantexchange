@@ -4918,9 +4918,30 @@ function rlRender(data) {
     const lt = Number(data.lifetimeProfit);
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Lifetime: ${lt >= 0 ? '+' : ''}${abbreviateNumber(lt)} gp</div>`;
   }
+  if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
+    html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
+  }
+  const rec = data.topRecommendation;
+  if (rec && rec.name) {
+    const verb = rec.type === 'SELL' ? 'Sell' : rec.type === 'ADJUST_BUY' ? 'Raise your bid on' : rec.type === 'ADJUST_SELL' ? 'Lower your ask on' : 'Buy';
+    html += `<div class="rl-flip" data-rl-item="${String(rec.name).replace(/"/g, '&quot;')}" title="Open the live chart">
+      <span class="rl-name">⚡ ${verb} ${rec.name}</span>
+      <span class="rl-nums">${abbreviateNumber(rec.price)} gp${rec.expectedProfit > 0 ? ` <span class="pos">+${abbreviateNumber(rec.expectedProfit)}</span>` : ''}</span>
+    </div>`;
+  }
+  const favs = (data.favorites || []).filter(f => f && f.name);
+  if (favs.length) {
+    html += `<div class="rl-hint" style="margin:8px 0 4px">★ Favorites from RuneLite</div>`;
+    html += favs.slice(0, 10).map(f => `
+      <div class="rl-flip" data-rl-item="${(f.name || '').replace(/"/g, '&quot;')}" title="Open the live chart">
+        <span class="rl-name">${f.name}</span>
+        <span class="rl-nums">${f.price > 0 ? abbreviateNumber(f.price) + ' gp' : '—'}${f.changePct ? ` <span class="${f.changePct >= 0 ? 'pos' : 'neg'}">${f.changePct >= 0 ? '+' : ''}${f.changePct.toFixed(1)}%</span>` : ''}</span>
+      </div>`).join('');
+  }
   if (!flips.length) {
-    html += `<div class="rl-hint">Connected — waiting for your first completed flip.</div>`;
+    html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
   } else {
+    html += `<div class="rl-hint" style="margin:8px 0 4px">Recent flips</div>`;
     html += flips.map(f => `
       <div class="rl-flip" data-rl-item="${(f.itemName || '').replace(/"/g, '&quot;')}" title="Open the live chart">
         <span class="rl-name">${f.itemName} ×${Number(f.quantity).toLocaleString()}</span>
