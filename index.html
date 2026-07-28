@@ -321,7 +321,11 @@ button, input { touch-action: manipulation; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 .top-panel { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
-.top-panel .status-text { margin-left: auto; flex-shrink: 0; white-space: nowrap; }
+/* Lives inside .search-group (right after the more-menu button) rather than
+   as a separate flex item of .top-panel, so it travels with the search row
+   instead of landing on a stray line of its own whenever .panel-left wraps
+   at a narrow width — see the markup move next to #btnMore. */
+.search-group .status-text { flex-shrink: 0; white-space: nowrap; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
@@ -336,11 +340,13 @@ button, input { touch-action: manipulation; }
 .sbar input { width: 100%; background: var(--bg-input); border: 1px solid rgba(201,166,77,0.45); color: var(--text-main); border-radius: 4px; padding: 5px 8px 5px 28px; font-size: 16px; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 .sbar input:hover { border-color: rgba(201,166,77,0.7); }
 .sbar input:focus { border-color: var(--border-active); box-shadow: 0 0 0 2px rgba(201,166,77,0.18); }
-/* Desktop: keep the whole top panel — including the "Live" status — on ONE
-   row when a maxed sidebar narrows the column. Everything stays inline and
-   the search field shrinks to make room, instead of the row wrapping and
-   stranding "Live" (or the search) on a line of its own. Placed after the
-   base .panel-left / .sbar rules so these overrides win on source order. */
+/* Desktop: keep the whole top panel on ONE row when a maxed sidebar narrows
+   the column. Placed after the base .panel-left / .sbar rules so these
+   overrides win on source order. ("Live" itself no longer strands on its
+   own line below 1024px — it now lives inside .search-group, right next to
+   the more-menu button, so it travels with that row instead of being a
+   separate flex item that wraps on its own; see the #status move next to
+   .more-wrap in the markup and the .search-group .status-text rule below.) */
 @media (min-width: 1024px) {
   .top-panel { flex-wrap: nowrap; }
   .panel-left { min-width: 0; flex-wrap: nowrap; }
@@ -1668,10 +1674,9 @@ button, input { touch-action: manipulation; }
                   <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
                 </div>
               </div>
+              <span id="status" class="status-text">Connecting...</span>
             </div>
           </div>
-
-          <span id="status" class="status-text">Connecting...</span>
         </div>
 
         <div class="ticker-header" id="tickerHeader">
