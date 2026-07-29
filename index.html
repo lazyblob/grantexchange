@@ -835,21 +835,21 @@ button, input { touch-action: manipulation; }
    default 4 makes the whole context (title + its overflowing menu) paint
    above the next title instead of losing to it on DOM order. */
 .category-title.fav-title { cursor: default; z-index: 10; }
-/* Plain text, not a pill-in-a-pill — same uppercase/tracking treatment as
-   every other section title (just a size step up, since this one carries
-   the active list's name), with only a color shift + caret to signal it's
-   interactive. */
+/* Plain text, not a pill-in-a-pill — matches every other section title's
+   size/weight/tracking exactly (13px read oversized and heavy next to
+   "HIGH VOL MARGINS" etc. below it), with only a color shift + caret to
+   signal it's interactive. */
 .fls-current {
   display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 200px;
   background: none; border: none; padding: 0; margin: 0;
-  color: var(--fav-gold, #FFB300); font-size: 13px; font-weight: 800;
-  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--fav-gold, #FFB300); font-size: 11px; font-weight: 800;
+  letter-spacing: 0.7px; text-transform: uppercase;
   cursor: pointer; transition: color 0.12s ease;
 }
 .fls-current:hover, .fls-current.open { color: #FFE0A0; }
 .fls-current .fls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fls-current .fls-caret { display: flex; flex-shrink: 0; }
-.fls-current .fls-caret .ui-ic { width: 13px; height: 13px; transition: transform 0.15s ease; }
+.fls-current .fls-caret .ui-ic { width: 11px; height: 11px; transition: transform 0.15s ease; }
 .fls-current.open .fls-caret .ui-ic { transform: rotate(180deg); }
 .fls-add {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
