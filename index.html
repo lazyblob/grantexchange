@@ -821,37 +821,53 @@ button, input { touch-action: manipulation; }
 .fc-collapse .ui-ic { width: 14px; height: 14px; display: block; }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
-/* Favorites list-switcher chips — TradingView-watchlist-tab style. Sits
-   between the section title and its rows, only on the Favorites group. */
-.fav-list-bar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px; background: #1c1712; border-bottom: 1px solid #141210; }
-.fav-list-chip {
-  display: flex; align-items: center; gap: 2px;
-  padding: 3px 4px 3px 9px; border-radius: 10px;
-  background: var(--bg-input); border: 1px solid var(--border-light);
-  font-size: 10.5px; font-weight: 700; color: var(--text-muted);
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+/* Favorites list-switcher — TradingView-watchlist-header style: current
+   list name + caret that opens a dropdown of every list, plus a "+" to
+   create one. Sits between the section title and its rows, only on the
+   Favorites group. */
+.fav-list-switcher { position: relative; display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #1c1712; border-bottom: 1px solid #141210; }
+.fls-current {
+  display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 200px;
+  background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 5px;
+  padding: 4px 8px; color: var(--fav-gold, #FFB300); font-size: 11.5px; font-weight: 700;
+  cursor: pointer; transition: border-color 0.12s ease;
 }
-.fav-list-chip.active { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); background: rgba(255,179,0,0.12); }
-.fav-list-chip .flc-name { cursor: pointer; padding: 2px 0; white-space: nowrap; }
-.fav-list-chip .flc-rename, .fav-list-chip .flc-delete {
-  display: flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border: none; background: transparent; color: inherit;
-  opacity: 0; cursor: pointer; border-radius: 3px; padding: 0; font-size: 12px; line-height: 1;
-}
-.fav-list-chip:hover .flc-rename, .fav-list-chip:hover .flc-delete { opacity: 0.65; }
-.fav-list-chip .flc-rename:hover, .fav-list-chip .flc-delete:hover { opacity: 1; background: rgba(255,255,255,0.14); }
-.fav-list-chip .flc-rename .ui-ic { width: 10px; height: 10px; }
-.fav-list-add {
-  display: flex; align-items: center; justify-content: center;
-  width: 23px; height: 23px; border-radius: 10px;
+.fls-current:hover { border-color: var(--fav-gold, #FFB300); }
+.fls-current .fls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fls-current .fls-caret { display: flex; flex-shrink: 0; }
+.fls-current .fls-caret .ui-ic { width: 11px; height: 11px; transition: transform 0.15s ease; }
+.fav-list-switcher.open .fls-current .fls-caret .ui-ic { transform: rotate(180deg); }
+.fls-add {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 23px; height: 23px; border-radius: 5px;
   background: transparent; border: 1px dashed var(--border-light); color: var(--text-muted);
   cursor: pointer; font-size: 13px; font-weight: 800; line-height: 1;
   transition: color 0.12s ease, border-color 0.12s ease;
 }
-.fav-list-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); }
+.fls-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); }
+.fls-menu {
+  display: none; position: absolute; top: calc(100% + 4px); left: 10px; z-index: 20;
+  min-width: 190px; max-width: 260px; max-height: 260px; overflow-y: auto;
+  background: #241f19; border: 1px solid var(--border-light); border-radius: 6px;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,0.6);
+  padding: 4px;
+}
+.fls-menu.open { display: block; }
+.fls-menu-row { display: flex; align-items: center; gap: 2px; padding: 6px 6px; border-radius: 4px; font-size: 12px; color: var(--text-main); }
+.fls-menu-row:hover { background: var(--bg-input); }
+.fls-menu-row.active { color: var(--fav-gold, #FFB300); }
+.fls-menu-row .fls-menu-name { flex: 1 1 auto; min-width: 0; cursor: pointer; padding: 2px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fls-menu-row .fls-rename, .fls-menu-row .fls-delete {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 18px; height: 18px; border: none; background: transparent; color: inherit;
+  opacity: 0; cursor: pointer; border-radius: 3px; padding: 0; font-size: 13px; line-height: 1;
+}
+.fls-menu-row:hover .fls-rename, .fls-menu-row:hover .fls-delete { opacity: 0.65; }
+.fls-menu-row .fls-rename:hover, .fls-menu-row .fls-delete:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+.fls-menu-row .fls-rename .ui-ic { width: 11px; height: 11px; }
 /* Touch devices can't hover — always show the rename/delete affordances. */
 @media (hover: none) {
-  .fav-list-chip .flc-rename, .fav-list-chip .flc-delete { opacity: 0.55; }
+  .fls-menu-row .fls-rename, .fls-menu-row .fls-delete { opacity: 0.55; }
 }
 .scan-row { padding: 10px 14px; font-size: 11px; color: var(--border-active); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; background: rgba(201,166,77,0.07); }
 .scan-row:hover { background: var(--bg-input); }
@@ -2060,6 +2076,7 @@ let activeFavListId = (() => {
   return favoriteLists[0].id;
 })();
 function activeFavList() { return favoriteLists.find(l => l.id === activeFavListId) || favoriteLists[0]; }
+let _flsOutsideClickHandler = null; // see renderWatchlist's list-switcher wiring
 let favorites = activeFavList().items;
 function persistFavoriteLists() {
   const l = activeFavList();
@@ -3427,30 +3444,61 @@ function renderWatchlist() {
     }
     listDiv.innerHTML = inner;
     groupDiv.appendChild(titleDiv);
-    /* List-switcher chips (TradingView-watchlist-tab style) live between
-       the section title and its rows — only the Favorites group has more
-       than one list. */
+    /* List-switcher (TradingView watchlist-header style: current name +
+       caret opening a dropdown of every list) lives between the section
+       title and its rows — only the Favorites group has more than one
+       list. */
     if (isFavTitle) {
-      const chipsDiv = document.createElement("div");
-      chipsDiv.className = "fav-list-bar";
-      chipsDiv.innerHTML = favoriteLists.map(l => `
-        <div class="fav-list-chip ${l.id === activeFavListId ? 'active' : ''}" data-list-id="${l.id}">
-          <span class="flc-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
-          <button type="button" class="flc-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
-          ${favoriteLists.length > 1 ? `<button type="button" class="flc-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
-        </div>`).join('')
-        + `<button type="button" class="fav-list-add" title="New favorites list" aria-label="New favorites list">+</button>`;
-      groupDiv.appendChild(chipsDiv);
+      const switcherDiv = document.createElement("div");
+      switcherDiv.className = "fav-list-switcher";
+      switcherDiv.innerHTML = `
+        <button type="button" class="fls-current" id="flsCurrent" aria-haspopup="true" aria-expanded="false">
+          <span class="fls-name">${escapeHtml(activeFavList().name)}</span>
+          <span class="fls-caret">${uiIcon('chev')}</span>
+        </button>
+        <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
+        <div class="fls-menu" id="flsMenu" role="menu">
+          ${favoriteLists.map(l => `
+            <div class="fls-menu-row ${l.id === activeFavListId ? 'active' : ''}">
+              <span class="fls-menu-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
+              <button type="button" class="fls-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
+              ${favoriteLists.length > 1 ? `<button type="button" class="fls-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
+            </div>`).join('')}
+        </div>`;
+      groupDiv.appendChild(switcherDiv);
     }
     groupDiv.appendChild(listDiv);
     fragment.appendChild(groupDiv);
   });
   container.appendChild(fragment);
-  container.querySelectorAll('.flc-name').forEach(el => {
-    el.onclick = (ev) => { ev.stopPropagation(); switchFavoriteList(el.getAttribute('data-list-id')); };
-    el.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); switchFavoriteList(el.getAttribute('data-list-id')); } };
+  const flsSwitcher = container.querySelector('.fav-list-switcher');
+  const flsCurrent = container.querySelector('#flsCurrent');
+  const flsMenu = container.querySelector('#flsMenu');
+  const closeFlsMenu = () => { if (!flsSwitcher) return; flsSwitcher.classList.remove('open'); flsMenu.classList.remove('open'); flsCurrent.setAttribute('aria-expanded', 'false'); };
+  if (flsCurrent) {
+    flsCurrent.onclick = (ev) => {
+      ev.stopPropagation();
+      const open = flsMenu.classList.toggle('open');
+      flsSwitcher.classList.toggle('open', open);
+      flsCurrent.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+  }
+  if (flsMenu) flsMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  /* renderWatchlist rebuilds this menu on every refresh (favorite change,
+     sort, 5-min poll, …) — track the one active outside-click listener and
+     swap it out each time instead of stacking a new one against a detached
+     node on every render. */
+  if (_flsOutsideClickHandler) document.removeEventListener('click', _flsOutsideClickHandler);
+  _flsOutsideClickHandler = (ev) => {
+    if (flsMenu && flsMenu.classList.contains('open') && !flsMenu.contains(ev.target) && ev.target !== flsCurrent) closeFlsMenu();
+  };
+  document.addEventListener('click', _flsOutsideClickHandler);
+  container.querySelectorAll('.fls-menu-name').forEach(el => {
+    const apply = () => { closeFlsMenu(); switchFavoriteList(el.getAttribute('data-list-id')); };
+    el.onclick = apply;
+    el.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); apply(); } };
   });
-  container.querySelectorAll('.flc-rename').forEach(el => {
+  container.querySelectorAll('.fls-rename').forEach(el => {
     el.onclick = (ev) => {
       ev.stopPropagation();
       const listId = el.getAttribute('data-list-id');
@@ -3459,7 +3507,7 @@ function renderWatchlist() {
       if (name != null && name.trim()) renameFavoriteListLocal(listId, name.trim());
     };
   });
-  container.querySelectorAll('.flc-delete').forEach(el => {
+  container.querySelectorAll('.fls-delete').forEach(el => {
     el.onclick = (ev) => {
       ev.stopPropagation();
       const listId = el.getAttribute('data-list-id');
@@ -3467,7 +3515,7 @@ function renderWatchlist() {
       if (l && confirm(`Delete the "${l.name}" list and its favorites?`)) deleteFavoriteListLocal(listId);
     };
   });
-  const addListBtn = container.querySelector('.fav-list-add');
+  const addListBtn = container.querySelector('.fls-add');
   if (addListBtn) {
     addListBtn.onclick = (ev) => {
       ev.stopPropagation();
@@ -6009,30 +6057,59 @@ function applyYScaleDrag(dy) {
   yScale = Math.max(0.15, Math.min(12, yScale * Math.exp(dy / 150)));
   queueDraw();
 }
+/* Same idea, the other axis: grabbing the date strip along the bottom and
+   dragging horizontally zooms time in/out — drag RIGHT zooms in (narrower
+   window, matching the wheel-zoom direction), drag LEFT zooms out. Reuses
+   the wheel-zoom's "stay anchored to the most recent data" behavior rather
+   than leaving offset fixed, so this drag can't walk the view backward in
+   time the way the old wheel handler used to. Double-click resets to the
+   full/latest view. Checked after inYAxisZone in the bottom-right corner
+   where both bands technically overlap — the price-scale drag wins there,
+   matching where a user's eye reads that corner as "the price axis". */
+function inXAxisZone(clientY) {
+  if (!chartData.H) return false;
+  const y = clientY - canvas.getBoundingClientRect().top;
+  return y >= chartData.y0 + chartData.h;
+}
+function applyXScaleDrag(dx) {
+  zoom = Math.max(1, Math.min(20, zoom * Math.exp(dx / 150)));
+  const n = chartData.n;
+  if (n) offset = Math.max(0, n - Math.max(20, Math.floor(n / zoom)));
+  queueDraw();
+}
 let isDragging = false, startXMouse = 0, mouseMoved = false;
 let axisDragging = false, axisLastY = 0;
+let xAxisDragging = false, xAxisLastX = 0;
 canvas.addEventListener('mousedown', ev => {
   if (inYAxisZone(ev.clientX)) { axisDragging = true; axisLastY = ev.clientY; return; }
+  if (inXAxisZone(ev.clientY)) { xAxisDragging = true; xAxisLastX = ev.clientX; return; }
   isDragging = true; mouseMoved = false; startXMouse = ev.clientX;
 });
 canvas.addEventListener('mouseup', ev => {
   if (axisDragging) { axisDragging = false; return; }
+  if (xAxisDragging) { xAxisDragging = false; return; }
   if (!mouseMoved) selectAt(ev.clientX, ev.clientY);
   isDragging = false;
 });
-canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; tip.style.display = "none"; hoverIdx = null; hoverY = null; queueDraw(); });
-canvas.addEventListener('dblclick', ev => { if (inYAxisZone(ev.clientX)) { yScale = 1; queueDraw(); } });
+canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; xAxisDragging = false; tip.style.display = "none"; hoverIdx = null; hoverY = null; queueDraw(); });
+canvas.addEventListener('dblclick', ev => {
+  if (inYAxisZone(ev.clientX)) { yScale = 1; queueDraw(); }
+  else if (inXAxisZone(ev.clientY)) { zoom = 1; offset = 0; queueDraw(); }
+});
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
   if (axisDragging) {
     applyYScaleDrag(ev.clientY - axisLastY); axisLastY = ev.clientY; return;
+  }
+  if (xAxisDragging) {
+    applyXScaleDrag(ev.clientX - xAxisLastX); xAxisLastX = ev.clientX; return;
   }
   if (isDragging) {
     const dx = ev.clientX - startXMouse; if (Math.abs(dx) > 3) mouseMoved = true; startXMouse = ev.clientX;
     const { dataW, win, n } = chartData;
     offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw(); return;
   }
-  canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize' : '';
+  canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize' : inXAxisZone(ev.clientY) ? 'ew-resize' : '';
   handleTooltip(ev.clientX, ev.clientY);
 });
 canvas.addEventListener('wheel', ev => {
@@ -6063,6 +6140,12 @@ canvas.addEventListener('touchstart', ev => {
       const nowT = Date.now();
       if (nowT - lastAxisTapT < 320) { yScale = 1; queueDraw(); }
       lastAxisTapT = nowT;
+    } else if (inXAxisZone(t.clientY)) {
+      touchMode = 'xscale'; lastTouchX = t.clientX;
+      /* double-tap the date strip = reset to the full/latest view */
+      const nowT = Date.now();
+      if (nowT - lastAxisTapT < 320) { zoom = 1; offset = 0; queueDraw(); }
+      lastAxisTapT = nowT;
     } else {
       touchMode = 'pan'; lastTouchX = t.clientX;
     }
@@ -6075,6 +6158,9 @@ canvas.addEventListener('touchmove', ev => {
   if (touchMode === 'yscale' && ev.touches.length === 1) {
     const cy = ev.touches[0].clientY;
     applyYScaleDrag(cy - lastTouchY); lastTouchY = cy;
+  } else if (touchMode === 'xscale' && ev.touches.length === 1) {
+    const cx = ev.touches[0].clientX;
+    applyXScaleDrag(cx - lastTouchX); lastTouchX = cx;
   } else if (touchMode === 'pan' && ev.touches.length === 1) {
     const cx = ev.touches[0].clientX, cy = ev.touches[0].clientY;
     if (Math.abs(cx - tStartX) > 6 || Math.abs(cy - tStartY) > 6) touchMoved = true;
