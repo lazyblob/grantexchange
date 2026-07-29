@@ -821,32 +821,42 @@ button, input { touch-action: manipulation; }
 .fc-collapse .ui-ic { width: 14px; height: 14px; display: block; }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
-/* Favorites list-switcher — TradingView-watchlist-header style: current
-   list name + caret that opens a dropdown of every list, plus a "+" to
-   create one. Sits between the section title and its rows, only on the
-   Favorites group. */
-.fav-list-switcher { position: relative; display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #1c1712; border-bottom: 1px solid #141210; }
+/* Favorites list-switcher — TradingView-watchlist-header style: lives
+   INSIDE the section title itself (no separate row, no collapse chevron —
+   there's never a reason to collapse Favorites, only to switch which list
+   is showing). The title's icon is followed by a "[list name] ⌄" button
+   that opens a dropdown of every list; a "+" replaces the chevron slot on
+   the right to create one. */
+/* Its dropdown menu can visually overflow below the title's own box, into
+   where the next sticky section title sits. Both this title and that one
+   are position:sticky + z-index (each forms its own stacking context), so
+   a high z-index on the MENU alone can't win — it's trapped inside this
+   title's stacking context. Raising the title's own z-index above the
+   default 4 makes the whole context (title + its overflowing menu) paint
+   above the next title instead of losing to it on DOM order. */
+.category-title.fav-title { cursor: default; z-index: 10; }
 .fls-current {
-  display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 200px;
-  background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 5px;
-  padding: 4px 8px; color: var(--fav-gold, #FFB300); font-size: 11.5px; font-weight: 700;
+  display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 160px;
+  background: rgba(0,0,0,0.25); border: 1px solid var(--border-light); border-radius: 5px;
+  padding: 3px 7px; color: var(--fav-gold, #FFB300); font-size: 11px; font-weight: 700;
+  text-transform: none; letter-spacing: normal;
   cursor: pointer; transition: border-color 0.12s ease;
 }
 .fls-current:hover { border-color: var(--fav-gold, #FFB300); }
 .fls-current .fls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fls-current .fls-caret { display: flex; flex-shrink: 0; }
 .fls-current .fls-caret .ui-ic { width: 11px; height: 11px; transition: transform 0.15s ease; }
-.fav-list-switcher.open .fls-current .fls-caret .ui-ic { transform: rotate(180deg); }
+.fls-current.open .fls-caret .ui-ic { transform: rotate(180deg); }
 .fls-add {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 23px; height: 23px; border-radius: 5px;
-  background: transparent; border: 1px dashed var(--border-light); color: var(--text-muted);
+  width: 22px; height: 22px; border-radius: 4px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #F0EBDF;
   cursor: pointer; font-size: 13px; font-weight: 800; line-height: 1;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
 }
-.fls-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); }
+.fls-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); background: rgba(255,179,0,0.12); }
 .fls-menu {
-  display: none; position: absolute; top: calc(100% + 4px); left: 10px; z-index: 20;
+  display: none; position: absolute; top: 100%; left: 13px; z-index: 20;
   min-width: 190px; max-width: 260px; max-height: 260px; overflow-y: auto;
   background: #241f19; border: 1px solid var(--border-light); border-radius: 6px;
   box-shadow: 0 10px 30px -8px rgba(0,0,0,0.6);
@@ -3358,29 +3368,58 @@ function renderWatchlist() {
     const scanState = hasScan ? scanStatus[group.scan] : null;
     if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return;
     const stateKey = group.key || group.name;
+    const isFavTitle = group.className === "fav-title";
     const groupDiv = document.createElement("div"); groupDiv.className = "category-group";
-    const isGroupOpen = groupOpenStates[stateKey] !== false;
+    /* Favorites never collapses — there's nothing to toggle, only which
+       list is showing — so it ignores any stale stored collapse state
+       from before this changed (otherwise a list collapsed under the old
+       chevron would have no way to reopen now that the chevron is gone). */
+    const isGroupOpen = isFavTitle ? true : groupOpenStates[stateKey] !== false;
     const titleDiv = document.createElement("div");
     titleDiv.className = `category-title ${group.className}`;
-    const isFavTitle = group.className === "fav-title";
     /* No Edit button anymore — the per-row × reveals on hover (desktop) /
-       is always shown (touch), TradingView-style. Header is just the
-       title + collapse chevron. "Linked" only shows when the ACTIVE
-       list's name actually matches one of the plugin's lists — with
-       multiple lists, being connected doesn't mean every list merges. */
+       is always shown (touch), TradingView-style. "Linked" only shows
+       when the ACTIVE list's name actually matches one of the plugin's
+       lists — with multiple lists, being connected doesn't mean every
+       list merges. */
     const rlBadge = (isFavTitle && rlConnected && rlMatchedFavIds().length) ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites (list name match)"><span class="rl-dot on"></span>Linked</span>` : '';
-    titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}${rlBadge}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+    if (isFavTitle) {
+      /* The list-switcher IS the title's name slot — a "[list] ⌄" button
+         opening a dropdown of every list — and "+" replaces the collapse
+         chevron on the right, since this title never collapses. */
+      const listMenuHtml = favoriteLists.map(l => `
+        <div class="fls-menu-row ${l.id === activeFavListId ? 'active' : ''}">
+          <span class="fls-menu-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
+          <button type="button" class="fls-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
+          ${favoriteLists.length > 1 ? `<button type="button" class="fls-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
+        </div>`).join('');
+      titleDiv.innerHTML = `
+        <span class="cat-title-label">
+          ${uiIcon(group.icon)}
+          <button type="button" class="fls-current" id="flsCurrent" aria-haspopup="true" aria-expanded="false">
+            <span class="fls-name">${escapeHtml(group.name)}</span>
+            <span class="fls-caret">${uiIcon('chev')}</span>
+          </button>
+          ${rlBadge}
+        </span>
+        <span class="cat-title-right"><button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button></span>
+        <div class="fls-menu" id="flsMenu" role="menu">${listMenuHtml}</div>`;
+    } else {
+      titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+    }
     const listDiv = document.createElement("div");
     listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
-    titleDiv.onclick = () => {
-      const nowCollapsed = listDiv.classList.toggle("collapsed");
-      titleDiv.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
-      groupOpenStates[stateKey] = !nowCollapsed;
-      if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
-        if (group.scan === 'fived') runFiveDayScan();
-        else if (group.scan === 'steady') runSteadyFlipsScan();
-      }
-    };
+    if (!isFavTitle) {
+      titleDiv.onclick = () => {
+        const nowCollapsed = listDiv.classList.toggle("collapsed");
+        titleDiv.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
+        groupOpenStates[stateKey] = !nowCollapsed;
+        if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
+          if (group.scan === 'fived') runFiveDayScan();
+          else if (group.scan === 'steady') runSteadyFlipsScan();
+        }
+      };
+    }
     let inner = "";
     if (hasScan && scanState !== 'done' && group.entries.length === 0) {
       const loadLabel = group.scan === 'steady' ? 'Scanning the last 14 days of margins…' : 'Scanning 5-day extremes…';
@@ -3444,42 +3483,18 @@ function renderWatchlist() {
     }
     listDiv.innerHTML = inner;
     groupDiv.appendChild(titleDiv);
-    /* List-switcher (TradingView watchlist-header style: current name +
-       caret opening a dropdown of every list) lives between the section
-       title and its rows — only the Favorites group has more than one
-       list. */
-    if (isFavTitle) {
-      const switcherDiv = document.createElement("div");
-      switcherDiv.className = "fav-list-switcher";
-      switcherDiv.innerHTML = `
-        <button type="button" class="fls-current" id="flsCurrent" aria-haspopup="true" aria-expanded="false">
-          <span class="fls-name">${escapeHtml(activeFavList().name)}</span>
-          <span class="fls-caret">${uiIcon('chev')}</span>
-        </button>
-        <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
-        <div class="fls-menu" id="flsMenu" role="menu">
-          ${favoriteLists.map(l => `
-            <div class="fls-menu-row ${l.id === activeFavListId ? 'active' : ''}">
-              <span class="fls-menu-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
-              <button type="button" class="fls-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
-              ${favoriteLists.length > 1 ? `<button type="button" class="fls-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
-            </div>`).join('')}
-        </div>`;
-      groupDiv.appendChild(switcherDiv);
-    }
     groupDiv.appendChild(listDiv);
     fragment.appendChild(groupDiv);
   });
   container.appendChild(fragment);
-  const flsSwitcher = container.querySelector('.fav-list-switcher');
   const flsCurrent = container.querySelector('#flsCurrent');
   const flsMenu = container.querySelector('#flsMenu');
-  const closeFlsMenu = () => { if (!flsSwitcher) return; flsSwitcher.classList.remove('open'); flsMenu.classList.remove('open'); flsCurrent.setAttribute('aria-expanded', 'false'); };
+  const closeFlsMenu = () => { if (!flsCurrent) return; flsCurrent.classList.remove('open'); flsMenu.classList.remove('open'); flsCurrent.setAttribute('aria-expanded', 'false'); };
   if (flsCurrent) {
     flsCurrent.onclick = (ev) => {
       ev.stopPropagation();
       const open = flsMenu.classList.toggle('open');
-      flsSwitcher.classList.toggle('open', open);
+      flsCurrent.classList.toggle('open', open);
       flsCurrent.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
   }
