@@ -1942,9 +1942,12 @@ function updateHeaderChange() {
   el.className = 'change ' + cls;
   el.innerHTML = `<span class="tc-tf">${view.toUpperCase()}</span>${val > 0 ? '+' : ''}${val.toFixed(2)}%`;
 }
-/* Portrait phones get the y-axis on the RIGHT edge (thumb side). */
+/* Y-axis always sits on the right edge — TradingView convention. On desktop
+   it also lands right next to the favorites sidebar, so scanning the price
+   scale and the watchlist stays under one mouse position. On portrait
+   phones it's the thumb side. */
 function yAxisOnRight() {
-  return window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
+  return true;
 }
 /* The 30-day insight sits below the chart on desktop (a full-width band), but
    in portrait-mobile it belongs BELOW the Potential Profit / Analyst Rating
@@ -1982,6 +1985,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   else if (mq.addListener) mq.addListener(placeItemInsight);
 });
 let hoverIdx = null;
+let hoverY = null; // raw cursor Y (CSS px, canvas-relative) for the crosshair's horizontal line + price label
 let selectedAbsIdx = null;
 let membersOn = localStorage.getItem('ge_members') === 'true';
 let fullHistorical = null;
@@ -2215,6 +2219,30 @@ function taxOf(s, exempt) {
 function netKept(b, s, exempt) { return s - taxOf(s, exempt) - b; }
 function calculateTax(price, id) { return taxOf(price, isTaxExempt(id)); }
 function emptySeries() { return { labels: [], low: [], high: [], lowVol: [], highVol: [] }; }
+
+/* Item-name -> human category label ("Runes", "Ores & Bars", …), built from
+   categories.json (a same-origin static file, not the wiki API — every
+   tradeable item isn't in it, only the curated groups it lists). Backs the
+   Favorites "sort by item type" option. Loaded once, fire-and-forget, so
+   boot() never blocks on it. */
+let itemCategoryByName = null;
+async function loadCategories() {
+  try {
+    const cats = await jget('categories.json');
+    const map = new Map();
+    for (const [key, names] of Object.entries(cats)) {
+      const label = key.replace(/-and-/g, ' & ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      for (const n of names) {
+        const k = String(n).toLowerCase();
+        if (!map.has(k)) map.set(k, label);
+      }
+    }
+    itemCategoryByName = map;
+  } catch (e) { itemCategoryByName = new Map(); }
+}
+function categoryOf(item) {
+  return (itemCategoryByName && item) ? (itemCategoryByName.get(item.name.toLowerCase()) || null) : null;
+}
 
 /* Daily traded volume for an item — prefers the bulk /volumes endpoint,
    falls back to summing the 24h high/low print volumes. Drives both the
@@ -2951,6 +2979,8 @@ function renderColHeader() {
       <label class="col-menu-row"><input type="checkbox" data-col="change" ${columnPrefs.change ? 'checked' : ''}><span>% change (24H)</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="margin" ${columnPrefs.margin ? 'checked' : ''}><span>Margin (after tax)</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="volume" ${columnPrefs.volume ? 'checked' : ''}><span>Daily volume</span></label>
+      <div class="col-menu-section">Sort favorites by</div>
+      <div class="col-menu-row col-menu-sort ch-sortable ${favSort === 'type' ? 'sorted' : ''}" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span>${arrow('type')}</div>
     </div>
     <span class="ch-name ch-sortable ${favSort === 'name' ? 'sorted' : ''}" data-sort="name" role="button" tabindex="0" title="Sort favorites by name">Item${arrow('name')}</span>
     <span class="ch-cols">${cols}</span>`;
@@ -3165,6 +3195,12 @@ function renderWatchlist() {
     else if (favSort === 'change') favsSorted.sort((a, b) => (mover1dPct[String(b.id)] ?? -Infinity) - (mover1dPct[String(a.id)] ?? -Infinity));
     else if (favSort === 'margin') favsSorted.sort((a, b) => liveMargin(b) - liveMargin(a));
     else if (favSort === 'volume') favsSorted.sort((a, b) => dailyVolume(b.id) - dailyVolume(a.id));
+    /* Uncategorized items (not in categories.json's curated groups) sort
+       after every named category, then alphabetically within a category. */
+    else if (favSort === 'type') favsSorted.sort((a, b) => {
+      const ca = categoryOf(a) || '￿', cb = categoryOf(b) || '￿';
+      return ca === cb ? a.name.localeCompare(b.name) : ca.localeCompare(cb);
+    });
   }
 
   /* Reliable 14D Margins entries — uses cache populated by
@@ -5647,6 +5683,44 @@ function drawChart(series) {
     const hx = x0 + hoverIdx * stepX;
     ctx.save(); ctx.beginPath(); ctx.moveTo(hx, y0); ctx.lineTo(hx, y0 + h);
     ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.restore();
+
+    /* TradingView-style crosshair: a horizontal line follows the raw cursor
+       row (not snapped to a data value) with the price it corresponds to
+       shown in a label docked to the y-axis, and the hovered column's date
+       shown in a matching label docked to the x-axis. */
+    if (hoverY != null && hoverY >= y0 && hoverY <= y0 + h_price) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(x0, hoverY); ctx.lineTo(x0 + w, hoverY);
+      ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.setLineDash([4, 4]); ctx.stroke();
+      ctx.restore();
+
+      const hoverVal = vmin + (1 - (hoverY - y0) / h_price) * (vmax - vmin);
+      const priceLabel = fmtYAxis(hoverVal);
+      ctx.save();
+      ctx.font = `bold ${axisFontPx}px BlinkMacSystemFont, sans-serif`;
+      const padX = 5, bh = 16, tw = ctx.measureText(priceLabel).width;
+      const bx = yRight ? (x0 + w + 2) : (x0 - 2 - (tw + padX * 2));
+      ctx.fillStyle = "rgba(244,241,232,0.92)";
+      ctx.fillRect(bx, hoverY - bh / 2, tw + padX * 2, bh);
+      ctx.fillStyle = "#0B0E14"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(priceLabel, Math.round(bx + padX), Math.round(hoverY));
+      ctx.restore();
+    }
+
+    const dCross = new Date(L[hoverIdx] * 1000);
+    const timeLabel = spanSec <= 2 * 86400
+      ? dCross.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : `${dCross.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${dCross.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    ctx.save();
+    ctx.font = `bold ${axisFontPx}px BlinkMacSystemFont, sans-serif`;
+    const padX2 = 5, bh2 = 16, tw2 = ctx.measureText(timeLabel).width;
+    const bx2 = Math.max(x0, Math.min(x0 + w - (tw2 + padX2 * 2), hx - tw2 / 2 - padX2));
+    const by2 = y0 + h + 2;
+    ctx.fillStyle = "rgba(244,241,232,0.92)";
+    ctx.fillRect(bx2, by2, tw2 + padX2 * 2, bh2);
+    ctx.fillStyle = "#0B0E14"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText(timeLabel, Math.round(bx2 + padX2), Math.round(by2 + bh2 / 2));
+    ctx.restore();
   }
 
   /* sticky tap/click selection */
@@ -5730,9 +5804,13 @@ const handleTooltip = (clientX, clientY) => {
   const rect = canvas.getBoundingClientRect();
   const mx = clientX - rect.left, my = clientY - rect.top;
   const { x0, dataW, L, y0, H } = chartData;
-  if (!L || mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; if (hoverIdx !== null) { hoverIdx = null; queueDraw(); } return; }
+  if (!L || mx < x0 || mx > x0 + dataW || my < y0 || my > H) { tip.style.display = "none"; if (hoverIdx !== null) { hoverIdx = null; hoverY = null; queueDraw(); } return; }
   const newIdx = localFromClientX(clientX);
-  if (hoverIdx !== newIdx) { hoverIdx = newIdx; queueDraw(); }
+  /* Redraw on every move (not just when the hovered column changes) so the
+     crosshair's horizontal line tracks the cursor smoothly instead of
+     jumping in column-sized steps. */
+  hoverIdx = newIdx; hoverY = my;
+  queueDraw();
   showTipFor(newIdx, clientX, clientY);
 };
 
@@ -5762,7 +5840,7 @@ canvas.addEventListener('mouseup', ev => {
   if (!mouseMoved) selectAt(ev.clientX, ev.clientY);
   isDragging = false;
 });
-canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; tip.style.display = "none"; hoverIdx = null; queueDraw(); });
+canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; tip.style.display = "none"; hoverIdx = null; hoverY = null; queueDraw(); });
 canvas.addEventListener('dblclick', ev => { if (inYAxisZone(ev.clientX)) { yScale = 1; queueDraw(); } });
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
@@ -5777,7 +5855,18 @@ canvas.addEventListener('mousemove', ev => {
   canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize' : '';
   handleTooltip(ev.clientX, ev.clientY);
 });
-canvas.addEventListener('wheel', ev => { ev.preventDefault(); zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8))); queueDraw(); }, { passive: false });
+canvas.addEventListener('wheel', ev => {
+  ev.preventDefault();
+  zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
+  /* Pin the view to the most recent data after zooming. Previously the
+     window's start (offset) stayed put while zoom shrank/grew its width,
+     which visibly walked the visible range backward in time and forced a
+     manual drag back to see the latest trades — this keeps zoom anchored
+     to "now" instead. */
+  const n = chartData.n;
+  if (n) offset = Math.max(0, n - Math.max(20, Math.floor(n / zoom)));
+  queueDraw();
+}, { passive: false });
 
 /* touch: 1 finger = tap-to-select / drag-to-pan (or, when it starts on the
    price axis, drag-to-scale the y-axis), 2 fingers = pinch zoom */
@@ -6070,6 +6159,7 @@ setItem._userPicked = false;
   });
 
   try {
+    loadCategories().then(() => { if (favSort === 'type') renderWatchlist(); });
     mapping = await loadMapping();
     latest = await loadLatest();
     try { past24h = await load24h(); } catch (e) {}
