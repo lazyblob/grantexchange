@@ -924,6 +924,23 @@ button, input { touch-action: manipulation; }
    at-high / at-low green/gold borders + pulse box-shadow and reads identically
    on every list. outline-offset pulls it just inside the row edge. */
 .wl-item.active { background: rgba(255,255,255,0.05); outline: 2px solid #fff; outline-offset: -2px; }
+/* Drag-to-reorder: the dragged row dims in place, and a thin gold line on
+   whichever edge the cursor is nearer shows exactly where it'll land — no
+   extra DOM element between rows, just an inset box-shadow on the row
+   being hovered. */
+.wl-item.dragging { opacity: 0.35; }
+/* White, not the gold accent — a 5D-flagged row is already gold-tinted, and
+   the indicator needs to read against any row color, not just the plain
+   ones. */
+.wl-item.drop-above { box-shadow: inset 0 2px 0 0 #fff; }
+.wl-item.drop-below { box-shadow: inset 0 -2px 0 0 #fff; }
+.wl-drag-handle { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted); cursor: grab; touch-action: none; }
+.wl-drag-handle:hover { color: var(--text-main); }
+.wl-drag-handle:active { cursor: grabbing; }
+.wl-drag-handle .ui-ic { width: 12px; height: 12px; }
+@media (max-width: 640px) {
+  .wl-drag-handle { display: none; }
+}
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -988,10 +1005,9 @@ button, input { touch-action: manipulation; }
 /* 26px right gutter mirrors the header's ch-cols margin so data columns line
    up exactly under their labels (the header reserves that space for the ⋯). */
 .wl-item-right { display: flex; align-items: center; gap: 5px; text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-/* Favorites management controls (reorder ▲▼ + remove ×). Hidden entirely in
-   the resting state so the list stays clean — revealed only when the user
-   taps "Edit" on the Favorites header (which adds .fav-editing to the list
-   container). Quick swipe-to-remove on touch still works without Edit mode. */
+/* Favorites row management: remove (×) reveals on hover/touch, and — in
+   Manual sort only — a drag handle for reordering (see .wl-drag-handle).
+   Swipe-to-remove on touch works regardless of sort mode. */
 .wl-item { position: relative; touch-action: pan-y; }
 .wl-edit-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; font-size: 9px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; padding: 2px 8px; margin-right: 8px; cursor: pointer; transition: all 0.15s ease; }
 .wl-edit-btn:hover { color: var(--text-main); border-color: var(--border-active); }
@@ -2168,6 +2184,60 @@ function deleteFavoriteListLocal(listId) {
   persistFavoriteLists();
   renderWatchlist();
 }
+
+/* Drag-to-reorder favorites (TradingView-style) — grab the handle, drag up
+   or down, a thin line shows where it'll land, drop to commit. Custom
+   pointer tracking rather than native HTML5 drag-and-drop: native DnD's
+   ghost-image/drop-effect styling is finicky to theme and this only needs
+   to work with the mouse (drag handles are hidden on touch breakpoints,
+   same as the price steppers). Only wired when favSort === 'manual' — a
+   computed sort order has no meaningful "position" to drag into. */
+let favDragId = null;
+function wireFavoritesDrag(container) {
+  container.querySelectorAll('.wl-drag-handle').forEach(handle => {
+    handle.addEventListener('mousedown', (ev) => {
+      if (ev.button !== 0) return;
+      ev.preventDefault(); ev.stopPropagation();
+      const row = handle.closest('.wl-item');
+      if (!row) return;
+      favDragId = handle.getAttribute('data-fav-id');
+      row.classList.add('dragging');
+      const clearIndicators = () => container.querySelectorAll('.drop-above, .drop-below').forEach(r => r.classList.remove('drop-above', 'drop-below'));
+      const onMove = (mev) => {
+        const overRow = document.elementFromPoint(mev.clientX, mev.clientY)?.closest('.wl-item[data-fav-row="1"]');
+        clearIndicators();
+        if (!overRow || overRow.getAttribute('data-fav-id') === favDragId) return;
+        const rect = overRow.getBoundingClientRect();
+        overRow.classList.add((mev.clientY - rect.top) < rect.height / 2 ? 'drop-above' : 'drop-below');
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        row.classList.remove('dragging');
+        const target = container.querySelector('.drop-above, .drop-below');
+        if (target && favDragId) {
+          moveFavoriteBeforeAfter(favDragId, target.getAttribute('data-fav-id'), target.classList.contains('drop-above'));
+        }
+        clearIndicators();
+        favDragId = null;
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+function moveFavoriteBeforeAfter(dragId, targetId, before) {
+  const idx = favorites.indexOf(dragId);
+  if (idx < 0) return;
+  favorites.splice(idx, 1);
+  let targetIdx = favorites.indexOf(targetId);
+  if (targetIdx < 0) { favorites.splice(idx, 0, dragId); return; } // target vanished mid-drag — put it back, no-op
+  if (!before) targetIdx += 1;
+  favorites.splice(targetIdx, 0, dragId);
+  persistFavoriteLists();
+  renderWatchlist();
+}
+
 let recentItems = JSON.parse(localStorage.getItem('ge_recentItems') || '[]');
 let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
@@ -2212,7 +2282,8 @@ const UI_ICONS = {
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
   loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
   pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
-  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>'
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+  grip: '<circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>'
 };
 function uiIcon(name, cls) {
   return `<svg class="ui-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${UI_ICONS[name] || ''}</svg>`;
@@ -2230,11 +2301,8 @@ let groupOpenStates = {
   "At 5D Highs": false,
   "At 5D Lows": false
 };
-/* Favorites "Edit" mode — when on, rows reveal reorder/remove controls and
-   stop navigating on tap. Off by default so the resting list stays clean. */
-let favEditMode = false;
 /* Favorites sort — 'manual' respects the user's drag order (and is the only
-   mode where reorder arrows make sense); the others sort the displayed list
+   mode where the drag handle appears); the others sort the displayed list
    without mutating the saved order. Persisted. */
 let favSort = (() => { try { return localStorage.getItem('ge_favSort') || 'manual'; } catch (e) { return 'manual'; } })();
 /* Sort options for favorites. Margin / Volume were added when the
@@ -2419,8 +2487,26 @@ async function loadCategories() {
     itemCategoryByName = map;
   } catch (e) { itemCategoryByName = new Map(); }
 }
+/* categories.json is a curated list — it has no "jewelry" category at all,
+   so every ring/necklace/amulet/bracelet fell into "uncategorized" and just
+   alphabetized by full name instead of grouping by type (all rings
+   together, all necklaces together). Fall back to a simple name-suffix
+   match for exactly that gap; categories.json is still tried first since
+   it's the accurate, curated source for what it covers. */
+const TYPE_FALLBACK_PATTERNS = [
+  [/\bring(?:\s*\(.+\))?$/i, 'Rings'],
+  [/\bnecklace(?:\s*\(.+\))?$/i, 'Necklaces'],
+  [/\bamulet(?:\s*\(.+\))?$/i, 'Amulets'],
+  [/\bbracelet(?:\s*\(.+\))?$/i, 'Bracelets']
+];
+function fallbackCategory(name) {
+  for (const [re, label] of TYPE_FALLBACK_PATTERNS) { if (re.test(name)) return label; }
+  return null;
+}
 function categoryOf(item) {
-  return (itemCategoryByName && item) ? (itemCategoryByName.get(item.name.toLowerCase()) || null) : null;
+  if (!item) return null;
+  const known = itemCategoryByName ? itemCategoryByName.get(item.name.toLowerCase()) : null;
+  return known || fallbackCategory(item.name) || null;
 }
 
 /* Daily traded volume for an item — prefers the bulk /volumes endpoint,
@@ -3522,10 +3608,18 @@ function renderWatchlist() {
            is unavailable. */
         const removeBtn = isFavGroup ? `<button type="button" class="wl-fav-remove wl-fav-remove-row" data-fav-id="${item.id}" title="Remove from favorites" aria-label="Remove ${item.name} from favorites"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg></button>` : '';
         const swipeBg = isFavGroup ? `<span class="wl-swipe-bg">REMOVE</span>` : '';
+        /* Drag-to-reorder only makes sense in Manual sort — any other mode
+           is a computed order, so there's nothing meaningful to drag. Also
+           skip it for a row that's only showing because a linked RuneLite
+           list happened to include it (not actually in the local favorites
+           array) — there's no local position for it to occupy. */
+        const draggable = isFavGroup && favSort === 'manual' && favorites.includes(String(item.id));
+        const dragHandle = draggable ? `<span class="wl-drag-handle" data-fav-id="${item.id}" title="Drag to reorder" aria-hidden="true">${uiIcon('grip')}</span>` : '';
         inner += `
-          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}" ${isFavGroup ? 'data-fav-row="1"' : ''}>
+          <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}" ${isFavGroup ? `data-fav-row="1" data-fav-id="${item.id}"` : ''}>
             ${swipeBg}
             <div class="wl-item-left">
+              ${dragHandle}
               <img src="${itemIconUrl(item.id)}" alt="${item.name} icon" loading="lazy">
               <span class="wl-item-name">${item.name}</span>
               ${hlBadge}
@@ -3626,9 +3720,6 @@ function renderWatchlist() {
   });
   const flsFocusInput = container.querySelector('.fls-menu-input');
   if (flsFocusInput) { flsFocusInput.focus(); flsFocusInput.select(); }
-  /* Persist edit-mode styling across re-renders (the 5-min refresh rebuilds
-     the list). */
-  container.classList.toggle('fav-editing', favEditMode);
   /* Tell CSS whether the VOL column is present, so the fav-delete fallback
      knows when the in-cell trash exists (see .wl-fav-remove-row rules). */
   container.classList.toggle('has-vol', !!columnPrefs.volume);
@@ -3641,11 +3732,9 @@ function renderWatchlist() {
   });
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = (ev) => {
-      /* Don't navigate when the user clicks the per-row × or after a swipe
-         has revealed the remove backdrop. While editing favorites, taps
-         manage the list rather than navigate. */
-      if (ev.target.closest('.wl-fav-remove, .wl-fav-reorder')) return;
-      if (favEditMode && el.getAttribute('data-fav-row') === '1') return;
+      /* Don't navigate when the user clicks the per-row × / drag handle,
+         or after a swipe has revealed the remove backdrop. */
+      if (ev.target.closest('.wl-fav-remove, .wl-drag-handle')) return;
       if (el.classList.contains('swipe-revealed')) {
         el.classList.remove('swipe-revealed');
         return;
@@ -3672,23 +3761,7 @@ function renderWatchlist() {
     };
   });
 
-  /* Up / down reorder buttons. Swap the favorite with its neighbour in the
-     favorites array, save, re-render. Works on every device — no drag-and-
-     drop complexity, just two taps. */
-  function moveFavorite(idStr, delta) {
-    const i = favorites.indexOf(idStr);
-    const j = i + delta;
-    if (i < 0 || j < 0 || j >= favorites.length) return;
-    const tmp = favorites[i]; favorites[i] = favorites[j]; favorites[j] = tmp;
-    persistFavoriteLists();
-    renderWatchlist();
-  }
-  container.querySelectorAll('.wl-fav-up').forEach(b => {
-    b.onclick = (ev) => { ev.stopPropagation(); moveFavorite(String(b.getAttribute('data-fav-id')), -1); };
-  });
-  container.querySelectorAll('.wl-fav-down').forEach(b => {
-    b.onclick = (ev) => { ev.stopPropagation(); moveFavorite(String(b.getAttribute('data-fav-id')), 1); };
-  });
+  wireFavoritesDrag(container);
 
   /* Swipe-left to remove on touch devices. Threshold of 40px reveals the
      "REMOVE" backdrop and animates the row content out of the way; releasing
