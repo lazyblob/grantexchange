@@ -679,6 +679,10 @@ button, input { touch-action: manipulation; }
 }
 .price-reset:hover { background: rgba(255,179,0,0.26); }
 .price-reset .ui-ic { width: 12px; height: 12px; }
+/* Reserve its space always — hiding it with display:none (rather than this)
+   is exactly what made the number + steppers jump sideways every time a
+   nudge appeared or cleared. */
+.price-reset.hidden { visibility: hidden; }
 @media (max-width: 640px) {
   .price-steppers, .price-reset { display: none; }
 }
@@ -4608,9 +4612,12 @@ function renderTargetBoxes() {
       <button type="button" class="price-step" data-side="${side}" data-dir="1" title="Increase ${side} price" aria-label="Increase ${side} price">${uiIcon('chev')}</button>
       <button type="button" class="price-step" data-side="${side}" data-dir="-1" title="Decrease ${side} price" aria-label="Decrease ${side} price">${uiIcon('chev')}</button>
     </span>`;
-  const resetBtn = (side, overridden) => overridden
-    ? `<button type="button" class="price-reset" data-side="${side}" title="Reset to live recommendation" aria-label="Reset ${side} price to live recommendation">${uiIcon('undo')}</button>`
-    : '';
+  /* Always rendered (never conditionally omitted) so its space is reserved
+     whether or not it's actually shown — toggling only its visibility, not
+     its presence, keeps the number and steppers from jumping sideways each
+     time a nudge appears/clears the override. */
+  const resetBtn = (side, overridden) =>
+    `<button type="button" class="price-reset${overridden ? '' : ' hidden'}" data-side="${side}" title="Reset to live recommendation" aria-label="Reset ${side} price to live recommendation">${uiIcon('undo')}</button>`;
   $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}${resetBtn('buy', buyOverridden)}</div>`;
   $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}${resetBtn('sell', sellOverridden)}</div>`;
   wireTargetPriceSteppers();
