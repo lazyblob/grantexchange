@@ -656,7 +656,32 @@ button, input { touch-action: manipulation; }
 .live-val { font-weight: normal; color: #E0D9CB; font-size: 10px; text-transform: none; letter-spacing: 0; }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
 .price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38,166,154,0.30); }
-.price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; }
+.price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
+/* Stepper arrows on the target price — nudge gp-by-gp without opening the
+   Potential Profit breakdown. Desktop-only (see the max-width:640px rule
+   below): on a phone-sized price box these would be too small to hit
+   reliably and there's already a fine-grained input in the calculator. */
+.price-steppers { display: flex; flex-direction: column; gap: 1px; }
+.price-step {
+  display: flex; align-items: center; justify-content: center;
+  width: 16px; height: 11px; padding: 0; border: none; border-radius: 2px;
+  background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.price-step:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.price-step .ui-ic { width: 9px; height: 9px; }
+.price-step[data-dir="1"] .ui-ic { transform: rotate(180deg); }
+.price-reset {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; margin-left: 2px; padding: 0; border: none; border-radius: 4px;
+  background: rgba(255,179,0,0.14); color: var(--fav-gold, #FFB300); cursor: pointer;
+  transition: background 0.12s ease;
+}
+.price-reset:hover { background: rgba(255,179,0,0.26); }
+.price-reset .ui-ic { width: 12px; height: 12px; }
+@media (max-width: 640px) {
+  .price-steppers, .price-reset { display: none; }
+}
 .chart-footer { background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 3px 10px; display: flex; gap: 10px; font-size: 9px; color: var(--text-muted); align-items: center; flex-shrink: 0; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dash { width: 10px; height: 2px; display: inline-block; }
@@ -2146,6 +2171,15 @@ function deleteFavoriteListLocal(listId) {
 let recentItems = JSON.parse(localStorage.getItem('ge_recentItems') || '[]');
 let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
+/* Manual gp-nudge on the TARGET BUY/SELL boxes (stepper arrows) — when set,
+   the periodic live-price refresh stops overwriting that side so a "we're a
+   few gp off" tweak survives the next auto-refresh. Cleared on item switch
+   and timeframe change (a fresh target from a different context shouldn't
+   inherit an old manual offset), and by the box's own reset control. */
+let buyOverridden = false, sellOverridden = false;
+/* ~0.1% of price, floored at 1 gp — fine enough to nudge a "few gp off"
+   miss on a cheap item, meaningful enough to matter on an expensive one. */
+function priceStepFor(price) { return Math.max(1, Math.round(Math.abs(price || 0) * 0.001)); }
 let liveBuyRaw = null, liveSellRaw = null;
 let isCalcOpen = false;
 let currentItemSrc = null;
@@ -2177,7 +2211,8 @@ const UI_ICONS = {
   chev: '<path d="m6 9 6 6 6-6"/>',
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
   loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
-  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'
+  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>'
 };
 function uiIcon(name, cls) {
   return `<svg class="ui-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${UI_ICONS[name] || ''}</svg>`;
@@ -4492,8 +4527,58 @@ function renderTargetBoxes() {
   const tf = view.toUpperCase();
   const buyLbl = swing ? `Swing Buy · ${tf}` : 'Target Buy';
   const sellLbl = swing ? `Swing Sell · ${tf}` : 'Target Sell';
-  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span></div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span></div>`;
+  /* Stepper arrows nudge the price gp-by-gp without opening the Potential
+     Profit breakdown; a reset control appears once nudged so it's obvious
+     the number no longer matches the live recommendation above it. */
+  const steppers = (side) => `
+    <span class="price-steppers">
+      <button type="button" class="price-step" data-side="${side}" data-dir="1" title="Increase ${side} price" aria-label="Increase ${side} price">${uiIcon('chev')}</button>
+      <button type="button" class="price-step" data-side="${side}" data-dir="-1" title="Decrease ${side} price" aria-label="Decrease ${side} price">${uiIcon('chev')}</button>
+    </span>`;
+  const resetBtn = (side, overridden) => overridden
+    ? `<button type="button" class="price-reset" data-side="${side}" title="Reset to live recommendation" aria-label="Reset ${side} price to live recommendation">${uiIcon('undo')}</button>`
+    : '';
+  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}${resetBtn('buy', buyOverridden)}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}${resetBtn('sell', sellOverridden)}</div>`;
+  wireTargetPriceSteppers();
+}
+/* Nudging (or resetting) the box updates the actual recommendedBuy/Sell —
+   the same variables the chart's dashed target line and the Potential
+   Profit calc read — so both move with it instead of just the box's own
+   text changing. */
+function adjustTargetPrice(side, dir) {
+  if (side === 'buy') {
+    recommendedBuy = Math.max(1, recommendedBuy + dir * priceStepFor(recommendedBuy));
+    buyOverridden = true;
+  } else {
+    recommendedSell = Math.max(1, recommendedSell + dir * priceStepFor(recommendedSell));
+    sellOverridden = true;
+  }
+  applyTargetPriceChange();
+}
+function resetTargetPrice(side) {
+  if (selected) {
+    const targets = computeViewTargets(latest?.data?.[String(selected.id)], selected.id);
+    if (side === 'buy') recommendedBuy = targets.buy; else recommendedSell = targets.sell;
+  }
+  if (side === 'buy') buyOverridden = false; else sellOverridden = false;
+  applyTargetPriceChange();
+}
+function applyTargetPriceChange() {
+  renderTargetBoxes();
+  const buyEl = $('#calcBuy'), sellEl = $('#calcSell');
+  if (buyEl) buyEl.value = recommendedBuy || 0;
+  if (sellEl) sellEl.value = recommendedSell || 0;
+  if (buyEl || sellEl) updateCalculator();
+  queueDraw();
+}
+function wireTargetPriceSteppers() {
+  document.querySelectorAll('.price-step').forEach(btn => {
+    btn.onclick = (ev) => { ev.stopPropagation(); adjustTargetPrice(btn.getAttribute('data-side'), Number(btn.getAttribute('data-dir'))); };
+  });
+  document.querySelectorAll('.price-reset').forEach(btn => {
+    btn.onclick = (ev) => { ev.stopPropagation(); resetTargetPrice(btn.getAttribute('data-side')); };
+  });
 }
 
 /* Composite 0–100 grade for the currently-selected item on the SELECTED
@@ -6311,6 +6396,7 @@ function refreshChart() {
   offset = Math.max(0, currentSeries.labels.length - Math.floor(currentSeries.labels.length / zoom));
   const targets = computeViewTargets(latest?.data?.[String(selected.id)], selected.id);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
+  buyOverridden = false; sellOverridden = false; // fresh timeframe — an old manual gp nudge doesn't carry over
   renderTargetBoxes();
   restoreCalculator(selected.limit, recommendedBuy, recommendedSell);
   
@@ -6471,6 +6557,7 @@ async function setItem(m, opts = {}) {
 
   const targets = computeViewTargets(node, m.id);
   recommendedBuy = targets.buy; recommendedSell = targets.sell;
+  buyOverridden = false; sellOverridden = false; // new item — any manual gp nudge was scoped to the last one
   renderTargetBoxes();
 
   restoreCalculator(m.limit, recommendedBuy, recommendedSell);
@@ -6664,7 +6751,12 @@ setItem._userPicked = false;
           liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
           $("#tickerLivePrice").innerHTML = `${fmtGp(liveSellRaw)} <span class="tlp-gp">gp</span>`;
           const targets = computeViewTargets(node, selected.id);
-          recommendedBuy = targets.buy; recommendedSell = targets.sell;
+          /* Leave a manually-nudged side alone — otherwise this refresh
+             (every price tick) would stomp the "we're a few gp off" tweak
+             right back to the raw recommendation before the user even
+             acts on it. */
+          if (!buyOverridden) recommendedBuy = targets.buy;
+          if (!sellOverridden) recommendedSell = targets.sell;
           renderTargetBoxes();
           
           refreshItemInsights(selected, node);
