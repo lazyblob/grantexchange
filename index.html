@@ -656,7 +656,12 @@ button, input { touch-action: manipulation; }
 .live-val { font-weight: normal; color: #E0D9CB; font-size: 10px; text-transform: none; letter-spacing: 0; }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
 .price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38,166,154,0.30); }
-.price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
+/* space-between splits the row into two clusters: the number + its
+   steppers stay tight together on the left, and the reset control sits by
+   itself over on the right — instead of all three crammed in a row next
+   to the number, which read as a cluttered mess of buttons. */
+.price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.price-num-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
 /* Stepper arrows on the target price — nudge gp-by-gp without opening the
    Potential Profit breakdown. Desktop-only (see the max-width:640px rule
    below): on a phone-sized price box these would be too small to hit
@@ -672,8 +677,8 @@ button, input { touch-action: manipulation; }
 .price-step .ui-ic { width: 9px; height: 9px; }
 .price-step[data-dir="1"] .ui-ic { transform: rotate(180deg); }
 .price-reset {
-  display: flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px; margin-left: 2px; padding: 0; border: none; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 20px; height: 20px; padding: 0; border: none; border-radius: 4px;
   background: rgba(255,179,0,0.14); color: var(--fav-gold, #FFB300); cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -4618,8 +4623,8 @@ function renderTargetBoxes() {
      time a nudge appears/clears the override. */
   const resetBtn = (side, overridden) =>
     `<button type="button" class="price-reset${overridden ? '' : ' hidden'}" data-side="${side}" title="Reset to live recommendation" aria-label="Reset ${side} price to live recommendation">${uiIcon('undo')}</button>`;
-  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}${resetBtn('buy', buyOverridden)}</div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}${resetBtn('sell', sellOverridden)}</div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span class="price-num-group"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}</span>${resetBtn('buy', buyOverridden)}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span class="price-num-group"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}</span>${resetBtn('sell', sellOverridden)}</div>`;
   wireTargetPriceSteppers();
 }
 /* Nudging (or resetting) the box updates the actual recommendedBuy/Sell —
