@@ -883,6 +883,12 @@ button, input { touch-action: manipulation; }
 @media (hover: none) {
   .fls-menu-row .fls-rename, .fls-menu-row .fls-delete { opacity: 0.55; }
 }
+.fls-menu-row.editing { padding: 3px; }
+.fls-menu-input {
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border-active);
+  color: var(--text-main); border-radius: 4px; padding: 5px 7px; font-size: 12px;
+  outline: none; font-family: inherit;
+}
 .scan-row { padding: 10px 14px; font-size: 11px; color: var(--border-active); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; background: rgba(201,166,77,0.07); }
 .scan-row:hover { background: var(--bg-input); }
 .scan-row.loading { color: var(--text-muted); cursor: default; }
@@ -2091,6 +2097,11 @@ let activeFavListId = (() => {
 })();
 function activeFavList() { return favoriteLists.find(l => l.id === activeFavListId) || favoriteLists[0]; }
 let _flsOutsideClickHandler = null; // see renderWatchlist's list-switcher wiring
+/* Inline create/rename state for the list-switcher dropdown — an on-theme
+   text input swapped in for the row (or a new row) instead of a native
+   prompt() dialog. Only one can be active at a time. */
+let flsCreatingNew = false;
+let flsEditingListId = null;
 let favorites = activeFavList().items;
 function persistFavoriteLists() {
   const l = activeFavList();
@@ -3390,24 +3401,31 @@ function renderWatchlist() {
     if (isFavTitle) {
       /* The list-switcher IS the title's name slot — a "[list] ⌄" button
          opening a dropdown of every list — and "+" replaces the collapse
-         chevron on the right, since this title never collapses. */
-      const listMenuHtml = favoriteLists.map(l => `
+         chevron on the right, since this title never collapses. Create/
+         rename happen INLINE as a text input swapped into the dropdown
+         row (see flsCreatingNew/flsEditingListId), not a native prompt(). */
+      const listMenuHtml = favoriteLists.map(l => l.id === flsEditingListId ? `
+        <div class="fls-menu-row editing">
+          <input type="text" class="fls-menu-input" data-list-id="${l.id}" value="${escapeHtml(l.name)}" maxlength="40">
+        </div>` : `
         <div class="fls-menu-row ${l.id === activeFavListId ? 'active' : ''}">
           <span class="fls-menu-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
           <button type="button" class="fls-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
           ${favoriteLists.length > 1 ? `<button type="button" class="fls-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
-        </div>`).join('');
+        </div>`).join('')
+        + (flsCreatingNew ? `<div class="fls-menu-row editing"><input type="text" class="fls-menu-input" data-new="1" placeholder="List name" maxlength="40"></div>` : '');
+      const flsMenuOpen = flsCreatingNew || flsEditingListId != null;
       titleDiv.innerHTML = `
         <span class="cat-title-label">
           ${uiIcon(group.icon)}
-          <button type="button" class="fls-current" id="flsCurrent" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="fls-current${flsMenuOpen ? ' open' : ''}" id="flsCurrent" aria-haspopup="true" aria-expanded="${flsMenuOpen ? 'true' : 'false'}">
             <span class="fls-name">${escapeHtml(group.name)}</span>
             <span class="fls-caret">${uiIcon('chev')}</span>
           </button>
           ${rlBadge}
         </span>
         <span class="cat-title-right"><button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button></span>
-        <div class="fls-menu" id="flsMenu" role="menu">${listMenuHtml}</div>`;
+        <div class="fls-menu${flsMenuOpen ? ' open' : ''}" id="flsMenu" role="menu">${listMenuHtml}</div>`;
     } else {
       titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
     }
@@ -3520,10 +3538,9 @@ function renderWatchlist() {
   container.querySelectorAll('.fls-rename').forEach(el => {
     el.onclick = (ev) => {
       ev.stopPropagation();
-      const listId = el.getAttribute('data-list-id');
-      const l = favoriteLists.find(x => x.id === listId);
-      const name = prompt('List name:', l ? l.name : '');
-      if (name != null && name.trim()) renameFavoriteListLocal(listId, name.trim());
+      flsCreatingNew = false;
+      flsEditingListId = el.getAttribute('data-list-id');
+      renderWatchlist();
     };
   });
   container.querySelectorAll('.fls-delete').forEach(el => {
@@ -3538,10 +3555,42 @@ function renderWatchlist() {
   if (addListBtn) {
     addListBtn.onclick = (ev) => {
       ev.stopPropagation();
-      const name = prompt('New list name:', 'Watchlist');
-      if (name != null && name.trim()) createFavoriteListLocal(name.trim());
+      flsEditingListId = null;
+      flsCreatingNew = true;
+      renderWatchlist();
     };
   }
+  /* Inline create/rename input — on-theme text field swapped into the
+     dropdown row instead of a native prompt() dialog. Enter commits,
+     Escape cancels, blur commits (so clicking away still saves, matching
+     how most inline-rename UIs behave) — guarded against double-firing
+     since Enter's commit and the resulting blur can both fire. */
+  container.querySelectorAll('.fls-menu-input').forEach(input => {
+    let done = false;
+    const isNew = input.getAttribute('data-new') === '1';
+    const listId = input.getAttribute('data-list-id');
+    const commit = () => {
+      if (done) return; done = true;
+      const val = input.value.trim();
+      flsCreatingNew = false; flsEditingListId = null;
+      if (isNew) { if (val) createFavoriteListLocal(val); else renderWatchlist(); }
+      else { if (val) renameFavoriteListLocal(listId, val); else renderWatchlist(); }
+    };
+    const cancel = () => {
+      if (done) return; done = true;
+      flsCreatingNew = false; flsEditingListId = null;
+      renderWatchlist();
+    };
+    input.addEventListener('click', (ev) => ev.stopPropagation());
+    input.addEventListener('keydown', (ev) => {
+      ev.stopPropagation();
+      if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+    });
+    input.addEventListener('blur', commit);
+  });
+  const flsFocusInput = container.querySelector('.fls-menu-input');
+  if (flsFocusInput) { flsFocusInput.focus(); flsFocusInput.select(); }
   /* Persist edit-mode styling across re-renders (the 5-min refresh rebuilds
      the list). */
   container.classList.toggle('fav-editing', favEditMode);
