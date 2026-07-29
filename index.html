@@ -821,6 +821,38 @@ button, input { touch-action: manipulation; }
 .fc-collapse .ui-ic { width: 14px; height: 14px; display: block; }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
+/* Favorites list-switcher chips — TradingView-watchlist-tab style. Sits
+   between the section title and its rows, only on the Favorites group. */
+.fav-list-bar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px; background: #1c1712; border-bottom: 1px solid #141210; }
+.fav-list-chip {
+  display: flex; align-items: center; gap: 2px;
+  padding: 3px 4px 3px 9px; border-radius: 10px;
+  background: var(--bg-input); border: 1px solid var(--border-light);
+  font-size: 10.5px; font-weight: 700; color: var(--text-muted);
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.fav-list-chip.active { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); background: rgba(255,179,0,0.12); }
+.fav-list-chip .flc-name { cursor: pointer; padding: 2px 0; white-space: nowrap; }
+.fav-list-chip .flc-rename, .fav-list-chip .flc-delete {
+  display: flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border: none; background: transparent; color: inherit;
+  opacity: 0; cursor: pointer; border-radius: 3px; padding: 0; font-size: 12px; line-height: 1;
+}
+.fav-list-chip:hover .flc-rename, .fav-list-chip:hover .flc-delete { opacity: 0.65; }
+.fav-list-chip .flc-rename:hover, .fav-list-chip .flc-delete:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+.fav-list-chip .flc-rename .ui-ic { width: 10px; height: 10px; }
+.fav-list-add {
+  display: flex; align-items: center; justify-content: center;
+  width: 23px; height: 23px; border-radius: 10px;
+  background: transparent; border: 1px dashed var(--border-light); color: var(--text-muted);
+  cursor: pointer; font-size: 13px; font-weight: 800; line-height: 1;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.fav-list-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); }
+/* Touch devices can't hover — always show the rename/delete affordances. */
+@media (hover: none) {
+  .fav-list-chip .flc-rename, .fav-list-chip .flc-delete { opacity: 0.55; }
+}
 .scan-row { padding: 10px 14px; font-size: 11px; color: var(--border-active); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; background: rgba(201,166,77,0.07); }
 .scan-row:hover { background: var(--bg-input); }
 .scan-row.loading { color: var(--text-muted); cursor: default; }
@@ -1995,14 +2027,80 @@ let fullHistorical = null;
    existing users with an empty favorites list don't get their state stomped
    when they reload. */
 const FAVORITES_DEFAULTS = ['12934', '1601', '12389'];
-let favorites = (() => {
-  const raw = localStorage.getItem('ge_favorites');
-  if (raw == null) {
-    localStorage.setItem('ge_favorites', JSON.stringify(FAVORITES_DEFAULTS));
-    return FAVORITES_DEFAULTS.slice();
-  }
-  try { return JSON.parse(raw); } catch (e) { return []; }
+/* Multiple named favorites lists (TradingView-watchlist style) instead of
+   one flat list. `favorites` (read/written pervasively below — sorting,
+   the star button, reorder, the bridge sync, …) always mirrors whichever
+   list is ACTIVE; switching lists just reassigns it and re-renders, so
+   none of that existing code needed to change. persistFavoriteLists()
+   writes it back into the active list object before saving. */
+let favoriteLists = (() => {
+  try {
+    const raw = localStorage.getItem('ge_favoriteLists');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch (e) {}
+  // First run, or upgrading from the old single-list format: migrate
+  // whatever flat list already existed (or seed the defaults) into one
+  // named list so nobody's saved favorites vanish.
+  let items;
+  try {
+    const rawOld = localStorage.getItem('ge_favorites');
+    items = rawOld != null ? JSON.parse(rawOld) : FAVORITES_DEFAULTS.slice();
+  } catch (e) { items = FAVORITES_DEFAULTS.slice(); }
+  if (!Array.isArray(items)) items = FAVORITES_DEFAULTS.slice();
+  return [{ id: 'default', name: 'Favorites', items }];
 })();
+let activeFavListId = (() => {
+  try {
+    const v = localStorage.getItem('ge_activeFavoriteList');
+    if (v && favoriteLists.some(l => l.id === v)) return v;
+  } catch (e) {}
+  return favoriteLists[0].id;
+})();
+function activeFavList() { return favoriteLists.find(l => l.id === activeFavListId) || favoriteLists[0]; }
+let favorites = activeFavList().items;
+function persistFavoriteLists() {
+  const l = activeFavList();
+  if (l) l.items = favorites;
+  try {
+    localStorage.setItem('ge_favoriteLists', JSON.stringify(favoriteLists));
+    localStorage.setItem('ge_activeFavoriteList', activeFavListId);
+  } catch (e) {}
+}
+function switchFavoriteList(listId) {
+  if (listId === activeFavListId || !favoriteLists.some(l => l.id === listId)) return;
+  activeFavListId = listId;
+  favorites = activeFavList().items;
+  persistFavoriteLists();
+  renderWatchlist();
+}
+function createFavoriteListLocal(name) {
+  const l = { id: 'fl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, items: [] };
+  favoriteLists.push(l);
+  activeFavListId = l.id;
+  favorites = l.items;
+  persistFavoriteLists();
+  renderWatchlist();
+}
+function renameFavoriteListLocal(listId, name) {
+  const l = favoriteLists.find(x => x.id === listId);
+  if (!l) return;
+  l.name = name;
+  persistFavoriteLists();
+  renderWatchlist();
+}
+function deleteFavoriteListLocal(listId) {
+  if (favoriteLists.length <= 1) return; // always keep at least one list
+  favoriteLists = favoriteLists.filter(l => l.id !== listId);
+  if (activeFavListId === listId) {
+    activeFavListId = favoriteLists[0].id;
+    favorites = favoriteLists[0].items;
+  }
+  persistFavoriteLists();
+  renderWatchlist();
+}
 let recentItems = JSON.parse(localStorage.getItem('ge_recentItems') || '[]');
 let activePriceBox = 'sell';
 let recommendedBuy = null, recommendedSell = null;
@@ -2036,10 +2134,14 @@ const UI_ICONS = {
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   chev: '<path d="m6 9 6 6 6-6"/>',
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
-  loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>'
+  loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
+  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'
 };
 function uiIcon(name, cls) {
   return `<svg class="ui-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${UI_ICONS[name] || ''}</svg>`;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 let groupOpenStates = {
@@ -2379,7 +2481,7 @@ $('#btnFav').onclick = () => {
   const wasFavorited = favorites.includes(idStr);
   if (wasFavorited) favorites = favorites.filter(id => id !== idStr);
   else favorites.push(idStr);
-  localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+  persistFavoriteLists();
   rlPostFavorite(idStr, selected.name, wasFavorited);
   updateFavoriteBtn();
   renderWatchlist();
@@ -3029,11 +3131,14 @@ function renderWatchlist() {
   /* Favorites are ordered to MATCH the favorites array (user-reorderable),
      so up/down moves persist in the visible list. */
   const favsById = new Map(activeItems.map(it => [String(it.id), it]));
-  /* When linked to RuneLite, the plugin's Favorites are unioned in for
-     display — never written to ge_favorites, so they simply drop back out
-     if the link goes away and never touch the user's own saved order. */
-  const mergedFavIds = rlWanted && rlFavoriteIds.length
-    ? Array.from(new Set([...favorites.map(String), ...rlFavoriteIds.map(String)]))
+  /* When linked to RuneLite AND the currently active local list's name
+     matches one of the plugin's lists, that list's items are unioned in
+     for display — never written to the local list, so they simply drop
+     back out if the link goes away and never touch the user's own saved
+     order. Lists with no matching name on the other side just don't merge. */
+  const rlMatchedIds = rlWanted ? rlMatchedFavIds() : [];
+  const mergedFavIds = rlMatchedIds.length
+    ? Array.from(new Set([...favorites.map(String), ...rlMatchedIds.map(String)]))
     : favorites;
   const favs = mergedFavIds.map(id => favsById.get(String(id))).filter(Boolean);
 
@@ -3218,7 +3323,10 @@ function renderWatchlist() {
      5D extremes. Winners (24H) was dropped: an item that already pumped is
      the least actionable thing for a buy-low-sell-high flipper. */
   const groups = [
-    { name: "Favorites", icon: "star", className: "fav-title", entries: favEntries(favsSorted), alwaysShow: true },
+    /* Display name follows whichever list is active (e.g. "Long holds"),
+       but the collapse-state key stays fixed so switching lists doesn't
+       reset whether the section is expanded. */
+    { name: activeFavList().name, key: "Favorites", icon: "star", className: "fav-title", entries: favEntries(favsSorted), alwaysShow: true },
     { name: "High Vol Margins", icon: "coins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
     { name: "Low Vol Margins", icon: "gem", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
     { name: "Reliable 14D Margins", icon: "calendar", className: "steady-title", entries: steadyEntries, scan: "steady" },
@@ -3232,22 +3340,25 @@ function renderWatchlist() {
     const hasScan = !!group.scan;
     const scanState = hasScan ? scanStatus[group.scan] : null;
     if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return;
+    const stateKey = group.key || group.name;
     const groupDiv = document.createElement("div"); groupDiv.className = "category-group";
-    const isGroupOpen = groupOpenStates[group.name] !== false;
+    const isGroupOpen = groupOpenStates[stateKey] !== false;
     const titleDiv = document.createElement("div");
     titleDiv.className = `category-title ${group.className}`;
     const isFavTitle = group.className === "fav-title";
     /* No Edit button anymore — the per-row × reveals on hover (desktop) /
        is always shown (touch), TradingView-style. Header is just the
-       title + collapse chevron. */
-    const rlBadge = (isFavTitle && rlConnected) ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites"><span class="rl-dot on"></span>Linked</span>` : '';
-    titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${group.name}${rlBadge}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+       title + collapse chevron. "Linked" only shows when the ACTIVE
+       list's name actually matches one of the plugin's lists — with
+       multiple lists, being connected doesn't mean every list merges. */
+    const rlBadge = (isFavTitle && rlConnected && rlMatchedFavIds().length) ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites (list name match)"><span class="rl-dot on"></span>Linked</span>` : '';
+    titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}${rlBadge}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
     const listDiv = document.createElement("div");
     listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
     titleDiv.onclick = () => {
       const nowCollapsed = listDiv.classList.toggle("collapsed");
       titleDiv.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
-      groupOpenStates[group.name] = !nowCollapsed;
+      groupOpenStates[stateKey] = !nowCollapsed;
       if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
         if (group.scan === 'fived') runFiveDayScan();
         else if (group.scan === 'steady') runSteadyFlipsScan();
@@ -3260,9 +3371,11 @@ function renderWatchlist() {
       if (scanState === 'loading') inner = `<div class="scan-row loading">${uiIcon('loader', 'ic-spin')} ${loadLabel}</div>`;
       else inner = `<div class="scan-row" data-scan="${group.scan}">${uiIcon('search')} ${idleLabel}</div>`;
     } else if (group.entries.length === 0) {
-      const emptyMsg = group.scan === 'steady'
-        ? 'No items met the consistency bar over the last 14 days'
-        : 'Nothing at a 5-day extreme right now';
+      const emptyMsg = isFavTitle
+        ? `No favorites in "${escapeHtml(group.name)}" yet — star an item to add it.`
+        : group.scan === 'steady'
+          ? 'No items met the consistency bar over the last 14 days'
+          : 'Nothing at a 5-day extreme right now';
       inner = `<div class="wl-item" style="color:var(--text-muted); justify-content:center;">${emptyMsg}</div>`;
     } else {
       /* Keyed on className, not the display name — the name already got
@@ -3313,10 +3426,55 @@ function renderWatchlist() {
       });
     }
     listDiv.innerHTML = inner;
-    groupDiv.appendChild(titleDiv); groupDiv.appendChild(listDiv);
+    groupDiv.appendChild(titleDiv);
+    /* List-switcher chips (TradingView-watchlist-tab style) live between
+       the section title and its rows — only the Favorites group has more
+       than one list. */
+    if (isFavTitle) {
+      const chipsDiv = document.createElement("div");
+      chipsDiv.className = "fav-list-bar";
+      chipsDiv.innerHTML = favoriteLists.map(l => `
+        <div class="fav-list-chip ${l.id === activeFavListId ? 'active' : ''}" data-list-id="${l.id}">
+          <span class="flc-name" data-list-id="${l.id}" role="button" tabindex="0" title="Switch to &quot;${escapeHtml(l.name)}&quot;">${escapeHtml(l.name)}</span>
+          <button type="button" class="flc-rename" data-list-id="${l.id}" title="Rename list" aria-label="Rename ${escapeHtml(l.name)}">${uiIcon('pencil')}</button>
+          ${favoriteLists.length > 1 ? `<button type="button" class="flc-delete" data-list-id="${l.id}" title="Delete list" aria-label="Delete ${escapeHtml(l.name)}">×</button>` : ''}
+        </div>`).join('')
+        + `<button type="button" class="fav-list-add" title="New favorites list" aria-label="New favorites list">+</button>`;
+      groupDiv.appendChild(chipsDiv);
+    }
+    groupDiv.appendChild(listDiv);
     fragment.appendChild(groupDiv);
   });
   container.appendChild(fragment);
+  container.querySelectorAll('.flc-name').forEach(el => {
+    el.onclick = (ev) => { ev.stopPropagation(); switchFavoriteList(el.getAttribute('data-list-id')); };
+    el.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); switchFavoriteList(el.getAttribute('data-list-id')); } };
+  });
+  container.querySelectorAll('.flc-rename').forEach(el => {
+    el.onclick = (ev) => {
+      ev.stopPropagation();
+      const listId = el.getAttribute('data-list-id');
+      const l = favoriteLists.find(x => x.id === listId);
+      const name = prompt('List name:', l ? l.name : '');
+      if (name != null && name.trim()) renameFavoriteListLocal(listId, name.trim());
+    };
+  });
+  container.querySelectorAll('.flc-delete').forEach(el => {
+    el.onclick = (ev) => {
+      ev.stopPropagation();
+      const listId = el.getAttribute('data-list-id');
+      const l = favoriteLists.find(x => x.id === listId);
+      if (l && confirm(`Delete the "${l.name}" list and its favorites?`)) deleteFavoriteListLocal(listId);
+    };
+  });
+  const addListBtn = container.querySelector('.fav-list-add');
+  if (addListBtn) {
+    addListBtn.onclick = (ev) => {
+      ev.stopPropagation();
+      const name = prompt('New list name:', 'Watchlist');
+      if (name != null && name.trim()) createFavoriteListLocal(name.trim());
+    };
+  }
   /* Persist edit-mode styling across re-renders (the 5-min refresh rebuilds
      the list). */
   container.classList.toggle('fav-editing', favEditMode);
@@ -3351,7 +3509,7 @@ function renderWatchlist() {
   function unfavorite(idStr) {
     if (!favorites.includes(idStr)) return;
     favorites = favorites.filter(x => x !== idStr);
-    localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+    persistFavoriteLists();
     rlPostFavorite(idStr, '', true);
     updateFavoriteBtn();
     renderWatchlist();
@@ -3371,7 +3529,7 @@ function renderWatchlist() {
     const j = i + delta;
     if (i < 0 || j < 0 || j >= favorites.length) return;
     const tmp = favorites[i]; favorites[i] = favorites[j]; favorites[j] = tmp;
-    localStorage.setItem('ge_favorites', JSON.stringify(favorites));
+    persistFavoriteLists();
     renderWatchlist();
   }
   container.querySelectorAll('.wl-fav-up').forEach(b => {
@@ -4954,7 +5112,16 @@ const RL_POLL_MS = 15000;
 let rlTimer = null;
 let rlWanted = (() => { try { return localStorage.getItem('ge_rl_bridge') === '1'; } catch (e) { return false; } })();
 let rlConnected = false;
-let rlFavoriteIds = [];
+/* Lowercased plugin list name -> { id, itemIds }. The plugin now serves
+   ALL its favorite lists (see task #60's bridge protocol update), so
+   merging happens per-list, matched by name against whichever local list
+   is currently active — there's no single global "the" RuneLite list
+   anymore. */
+let rlFavoriteListsByName = new Map();
+function rlMatchedFavIds() {
+  const l = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
+  return l ? l.itemIds : [];
+}
 function rlRenderModal(data) {
   const dot = $('#rlDot'), body = $('#rlBody');
   if (!dot || !body) return;
@@ -4979,7 +5146,7 @@ function rlRenderModal(data) {
   if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
   }
-  html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Favorites are live-linked in the sidebar</div>`;
+  html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Any local list whose name matches one of your in-game lists is live-linked in the sidebar</div>`;
   if (!flips.length) {
     html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
   } else {
@@ -5003,27 +5170,40 @@ function rlRenderModal(data) {
 function rlApply(data) {
   const wasConnected = rlConnected;
   rlConnected = !!data;
-  const newFavIds = data && Array.isArray(data.favorites) ? data.favorites.map(f => String(f.id)) : [];
-  const favIdsChanged = newFavIds.join(',') !== rlFavoriteIds.join(',');
-  rlFavoriteIds = newFavIds;
+  const beforeMatch = rlMatchedFavIds().join(',');
+  const newLists = new Map();
+  if (data && Array.isArray(data.favoriteLists)) {
+    data.favoriteLists.forEach(l => {
+      if (!l || !l.name) return;
+      const itemIds = Array.isArray(l.items) ? l.items.map(f => String(f.id)) : [];
+      newLists.set(String(l.name).trim().toLowerCase(), { id: l.id, itemIds });
+    });
+  }
+  rlFavoriteListsByName = newLists;
   rlRenderModal(data);
   // Only re-render the (potentially large) watchlist when something it
   // actually depends on changed, not on every 15s poll tick.
-  if (favIdsChanged || wasConnected !== rlConnected) {
+  if (rlMatchedFavIds().join(',') !== beforeMatch || wasConnected !== rlConnected) {
     renderWatchlist();
   }
 }
 /* Push a favorite change TO the plugin so the link works both directions —
    star something here and it's added in-game too, not just the reverse.
    Best-effort: a dropped write just means it stays browser-only until the
-   next successful one, same as any other opportunistic sync. */
+   next successful one, same as any other opportunistic sync. When the
+   active local list's name matches one of the plugin's lists, target that
+   list specifically; otherwise the plugin falls back to whichever list is
+   active in-game (same as before multi-list support existed). */
 function rlPostFavorite(id, name, remove) {
   if (!rlWanted || !rlConnected) return;
+  const matched = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
+  const body = { id: Number(id), name: name || '', remove: !!remove };
+  if (matched) body.listId = matched.id;
   fetch(RL_BRIDGE_URL + '/favorites', {
     method: 'POST',
     mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: Number(id), name: name || '', remove: !!remove })
+    body: JSON.stringify(body)
   }).catch(() => {});
 }
 async function rlPoll() {
