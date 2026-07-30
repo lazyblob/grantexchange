@@ -2248,11 +2248,11 @@ let recommendedBuy = null, recommendedSell = null;
    the periodic live-price refresh stops overwriting that side so a "we're a
    few gp off" tweak survives the next auto-refresh. Cleared on item switch
    and timeframe change (a fresh target from a different context shouldn't
-   inherit an old manual offset), and by the box's own reset control. */
+   inherit an old manual offset). */
 let buyOverridden = false, sellOverridden = false;
-/* ~0.1% of price, floored at 1 gp — fine enough to nudge a "few gp off"
-   miss on a cheap item, meaningful enough to matter on an expensive one. */
-function priceStepFor(price) { return Math.max(1, Math.round(Math.abs(price || 0) * 0.001)); }
+/* Always exactly 1 gp — a "we're a few gp off" nudge means gp-precise,
+   not a percentage of the item's price. */
+function priceStepFor(price) { return 1; }
 let liveBuyRaw = null, liveSellRaw = null;
 let lastLiveFetchAt = null; // unix seconds — stamped on every successful loadLatest(), drives the "Live: … · Xm ago" label
 let isCalcOpen = false;
