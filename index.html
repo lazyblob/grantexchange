@@ -789,12 +789,11 @@ button, input { touch-action: manipulation; }
    different layer" contrast), always-bright white text (doesn't compete
    with the colored row badges), and a fat 3px colored accent stripe on the
    left so each section is still identifiable by color WITHOUT making the
-   title text itself harder to read. Bigger padding gives the header real
-   physical presence vs the dense row stack. */
+   title text itself harder to read. */
 .category-title {
   --cat-accent: var(--border-active);
   position: sticky; top: 0; z-index: 4;
-  padding: 11px 12px 11px 13px;
+  padding: 8px 12px 8px 13px;
   font-size: 11px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
   color: #F0EBDF;
   /* Soft top-lit gradient (raised panel) instead of a flat fill, a thin inner
@@ -822,6 +821,19 @@ button, input { touch-action: manipulation; }
 .category-title.marginlo-title { --cat-accent: #9BD4AE; }
 .category-title.steady-title { --cat-accent: var(--rs-parchment); }
 .category-title.fall-title { --cat-accent: var(--negative); }
+/* "Find Opportunities" wrapper — same title chrome as any other section,
+   just with a neutral accent (it's a container for six differently-
+   accented sections, not a signal of its own). */
+.category-title.find-opps-title { --cat-accent: #8AA9C9; }
+/* Nested scanner titles (inside "Find Opportunities") are visually
+   subordinate to it: smaller, indented, and NOT sticky — the outer
+   wrapper's title already stays pinned while scrolling, so a second sticky
+   header one level down would just fight it for the same top:0 slot. */
+.category-title.nested {
+  position: static;
+  padding: 6px 12px 6px 24px;
+  font-size: 10px;
+}
 .category-title:hover {
   background: linear-gradient(180deg, #3b342a 0%, #2a241d 100%);
   box-shadow: inset 8px 0 24px -15px var(--cat-accent),
@@ -2302,7 +2314,8 @@ let groupOpenStates = {
   "Reliable 14D Margins": false,
   "Biggest Losers (24H)": false,
   "At 5D Highs": false,
-  "At 5D Lows": false
+  "At 5D Lows": false,
+  "FindOpportunities": false // the wrapper around the six scanner sections above
 };
 /* Favorites sort — 'manual' respects the user's drag order (and is the only
    mode where the drag handle appears); the others sort the displayed list
@@ -3502,20 +3515,25 @@ function renderWatchlist() {
   ];
 
   const fragment = document.createDocumentFragment();
-  groups.forEach(group => {
+  /* Builds one collapsible title+list pair. Shared by the top-level
+     Favorites group and each scanner group nested inside "Find
+     Opportunities" below — `nested` just swaps in a smaller, non-sticky
+     title style, since the outer wrapper's own title already does the
+     sticky/section-header job for all six at once. */
+  function buildGroupDiv(group, nested) {
     const hasScan = !!group.scan;
     const scanState = hasScan ? scanStatus[group.scan] : null;
-    if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return;
+    if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return null;
     const stateKey = group.key || group.name;
     const isFavTitle = group.className === "fav-title";
-    const groupDiv = document.createElement("div"); groupDiv.className = "category-group";
+    const groupDiv = document.createElement("div"); groupDiv.className = `category-group${nested ? ' nested' : ''}`;
     /* Favorites never collapses — there's nothing to toggle, only which
        list is showing — so it ignores any stale stored collapse state
        from before this changed (otherwise a list collapsed under the old
        chevron would have no way to reopen now that the chevron is gone). */
     const isGroupOpen = isFavTitle ? true : groupOpenStates[stateKey] !== false;
     const titleDiv = document.createElement("div");
-    titleDiv.className = `category-title ${group.className}`;
+    titleDiv.className = `category-title ${group.className}${nested ? ' nested' : ''}`;
     /* No Edit button anymore — the per-row × reveals on hover (desktop) /
        is always shown (touch), TradingView-style. "Linked" only shows
        when the ACTIVE list's name actually matches one of the plugin's
@@ -3638,8 +3656,40 @@ function renderWatchlist() {
     listDiv.innerHTML = inner;
     groupDiv.appendChild(titleDiv);
     groupDiv.appendChild(listDiv);
-    fragment.appendChild(groupDiv);
+    return groupDiv;
+  }
+
+  const favDiv = buildGroupDiv(groups[0], false);
+  if (favDiv) fragment.appendChild(favDiv);
+
+  /* The six scanner sections used to render as six always-visible bars —
+     ~210px of chrome above the favorites list on every load, even though
+     every one of them defaults to collapsed (see groupOpenStates). They
+     collapse into one "Find Opportunities" wrapper instead: same six
+     sections one tap away, each still individually collapsible and
+     remembering its own open/closed state, but only a single header's
+     worth of height by default. */
+  const FIND_OPPS_KEY = "FindOpportunities";
+  const findOppsOpen = groupOpenStates[FIND_OPPS_KEY] === true; // opt-in open, unlike the rest
+  const findOppsDiv = document.createElement("div");
+  findOppsDiv.className = "category-group";
+  const findOppsTitle = document.createElement("div");
+  findOppsTitle.className = "category-title find-opps-title";
+  findOppsTitle.innerHTML = `<span class="cat-title-label">${uiIcon('search')}Find Opportunities</span><span class="cat-title-right"><span class="cat-chevron${findOppsOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+  const findOppsBody = document.createElement("div");
+  findOppsBody.className = `category-list find-opps-body${findOppsOpen ? '' : ' collapsed'}`;
+  findOppsTitle.onclick = () => {
+    const nowCollapsed = findOppsBody.classList.toggle("collapsed");
+    findOppsTitle.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
+    groupOpenStates[FIND_OPPS_KEY] = !nowCollapsed;
+  };
+  groups.slice(1).forEach(group => {
+    const gd = buildGroupDiv(group, true);
+    if (gd) findOppsBody.appendChild(gd);
   });
+  findOppsDiv.appendChild(findOppsTitle);
+  findOppsDiv.appendChild(findOppsBody);
+  fragment.appendChild(findOppsDiv);
   container.appendChild(fragment);
   const flsCurrent = container.querySelector('#flsCurrent');
   const flsMenu = container.querySelector('#flsMenu');
