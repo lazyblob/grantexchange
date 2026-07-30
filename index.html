@@ -654,6 +654,7 @@ button, input { touch-action: manipulation; }
 .price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(38,166,154,0.30), 0 4px 12px rgba(38,166,154,0.12); }
 .price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; letter-spacing: 0.4px; }
 .live-val { font-weight: normal; color: #E0D9CB; font-size: 10px; text-transform: none; letter-spacing: 0; }
+.live-age { color: var(--text-muted); }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
 .price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38,166,154,0.30); }
 .price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
@@ -2253,6 +2254,7 @@ let buyOverridden = false, sellOverridden = false;
    miss on a cheap item, meaningful enough to matter on an expensive one. */
 function priceStepFor(price) { return Math.max(1, Math.round(Math.abs(price || 0) * 0.001)); }
 let liveBuyRaw = null, liveSellRaw = null;
+let lastLiveFetchAt = null; // unix seconds — stamped on every successful loadLatest(), drives the "Live: … · Xm ago" label
 let isCalcOpen = false;
 let currentItemSrc = null;
 let currentItemLowVol = false;
@@ -4608,9 +4610,20 @@ function renderTargetBoxes() {
       <button type="button" class="price-step" data-side="${side}" data-dir="1" title="Increase ${side} price" aria-label="Increase ${side} price">${uiIcon('chev')}</button>
       <button type="button" class="price-step" data-side="${side}" data-dir="-1" title="Decrease ${side} price" aria-label="Decrease ${side} price">${uiIcon('chev')}</button>
     </span>`;
-  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}</div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}</span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}</div>`;
+  /* "· Xm ago" next to the live price — the reassurance a manual refresh
+     button would've given ("is this actually current?"), without a control
+     that implies you have to press it to get fresh data. Ticked live by
+     tickLiveAge() rather than re-rendered, so it stays cheap. */
+  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}</div>`;
   wireTargetPriceSteppers();
+}
+/* Keeps the "· Xm ago" labels above current without a full re-render (which
+   would also re-wire the stepper buttons every tick for no reason). */
+function tickLiveAge() {
+  if (!lastLiveFetchAt) return;
+  const text = ' · ' + fmtAge(lastLiveFetchAt);
+  document.querySelectorAll('[data-live-age]').forEach(el => { el.textContent = text; });
 }
 /* Nudging the box updates the actual recommendedBuy/Sell — the same
    variables the chart's dashed target line and the Potential Profit calc
@@ -6606,6 +6619,7 @@ async function setItem(m, opts = {}) {
   selectedAbsIdx = null;
 
   latest = await loadLatest();
+  lastLiveFetchAt = Math.floor(Date.now() / 1000);
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
@@ -6641,6 +6655,7 @@ setItem._userPicked = false;
     loadCategories().then(() => { if (favSort === 'type') renderWatchlist(); });
     mapping = await loadMapping();
     latest = await loadLatest();
+    lastLiveFetchAt = Math.floor(Date.now() / 1000);
     try { past24h = await load24h(); } catch (e) {}
     try { volumes = await loadVolumes(); } catch (e) {}
 
@@ -6795,6 +6810,7 @@ setItem._userPicked = false;
     setInterval(async () => {
       try {
         latest = await loadLatest();
+        lastLiveFetchAt = Math.floor(Date.now() / 1000);
         updateFootFresh();
         dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
         scanStatus.fived = 'idle'; // let runFiveDayScan re-populate against fresh extremes
@@ -6823,6 +6839,7 @@ setItem._userPicked = false;
         ensureFlipCard();
       } catch (e) {}
     }, 300000);
+    setInterval(tickLiveAge, 15000);
 
     resizeCanvas();
 
