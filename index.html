@@ -1167,7 +1167,16 @@ button, input { touch-action: manipulation; }
 .col-menu-row:hover { background: var(--bg-input); }
 .col-menu-row input { margin: 0; accent-color: var(--border-active); cursor: pointer; }
 
-@media screen and (max-width: 640px) and (orientation: portrait) {
+/* Width alone, not orientation — a narrow LANDSCAPE window (mouse or
+   touch) can't fit the full desktop header/target-boxes any better than a
+   narrow portrait phone can; reusing this compact layout (instead of
+   inventing a second one) is what actually fixes that instead of leaving
+   narrow-landscape windows with no compact treatment at all. Genuinely
+   short+narrow TOUCH devices in landscape still get the separate,
+   further-compacted single-row treatment below (gated on pointer: coarse,
+   not width), since that's a different, more cramped case (~390px tall)
+   than this block assumes. */
+@media screen and (max-width: 640px) {
   /* Portrait: the new 30-day meter + summary run edge-to-edge otherwise;
      give them a little horizontal breathing room like the rest of content. */
   .item-insight { padding-left: 12px; padding-right: 12px; margin-left: 0; margin-right: 0; }
@@ -1194,7 +1203,12 @@ button, input { touch-action: manipulation; }
      positioned dropdown that must be allowed to spill below the panel. */
   .top-panel { padding: 3px 6px; position: relative; }
   .panel-left { width: 100%; align-items: center; flex-wrap: nowrap; justify-content: space-between; gap: 4px; min-width: 0; }
-  .brand-logo { display: none !important; }
+  /* Keep just the scimitar icon — the "PocketGE" wordmark is what doesn't
+     fit next to search + icons at this width, but a tap-to-refresh/home
+     affordance is still worth the ~20px it costs. */
+  #logoBtn { margin-right: 0; flex-shrink: 0; }
+  #logoBtn img { margin-right: 0; }
+  .brand-logo .brand-word { display: none; }
   .mode-pill { flex-shrink: 0; height: 26px; padding: 1px; align-self: flex-start; }
   .mode-pill button { padding: 0 5px; font-size: 10px; }
   /* Cramming mode-pill + search + 5 icons into one row was overflowing on
@@ -1280,17 +1294,16 @@ button, input { touch-action: manipulation; }
   .price-val { font-size: 17px; margin-top: 0; margin-left: auto; flex-shrink: 1; white-space: nowrap; line-height: 1.1; letter-spacing: -0.4px; overflow: hidden; text-overflow: ellipsis; }
   .calc-container input { font-size: 16px; }
 }
-/* (max-width: 1023px) keeps this "mobile landscape" bucket from also
-   matching a short, WIDE desktop window (e.g. 1900x560 — plenty of room,
-   just not tall) — that was wrongly getting the phone treatment (logo
-   vanishing, item name folded into the search box) purely because the
-   window happened to be short. It's a width cap, not a touch check,
-   because the thing that actually decides whether this compact layout is
-   NEEDED is available space, not input device — a narrow, short desktop
-   window (mouse, no touch) genuinely can't fit the full desktop layout
-   either and needs the same compaction a phone does. 1023px matches the
-   existing >=1024px "real desktop" cutoff used elsewhere in this file. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
+/* (pointer: coarse) keeps this "mobile landscape" restructure — logo
+   hidden, item name folded into the search box, everything squeezed onto
+   one row — scoped to actual touch devices. height+orientation alone also
+   matches a short, wide DESKTOP window, which wrongly got the full phone
+   treatment just because the window was short. A narrow-but-not-touch
+   desktop window still needs SOME help so things don't overlap, but it
+   gets a much lighter, non-restructuring fix — see the plain
+   ".price-strip .price-box" width rule further down, which is keyed on
+   width alone and doesn't touch the logo/search/layout at all. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   /* Mobile landscape: vertical space is the scarce axis (~390px tall) while
      width is abundant (~844px). So DON'T stack — put the top panel (search +
      icons) and the ticker (name + timeframe) side by side on ONE row, and
@@ -1307,7 +1320,11 @@ button, input { touch-action: manipulation; }
      room to spell out longer names ("Emerald necklace") instead of
      truncating — see .ticker-header split below for the other half. */
   .mode-pill button { padding: 0 6px; }
-  .brand-logo { display: none !important; }
+  /* Keep just the scimitar icon — see the matching rule in the compact
+     breakpoint above for why. */
+  #logoBtn { margin-right: 0; flex-shrink: 0; }
+  #logoBtn img { margin-right: 0; }
+  .brand-logo .brand-word { display: none; }
   /* Combined search: the current item name overlays the search box (which is
      otherwise a squished, near-invisible sliver here), and a ↗ opens its
      wiki. The item is therefore shown ONCE — the separate ticker name is
@@ -1504,9 +1521,9 @@ button, input { touch-action: manipulation; }
 /* landscape flip-card compaction — MUST live here (after the .flip-card base
    rules) so it wins on source order; media queries add no specificity. The
    short landscape sidebar can't afford the full card, so shrink it and put
-   Profit / Est-per-4h / Daily-vol on ONE inline line. (max-width: 1023px)
-   excludes short-but-wide desktop windows — see the matching block above. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
+   Profit / Est-per-4h / Daily-vol on ONE inline line. (pointer: coarse)
+   scopes this to real touch devices — see the matching block above. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .flip-finder { padding: 4px 4px 0; }
   .flip-card { margin: 4px; padding: 6px 8px; }
   .flip-card .fc-why { display: none; }
@@ -1636,10 +1653,10 @@ button, input { touch-action: manipulation; }
    band just ABOVE the about-section (below the app, in the scroll region)
    where there's room — same side-by-side layout as desktop, centered to the
    about-section's content width. This block is after the desktop one so it
-   wins when a viewport matches both. (max-width: 1023px) keeps it out of a
-   short, WIDE desktop window (the JS relocation below uses the same
-   condition) — that keeps the normal under-chart placement instead. */
-@media (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
+   wins when a viewport matches both. (pointer: coarse) keeps it scoped to
+   real touch devices (the JS relocation below uses the same condition) —
+   a short, wide DESKTOP window keeps the normal under-chart placement. */
+@media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .item-insight {
     display: flex; align-items: center; gap: 22px; text-align: left;
     max-width: 880px; margin: 14px auto; padding: 13px 20px 0;
@@ -1795,7 +1812,7 @@ button, input { touch-action: manipulation; }
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon">Pocket<span>GE</span></span>
+            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" title="PocketGE — tap to refresh"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
 
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
@@ -2117,8 +2134,8 @@ function yAxisOnRight() {
    in .watchlist-container), so a plain CSS `order` can't swap them — relocate
    the node by media query instead. renderItemInsight targets it by id, so
    moving it never breaks the live updates. */
-const _insightPortraitMQ = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
-const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (max-width: 1023px)');
+const _insightPortraitMQ = window.matchMedia('(max-width: 640px)');
+const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)');
 function placeItemInsight() {
   const insight = document.getElementById('itemInsight');
   const sideModule = document.getElementById('sideModule');
@@ -5196,10 +5213,10 @@ function flipCollapsed(){
     if (v === '1') return true;
     if (v === '0') return false;
     // No explicit user preference yet — default to collapsed in the cramped
-    // landscape column so Favorites isn't scrolled off-screen below the
-    // fully-expanded card. (max-width: 1023px) so a short but WIDE desktop
-    // window doesn't get defaulted to collapsed too.
-    return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (max-width: 1023px)').matches;
+    // mobile-landscape column so Favorites isn't scrolled off-screen below
+    // the fully-expanded card. (pointer: coarse) so a short desktop window
+    // doesn't get defaulted to collapsed too.
+    return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)').matches;
   } catch (e) { return false; }
 }
 function setFlipCollapsed(v){ try { localStorage.setItem('ge_flipCollapsed', v ? '1' : '0'); } catch (e) {} }
