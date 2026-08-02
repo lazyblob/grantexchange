@@ -627,6 +627,37 @@ button, input { touch-action: manipulation; }
    target / grade boxes can never cover chart data. The flex-row puts buy +
    sell side by side; on narrow widths they wrap and the chart simply moves
    down a little. */
+/* Dismiss-once developer note — a small human-behind-the-tool aside, not
+   persistent UI chrome, so it deliberately doesn't match the app's SVG icon
+   system (a raw emoji reads as "a person wrote this" here). */
+.dev-welcome {
+  position: relative;
+  margin: 10px 0 0;
+  padding: 10px 34px 10px 14px;
+  background: linear-gradient(180deg, rgba(201,166,77,0.10), rgba(32,28,22,0.6));
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--border-active);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+.dev-welcome.hidden { display: none; }
+.dw-dismiss {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 16px; line-height: 1; cursor: pointer; border-radius: 4px;
+}
+.dw-dismiss:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.dw-text { margin: 0; }
+.dw-short { display: none; }
+@media (max-width: 640px) {
+  .dw-full { display: none; }
+  .dw-short { display: inline; }
+  .dev-welcome { font-size: 11px; padding: 8px 30px 8px 12px; }
+}
 .price-strip { display: flex; gap: 8px; padding: 0; flex-shrink: 0; flex-wrap: wrap; }
 .price-strip .price-box { flex: 1 1 0; min-width: 0; }
 /* Target Buy / Target Sell are the hero of the app — these are the actual
@@ -1834,6 +1865,30 @@ button, input { touch-action: manipulation; }
         </div>
       </div>
 
+      <!-- Dismiss-once welcome note — a human behind the tool, not a corporate
+           banner. Hidden permanently per-browser after the first dismiss (see
+           the inline script right below), and shortened on narrow screens
+           rather than needing a separate expand/collapse interaction. -->
+      <div class="dev-welcome" id="devWelcome">
+        <button type="button" class="dw-dismiss" id="devWelcomeDismiss" title="Dismiss" aria-label="Dismiss this message">×</button>
+        <p class="dw-text">
+          <span class="dw-full">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game. PocketGE is free today — if that ever changes, the core stays free.</span>
+          <span class="dw-short">👋 I'm <strong>pocketge</strong> in-game (W301/302 GE) — actively building this. Bugs or ideas? Add me in-game.</span>
+        </p>
+      </div>
+      <script>
+        (function () {
+          var el = document.getElementById('devWelcome');
+          try {
+            if (localStorage.getItem('ge_devWelcomeDismissed') === '1') { el.classList.add('hidden'); return; }
+          } catch (e) {}
+          var btn = document.getElementById('devWelcomeDismiss');
+          btn.onclick = function () {
+            el.classList.add('hidden');
+            try { localStorage.setItem('ge_devWelcomeDismissed', '1'); } catch (e) {}
+          };
+        })();
+      </script>
 
       <div class="price-strip">
         <div id="buyPrice" class="price-box low">
@@ -7039,7 +7094,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <section class="about-section" aria-label="About PocketGE">
-  <p class="about-intro">PocketGE is a free, mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup, no ads.</p>
+  <p class="about-intro">PocketGE is a free, mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup required.</p>
 
   <h2>Live OSRS margins with the 2% GE tax built in</h2>
   <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins.</p>
