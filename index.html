@@ -1306,7 +1306,7 @@ button, input { touch-action: manipulation; }
   /* Ticker header carries the Save button + timeframe toolbar (item name
      lives in the search box above). */
   .ticker-title-group { display: none !important; }
-  .ticker-header { flex: 1 1 36%; min-width: 0; padding: 2px; border: 1px solid var(--border-main); background: var(--bg-panel); border-radius: 6px; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
+  .ticker-header { flex: 1 1 36%; min-width: 0; padding: 2px; border: 1px solid var(--border-hair); background: var(--bg-panel); border-radius: 6px; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
   /* Icon-only Save button in landscape — the star + gold color already
      signal "favorite", and the "Save"/"Saved" label doesn't fit next to a
      6-button toolbar in a ~470 px header. Tap area stays big enough. */
@@ -1593,9 +1593,7 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .item-insight {
     display: flex; align-items: center; gap: 30px; text-align: left;
-    margin: 0; padding: 16px 26px; border-top: none;
-    background: var(--bg-panel); border: 1px solid var(--border-main);
-    border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    margin: 0; padding: 16px 2px 0; border-top: 1px solid var(--border-main);
   }
   .ins-meter { flex: 1 1 52%; max-width: none; margin: 0; }
   .ins-divider { display: block; flex: 0 0 1px; align-self: stretch; background: var(--border-main); }
@@ -1610,9 +1608,8 @@ button, input { touch-action: manipulation; }
 @media (max-height: 600px) and (orientation: landscape) {
   .item-insight {
     display: flex; align-items: center; gap: 22px; text-align: left;
-    max-width: 880px; margin: 14px auto; padding: 13px 20px; border-top: none;
-    background: var(--bg-panel); border: 1px solid var(--border-main);
-    border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    max-width: 880px; margin: 14px auto; padding: 13px 20px 0;
+    border-top: 1px solid var(--border-main);
   }
   .ins-meter { flex: 1 1 52%; max-width: none; margin: 0; }
   .ins-divider { display: block; flex: 0 0 1px; align-self: stretch; background: var(--border-main); }
