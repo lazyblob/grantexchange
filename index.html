@@ -146,6 +146,14 @@
   --border-main: #2B2621;
   --border-light: #3C352B;
   --border-active: #C9A64D;
+  /* Structural panels (top bar, chart, sidebar, rating box) already read as
+     "raised" against --bg-base from background contrast alone — the old
+     --border-main outline on top of that was redundant, and with borders on
+     every single panel nothing got to look "active." This near-invisible
+     hairline replaces those outlines; real borders are now reserved for
+     things that are actually selected/active (Target Sell when it's the
+     active side, a highlighted favorites row, etc). */
+  --border-hair: rgba(255, 255, 255, 0.05);
   --accent-bright: #E5C158;
   --accent-ink: #1C1300;
   --text-main: #D9D3C7;
@@ -307,7 +315,7 @@ button, input { touch-action: manipulation; }
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-.top-panel { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
+.top-panel { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
@@ -544,7 +552,7 @@ button, input { touch-action: manipulation; }
    flex-wrap is the no-clip guarantee: if a long item name + the toolbar
    ever can't share the row, the toolbar drops below instead of running
    off the right edge of the panel. */
-.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 .ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ticker-header .toolbar { flex-shrink: 0; }
 /* Desktop: space-between was centering the Save button in the empty middle
@@ -621,7 +629,7 @@ button, input { touch-action: manipulation; }
 .pct-chg.positive { color: var(--positive); }
 .pct-chg.negative { color: var(--negative); }
 .pct-chg.neutral { color: var(--text-muted); }
-.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-main); border-radius: 6px; position: relative; overflow: hidden; }
+.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-hair); border-radius: 6px; position: relative; overflow: hidden; }
 .chart { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; }
 /* The price strip lives above the chart now (not as an overlay) so the
    target / grade boxes can never cover chart data. The flex-row puts buy +
@@ -661,14 +669,16 @@ button, input { touch-action: manipulation; }
 .price-strip { display: flex; gap: 8px; padding: 0; flex-shrink: 0; flex-wrap: wrap; }
 .price-strip .price-box { flex: 1 1 0; min-width: 0; }
 /* Target Buy / Target Sell are the hero of the app — these are the actual
-   recommendation. Heavier border, side-tinted background, a colored accent
-   stripe on the left, and a soft glow on the number itself so the eye lands
-   here first instead of having to scan past the chart and sidebar. Buy / Sell
-   color identity (gold / teal) stays consistent with the rest of the app. */
+   recommendation. Side-tinted background, a colored accent stripe on the
+   left, and a soft glow on the number itself so the eye lands here first
+   instead of having to scan past the chart and sidebar. Buy / Sell color
+   identity (gold / teal) stays consistent with the rest of the app. The
+   3-side border is deliberately faint (not "light") — .selected below is
+   the one that should visibly pop, not both boxes equally. */
 .price-box {
   position: relative;
   background: rgba(32, 28, 22, 0.85);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border-hair);
   border-left-width: 3px;
   border-radius: 5px;
   padding: 7px 12px;
@@ -759,7 +769,7 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) { .chart-tip { font-size: 12px; padding: 10px 12px; } }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .chart-tip .tip-marker { font-weight: 800; letter-spacing: 0.2px; }
-.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
 /* Draggable divider between chart and sidebar. Hidden by default (real
    phones, where the sidebar stacks below the chart instead of beside it);
    shown any time the layout is the side-by-side row, which since the
@@ -1432,7 +1442,7 @@ button, input { touch-action: manipulation; }
 .find-flip-btn:active { transform:translateY(1px); }
 .find-flip-btn .ff-bolt { font-size:16px; }
 .flip-card { margin:8px; padding:9px 10px; border-radius:12px; cursor:pointer; background:var(--bg-panel);
-  border:1px solid rgba(230,195,92,.30); box-shadow:0 4px 16px rgba(0,0,0,.35); }
+  border:1px solid rgba(230,195,92,.12); box-shadow:0 4px 16px rgba(0,0,0,.35); }
 .flip-card:focus-visible { outline:2px solid var(--buy-color); outline-offset:2px; }
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
 .fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--buy-color); text-transform:uppercase; }
@@ -1528,7 +1538,7 @@ button, input { touch-action: manipulation; }
 }
 
 /* ── Analyst Rating gauge ────────────────────────────────────────────────── */
-.rg-wrap { margin:8px 0 2px; padding:9px 12px 8px; background:var(--bg-panel); border:1px solid var(--border-main); border-radius:8px; }
+.rg-wrap { margin:8px 0 2px; padding:9px 12px 8px; background:var(--bg-panel); border:1px solid var(--border-hair); border-radius:8px; }
 .rg-wrap[hidden] { display:none; }
 .rg-top { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
 .rg-eyebrow { font-size:9px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--text-muted); }
