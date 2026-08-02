@@ -317,7 +317,10 @@ button, input { touch-action: manipulation; }
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-.top-panel { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
+/* No card chrome — the search input carries its own border, and that's
+   the one control in this row that actually needs a boundary. Everything
+   else reads fine as controls floating on the page background. */
+.top-panel { padding: 4px 2px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
@@ -554,7 +557,10 @@ button, input { touch-action: manipulation; }
    flex-wrap is the no-clip guarantee: if a long item name + the toolbar
    ever can't share the row, the toolbar drops below instead of running
    off the right edge of the panel. */
-.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+/* No card here either (see .top-panel) — the item name/price is its own
+   visual anchor and the timeframe pills carry their own selected-state
+   highlight, so a wrapping box was just doubling up on both. */
+.ticker-header { padding: 6px 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 .ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ticker-header .toolbar { flex-shrink: 0; }
 /* Desktop: space-between was centering the Save button in the empty middle
@@ -606,12 +612,14 @@ button, input { touch-action: manipulation; }
 .change.positive { color: var(--positive); }
 .change.negative { color: var(--negative); }
 .change.neutral { color: var(--text-muted); }
-.toolbar { display: flex; background: var(--bg-input); border-radius: 4px; padding: 3px; gap: 2px; }
+/* No pill-strip background — the active button's own highlight (below)
+   is enough to show selection without a second nested box. */
+.toolbar { display: flex; padding: 2px 0; gap: 4px; }
 .toolbar button { background: transparent; border: none; color: var(--text-muted); border-radius: 3px; padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; }
 /* Desktop time-range buttons: wide enough to stay a primary affordance, but
    short — vertical space here comes straight out of the chart's height. */
 @media (min-width: 1024px) {
-  .toolbar { padding: 4px; gap: 4px; }
+  .toolbar { padding: 4px 0; gap: 6px; }
   .toolbar button { padding: 4px 18px; font-size: 14px; min-width: 72px; font-weight: 700; letter-spacing: 0.5px; }
   .toolbar button .pct-chg { font-size: 10px; margin-top: 1px; }
   /* F2P/Members lives next to the search bar at every width — it reads as
@@ -625,7 +633,9 @@ button, input { touch-action: manipulation; }
 .pct-chg.positive { color: var(--positive); }
 .pct-chg.negative { color: var(--negative); }
 .pct-chg.neutral { color: var(--text-muted); }
-.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-hair); border-radius: 6px; position: relative; overflow: hidden; }
+/* No stroke — the chart is the hero, it gets contained by its own
+   background contrast (--bg-chart vs. the page), not a drawn edge. */
+.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border-radius: 6px; position: relative; overflow: hidden; }
 .chart { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; }
 /* The price strip lives above the chart now (not as an overlay) so the
    target / grade boxes can never cover chart data. The flex-row puts buy +
@@ -948,8 +958,9 @@ button, input { touch-action: manipulation; }
 .scan-row { padding: 10px 14px; font-size: 11px; color: var(--border-active); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; background: rgba(201,166,77,0.07); }
 .scan-row:hover { background: var(--bg-input); }
 .scan-row.loading { color: var(--text-muted); cursor: default; }
-.wl-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(60, 53, 43, 0.4); transition: background 0.2s, border 0.2s; }
-.wl-item:last-child { border-bottom: none; }
+/* No per-row divider — a little extra vertical padding plus the hover fill
+   below is enough separation without a line between every single row. */
+.wl-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
 .wl-item:hover { background: var(--bg-input); }
 /* Selected row uses a white OUTLINE (not a border) so it paints on top of the
    at-high / at-low green/gold borders + pulse box-shadow and reads identically
