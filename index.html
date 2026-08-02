@@ -1280,13 +1280,17 @@ button, input { touch-action: manipulation; }
   .price-val { font-size: 17px; margin-top: 0; margin-left: auto; flex-shrink: 1; white-space: nowrap; line-height: 1.1; letter-spacing: -0.4px; overflow: hidden; text-overflow: ellipsis; }
   .calc-container input { font-size: 16px; }
 }
-/* (pointer: coarse) keeps this "mobile landscape" bucket scoped to actual
-   touch devices — height+orientation alone also matches a short, wide
-   DESKTOP browser window (an unmaximized Chrome window, a laptop with a
-   small display, etc.), which was wrongly getting the phone treatment:
-   the PocketGE logo vanishing, item name folded into the search box, and
-   the toolbar compacted, purely because the window happened to be short. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+/* (max-width: 1023px) keeps this "mobile landscape" bucket from also
+   matching a short, WIDE desktop window (e.g. 1900x560 — plenty of room,
+   just not tall) — that was wrongly getting the phone treatment (logo
+   vanishing, item name folded into the search box) purely because the
+   window happened to be short. It's a width cap, not a touch check,
+   because the thing that actually decides whether this compact layout is
+   NEEDED is available space, not input device — a narrow, short desktop
+   window (mouse, no touch) genuinely can't fit the full desktop layout
+   either and needs the same compaction a phone does. 1023px matches the
+   existing >=1024px "real desktop" cutoff used elsewhere in this file. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
   /* Mobile landscape: vertical space is the scarce axis (~390px tall) while
      width is abundant (~844px). So DON'T stack — put the top panel (search +
      icons) and the ticker (name + timeframe) side by side on ONE row, and
@@ -1500,9 +1504,9 @@ button, input { touch-action: manipulation; }
 /* landscape flip-card compaction — MUST live here (after the .flip-card base
    rules) so it wins on source order; media queries add no specificity. The
    short landscape sidebar can't afford the full card, so shrink it and put
-   Profit / Est-per-4h / Daily-vol on ONE inline line. (pointer: coarse) scopes
-   this to real touch devices — see the matching landscape block above. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+   Profit / Est-per-4h / Daily-vol on ONE inline line. (max-width: 1023px)
+   excludes short-but-wide desktop windows — see the matching block above. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
   .flip-finder { padding: 4px 4px 0; }
   .flip-card { margin: 4px; padding: 6px 8px; }
   .flip-card .fc-why { display: none; }
@@ -1632,10 +1636,10 @@ button, input { touch-action: manipulation; }
    band just ABOVE the about-section (below the app, in the scroll region)
    where there's room — same side-by-side layout as desktop, centered to the
    about-section's content width. This block is after the desktop one so it
-   wins when a viewport matches both. (pointer: coarse) keeps it scoped to
-   real touch devices (the JS relocation below uses the same condition) —
-   a short, wide DESKTOP window keeps the normal under-chart placement. */
-@media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+   wins when a viewport matches both. (max-width: 1023px) keeps it out of a
+   short, WIDE desktop window (the JS relocation below uses the same
+   condition) — that keeps the normal under-chart placement instead. */
+@media (max-height: 600px) and (orientation: landscape) and (max-width: 1023px) {
   .item-insight {
     display: flex; align-items: center; gap: 22px; text-align: left;
     max-width: 880px; margin: 14px auto; padding: 13px 20px 0;
@@ -2114,7 +2118,7 @@ function yAxisOnRight() {
    the node by media query instead. renderItemInsight targets it by id, so
    moving it never breaks the live updates. */
 const _insightPortraitMQ = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
-const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)');
+const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (max-width: 1023px)');
 function placeItemInsight() {
   const insight = document.getElementById('itemInsight');
   const sideModule = document.getElementById('sideModule');
@@ -5192,10 +5196,10 @@ function flipCollapsed(){
     if (v === '1') return true;
     if (v === '0') return false;
     // No explicit user preference yet — default to collapsed in the cramped
-    // mobile-landscape column so Favorites isn't scrolled off-screen below
-    // the fully-expanded card. (pointer: coarse) so a short desktop window
-    // doesn't get defaulted to collapsed too.
-    return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)').matches;
+    // landscape column so Favorites isn't scrolled off-screen below the
+    // fully-expanded card. (max-width: 1023px) so a short but WIDE desktop
+    // window doesn't get defaulted to collapsed too.
+    return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (max-width: 1023px)').matches;
   } catch (e) { return false; }
 }
 function setFlipCollapsed(v){ try { localStorage.setItem('ge_flipCollapsed', v ? '1' : '0'); } catch (e) {} }
