@@ -146,6 +146,14 @@
   --border-main: #2B2621;
   --border-light: #3C352B;
   --border-active: #C9A64D;
+  /* Structural panels (top bar, chart, sidebar, rating box) already read as
+     "raised" against --bg-base from background contrast alone — the old
+     --border-main outline on top of that was redundant, and with borders on
+     every single panel nothing got to look "active." This near-invisible
+     hairline replaces those outlines; real borders are now reserved for
+     things that are actually selected/active (Target Sell when it's the
+     active side, a highlighted favorites row, etc). */
+  --border-hair: rgba(255, 255, 255, 0.05);
   --accent-bright: #E5C158;
   --accent-ink: #1C1300;
   --text-main: #D9D3C7;
@@ -307,7 +315,7 @@ button, input { touch-action: manipulation; }
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-.top-panel { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
+.top-panel { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 #logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
@@ -544,7 +552,7 @@ button, input { touch-action: manipulation; }
    flex-wrap is the no-clip guarantee: if a long item name + the toolbar
    ever can't share the row, the toolbar drops below instead of running
    off the right edge of the panel. */
-.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+.ticker-header { background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 .ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ticker-header .toolbar { flex-shrink: 0; }
 /* Desktop: space-between was centering the Save button in the empty middle
@@ -621,23 +629,56 @@ button, input { touch-action: manipulation; }
 .pct-chg.positive { color: var(--positive); }
 .pct-chg.negative { color: var(--negative); }
 .pct-chg.neutral { color: var(--text-muted); }
-.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-main); border-radius: 6px; position: relative; overflow: hidden; }
+.chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border: 1px solid var(--border-hair); border-radius: 6px; position: relative; overflow: hidden; }
 .chart { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; }
 /* The price strip lives above the chart now (not as an overlay) so the
    target / grade boxes can never cover chart data. The flex-row puts buy +
    sell side by side; on narrow widths they wrap and the chart simply moves
    down a little. */
+/* Dismiss-once developer note — a small human-behind-the-tool aside, not
+   persistent UI chrome, so it deliberately doesn't match the app's SVG icon
+   system (a raw emoji reads as "a person wrote this" here). */
+.dev-welcome {
+  position: relative;
+  margin: 10px 0 0;
+  padding: 10px 34px 10px 14px;
+  background: linear-gradient(180deg, rgba(201,166,77,0.10), rgba(32,28,22,0.6));
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--border-active);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+.dev-welcome.hidden { display: none; }
+.dw-dismiss {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 16px; line-height: 1; cursor: pointer; border-radius: 4px;
+}
+.dw-dismiss:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.dw-text { margin: 0; }
+.dw-short { display: none; }
+@media (max-width: 640px) {
+  .dw-full { display: none; }
+  .dw-short { display: inline; }
+  .dev-welcome { font-size: 11px; padding: 8px 30px 8px 12px; }
+}
 .price-strip { display: flex; gap: 8px; padding: 0; flex-shrink: 0; flex-wrap: wrap; }
 .price-strip .price-box { flex: 1 1 0; min-width: 0; }
 /* Target Buy / Target Sell are the hero of the app — these are the actual
-   recommendation. Heavier border, side-tinted background, a colored accent
-   stripe on the left, and a soft glow on the number itself so the eye lands
-   here first instead of having to scan past the chart and sidebar. Buy / Sell
-   color identity (gold / teal) stays consistent with the rest of the app. */
+   recommendation. Side-tinted background, a colored accent stripe on the
+   left, and a soft glow on the number itself so the eye lands here first
+   instead of having to scan past the chart and sidebar. Buy / Sell color
+   identity (gold / teal) stays consistent with the rest of the app. The
+   3-side border is deliberately faint (not "light") — .selected below is
+   the one that should visibly pop, not both boxes equally. */
 .price-box {
   position: relative;
   background: rgba(32, 28, 22, 0.85);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border-hair);
   border-left-width: 3px;
   border-radius: 5px;
   padding: 7px 12px;
@@ -728,7 +769,7 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) { .chart-tip { font-size: 12px; padding: 10px 12px; } }
 .chart-tip strong { display: block; margin-bottom: 3px; color: #fff; border-bottom: 1px solid var(--border-main); padding-bottom: 3px;}
 .chart-tip .tip-marker { font-weight: 800; letter-spacing: 0.2px; }
-.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-main); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
 /* Draggable divider between chart and sidebar. Hidden by default (real
    phones, where the sidebar stacks below the chart instead of beside it);
    shown any time the layout is the side-by-side row, which since the
@@ -789,12 +830,11 @@ button, input { touch-action: manipulation; }
    different layer" contrast), always-bright white text (doesn't compete
    with the colored row badges), and a fat 3px colored accent stripe on the
    left so each section is still identifiable by color WITHOUT making the
-   title text itself harder to read. Bigger padding gives the header real
-   physical presence vs the dense row stack. */
+   title text itself harder to read. */
 .category-title {
   --cat-accent: var(--border-active);
   position: sticky; top: 0; z-index: 4;
-  padding: 11px 12px 11px 13px;
+  padding: 8px 12px 8px 13px;
   font-size: 11px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
   color: #F0EBDF;
   /* Soft top-lit gradient (raised panel) instead of a flat fill, a thin inner
@@ -822,6 +862,19 @@ button, input { touch-action: manipulation; }
 .category-title.marginlo-title { --cat-accent: #9BD4AE; }
 .category-title.steady-title { --cat-accent: var(--rs-parchment); }
 .category-title.fall-title { --cat-accent: var(--negative); }
+/* "Find Opportunities" wrapper — same title chrome as any other section,
+   just with a neutral accent (it's a container for six differently-
+   accented sections, not a signal of its own). */
+.category-title.find-opps-title { --cat-accent: #8AA9C9; }
+/* Nested scanner titles (inside "Find Opportunities") are visually
+   subordinate to it: smaller, indented, and NOT sticky — the outer
+   wrapper's title already stays pinned while scrolling, so a second sticky
+   header one level down would just fight it for the same top:0 slot. */
+.category-title.nested {
+  position: static;
+  padding: 6px 12px 6px 24px;
+  font-size: 10px;
+}
 .category-title:hover {
   background: linear-gradient(180deg, #3b342a 0%, #2a241d 100%);
   box-shadow: inset 8px 0 24px -15px var(--cat-accent),
@@ -1389,7 +1442,7 @@ button, input { touch-action: manipulation; }
 .find-flip-btn:active { transform:translateY(1px); }
 .find-flip-btn .ff-bolt { font-size:16px; }
 .flip-card { margin:8px; padding:9px 10px; border-radius:12px; cursor:pointer; background:var(--bg-panel);
-  border:1px solid rgba(230,195,92,.30); box-shadow:0 4px 16px rgba(0,0,0,.35); }
+  border:1px solid rgba(230,195,92,.12); box-shadow:0 4px 16px rgba(0,0,0,.35); }
 .flip-card:focus-visible { outline:2px solid var(--buy-color); outline-offset:2px; }
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
 .fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--buy-color); text-transform:uppercase; }
@@ -1485,7 +1538,7 @@ button, input { touch-action: manipulation; }
 }
 
 /* ── Analyst Rating gauge ────────────────────────────────────────────────── */
-.rg-wrap { margin:8px 0 2px; padding:9px 12px 8px; background:var(--bg-panel); border:1px solid var(--border-main); border-radius:8px; }
+.rg-wrap { margin:8px 0 2px; padding:9px 12px 8px; background:var(--bg-panel); border:1px solid var(--border-hair); border-radius:8px; }
 .rg-wrap[hidden] { display:none; }
 .rg-top { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
 .rg-eyebrow { font-size:9px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--text-muted); }
@@ -1822,6 +1875,30 @@ button, input { touch-action: manipulation; }
         </div>
       </div>
 
+      <!-- Dismiss-once welcome note — a human behind the tool, not a corporate
+           banner. Hidden permanently per-browser after the first dismiss (see
+           the inline script right below), and shortened on narrow screens
+           rather than needing a separate expand/collapse interaction. -->
+      <div class="dev-welcome" id="devWelcome">
+        <button type="button" class="dw-dismiss" id="devWelcomeDismiss" title="Dismiss" aria-label="Dismiss this message">×</button>
+        <p class="dw-text">
+          <span class="dw-full">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game. PocketGE is free today — if that ever changes, the core stays free.</span>
+          <span class="dw-short">👋 I'm <strong>pocketge</strong> in-game (W301/302 GE) — actively building this. Bugs or ideas? Add me in-game.</span>
+        </p>
+      </div>
+      <script>
+        (function () {
+          var el = document.getElementById('devWelcome');
+          try {
+            if (localStorage.getItem('ge_devWelcomeDismissed') === '1') { el.classList.add('hidden'); return; }
+          } catch (e) {}
+          var btn = document.getElementById('devWelcomeDismiss');
+          btn.onclick = function () {
+            el.classList.add('hidden');
+            try { localStorage.setItem('ge_devWelcomeDismissed', '1'); } catch (e) {}
+          };
+        })();
+      </script>
 
       <div class="price-strip">
         <div id="buyPrice" class="price-box low">
@@ -2248,11 +2325,11 @@ let recommendedBuy = null, recommendedSell = null;
    the periodic live-price refresh stops overwriting that side so a "we're a
    few gp off" tweak survives the next auto-refresh. Cleared on item switch
    and timeframe change (a fresh target from a different context shouldn't
-   inherit an old manual offset), and by the box's own reset control. */
+   inherit an old manual offset). */
 let buyOverridden = false, sellOverridden = false;
-/* ~0.1% of price, floored at 1 gp — fine enough to nudge a "few gp off"
-   miss on a cheap item, meaningful enough to matter on an expensive one. */
-function priceStepFor(price) { return Math.max(1, Math.round(Math.abs(price || 0) * 0.001)); }
+/* Always exactly 1 gp — a "we're a few gp off" nudge means gp-precise,
+   not a percentage of the item's price. */
+function priceStepFor(price) { return 1; }
 let liveBuyRaw = null, liveSellRaw = null;
 let lastLiveFetchAt = null; // unix seconds — stamped on every successful loadLatest(), drives the "Live: … · Xm ago" label
 let isCalcOpen = false;
@@ -2302,7 +2379,8 @@ let groupOpenStates = {
   "Reliable 14D Margins": false,
   "Biggest Losers (24H)": false,
   "At 5D Highs": false,
-  "At 5D Lows": false
+  "At 5D Lows": false,
+  "FindOpportunities": false // the wrapper around the six scanner sections above
 };
 /* Favorites sort — 'manual' respects the user's drag order (and is the only
    mode where the drag handle appears); the others sort the displayed list
@@ -3502,20 +3580,25 @@ function renderWatchlist() {
   ];
 
   const fragment = document.createDocumentFragment();
-  groups.forEach(group => {
+  /* Builds one collapsible title+list pair. Shared by the top-level
+     Favorites group and each scanner group nested inside "Find
+     Opportunities" below — `nested` just swaps in a smaller, non-sticky
+     title style, since the outer wrapper's own title already does the
+     sticky/section-header job for all six at once. */
+  function buildGroupDiv(group, nested) {
     const hasScan = !!group.scan;
     const scanState = hasScan ? scanStatus[group.scan] : null;
-    if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return;
+    if (group.entries.length === 0 && !group.alwaysShow && !hasScan) return null;
     const stateKey = group.key || group.name;
     const isFavTitle = group.className === "fav-title";
-    const groupDiv = document.createElement("div"); groupDiv.className = "category-group";
+    const groupDiv = document.createElement("div"); groupDiv.className = `category-group${nested ? ' nested' : ''}`;
     /* Favorites never collapses — there's nothing to toggle, only which
        list is showing — so it ignores any stale stored collapse state
        from before this changed (otherwise a list collapsed under the old
        chevron would have no way to reopen now that the chevron is gone). */
     const isGroupOpen = isFavTitle ? true : groupOpenStates[stateKey] !== false;
     const titleDiv = document.createElement("div");
-    titleDiv.className = `category-title ${group.className}`;
+    titleDiv.className = `category-title ${group.className}${nested ? ' nested' : ''}`;
     /* No Edit button anymore — the per-row × reveals on hover (desktop) /
        is always shown (touch), TradingView-style. "Linked" only shows
        when the ACTIVE list's name actually matches one of the plugin's
@@ -3638,8 +3721,40 @@ function renderWatchlist() {
     listDiv.innerHTML = inner;
     groupDiv.appendChild(titleDiv);
     groupDiv.appendChild(listDiv);
-    fragment.appendChild(groupDiv);
+    return groupDiv;
+  }
+
+  const favDiv = buildGroupDiv(groups[0], false);
+  if (favDiv) fragment.appendChild(favDiv);
+
+  /* The six scanner sections used to render as six always-visible bars —
+     ~210px of chrome above the favorites list on every load, even though
+     every one of them defaults to collapsed (see groupOpenStates). They
+     collapse into one "Find Opportunities" wrapper instead: same six
+     sections one tap away, each still individually collapsible and
+     remembering its own open/closed state, but only a single header's
+     worth of height by default. */
+  const FIND_OPPS_KEY = "FindOpportunities";
+  const findOppsOpen = groupOpenStates[FIND_OPPS_KEY] === true; // opt-in open, unlike the rest
+  const findOppsDiv = document.createElement("div");
+  findOppsDiv.className = "category-group";
+  const findOppsTitle = document.createElement("div");
+  findOppsTitle.className = "category-title find-opps-title";
+  findOppsTitle.innerHTML = `<span class="cat-title-label">${uiIcon('search')}Find Opportunities</span><span class="cat-title-right"><span class="cat-chevron${findOppsOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+  const findOppsBody = document.createElement("div");
+  findOppsBody.className = `category-list find-opps-body${findOppsOpen ? '' : ' collapsed'}`;
+  findOppsTitle.onclick = () => {
+    const nowCollapsed = findOppsBody.classList.toggle("collapsed");
+    findOppsTitle.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
+    groupOpenStates[FIND_OPPS_KEY] = !nowCollapsed;
+  };
+  groups.slice(1).forEach(group => {
+    const gd = buildGroupDiv(group, true);
+    if (gd) findOppsBody.appendChild(gd);
   });
+  findOppsDiv.appendChild(findOppsTitle);
+  findOppsDiv.appendChild(findOppsBody);
+  fragment.appendChild(findOppsDiv);
   container.appendChild(fragment);
   const flsCurrent = container.querySelector('#flsCurrent');
   const flsMenu = container.querySelector('#flsMenu');
@@ -6989,7 +7104,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <section class="about-section" aria-label="About PocketGE">
-  <p class="about-intro">PocketGE is a free, mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup, no ads.</p>
+  <p class="about-intro">PocketGE is a free, mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup required.</p>
 
   <h2>Live OSRS margins with the 2% GE tax built in</h2>
   <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins.</p>
