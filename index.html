@@ -762,6 +762,16 @@ button, input { touch-action: manipulation; }
      min-height is a short-viewport safety floor only. (The card's own desktop
      styling lives after the base .ins-* rules so source order wins.) */
   .chart-container { min-height: calc(100dvh - 320px); max-height: calc(100dvh - 248px); }
+  /* Without this, a long favorites list had nothing to bound it against —
+     .wrap's height is auto (that's what lets the insight card sit just past
+     the fold above), so align-items:stretch just grew the WHOLE page to fit
+     every favorite instead of scrolling the list internally. That pushed
+     "Find Opportunities" (and the tail of a long list) below the viewport,
+     reachable only by scrolling past the chart entirely. Capping the sidebar
+     to ~one screen makes .watchlist-content's existing overflow-y:auto
+     actually engage once the list runs long, so it scrolls on its own while
+     the chart stays put. */
+  .watchlist-container { max-height: calc(100dvh - 16px); }
 }
 .calc-container { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 .calc-headline { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; border-radius: 4px; padding: 2px; margin: -2px; transition: background 0.15s ease; -webkit-tap-highlight-color: rgba(201,166,77,0.2); }
