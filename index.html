@@ -2409,7 +2409,24 @@ const overMaxData = {
 function queueDraw() {
   if (!isDrawing && currentSeries) {
     isDrawing = true;
-    requestAnimationFrame(() => { drawChart(currentSeries); isDrawing = false; });
+    requestAnimationFrame(() => {
+      /* resizeCanvas() is debounced (scheduleResize), so there's a window
+         right after a container resize where the canvas's actual box has
+         already changed but the bitmap + chartCssW/H haven't caught up
+         yet. Drawing with the stale cached size in that window still
+         matches the (also stale) bitmap, so the coordinates are internally
+         consistent — but the browser then stretches that whole bitmap to
+         fit the box's NEW size, which is exactly the "vertically squashed"
+         bug. Catch it here, synchronously, right before every draw: if the
+         canvas's live box disagrees with what the bitmap was last sized
+         for, resync first so a draw can never land in that gap. */
+      const liveRect = canvas.getBoundingClientRect();
+      if (liveRect.height > 10 && (Math.abs(liveRect.height - chartCssH) > 1 || Math.abs(liveRect.width - chartCssW) > 1)) {
+        resizeCanvas(); // updates chartCssW/H + the bitmap; its own queueDraw() no-ops since isDrawing is still true here
+      }
+      drawChart(currentSeries);
+      isDrawing = false;
+    });
   }
 }
 
@@ -2764,7 +2781,25 @@ function scheduleResize(delay) {
   clearTimeout(_resizeTimer);
   _resizeTimer = setTimeout(resizeCanvas, delay || 0);
 }
-window.addEventListener('resize', () => scheduleResize(60));
+/* Plain window resize / container resize (dragging the browser edge,
+   siblings shifting the chart's box) need the TIGHTEST possible
+   turnaround — a setTimeout debounce here leaves a window where the
+   canvas's box has already changed size but the bitmap hasn't caught up
+   yet. That's not just a "draw with stale data" risk (queueDraw() already
+   guards against that): the BROWSER stretches/squashes the existing
+   bitmap into the new box on its own regular paint cycle, with no JS draw
+   call involved at all, for as long as that window stays open. rAF-
+   throttling instead of setTimeout-debouncing collapses a whole burst of
+   resize events into one resizeCanvas() call on the very next frame
+   (~16ms worst case) instead of 60ms — tight enough that the browser
+   essentially never gets a chance to paint the mismatched state. */
+let _resizeRAFPending = false;
+function scheduleResizeTight() {
+  if (_resizeRAFPending) return;
+  _resizeRAFPending = true;
+  requestAnimationFrame(() => { _resizeRAFPending = false; resizeCanvas(); });
+}
+window.addEventListener('resize', scheduleResizeTight);
 /* Orientation changes settle layout asynchronously on mobile; re-measure after
    a short delay (and again later) so portrait↔landscape doesn't leave a broken canvas. */
 window.addEventListener('orientationchange', () => { scheduleResize(250); setTimeout(resizeCanvas, 600); });
@@ -2776,7 +2811,7 @@ window.addEventListener('orientationchange', () => { scheduleResize(250); setTim
    itself (in-flow content inside the container, e.g. the legend wrapping,
    resizes the canvas without changing the container). */
 if (window.ResizeObserver) {
-  const ro = new ResizeObserver(() => scheduleResize(0));
+  const ro = new ResizeObserver(scheduleResizeTight);
   ro.observe(canvas.parentElement);
   ro.observe(canvas);
 }
