@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS High Volume Flips — Live Grand Exchange Margins | PocketGE</title>
+<meta name="description" content="Live OSRS Grand Exchange margins on the highest-volume items — gems, ores, bars, runes, arrows, cannonballs — updated from real-time prices with the 2% GE tax already subtracted.">
+<meta name="keywords" content="osrs high volume flips, osrs ge margins, best osrs items to flip, osrs flipping list, high volume osrs items, osrs margin scanner">
+<link rel="canonical" href="https://pocketge.com/high-vol-margins.html">
+<meta property="og:title" content="OSRS High Volume Flips — Live Grand Exchange Margins">
+<meta property="og:description" content="Live margins on the highest-volume OSRS GE items, after the 2% tax, updated from real-time prices.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/high-vol-margins.html">
+<meta property="og:image" content="https://pocketge.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS High Volume Flips — Live Grand Exchange Margins">
+<meta name="twitter:description" content="Live margins on the highest-volume OSRS GE items, after the 2% tax, updated from real-time prices.">
+<meta name="twitter:image" content="https://pocketge.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "High Volume Flips", "item": "https://pocketge.com/high-vol-margins.html" }
+  ]
+}
+</script>
+<link rel="stylesheet" href="finder-page.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the live tracker →</a>
+  </div>
+
+  <h1>OSRS High Volume Flips</h1>
+  <p class="sub">Live Grand Exchange margins on the highest-volume items in Old School RuneScape — gems, ores, bars, runes, arrows, cannonballs — the staples that fill fast. Numbers below are pulled live and already have the 2% GE tax subtracted, so what you see is what you'd actually keep.</p>
+
+  <h2>Why high-volume items</h2>
+  <p>Items trading 100,000+ units a day fill orders almost instantly, so profit comes from turning capital over many times rather than waiting on a single fat spread. They're the lowest-risk way to flip: liquid enough that your offer competes with dozens of other traders instead of sitting alone.</p>
+
+  <div id="liveList" class="live-list">
+    <div class="live-loading">Loading live margins…</div>
+  </div>
+
+  <a class="big-cta" href="/">▶ See the full, always-updating list on PocketGE</a>
+
+  <div class="footer">
+    Margins update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/low-vol-margins.html">Low Volume Flips</a> · <a href="/flipping-guide.html">Flipping Guide</a>
+  </div>
+</div>
+<script src="finder-common.js"></script>
+<script>
+(async function () {
+  const host = document.getElementById('liveList');
+  try {
+    const data = await loadFinderData();
+    const rows = computeMarginRows(data, false).slice(0, 10);
+    if (!rows.length) { host.innerHTML = '<div class="live-loading">No qualifying margins right now — check back shortly.</div>'; return; }
+    host.innerHTML = rows.map((r, i) => `
+      <a class="live-row" href="/?q=${encodeURIComponent(r.item.name)}">
+        <span class="lr-rank">${i + 1}</span>
+        <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
+        <span class="lr-name">${r.item.name}</span>
+        <span class="lr-margin">+${fmtGp(r.margin)} gp</span>
+        <span class="lr-vol">${abbreviateNumber(r.vol)}/day</span>
+      </a>`).join('');
+  } catch (e) {
+    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+  }
+})();
+</script>
+</body>
+</html>

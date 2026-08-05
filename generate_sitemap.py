@@ -71,6 +71,12 @@ def main():
     rows = [
         f"{SITE}/|{today}|daily|1.0",
         f"{SITE}/flipping-guide.html|{today}|monthly|0.8",
+        f"{SITE}/high-vol-margins.html|{today}|daily|0.8",
+        f"{SITE}/low-vol-margins.html|{today}|daily|0.8",
+        f"{SITE}/reliable-14d-margins.html|{today}|weekly|0.7",
+        f"{SITE}/biggest-losers-24h.html|{today}|daily|0.8",
+        f"{SITE}/at-5d-highs.html|{today}|weekly|0.7",
+        f"{SITE}/at-5d-lows.html|{today}|weekly|0.7",
     ]
     names = {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)

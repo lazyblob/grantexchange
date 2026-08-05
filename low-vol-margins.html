@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS Low Volume Flips — Wide-Margin Grand Exchange Items | PocketGE</title>
+<meta name="description" content="Live OSRS Grand Exchange margins on slower-moving, high-value items — rare gear, niche supplies — with wider spreads than the high-volume staples. Updated live, 2% GE tax already subtracted.">
+<meta name="keywords" content="osrs low volume flips, osrs wide margin items, osrs rare gear flipping, osrs niche items flip, best low volume osrs flips">
+<link rel="canonical" href="https://pocketge.com/low-vol-margins.html">
+<meta property="og:title" content="OSRS Low Volume Flips — Wide-Margin Grand Exchange Items">
+<meta property="og:description" content="Live margins on slower-moving, wide-spread OSRS GE items, after the 2% tax, updated from real-time prices.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/low-vol-margins.html">
+<meta property="og:image" content="https://pocketge.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS Low Volume Flips — Wide-Margin Grand Exchange Items">
+<meta name="twitter:description" content="Live margins on slower-moving, wide-spread OSRS GE items, after the 2% tax, updated from real-time prices.">
+<meta name="twitter:image" content="https://pocketge.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Low Volume Flips", "item": "https://pocketge.com/low-vol-margins.html" }
+  ]
+}
+</script>
+<link rel="stylesheet" href="finder-page.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the live tracker →</a>
+  </div>
+
+  <h1>OSRS Low Volume Flips</h1>
+  <p class="sub">Live Grand Exchange margins on slower-moving, higher-value Old School RuneScape items — rare gear, niche supplies, and drops that trade thinly but carry much wider spreads. Numbers below are pulled live and already have the 2% GE tax subtracted.</p>
+
+  <h2>Why low-volume items</h2>
+  <p>Items trading under 100,000 units a day fill slower — you might wait hours for an offer to clear — but each flip earns far more per unit than a high-volume staple. Don't tie up all your capital here expecting a fast turnaround; these suit patient flippers with a cash stack to spare.</p>
+
+  <div id="liveList" class="live-list">
+    <div class="live-loading">Loading live margins…</div>
+  </div>
+
+  <a class="big-cta" href="/">▶ See the full, always-updating list on PocketGE</a>
+
+  <div class="footer">
+    Margins update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/high-vol-margins.html">High Volume Flips</a> · <a href="/flipping-guide.html">Flipping Guide</a>
+  </div>
+</div>
+<script src="finder-common.js"></script>
+<script>
+(async function () {
+  const host = document.getElementById('liveList');
+  try {
+    const data = await loadFinderData();
+    const rows = computeMarginRows(data, true).slice(0, 10);
+    if (!rows.length) { host.innerHTML = '<div class="live-loading">No qualifying margins right now — check back shortly.</div>'; return; }
+    host.innerHTML = rows.map((r, i) => `
+      <a class="live-row" href="/?q=${encodeURIComponent(r.item.name)}">
+        <span class="lr-rank">${i + 1}</span>
+        <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
+        <span class="lr-name">${r.item.name}</span>
+        <span class="lr-margin">+${fmtGp(r.margin)} gp</span>
+        <span class="lr-vol">${abbreviateNumber(r.vol)}/day</span>
+      </a>`).join('');
+  } catch (e) {
+    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+  }
+})();
+</script>
+</body>
+</html>

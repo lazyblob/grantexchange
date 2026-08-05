@@ -887,6 +887,9 @@ button, input { touch-action: manipulation; }
 .fc-collapse .ui-ic { width: 14px; height: 14px; display: block; }
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
+.wl-page-link { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 11.5px; color: var(--text-muted); text-decoration: none; border-top: 1px solid var(--border-light); }
+.wl-page-link:hover { color: var(--accent-bright); }
+.wl-page-link .ui-ic { width: 12px; height: 12px; }
 /* Favorites list-switcher — TradingView-watchlist-header style: lives
    INSIDE the section title itself (no separate row, no collapse chevron —
    there's never a reason to collapse Favorites, only to switch which list
@@ -2352,7 +2355,8 @@ const UI_ICONS = {
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
   loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
   pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
-  grip: '<circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>'
+  grip: '<circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>',
+  external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/>'
 };
 function uiIcon(name, cls) {
   return `<svg class="ui-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${UI_ICONS[name] || ''}</svg>`;
@@ -3595,12 +3599,12 @@ function renderWatchlist() {
        but the collapse-state key stays fixed so switching lists doesn't
        reset whether the section is expanded. */
     { name: activeFavList().name, key: "Favorites", icon: "star", className: "fav-title", entries: favEntries(favsSorted), alwaysShow: true },
-    { name: "High Vol Margins", icon: "coins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea") },
-    { name: "Low Vol Margins", icon: "gem", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea") },
-    { name: "Reliable 14D Margins", icon: "calendar", className: "steady-title", entries: steadyEntries, scan: "steady" },
-    { name: "Biggest Losers (24H)", icon: "down", className: "fall-title", entries: moverEntries(losers) },
-    { name: "At 5D Highs", icon: "trendUp", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived" },
-    { name: "At 5D Lows", icon: "trendDown", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived" }
+    { name: "High Vol Margins", icon: "coins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea"), pageUrl: "/high-vol-margins.html" },
+    { name: "Low Vol Margins", icon: "gem", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea"), pageUrl: "/low-vol-margins.html" },
+    { name: "Reliable 14D Margins", icon: "calendar", className: "steady-title", entries: steadyEntries, scan: "steady", pageUrl: "/reliable-14d-margins.html" },
+    { name: "Biggest Losers (24H)", icon: "down", className: "fall-title", entries: moverEntries(losers), pageUrl: "/biggest-losers-24h.html" },
+    { name: "At 5D Highs", icon: "trendUp", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-highs.html" },
+    { name: "At 5D Lows", icon: "trendDown", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-lows.html" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -3741,6 +3745,13 @@ function renderWatchlist() {
             ${removeBtn}
           </div>`;
       });
+    }
+    // A real, indexable page for this category — separate from (and linked
+    // to, not replacing) this same live scanner. Crawlable content Google
+    // can actually rank for "osrs high volume flips" etc., where this
+    // interactive widget itself can't be.
+    if (group.pageUrl) {
+      inner += `<a class="wl-page-link" href="${group.pageUrl}">${uiIcon('external')} About this list &amp; a live top 10 →</a>`;
     }
     listDiv.innerHTML = inner;
     groupDiv.appendChild(titleDiv);
