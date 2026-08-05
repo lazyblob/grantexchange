@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping</title>
+<meta name="description" content="A free RuneLite plugin that tracks your OSRS Grand Exchange flips as they fill, shows tax-aware profit, and links straight to PocketGE's live price charts from in-game chat.">
+<meta name="keywords" content="osrs runelite plugin, ge flip tracker plugin, runelite ge tracker, osrs flip tracker, runelite flipping plugin, osrs grand exchange plugin">
+<link rel="canonical" href="https://pocketge.com/runelite-plugin.html">
+<meta property="og:title" content="PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping">
+<meta property="og:description" content="Tracks your Grand Exchange flips as they fill, with tax-aware profit and one-click PocketGE charts from in-game chat.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/runelite-plugin.html">
+<meta property="og:image" content="https://pocketge.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping">
+<meta name="twitter:description" content="Tracks your Grand Exchange flips as they fill, with tax-aware profit and one-click PocketGE charts from in-game chat.">
+<meta name="twitter:image" content="https://pocketge.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PocketGE Flip Tracker",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Windows, macOS, Linux (anywhere RuneLite runs)",
+  "description": "A RuneLite plugin that tracks Old School RuneScape Grand Exchange flips as they fill, computes profit after the 2% GE tax, and links in-game chat mentions of items straight to PocketGE's live price charts.",
+  "url": "https://pocketge.com/runelite-plugin.html",
+  "downloadUrl": "https://github.com/lazyblob/pocketge-flip-tracker",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "PocketGE" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "RuneLite Plugin", "item": "https://pocketge.com/runelite-plugin.html" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is the PocketGE RuneLite plugin safe to use?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It only reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never sends input, and never touches your account credentials. The optional website bridge only serves data to 127.0.0.1 (your own machine), so nothing leaves your computer unless you explicitly open pocketge.com yourself." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the PocketGE plugin cost anything?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No — it's free and open source." }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the PocketGE Flip Tracker plugin do?",
+      "acceptedAnswer": { "@type": "Answer", "text": "It watches your Grand Exchange offers as they fill (including partial fills), matches sells against earlier buys FIFO per item, and books completed flips with profit after the 2% GE tax. A sidebar panel shows session profit, recent flips, live buy/sell suggestions, and a favorites list with 5-day breakout alerts, all linking to PocketGE's live charts." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I search PocketGE from in-game chat?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Right-click a chat message mentioning an item (someone selling or buying it) and choose \"Search PocketGE for <item>\" to jump straight to that item's live chart." }
+    }
+  ]
+}
+</script>
+<style>
+  :root { --bg:#0C0B09; --panel:#1B1815; --border:#2B2621; --text:#D0CABD; --head:#fff; --muted:#8A8274; --accent:#C9A64D; --gold:#FFB300; --teal:#26A69A; --pos:#1FB85C; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Trebuchet MS',Roboto,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 64px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px; }
+  .brand { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--head); font-size:18px; text-decoration:none; }
+  .brand img { width:26px; height:26px; image-rendering:pixelated; }
+  .cta { background:var(--accent); color:#1C1300; text-decoration:none; font-weight:700; font-size:13px; padding:9px 16px; border-radius:6px; white-space:nowrap; }
+  .cta:hover { background:#E5C158; }
+  h1 { color:var(--head); font-size:28px; line-height:1.25; margin:0 0 8px; letter-spacing:-0.5px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 28px; }
+  h2 { color:var(--head); font-size:20px; margin:32px 0 10px; }
+  h3 { color:var(--head); font-size:15px; margin:20px 0 6px; }
+  p, li { font-size:14.5px; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .callout { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:6px; padding:12px 16px; margin:18px 0; font-size:14px; }
+  .feature-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin:16px 0; }
+  .feature-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
+  .feature-card strong { color:var(--head); display:block; margin-bottom:4px; font-size:14px; }
+  .feature-card span { font-size:13px; color:var(--muted); }
+  ol { padding-left:20px; }
+  .footer { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }
+  .big-cta { display:block; text-align:center; background:linear-gradient(90deg,rgba(201,166,77,0.2),rgba(201,166,77,0.06)); border:1px solid rgba(201,166,77,0.5); border-radius:8px; padding:16px; margin:28px 0; color:var(--head); font-weight:700; font-size:16px; text-decoration:none; }
+  .big-cta:hover { background:linear-gradient(90deg,rgba(201,166,77,0.3),rgba(201,166,77,0.1)); text-decoration:none; }
+  code { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the live tracker →</a>
+  </div>
+
+  <h1>PocketGE Flip Tracker — RuneLite Plugin</h1>
+  <p class="sub">A free, open-source RuneLite plugin that tracks your Grand Exchange flips as they actually fill, works out tax-aware profit automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
+
+  <h2>What it does</h2>
+  <div class="feature-grid">
+    <div class="feature-card"><strong>Live flip tracking</strong><span>Watches every GE offer slot for incremental fills (partial fills included) and matches sells against earlier buys FIFO, per item — no manual logging.</span></div>
+    <div class="feature-card"><strong>Profit after tax</strong><span>Books every completed flip with the same 2% GE tax math as the website, so session profit is what you actually keep.</span></div>
+    <div class="feature-card"><strong>In-game price auto-fill</strong><span>When you open a buy or sell offer for a favorited item, the plugin's suggested price and quantity can fill straight into the GE prompt for you to confirm.</span></div>
+    <div class="feature-card"><strong>Favorites &amp; breakout alerts</strong><span>A sidebar favorites list mirrors your PocketGE favorites, with a pulsing border when an item is testing its true 5-day high or low.</span></div>
+    <div class="feature-card"><strong>Chat → chart, one right-click</strong><span>Right-click a chat message where someone mentions an item ("selling feathers", "buying whip") and jump straight to that item's live PocketGE chart.</span></div>
+    <div class="feature-card"><strong>Local-only website bridge</strong><span>Opt-in bridge on <code>127.0.0.1</code> lets pocketge.com, open in your own browser, mirror your live flips and favorites — nothing ever leaves your machine.</span></div>
+  </div>
+
+  <div class="callout">Every profit number the plugin shows uses the exact same tax rule as <a href="/">PocketGE</a>: 2% of the sale price, rounded down, capped at 5,000,000 gp per item, with under-50 gp sales and a few exempt items (like the bond) excluded. What you see is what you keep.</div>
+
+  <h2>Installation</h2>
+  <p>The plugin isn't on the official RuneLite Plugin Hub yet — until it is, you can build and run it from source:</p>
+  <ol>
+    <li>Clone <a href="https://github.com/lazyblob/pocketge-flip-tracker" rel="noopener" target="_blank">github.com/lazyblob/pocketge-flip-tracker</a>.</li>
+    <li>With JDK 11 installed, run <code>./gradlew build</code> from the <code>runelite-plugin</code> folder.</li>
+    <li>Load it into RuneLite via the client's plugin developer tools, or follow the build steps in the repo's README.</li>
+  </ol>
+  <p>Once it's live on the Plugin Hub, this page will be updated with a direct "Add to RuneLite" link.</p>
+
+  <h2>Connecting it to pocketge.com</h2>
+  <p>The website bridge is opt-in and off by default. Turn it on from the plugin's settings, then toggle "Connect" in PocketGE's <a href="/">Bank of Gielinor</a> modal — the sidebar Favorites list and your session's flips will start mirroring live, all without any account or login on either side.</p>
+
+  <a class="big-cta" href="https://github.com/lazyblob/pocketge-flip-tracker" rel="noopener" target="_blank">▶ View the plugin on GitHub</a>
+
+  <h2>FAQ</h2>
+  <h3>Is the PocketGE RuneLite plugin safe to use?</h3>
+  <p>Yes. It only reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never sends input on your behalf, and never touches your account credentials. The optional website bridge only serves data to <code>127.0.0.1</code> (your own machine).</p>
+  <h3>Does it cost anything?</h3>
+  <p>No — it's free and open source.</p>
+  <h3>Can I search PocketGE from in-game chat?</h3>
+  <p>Yes. Right-click a chat line mentioning an item and choose "Search PocketGE for &lt;item&gt;" to jump straight to that item's live chart.</p>
+
+  <div class="footer">
+    PocketGE is a free, independent fan tool. Not affiliated with Jagex Ltd. or the RuneLite project. RuneScape and Old School RuneScape are trademarks of Jagex. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/#faq">FAQ</a>
+  </div>
+</div>
+</body>
+</html>
