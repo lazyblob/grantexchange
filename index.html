@@ -7048,6 +7048,40 @@ setItem._userPicked = false;
          metadata so a Google crawl of "/" indexes the BRAND page. */
       setItem(landing, { keepHomepage: !eligible(urlItem) });
     }
+
+    /* Deep links (RuneLite's right-click "Search PocketGE for X", shared
+       links, etc.) only reach a FRESH tab. manifest.json declares
+       display:"standalone", so once installed as a PWA, Chrome's Launch
+       Handler API defaults to client_mode "focus-existing": reopening
+       https://pocketge.com/?q=NewItem while the app is already open just
+       focuses the existing window WITHOUT navigating it — location.search
+       never changes, so the item never updates. launchQueue is the
+       documented way to still receive that URL and react manually. */
+    const jumpToQueryItem = (q) => {
+      const item = q ? mapping.find(x => x.name.toLowerCase() === q.toLowerCase()) : null;
+      if (!item || item === selected) return;
+      if (item.members && !membersOn) {
+        membersOn = true;
+        document.querySelectorAll('.mp-p2p').forEach(el => { el.classList.add('active'); if (el.hasAttribute('role')) el.setAttribute('aria-selected', 'true'); });
+        document.querySelectorAll('.mp-f2p').forEach(el => { el.classList.remove('active'); if (el.hasAttribute('role')) el.setAttribute('aria-selected', 'false'); });
+      }
+      if (eligible(item)) setItem(item);
+    };
+    if ('launchQueue' in window) {
+      window.launchQueue.setConsumer((launchParams) => {
+        if (!launchParams.targetURL) return;
+        try { jumpToQueryItem(new URL(launchParams.targetURL).searchParams.get('q')); } catch (e) {}
+      });
+    }
+    /* Fallback for browsers without the Launch Handler API (Firefox,
+       Safari): if the tab is merely refocused rather than navigated and
+       the address bar's ?q= no longer matches what's on screen, catch up
+       as soon as it's visible again. */
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      try { jumpToQueryItem(new URLSearchParams(window.location.search).get('q')); } catch (e) {}
+    });
+
     updateFootFresh();
     updateFootUpdated();
     syncBuildInfo();
