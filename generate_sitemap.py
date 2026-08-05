@@ -71,6 +71,7 @@ def main():
     rows = [
         f"{SITE}/|{today}|daily|1.0",
         f"{SITE}/flipping-guide.html|{today}|monthly|0.8",
+        f"{SITE}/runelite-plugin.html|{today}|monthly|0.8",
     ]
     names = {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)
