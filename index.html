@@ -1037,8 +1037,36 @@ button, input { touch-action: manipulation; }
   0%, 100% { box-shadow: inset 0 0 10px rgba(255,179,0,0.28); }
   50%      { box-shadow: inset 0 0 26px rgba(255,179,0,0.6); }
 }
+/* Spike tier — a genuine ±15%+ move (see SPIKE_THRESHOLD_PCT-equivalent in
+   updateWatchlist), rare enough to earn a full border instead of the 5D
+   pulse's side accent, cycling through a small palette rather than one
+   color — OSRS's own rare-item shimmer (party hats, 3rd age), biased
+   green/gold for a spike UP and red/magenta for a spike DOWN so the color
+   itself still says which way it moved. Takes priority over the plain 5D
+   pulse when both would apply. */
+.wl-item.at-spike-up {
+  border: 2px solid #1FB85C;
+  animation: rs-spike-up 1.4s linear infinite;
+}
+.wl-item.at-spike-down {
+  border: 2px solid #EF5350;
+  animation: rs-spike-down 1.4s linear infinite;
+}
+.wl-item.at-spike-up .wl-item-name, .wl-item.at-spike-down .wl-item-name { font-weight: 800; }
+@keyframes rs-spike-up {
+  0%   { border-color: #1FB85C; box-shadow: 0 0 12px rgba(31,184,92,0.6); }
+  33%  { border-color: #4FFF8E; box-shadow: 0 0 12px rgba(79,255,142,0.6); }
+  66%  { border-color: #FFD24D; box-shadow: 0 0 12px rgba(255,210,77,0.6); }
+  100% { border-color: #1FB85C; box-shadow: 0 0 12px rgba(31,184,92,0.6); }
+}
+@keyframes rs-spike-down {
+  0%   { border-color: #EF5350; box-shadow: 0 0 12px rgba(239,83,80,0.6); }
+  33%  { border-color: #FF6B35; box-shadow: 0 0 12px rgba(255,107,53,0.6); }
+  66%  { border-color: #E04FC4; box-shadow: 0 0 12px rgba(224,79,196,0.6); }
+  100% { border-color: #EF5350; box-shadow: 0 0 12px rgba(239,83,80,0.6); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .wl-item.at-high5d, .wl-item.at-low5d { animation: none; }
+  .wl-item.at-high5d, .wl-item.at-low5d, .wl-item.at-spike-up, .wl-item.at-spike-down { animation: none; }
 }
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1 1 auto; min-width: 0; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
@@ -1879,6 +1907,20 @@ button, input { touch-action: manipulation; }
             </svg>
             <span class="fav-label">Save</span>
             <span class="fav-label-active">Saved</span>
+          </button>
+          <!-- Renders a shareable PNG "stat card" for the current item
+               (client-side, canvas — no server round trip) and copies/
+               downloads it, so a redditor/streamer can post a clean,
+               data-full image instead of a raw screenshot. -->
+          <button id="btnShare" class="fav-btn" type="button" title="Share this item as an image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line>
+              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line>
+            </svg>
+            <span class="fav-label">Share</span>
           </button>
 
           <div class="toolbar" id="timeToolbar">
@@ -2745,6 +2787,181 @@ function updateFavoriteBtn() {
   if (!selected) return;
   $('#btnFav').classList.toggle('active', favorites.includes(String(selected.id)));
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   SHARE CARD — a clean, data-full PNG for the current item, drawn client-
+   side on a hidden canvas (no server round trip, no screenshot artifacts).
+   Built for the exact use case a redditor/streamer actually has: paste one
+   clean image into a post instead of a raw app screenshot. Reads already-
+   computed live state (liveSellRaw, recommendedBuy/Sell, viewChanges) and
+   the just-rendered rating gauge's own label, rather than recomputing
+   anything itself, so the card can never disagree with what's on screen.
+   ════════════════════════════════════════════════════════════════════════ */
+function loadImageCORS(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+function shareCardRatingInfo() {
+  const label = document.querySelector('#ratingGauge .rg-label');
+  if (!label || !label.textContent.trim()) return { text: 'Not rated', color: '#8A8274' };
+  const style = getComputedStyle(label);
+  return { text: label.textContent.trim(), color: style.color || '#D9D3C7' };
+}
+function roundRectPath(g, x, y, w, h, r) {
+  g.beginPath();
+  if (typeof g.roundRect === 'function') {
+    g.roundRect(x, y, w, h, r);
+  } else {
+    // Fallback for older engines without native roundRect — a plain
+    // rectangle is a fine degrade, still fully readable.
+    g.rect(x, y, w, h);
+  }
+}
+async function buildShareCardCanvas() {
+  const W = 1200, H = 630;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+
+  // Background — the site's own obsidian/gold palette, not a generic dark card.
+  const bgGrad = g.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, '#151210');
+  bgGrad.addColorStop(1, '#0C0B09');
+  g.fillStyle = bgGrad;
+  g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#3C352B';
+  g.lineWidth = 2;
+  g.strokeRect(1, 1, W - 2, H - 2);
+
+  // Brand row.
+  g.fillStyle = '#E5C158';
+  g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText('Pocket', 48, 64);
+  const pocketW = g.measureText('Pocket').width;
+  g.fillStyle = '#D9D3C7';
+  g.fillText('GE', 48 + pocketW, 64);
+  g.fillStyle = '#8A8274';
+  g.font = '400 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText('Live OSRS Grand Exchange tracker', 48, 88);
+
+  // Item icon + name.
+  try {
+    const icon = await loadImageCORS(itemIconUrl(selected.id));
+    g.imageSmoothingEnabled = false;
+    const iconSize = 96;
+    g.drawImage(icon, 48, 130, iconSize, iconSize);
+  } catch (e) { /* icon load failed (CORS/network) — card still works without it */ }
+  g.fillStyle = '#FFFFFF';
+  g.font = '700 44px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText(selected.name, 168, 172);
+
+  // Live price, big.
+  g.fillStyle = '#E5C158';
+  g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
+
+  // 1D / 5D change chips.
+  const chg1d = viewChanges && viewChanges['1d'];
+  const chg5d = viewChanges && viewChanges['5d'];
+  const chipY = 290;
+  const drawChangeChip = (x, label, val) => {
+    if (val == null) return x;
+    const color = val > 0 ? '#1FB85C' : val < 0 ? '#EF5350' : '#8A8274';
+    const text = label + ' ' + (val > 0 ? '+' : '') + val.toFixed(1) + '%';
+    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    const w = g.measureText(text).width + 28;
+    roundRectPath(g, x, chipY, w, 40, 8);
+    g.fillStyle = 'rgba(255,255,255,0.06)';
+    g.fill();
+    g.fillStyle = color;
+    g.fillText(text, x + 14, chipY + 27);
+    return x + w + 12;
+  };
+  let cx = 168;
+  cx = drawChangeChip(cx, '1D', chg1d);
+  cx = drawChangeChip(cx, '5D', chg5d);
+
+  // Target Buy / Target Sell + Analyst Rating row.
+  const rowY = 380;
+  const col = (x, label, value, color) => {
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText(label.toUpperCase(), x, rowY);
+    g.fillStyle = color || '#FFFFFF';
+    g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText(value, x, rowY + 38);
+  };
+  col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5C158');
+  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A69A');
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
+    col(632, 'Profit / item', (margin >= 0 ? '+' : '') + fmtGp(margin) + ' gp', margin >= 0 ? '#1FB85C' : '#EF5350');
+  }
+  const rating = shareCardRatingInfo();
+  col(924, 'Analyst Rating', rating.text, rating.color);
+
+  // Footer watermark.
+  g.strokeStyle = '#2B2621';
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(48, H - 72); g.lineTo(W - 48, H - 72); g.stroke();
+  g.fillStyle = '#8A8274';
+  g.font = '400 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText('pocketge.com — free, no login, updates every 5 min', 48, H - 38);
+
+  return cv;
+}
+async function shareCard() {
+  if (!selected) return;
+  const btn = $('#btnShare');
+  const label = btn.querySelector('.fav-label');
+  const originalText = label.textContent;
+  label.textContent = '…';
+  btn.disabled = true;
+  try {
+    const cv = await buildShareCardCanvas();
+    const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('toBlob failed');
+    const file = new File([blob], `pocketge-${selected.name.replace(/[^a-z0-9]+/gi, '-')}.png`, { type: 'image/png' });
+    // Mobile-first: hand it to the native share sheet when available —
+    // exactly the "post this to Reddit/Discord" flow this button exists for.
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: selected.name + ' — PocketGE' });
+      label.textContent = originalText;
+      btn.disabled = false;
+      return;
+    }
+    // Desktop: try copying the image straight to the clipboard first (paste
+    // directly into a Reddit/Discord post) — Chromium-only API, so fall
+    // back to a plain download if it's unavailable or denied.
+    let copied = false;
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        copied = true;
+      } catch (e) { /* clipboard write blocked — fall through to download */ }
+    }
+    if (!copied) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+    label.textContent = copied ? 'Copied!' : 'Saved!';
+    setTimeout(() => { label.textContent = originalText; }, 1800);
+  } catch (e) {
+    label.textContent = 'Failed';
+    setTimeout(() => { label.textContent = originalText; }, 1800);
+  } finally {
+    btn.disabled = false;
+  }
+}
+$('#btnShare').onclick = shareCard;
 
 /* CSS-pixel drawing space of the last resizeCanvas() — drawChart must use
    these exact values so its coordinates always match the bitmap + transform. */
@@ -3706,9 +3923,20 @@ function renderWatchlist() {
           else if (st === "high") hlClass = "at-high";
           else if (st === "low") hlClass = "at-low";
         }
+        /* Spike tier — a genuine ±15%+ move vs 24h typical, rarer and more
+           urgent than a routine 5D extreme, so it takes over the row's
+           highlight class entirely rather than stacking with it. Color
+           still tells you which way it moved (green/gold up, red/magenta
+           down), matching the RuneLite plugin's identical treatment. */
+        const spikePct = mover1dPct[id];
+        if (spikePct != null && Math.abs(spikePct) >= 15) {
+          hlClass = spikePct >= 0 ? 'at-spike-up' : 'at-spike-down';
+        }
         const activeClass = selected?.id === item.id ? 'active' : '';
         const hlBadge =
-            hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days.">▲ 5D</span>`
+            hlClass === 'at-spike-up'   ? `<span class="hl-badge high5d" title="Spiking — up ${spikePct.toFixed(1)}% vs its 24h typical price.">🚀 ${spikePct >= 0 ? '+' : ''}${spikePct.toFixed(0)}%</span>`
+          : hlClass === 'at-spike-down' ? `<span class="hl-badge low5d" title="Spiking — down ${Math.abs(spikePct).toFixed(1)}% vs its 24h typical price.">💥 ${spikePct.toFixed(0)}%</span>`
+          : hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days.">▲ 5D</span>`
           : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days.">▼ 5D</span>`
           : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲</span>`
           : hlClass === 'at-low'    ? `<span class="hl-badge low" title="Currently at or below its 24-hour low. Buy now to catch the dip.">▼</span>` : '';
