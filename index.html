@@ -5558,6 +5558,9 @@ function rlRenderModal(data) {
   if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
   }
+  if (data.bankSeen === false) {
+    html += `<div class="rl-hint" style="margin:-4px 0 8px">Open your bank once in-game this session so the plugin can include it in your portfolio value — it can't read bank contents until it's been opened.</div>`;
+  }
   html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Any local list whose name matches one of your in-game lists is live-linked in the sidebar</div>`;
   if (!flips.length) {
     html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
@@ -5593,11 +5596,37 @@ function rlApply(data) {
   }
   rlFavoriteListsByName = newLists;
   rlRenderModal(data);
+  if (rlConnected) rlReconcileFavorites();
   // Only re-render the (potentially large) watchlist when something it
   // actually depends on changed, not on every 15s poll tick.
   if (rlMatchedFavIds().join(',') !== beforeMatch || wasConnected !== rlConnected) {
     renderWatchlist();
   }
+}
+/* Favorites built on the website BEFORE the plugin was ever connected never
+   reach the plugin on their own — rlPostFavorite() only fires for NEW star
+   clicks going forward, so a pre-existing list just silently never merges
+   ("it's supposed to match my favorite list, but doesn't"). One-shot per
+   page load: once a plugin list with a matching name is seen, push every
+   local item that list is missing. Retries every poll (cheap, idempotent)
+   until mapping has loaded, since this can race the boot() item-list fetch. */
+let rlReconciled = false;
+function rlReconcileFavorites() {
+  if (rlReconciled || !mapping.length) return;
+  rlReconciled = true;
+  favoriteLists.forEach(l => {
+    const matched = rlFavoriteListsByName.get(l.name.trim().toLowerCase());
+    if (!matched) return;
+    const have = new Set(matched.itemIds);
+    (l.items || []).forEach(idStr => {
+      if (have.has(idStr)) return;
+      const item = mapping.find(x => String(x.id) === idStr);
+      fetch(RL_BRIDGE_URL + '/favorites', {
+        method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: Number(idStr), name: item ? item.name : '', remove: false, listId: matched.id })
+      }).catch(() => {});
+    });
+  });
 }
 /* Push a favorite change TO the plugin so the link works both directions —
    star something here and it's added in-game too, not just the reverse.
@@ -7430,8 +7459,6 @@ if ('serviceWorker' in navigator) {
     <a href="https://github.com/lazyblob/pocketge.com" rel="noopener" target="_blank">Open source on GitHub</a>
     <span>·</span>
     <a href="/flipping-guide.html">OSRS Flipping Guide</a>
-    <span>·</span>
-    <a href="/runelite-plugin.html">RuneLite Plugin</a>
     <span>·</span>
     <a href="#faq">FAQ</a>
   </div>
