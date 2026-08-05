@@ -78,6 +78,7 @@ def main():
         f"{SITE}/at-5d-highs.html|{today}|weekly|0.7",
         f"{SITE}/at-5d-lows.html|{today}|weekly|0.7",
         f"{SITE}/burnt-food-collectors.html|{today}|monthly|0.6",
+        f"{SITE}/high-alch-calculator.html|{today}|daily|0.8",
     ]
     names = {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)

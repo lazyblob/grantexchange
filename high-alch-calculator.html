@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS High Alch Profit Calculator — Live Alchemy Margins | PocketGE</title>
+<meta name="description" content="Live OSRS High Level Alchemy profit: which items are worth alching right now, after the nature rune cost and current GE buy price. Updated from real-time prices.">
+<meta name="keywords" content="osrs high alch profit, osrs high alchemy calculator, best items to alch osrs, osrs alching money making, high alch profit list">
+<link rel="canonical" href="https://pocketge.com/high-alch-calculator.html">
+<meta property="og:title" content="OSRS High Alch Profit Calculator — Live Alchemy Margins">
+<meta property="og:description" content="Live High Alchemy profit: which items are worth alching right now, after nature rune cost and current GE buy price.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/high-alch-calculator.html">
+<meta property="og:image" content="https://pocketge.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS High Alch Profit Calculator — Live Alchemy Margins">
+<meta name="twitter:description" content="Live High Alchemy profit: which items are worth alching right now, after nature rune cost and current GE buy price.">
+<meta name="twitter:image" content="https://pocketge.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "High Alch Profit Calculator", "item": "https://pocketge.com/high-alch-calculator.html" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How is OSRS High Alchemy profit calculated?",
+      "acceptedAnswer": { "@type": "Answer", "text": "High Alch profit = the item's high alch value, minus the live cost of one nature rune, minus the item's live Grand Exchange buy price. There's no GE tax on alching since the coins come from the spell itself, not a sale." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need Magic level 55 for High Level Alchemy?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes — High Level Alchemy requires 55 Magic and one nature rune per cast, alongside enough runes/staff charge to cover the spell's fire elemental cost (a fire staff or fire runes)." }
+    }
+  ]
+}
+</script>
+<link rel="stylesheet" href="finder-page.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the live tracker →</a>
+  </div>
+
+  <h1>OSRS High Alch Profit Calculator</h1>
+  <p class="sub">Which items are actually worth High Level Alchemy right now, after the nature rune cost and the live Grand Exchange buy price — not a static list, recalculated from real-time prices every time this page loads.</p>
+
+  <h2>The math</h2>
+  <p>High Alch profit per cast is: <strong>the item's high alch value − one nature rune's live price − the item's live GE buy price</strong>. No 2% GE tax applies here — the coins come from casting the spell, not from a Grand Exchange sale, so what you see below is the full profit per cast.</p>
+
+  <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
+
+  <div id="liveList" class="live-list">
+    <div class="live-loading">Loading live alch profit…</div>
+  </div>
+
+  <h2>Why this beats a static "best items to alch" list</h2>
+  <p>Any list that isn't pulling live prices goes stale the moment the market moves — an item worth alching today can be a loss tomorrow if its buy price creeps up. This page (and PocketGE itself) recomputes against real-time Grand Exchange data instead of a fixed table, so what's shown is accurate for right now, not for whenever the page was last written.</p>
+
+  <a class="big-cta" href="/">▶ Open the full live tracker on PocketGE</a>
+
+  <h2>FAQ</h2>
+  <h3>How is High Alchemy profit calculated?</h3>
+  <p>High alch value minus one nature rune's live cost minus the item's live GE buy price. No GE tax applies since alching isn't a Grand Exchange sale.</p>
+  <h3>Do I need Magic level 55 for High Level Alchemy?</h3>
+  <p>Yes — 55 Magic, one nature rune per cast, plus whatever covers the spell's fire element (a fire staff or fire runes).</p>
+
+  <div class="footer">
+    Values update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/high-vol-margins.html">High Volume Flips</a>
+  </div>
+</div>
+<script src="finder-common.js"></script>
+<script>
+(async function () {
+  const host = document.getElementById('liveList');
+  try {
+    const data = await loadFinderData();
+    const rows = computeHighAlchRows(data).slice(0, 15);
+    if (!rows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
+    host.innerHTML = rows.map((r, i) => `
+      <a class="live-row" href="/?q=${encodeURIComponent(r.item.name)}">
+        <span class="lr-rank">${i + 1}</span>
+        <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
+        <span class="lr-name">${r.item.name}</span>
+        <span class="lr-margin">+${fmtGp(r.profit)} gp</span>
+        <span class="lr-vol">buy ${abbreviateNumber(r.buy)}</span>
+      </a>`).join('');
+  } catch (e) {
+    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+  }
+})();
+</script>
+</body>
+</html>

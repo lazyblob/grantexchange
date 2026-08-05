@@ -110,6 +110,31 @@ function computeLoserRows(data) {
   return out;
 }
 
+const NATURE_RUNE_ID = 561;
+
+/** Live High Alchemy profit rows: an item's high alch value minus one
+ *  nature rune's live cost minus the item's live buy price — the exact
+ *  spell math, no invented numbers. Positive-only, sorted best first. Only
+ *  items whose mapping entry carries a highalch value qualify (mostly
+ *  equipment/weapons; raw materials and consumables mostly don't have one). */
+function computeHighAlchRows(data) {
+  const natureNode = data.latest.data[String(NATURE_RUNE_ID)];
+  const natureCost = natureNode && natureNode.low > 0 ? natureNode.low : null;
+  if (!natureCost) return [];
+  const out = [];
+  for (const item of data.mapping) {
+    if (!item.name || !(item.highalch > 0)) continue;
+    const id = String(item.id);
+    const node = data.latest.data[id];
+    if (!node || !(node.low > 0)) continue;
+    const profit = item.highalch - natureCost - node.low;
+    if (!(profit > 0)) continue;
+    out.push({ item, profit, buy: node.low, highalch: item.highalch, vol: dailyVolume(id, data) });
+  }
+  out.sort((a, b) => b.profit - a.profit);
+  return out;
+}
+
 function itemIconUrl(id) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(String(id))}.png`;
 }
