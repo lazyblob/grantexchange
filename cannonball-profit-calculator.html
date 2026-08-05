@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS Cannonball Profit Calculator — Live Smithing Margins | PocketGE</title>
+<meta name="description" content="Live profit per steel bar smithing cannonballs in OSRS, updated from real-time Grand Exchange prices — buy steel bars, smith 4 cannonballs each, sell after the 2% GE tax.">
+<meta name="keywords" content="osrs cannonball profit, osrs cannonball calculator, smithing money making osrs, steel bar cannonballs profit, osrs smithing profit">
+<link rel="canonical" href="https://pocketge.com/cannonball-profit-calculator.html">
+<meta property="og:title" content="OSRS Cannonball Profit Calculator — Live Smithing Margins">
+<meta property="og:description" content="Live profit per steel bar smithing cannonballs in OSRS, from real-time Grand Exchange prices.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/cannonball-profit-calculator.html">
+<meta property="og:image" content="https://pocketge.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS Cannonball Profit Calculator — Live Smithing Margins">
+<meta name="twitter:description" content="Live profit per steel bar smithing cannonballs in OSRS, from real-time Grand Exchange prices.">
+<meta name="twitter:image" content="https://pocketge.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Cannonball Profit Calculator", "item": "https://pocketge.com/cannonball-profit-calculator.html" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How many cannonballs do you get from one steel bar in OSRS?",
+      "acceptedAnswer": { "@type": "Answer", "text": "One steel bar makes 4 cannonballs at a furnace. It requires completion of the Dwarf Cannon quest and 35 Smithing." }
+    },
+    {
+      "@type": "Question",
+      "name": "How is cannonball smithing profit calculated?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Profit per steel bar = (4 x the live cannonball sell price, minus the 2% GE tax) minus the live steel bar buy price. Both items are Grand Exchange tradeable, so this recalculates from real-time prices." }
+    }
+  ]
+}
+</script>
+<link rel="stylesheet" href="finder-page.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the live tracker →</a>
+  </div>
+
+  <h1>OSRS Cannonball Profit Calculator</h1>
+  <p class="sub">One of the most well-known Smithing money makers in Old School RuneScape: buy steel bars, smith them into cannonballs at a furnace, sell the cannonballs. Live profit per bar below, recalculated from real-time Grand Exchange prices every time this page loads.</p>
+
+  <div class="callout">The recipe this page assumes, so it's checkable rather than a black box: <strong>1 steel bar → 4 cannonballs</strong>, at a furnace, after completing the Dwarf Cannon quest with 35 Smithing. Both items are Grand Exchange tradeable, so profit here is pure live price math — no invented numbers, no static table.</div>
+
+  <div id="liveCalc" class="live-list">
+    <div class="live-loading">Loading live prices…</div>
+  </div>
+
+  <h2>Why this one, specifically</h2>
+  <p>Most skilling "profit" methods need a real recipe database to compute — dozens of raw materials feeding into a product isn't something a live price feed alone can answer. Cannonballs are the exception: a single fixed 1:4 ratio that hasn't changed in years, with both ends of the trade sitting right there on the Grand Exchange. That's what makes a genuinely live, accurate calculator possible here without guessing at anything.</p>
+
+  <a class="big-cta" href="/">▶ Open the full live tracker on PocketGE</a>
+
+  <h2>FAQ</h2>
+  <h3>How many cannonballs does one steel bar make?</h3>
+  <p>4, at a furnace, after the Dwarf Cannon quest with 35 Smithing.</p>
+  <h3>How is the profit calculated?</h3>
+  <p>(4 × live cannonball sell price, after the 2% GE tax) − live steel bar buy price. Recalculated from real-time prices, not a fixed table.</p>
+
+  <div class="footer">
+    Prices update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. If this recipe or ratio is ever wrong, <a href="https://github.com/lazyblob/pocketge.com/issues/new?labels=bug&title=Cannonball%20recipe%3A%20" rel="noopener" target="_blank">tell us</a>. · <a href="/">Home</a> · <a href="/high-alch-calculator.html">High Alch Calculator</a> · <a href="/flipping-guide.html">Flipping Guide</a>
+  </div>
+</div>
+<script src="finder-common.js"></script>
+<script>
+(async function () {
+  const host = document.getElementById('liveCalc');
+  try {
+    const data = await loadFinderData();
+    const r = computeCannonballProfit(data);
+    if (!r) { host.innerHTML = '<div class="live-loading">Live prices for steel bar or cannonball are unavailable right now.</div>'; return; }
+    const perK = r.profitPerBar * 1000;
+    host.innerHTML = `
+      <div class="live-row" style="cursor:default">
+        <span class="lr-name">Steel bar (buy)</span>
+        <span class="lr-vol">${fmtGp(r.barCost)} gp</span>
+      </div>
+      <div class="live-row" style="cursor:default">
+        <span class="lr-name">Cannonball (sell, after tax)</span>
+        <span class="lr-vol">${fmtGp(r.netPerBall)} gp each</span>
+      </div>
+      <div class="live-row" style="cursor:default">
+        <span class="lr-name"><strong>Profit per steel bar</strong></span>
+        <span class="lr-margin">${r.profitPerBar >= 0 ? '+' : ''}${fmtGp(r.profitPerBar)} gp</span>
+      </div>
+      <div class="live-row" style="cursor:default">
+        <span class="lr-name"><strong>Profit per 1,000 bars</strong></span>
+        <span class="lr-margin">${perK >= 0 ? '+' : ''}${fmtGp(perK)} gp</span>
+      </div>`;
+  } catch (e) {
+    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+  }
+})();
+</script>
+</body>
+</html>

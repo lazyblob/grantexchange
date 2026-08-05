@@ -135,6 +135,31 @@ function computeHighAlchRows(data) {
   return out;
 }
 
+/* Verified skilling recipes — deliberately a short, hand-curated list, not
+   an attempt at a full recipe database. Each entry is a method stable and
+   well-documented enough to bet on (unchanged for years, no ambiguity in
+   the ratio), with its exact assumption spelled out on the page that uses
+   it so it's auditable rather than a black box. Add to this list only for
+   methods that are genuinely this certain — a wrong ratio here is worse
+   than the page not existing. */
+const STEEL_BAR_ID = 2353, CANNONBALL_ID = 2, CANNONBALLS_PER_BAR = 4;
+
+/** Smithing: steel bar -> 4 cannonballs at a furnace (Dwarf Cannon quest,
+ *  35 Smithing). Both sides are GE-tradeable, so this is pure price math
+ *  once the 1:4 ratio is fixed — no external recipe dataset needed. */
+function computeCannonballProfit(data) {
+  const barNode = data.latest.data[String(STEEL_BAR_ID)];
+  const ballNode = data.latest.data[String(CANNONBALL_ID)];
+  if (!barNode || !(barNode.low > 0) || !ballNode || !(ballNode.high > 0)) return null;
+  const barCost = barNode.low;
+  const ballSell = ballNode.high;
+  const tax = calculateTax(ballSell, CANNONBALL_ID);
+  const netPerBall = ballSell - tax;
+  const revenuePerBar = CANNONBALLS_PER_BAR * netPerBall;
+  const profitPerBar = revenuePerBar - barCost;
+  return { barCost, ballSell, tax, netPerBall, revenuePerBar, profitPerBar };
+}
+
 function itemIconUrl(id) {
   return `https://oldschool.runescape.wiki/images/${encodeURIComponent(String(id))}.png`;
 }
