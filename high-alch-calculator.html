@@ -43,6 +43,11 @@
       "@type": "Question",
       "name": "Do I need Magic level 55 for High Level Alchemy?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes — High Level Alchemy requires 55 Magic and one nature rune per cast, alongside enough runes/staff charge to cover the spell's fire elemental cost (a fire staff or fire runes)." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can free-to-play players make money High Alching in OSRS?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes — a subset of members items don't apply; filter this page to Free-to-play to see only items an F2P account can actually buy off the Grand Exchange and alch, ranked by live profit per cast." }
     }
   ]
 }
@@ -64,6 +69,11 @@
 
   <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
 
+  <div class="tab-row" id="alchTabs">
+    <button class="tab-btn active" data-filter="all">All items</button>
+    <button class="tab-btn" data-filter="f2p">Free-to-play</button>
+    <button class="tab-btn" data-filter="members">Members</button>
+  </div>
   <div id="liveList" class="live-list">
     <div class="live-loading">Loading live alch profit…</div>
   </div>
@@ -78,6 +88,8 @@
   <p>High alch value minus one nature rune's live cost minus the item's live GE buy price. No GE tax applies since alching isn't a Grand Exchange sale.</p>
   <h3>Do I need Magic level 55 for High Level Alchemy?</h3>
   <p>Yes — 55 Magic, one nature rune per cast, plus whatever covers the spell's fire element (a fire staff or fire runes).</p>
+  <h3>Can free-to-play players make money High Alching?</h3>
+  <p>Yes — use the Free-to-play tab above to see only items an F2P account can actually buy and alch, ranked by live profit.</p>
 
   <div class="footer">
     Values update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/high-vol-margins.html">High Volume Flips</a>
@@ -87,10 +99,15 @@
 <script>
 (async function () {
   const host = document.getElementById('liveList');
-  try {
-    const data = await loadFinderData();
-    const rows = computeHighAlchRows(data).slice(0, 15);
-    if (!rows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
+  const tabs = document.getElementById('alchTabs');
+  let allRows = null;
+
+  function render(filter) {
+    if (!allRows) return;
+    const rows = allRows
+      .filter(r => filter === 'all' || (filter === 'members' ? r.item.members : !r.item.members))
+      .slice(0, 15);
+    if (!rows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now in this category — check back shortly.</div>'; return; }
     host.innerHTML = rows.map((r, i) => `
       <a class="live-row" href="/?q=${encodeURIComponent(r.item.name)}">
         <span class="lr-rank">${i + 1}</span>
@@ -99,6 +116,21 @@
         <span class="lr-margin">+${fmtGp(r.profit)} gp</span>
         <span class="lr-vol">buy ${abbreviateNumber(r.buy)}</span>
       </a>`).join('');
+  }
+
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render(btn.dataset.filter);
+  });
+
+  try {
+    const data = await loadFinderData();
+    allRows = computeHighAlchRows(data);
+    if (!allRows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
+    render('all');
   } catch (e) {
     host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
   }
