@@ -69,6 +69,8 @@
 
   <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
 
+  <div id="natureLine" class="nature-line"></div>
+
   <div class="tab-row" id="alchTabs">
     <button class="tab-btn active" data-filter="all">All items</button>
     <button class="tab-btn" data-filter="f2p">Free-to-play</button>
@@ -100,6 +102,7 @@
 (async function () {
   const host = document.getElementById('liveList');
   const tabs = document.getElementById('alchTabs');
+  const natureLine = document.getElementById('natureLine');
   let allRows = null;
 
   function render(filter) {
@@ -113,8 +116,11 @@
         <span class="lr-rank">${i + 1}</span>
         <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
         <span class="lr-name">${r.item.name}</span>
+        <span class="lr-stats">
+          <span class="lr-stat">Buy <b>${abbreviateNumber(r.buy)}</b></span>
+          <span class="lr-stat">Alchs for <b>${abbreviateNumber(r.highalch)}</b></span>
+        </span>
         <span class="lr-margin">+${fmtGp(r.profit)} gp</span>
-        <span class="lr-vol">buy ${abbreviateNumber(r.buy)}</span>
       </a>`).join('');
   }
 
@@ -128,7 +134,11 @@
 
   try {
     const data = await loadFinderData();
-    allRows = computeHighAlchRows(data);
+    const { rows, natureCost } = computeHighAlchRows(data);
+    allRows = rows;
+    if (natureCost) {
+      natureLine.textContent = `Nature rune (live buy price): ${fmtGp(natureCost)} gp each — already subtracted from every profit figure below.`;
+    }
     if (!allRows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
     render('all');
   } catch (e) {
