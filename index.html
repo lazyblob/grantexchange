@@ -1393,6 +1393,12 @@ button, input { touch-action: manipulation; }
   .ticker-header .fav-btn .fav-star { width: 15px; height: 15px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
   .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 3px; }
+  /* Share button lives inside the Analyst Rating gauge's header row here
+     (see placeShareButton) — icon-only, pushed to the far right past the
+     "?" glossary chip. */
+  .rg-top .fav-btn { margin-left: auto; padding: 3px 5px; gap: 0; flex: 0 0 auto; min-height: 0; }
+  .rg-top .fav-btn .fav-label { display: none; }
+  .rg-top .fav-btn svg { width: 13px; height: 13px; }
   .toolbar button { flex: 1; min-width: 0; padding: 5px 0; font-size: 13px; min-height: 30px; }
   .pct-chg { display: none !important; }
   .chart-container { min-height: 0; }
@@ -2206,6 +2212,33 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 [_insightPortraitMQ, _insightLandscapeMQ].forEach(mq => {
   if (mq.addEventListener) mq.addEventListener('change', placeItemInsight);
   else if (mq.addListener) mq.addListener(placeItemInsight);
+});
+
+/* Share button relocates into the Analyst Rating module's header row in
+   mobile landscape only — the ticker-header/toolbar row is already the
+   tightest squeeze in that layout (Save + Share + all 6 timeframe
+   buttons on one ~470px-wide row), and the gauge's header has room to
+   spare. Moves the actual #btnShare node (not a clone) so its existing
+   click handler and shareCard()'s $('#btnShare') lookup keep working
+   unchanged. renderRatingGauge calls this again after every re-render
+   since rebuilding its innerHTML would otherwise drop the moved node. */
+function placeShareButton() {
+  const shareBtn = document.getElementById('btnShare');
+  const tickerHeader = document.getElementById('tickerHeader');
+  const timeToolbar = document.getElementById('timeToolbar');
+  if (!shareBtn) return;
+  if (_insightLandscapeMQ.matches) {
+    const gaugeTop = document.querySelector('#ratingGauge .rg-top');
+    if (gaugeTop && shareBtn.parentElement !== gaugeTop) gaugeTop.appendChild(shareBtn);
+  } else if (tickerHeader && timeToolbar && shareBtn.parentElement !== tickerHeader) {
+    tickerHeader.insertBefore(shareBtn, timeToolbar);
+  }
+}
+placeShareButton();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeShareButton);
+[_insightPortraitMQ, _insightLandscapeMQ].forEach(mq => {
+  if (mq.addEventListener) mq.addEventListener('change', placeShareButton);
+  else if (mq.addListener) mq.addListener(placeShareButton);
 });
 let hoverIdx = null;
 let hoverY = null; // raw cursor Y (CSS px, canvas-relative) for the crosshair's horizontal line + price label
@@ -5252,6 +5285,9 @@ function renderRatingGauge(item, mountEl, opts = {}) {
     '</div>' +
     '<div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span>' +
       '<span class="rg-sub">' + sub + '</span><span class="rg-end rg-end-sell">Sell</span></div>';
+  // Rebuilding the mount wipes any child moved into .rg-top — re-place the
+  // Share button (landscape only; see placeShareButton) every render.
+  placeShareButton();
 }
 
 /* Quick-facts strip below the chart: live insta-buy/insta-sell with "…ago"
