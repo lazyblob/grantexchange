@@ -1385,7 +1385,7 @@ button, input { touch-action: manipulation; }
   /* Ticker header carries the Save button + timeframe toolbar (item name
      lives in the search box above). */
   .ticker-title-group { display: none !important; }
-  .ticker-header { flex: 1 1 36%; min-width: 0; padding: 2px; border: 1px solid var(--border-hair); background: var(--bg-panel); border-radius: 6px; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
+  .ticker-header { flex: 1 1 36%; min-width: 0; padding: 2px; border: none; background: transparent; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
   /* Icon-only Save button in landscape — the star + gold color already
      signal "favorite", and the "Save"/"Saved" label doesn't fit next to a
      6-button toolbar in a ~470 px header. Tap area stays big enough. */
@@ -2839,11 +2839,39 @@ function loadImageCORS(src) {
     img.src = src;
   });
 }
-function shareCardRatingInfo() {
+/* Reads the already-rendered Analyst Rating gauge straight off the DOM
+   (label text/color, sub text, needle position, which of the 5 segments is
+   live) instead of recomputing computeGrade() — same "can't disagree with
+   what's on screen" rule the rest of this card follows. */
+function shareCardGaugeInfo() {
+  const meter = document.querySelector('#ratingGauge .rg-meter');
   const label = document.querySelector('#ratingGauge .rg-label');
-  if (!label || !label.textContent.trim()) return { text: 'Not rated', color: '#8A8274' };
-  const style = getComputedStyle(label);
-  return { text: label.textContent.trim(), color: style.color || '#D9D3C7' };
+  const needle = document.querySelector('#ratingGauge .rg-needle');
+  if (!meter || !label || !needle || !label.textContent.trim()) return null;
+  const sub = document.querySelector('#ratingGauge .rg-sub');
+  const segs = Array.from(document.querySelectorAll('#ratingGauge .rg-seg'));
+  return {
+    text: label.textContent.trim(),
+    color: getComputedStyle(label).color || '#D9D3C7',
+    sub: sub ? sub.textContent.trim() : '',
+    needleLeft: parseFloat(needle.style.left) || 50,
+    liveIdx: segs.findIndex(s => s.classList.contains('is-live')),
+  };
+}
+/* Same rule for the 30-day range meter — reads #insMarker/#insLo/#insHi
+   (already computed by renderItemInsight) rather than recomputing
+   thirtyDayStats() itself. Returns null when the on-page meter is hidden
+   (e.g. an over-max item with no live 30-day series). */
+function shareCard30dInfo() {
+  const box = document.getElementById('itemInsight');
+  const marker = document.getElementById('insMarker');
+  const lo = document.getElementById('insLo');
+  const hi = document.getElementById('insHi');
+  const priceEl = document.getElementById('insPrice');
+  if (!box || box.style.display === 'none' || !marker || !lo || !hi) return null;
+  const pos = parseFloat(marker.style.left);
+  if (!isFinite(pos)) return null;
+  return { pos, lo: lo.textContent.trim(), hi: hi.textContent.trim(), price: priceEl ? priceEl.textContent.trim() : '' };
 }
 function roundRectPath(g, x, y, w, h, r) {
   g.beginPath();
@@ -2856,7 +2884,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 630;
+  const W = 1200, H = 760;
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
@@ -2935,8 +2963,118 @@ async function buildShareCardCanvas() {
     const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
     col(632, 'Profit / item', (margin >= 0 ? '+' : '') + fmtGp(margin) + ' gp', margin >= 0 ? '#1FB85C' : '#EF5350');
   }
-  const rating = shareCardRatingInfo();
-  col(924, 'Analyst Rating', rating.text, rating.color);
+
+  // 30-day range meter — same warm-champagne "position in range" track as
+  // the on-page insight meter, plus daily volume on the same label line.
+  const d30 = shareCard30dInfo();
+  const vol = dailyVolume(selected.id);
+  if (d30) {
+    const labelY = 468;
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText('30-DAY RANGE' + (vol > 0 ? '   ·   VOL ' + abbreviateNumber(vol) + '/day' : ''), 48, labelY);
+
+    const trackX = 48, trackY = labelY + 22, trackW = W - 96, trackH = 12;
+    const fillW = Math.max(0, Math.min(100, d30.pos)) / 100 * trackW;
+    const markerX = trackX + fillW;
+
+    if (d30.price) {
+      g.font = '700 13px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      const bw = g.measureText(d30.price + ' gp').width + 16;
+      const bx = Math.min(Math.max(markerX - bw / 2, trackX), trackX + trackW - bw);
+      const by = trackY - 32;
+      roundRectPath(g, bx, by, bw, 22, 5);
+      g.fillStyle = 'rgba(255,255,255,0.08)';
+      g.fill();
+      g.strokeStyle = 'rgba(255,255,255,0.15)';
+      g.lineWidth = 1;
+      g.stroke();
+      g.fillStyle = '#E5C158';
+      g.textAlign = 'center';
+      g.fillText(d30.price + ' gp', bx + bw / 2, by + 15);
+      g.textAlign = 'left';
+    }
+
+    const trackGrad = g.createLinearGradient(trackX, 0, trackX + trackW, 0);
+    trackGrad.addColorStop(0, '#211d17');
+    trackGrad.addColorStop(0.55, '#443d31');
+    trackGrad.addColorStop(1, '#6f6350');
+    roundRectPath(g, trackX, trackY, trackW, trackH, trackH / 2);
+    g.fillStyle = trackGrad;
+    g.fill();
+
+    g.save();
+    roundRectPath(g, trackX, trackY, trackW, trackH, trackH / 2);
+    g.clip();
+    g.fillStyle = 'rgba(201,166,77,0.24)';
+    g.fillRect(trackX, trackY, fillW, trackH);
+    g.restore();
+
+    g.fillStyle = '#E5C158';
+    roundRectPath(g, markerX - 3, trackY - 5, 6, trackH + 10, 3);
+    g.fill();
+
+    g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillStyle = '#D9D3C7';
+    g.textAlign = 'left';
+    g.fillText(d30.lo + ' gp', trackX, trackY + trackH + 26);
+    g.textAlign = 'right';
+    g.fillText(d30.hi + ' gp', trackX + trackW, trackY + trackH + 26);
+    g.font = '600 10px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillStyle = '#8A8274';
+    g.fillText('30D HIGH', trackX + trackW, trackY + trackH + 40);
+    g.textAlign = 'left';
+    g.fillText('30D LOW', trackX, trackY + trackH + 40);
+  }
+
+  // Analyst Rating — the actual 5-segment gauge bar + needle, not just the
+  // word, mirroring the on-page module exactly (colors pulled straight from
+  // its CSS: teal = sell side, gold = buy side, brighter = live segment).
+  const gaugeInfo = shareCardGaugeInfo();
+  if (gaugeInfo) {
+    const labelY = 588;
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText('ANALYST RATING', 48, labelY);
+    if (gaugeInfo.sub) {
+      g.font = '400 13px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.textAlign = 'right';
+      g.fillText(gaugeInfo.sub, W - 48, labelY);
+      g.textAlign = 'left';
+    }
+    g.fillStyle = gaugeInfo.color;
+    g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText(gaugeInfo.text, 48, labelY + 36);
+
+    const barX = 48, barY = labelY + 56, barW = W - 96, barH = 14, gap = 3;
+    const segW = (barW - gap * 4) / 5;
+    const SEG = ['rgba(38,166,154,0.34)', 'rgba(38,166,154,0.17)', 'rgba(120,123,134,0.16)', 'rgba(230,195,92,0.17)', 'rgba(230,195,92,0.34)'];
+    const SEG_LIVE = ['rgba(38,166,154,0.9)', 'rgba(38,166,154,0.65)', 'rgba(160,163,174,0.55)', 'rgba(230,195,92,0.65)', 'rgba(230,195,92,0.9)'];
+    for (let i = 0; i < 5; i++) {
+      const sx = barX + i * (segW + gap);
+      roundRectPath(g, sx, barY, segW, barH, 4);
+      g.fillStyle = (i === gaugeInfo.liveIdx) ? SEG_LIVE[i] : SEG[i];
+      g.fill();
+      if (i === gaugeInfo.liveIdx) {
+        g.lineWidth = 1;
+        g.strokeStyle = 'rgba(255,255,255,0.4)';
+        roundRectPath(g, sx, barY, segW, barH, 4);
+        g.stroke();
+      }
+    }
+    const needleX = barX + (gaugeInfo.needleLeft / 100) * barW;
+    g.fillStyle = gaugeInfo.color;
+    roundRectPath(g, needleX - 2, barY - 6, 4, barH + 12, 2);
+    g.fill();
+
+    g.font = '700 12px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillStyle = '#8A8274';
+    g.textAlign = 'left';
+    g.fillText('BUY', barX, barY + barH + 24);
+    g.textAlign = 'right';
+    g.fillText('SELL', barX + barW, barY + barH + 24);
+    g.textAlign = 'left';
+  }
 
   // Footer watermark.
   g.strokeStyle = '#2B2621';
