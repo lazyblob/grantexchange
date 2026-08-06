@@ -116,11 +116,14 @@ const NATURE_RUNE_ID = 561;
  *  nature rune's live cost minus the item's live buy price — the exact
  *  spell math, no invented numbers. Positive-only, sorted best first. Only
  *  items whose mapping entry carries a highalch value qualify (mostly
- *  equipment/weapons; raw materials and consumables mostly don't have one). */
+ *  equipment/weapons; raw materials and consumables mostly don't have one).
+ *  Returns { rows, natureCost } — natureCost is the same live figure baked
+ *  into every row's math, surfaced separately so a page can show it once
+ *  up top instead of repeating it on every line. */
 function computeHighAlchRows(data) {
   const natureNode = data.latest.data[String(NATURE_RUNE_ID)];
   const natureCost = natureNode && natureNode.low > 0 ? natureNode.low : null;
-  if (!natureCost) return [];
+  if (!natureCost) return { rows: [], natureCost: null };
   const out = [];
   for (const item of data.mapping) {
     if (!item.name || !(item.highalch > 0)) continue;
@@ -132,7 +135,7 @@ function computeHighAlchRows(data) {
     out.push({ item, profit, buy: node.low, highalch: item.highalch, vol: dailyVolume(id, data) });
   }
   out.sort((a, b) => b.profit - a.profit);
-  return out;
+  return { rows: out, natureCost };
 }
 
 /* Verified skilling recipes — deliberately a short, hand-curated list, not
@@ -161,5 +164,8 @@ function computeCannonballProfit(data) {
 }
 
 function itemIconUrl(id) {
-  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(String(id))}.png`;
+  // Same source as the main app (index.html) — the wiki doesn't serve icons
+  // by numeric id (its image filenames are per-item names), so this has to
+  // be RuneLite's own item-icon cache, not oldschool.runescape.wiki.
+  return `https://static.runelite.net/cache/item/icon/${id}.png`;
 }
