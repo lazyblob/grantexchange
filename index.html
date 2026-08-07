@@ -2906,15 +2906,38 @@ async function buildShareCardCanvas() {
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
 
+  // 5-day high/low — often THE reason someone is sharing this in the
+  // first place ("look, it's at a 5-day low right now"), so it needs to
+  // be unmissable rather than just another stat further down the card.
+  // Same color language as the on-page hl-badge: bright RS-green for a
+  // 5D high (sell zone), bright RS-gold for a 5D low (buy zone).
+  const shareNode = latest && latest.data ? latest.data[String(selected.id)] : null;
+  const shareP24 = past24h && past24h.data ? past24h.data[String(selected.id)] : null;
+  const hlState = dayState(shareNode, shareP24, selected.id);
+  const isHigh5d = hlState === 'high5d', isLow5d = hlState === 'low5d';
+  const hlColor = isHigh5d ? '#00FF7A' : isLow5d ? '#FFB300' : null;
+
   // Background — the site's own obsidian/gold palette, not a generic dark card.
   const bgGrad = g.createLinearGradient(0, 0, W, H);
   bgGrad.addColorStop(0, '#151210');
   bgGrad.addColorStop(1, '#0C0B09');
   g.fillStyle = bgGrad;
   g.fillRect(0, 0, W, H);
-  g.strokeStyle = '#3C352B';
-  g.lineWidth = 2;
-  g.strokeRect(1, 1, W - 2, H - 2);
+  if (hlColor) {
+    // Glowing colored frame instead of the plain neutral border — the
+    // whole card reads as "notable" before you even read a number.
+    g.save();
+    g.shadowColor = hlColor;
+    g.shadowBlur = 24;
+    g.strokeStyle = hlColor;
+    g.lineWidth = 4;
+    g.strokeRect(2, 2, W - 4, H - 4);
+    g.restore();
+  } else {
+    g.strokeStyle = '#3C352B';
+    g.lineWidth = 2;
+    g.strokeRect(1, 1, W - 2, H - 2);
+  }
 
   // Brand row.
   g.fillStyle = '#E5C158';
@@ -2927,6 +2950,24 @@ async function buildShareCardCanvas() {
   g.font = '400 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText('Live OSRS Grand Exchange tracker', 48, 88);
 
+  if (hlColor) {
+    const badgeText = isHigh5d ? '▲ 5-DAY HIGH' : '▼ 5-DAY LOW';
+    g.font = '800 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    const bw = g.measureText(badgeText).width + 32;
+    const bx = W - 48 - bw, by = 38;
+    roundRectPath(g, bx, by, bw, 40, 8);
+    g.save();
+    g.shadowColor = hlColor;
+    g.shadowBlur = 16;
+    g.fillStyle = hlColor;
+    g.fill();
+    g.restore();
+    g.fillStyle = isHigh5d ? '#001a0e' : '#1a1100';
+    g.textAlign = 'center';
+    g.fillText(badgeText, bx + bw / 2, by + 27);
+    g.textAlign = 'left';
+  }
+
   // Item icon + name.
   try {
     const icon = await loadImageCORS(itemIconUrl(selected.id));
@@ -2938,10 +2979,15 @@ async function buildShareCardCanvas() {
   g.font = '700 44px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(selected.name, 168, 172);
 
-  // Live price, big.
-  g.fillStyle = '#E5C158';
+  // Live price, big — tinted to match the 5D badge when there is one, so
+  // the headline number itself carries the signal, not just a corner tag.
+  g.fillStyle = hlColor || '#E5C158';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
+  if (hlColor) {
+    g.font = '700 18px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText(isHigh5d ? 'Potential sell zone' : 'Potential buy zone', 168, 266);
+  }
 
   // 1D / 5D change chips.
   const chg1d = viewChanges && viewChanges['1d'];
