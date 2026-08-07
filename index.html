@@ -5384,6 +5384,19 @@ function computeGrade(item, side) {
    ════════════════════════════════════════════════════════════════════════ */
 function renderRatingGauge(item, mountEl, opts = {}) {
   if (!mountEl) return;
+  // This function is called more than once per item load (restoreCalculator,
+  // then refreshItemInsights right after) and unconditionally replaces
+  // mountEl.innerHTML on every path below, early-return included. If
+  // #btnShare is currently living inside mountEl (placeShareButton moved
+  // the real node in on a PRIOR call within this same synchronous flow),
+  // that replacement destroys it outright before this call's own trailing
+  // placeShareButton() ever runs — the node is just gone, not hidden.
+  // Rescue it out first; placeShareButton() at the end of this function
+  // re-homes it into whatever gets built below, same as any other render.
+  const rescueShareBtn = $('#btnShare');
+  if (rescueShareBtn && mountEl.contains(rescueShareBtn)) {
+    $('#tickerHeader')?.appendChild(rescueShareBtn);
+  }
   const isSel = item && selected && String(item.id) === String(selected.id);
   let gBuy = opts.gBuy, gSell = opts.gSell;
   if (gBuy === undefined || gSell === undefined) {
@@ -7033,6 +7046,17 @@ function renderOverMax(m) {
   $("#tickerLivePrice").textContent = abbreviateNumber(o.wts);
   $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
   recommendedBuy = o.wtb; recommendedSell = o.wts;
+  // This rebuild replaces #sideModule with the Over-Max module entirely —
+  // no #ratingGauge div at all afterward, so if #btnShare is currently
+  // living inside the OLD one, rescue it back to the ticker header before
+  // the wipe (same reasoning as renderRatingGauge/restoreCalculator) or
+  // it's destroyed with nowhere for placeShareButton() to ever find it
+  // again — over-max items have no gauge to nest it in, so parked next to
+  // Save is the correct permanent home here, not a transient stop.
+  const rescueShareBtnOverMax = $('#btnShare');
+  if (rescueShareBtnOverMax && $('#sideModule')?.contains(rescueShareBtnOverMax)) {
+    $('#tickerHeader')?.appendChild(rescueShareBtnOverMax);
+  }
   $("#sideModule").innerHTML = `
     <div class="calc-headline-label" style="color: var(--fav-gold);">${uiIcon('crown')} Over-Max Consensus Engine</div>
     <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0; line-height: 1.4;">
