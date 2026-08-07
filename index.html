@@ -2901,7 +2901,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 1000;
+  const W = 1200, H = 1120;
   // Backing store rendered at the device's actual pixel density, then
   // scaled back down to logical W/H — without this every draw call below
   // still WORKS (same W/H coordinates throughout), it just comes out soft
@@ -2987,9 +2987,12 @@ async function buildShareCardCanvas() {
   g.font = '700 44px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(selected.name, 168, 172);
 
-  // Live price, big — tinted to match the 5D badge when there is one, so
-  // the headline number itself carries the signal, not just a corner tag.
-  g.fillStyle = hlColor || '#E5C158';
+  // Live price, big — liveSellRaw is specifically the insta-sell price, so
+  // it stays the standard sell color (the same teal Target Sell always
+  // uses) regardless of the 5D badge; the badge/border/subtitle already
+  // carry that signal separately, the price number's color has its own
+  // fixed meaning and shouldn't be hijacked by it.
+  g.fillStyle = '#26A69A';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
   if (hlColor) {
@@ -3159,11 +3162,15 @@ async function buildShareCardCanvas() {
   // always a consistent 1Y snapshot rather than whatever the viewer
   // happened to have open.
   if (currentItemSrc) {
-    // One chart-drawing routine, called twice side by side (1-month, then
+    // One chart-drawing routine, called twice side by side (30-day, then
     // 1-year) at half width each, rather than duplicating the whole block —
     // same reasoning as everywhere else on this card: independent of
     // whatever timeframe the real chart currently has open, so the card is
-    // always the same consistent pair of snapshots.
+    // always the same consistent pair of snapshots. Line/fill color follows
+    // that PERIOD's own net direction (green = up, red = down, same
+    // +/-green/red the 1D/5D chips above already use) instead of a flat
+    // neutral white — the whole point is reading the shape at a glance
+    // without stopping to check numbers first.
     const drawMiniTrend = (periodKey, label, shortLabel, x, w, chartY, chartH) => {
       const series = filterSeries(seriesForView(periodKey, currentItemSrc, currentItemLowVol), getPeriod(periodKey));
       const pts = [];
@@ -3175,9 +3182,18 @@ async function buildShareCardCanvas() {
       }
       if (pts.length < 2) return;
 
+      const netPct = ((pts[pts.length - 1].v - pts[0].v) / pts[0].v) * 100;
+      const trendColor = netPct > 0.5 ? '#1FB85C' : netPct < -0.5 ? '#EF5350' : '#8A8274';
+      const trendRgb = netPct > 0.5 ? '38,184,92' : netPct < -0.5 ? '239,83,80' : '138,130,116';
+
       g.fillStyle = '#8A8274';
       g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.fillText(label, x, chartY - 20);
+      g.font = '700 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillStyle = trendColor;
+      g.textAlign = 'right';
+      g.fillText((netPct >= 0 ? '+' : '') + netPct.toFixed(1) + '%', x + w, chartY - 20);
+      g.textAlign = 'left';
 
       const minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
       const minT = pts[0].t, maxT = pts[pts.length - 1].t;
@@ -3190,8 +3206,8 @@ async function buildShareCardCanvas() {
       g.lineTo(xOf(pts[pts.length - 1].t), chartY + chartH);
       g.closePath();
       const areaGrad = g.createLinearGradient(0, chartY, 0, chartY + chartH);
-      areaGrad.addColorStop(0, 'rgba(38,166,154,0.28)');
-      areaGrad.addColorStop(1, 'rgba(38,166,154,0.02)');
+      areaGrad.addColorStop(0, `rgba(${trendRgb},0.28)`);
+      areaGrad.addColorStop(1, `rgba(${trendRgb},0.02)`);
       g.fillStyle = areaGrad;
       g.fill();
 
@@ -3200,8 +3216,8 @@ async function buildShareCardCanvas() {
         const px = xOf(p.t), py = yOf(p.v);
         if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
       });
-      g.strokeStyle = '#FFFFFF';
-      g.lineWidth = 2;
+      g.strokeStyle = trendColor;
+      g.lineWidth = 2.5;
       g.lineJoin = 'round';
       g.stroke();
 
@@ -3218,9 +3234,9 @@ async function buildShareCardCanvas() {
       g.fillText(shortLabel + ' LOW', x, chartY + chartH + 40);
     };
 
-    const chartY = 732, chartH = 140, gap = 32;
+    const chartY = 732, chartH = 220, gap = 32;
     const colW = (W - 96 - gap) / 2;
-    drawMiniTrend('1m', '1-MONTH PRICE TREND', '1M', 48, colW, chartY, chartH);
+    drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, colW, chartY, chartH);
     drawMiniTrend('1y', '1-YEAR PRICE TREND', '1Y', 48 + colW + gap, colW, chartY, chartH);
   }
 
