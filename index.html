@@ -2901,7 +2901,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 760;
+  const W = 1200, H = 1000;
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
@@ -2976,9 +2976,15 @@ async function buildShareCardCanvas() {
   };
   col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5C158');
   col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A69A');
-  if (recommendedBuy > 0 && recommendedSell > 0) {
-    const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
-    col(632, 'Profit / item', (margin >= 0 ? '+' : '') + fmtGp(margin) + ' gp', margin >= 0 ? '#1FB85C' : '#EF5350');
+  // Potential Profit at a full 4h buy-limit cycle — same figure the
+  // sidebar's own "Potential Profit" headline shows (limit x margin after
+  // tax), not the calculator's current inputs, which might be a manual
+  // "what if" edit that shouldn't leak into a shared public image.
+  if (recommendedBuy > 0 && recommendedSell > 0 && selected.limit > 0) {
+    const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
+    const potentialProfit = marginPerItem * selected.limit;
+    col(632, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
+      potentialProfit >= 0 ? '#1FB85C' : '#EF5350');
   }
 
   // 30-day range meter — same warm-champagne "position in range" track as
@@ -3091,6 +3097,67 @@ async function buildShareCardCanvas() {
     g.textAlign = 'right';
     g.fillText('SELL', barX + barW, barY + barH + 24);
     g.textAlign = 'left';
+  }
+
+  // 1-year price trend — a compact version of the on-page chart's own white
+  // Trend line, built from the same 1Y series data regardless of whatever
+  // timeframe the real chart is currently showing, so the share card is
+  // always a consistent 1Y snapshot rather than whatever the viewer
+  // happened to have open.
+  if (currentItemSrc) {
+    const yearSeries = filterSeries(seriesForView('1y', currentItemSrc, currentItemLowVol), getPeriod('1y'));
+    const pts = [];
+    for (let i = 0; i < yearSeries.labels.length; i++) {
+      const lo = yearSeries.low[i], hi = yearSeries.high[i];
+      if (lo == null && hi == null) continue;
+      const mid = (lo != null && hi != null) ? (lo + hi) / 2 : (lo != null ? lo : hi);
+      if (mid > 0) pts.push({ t: yearSeries.labels[i], v: mid });
+    }
+    if (pts.length >= 2) {
+      const labelY = 712;
+      g.fillStyle = '#8A8274';
+      g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillText('1-YEAR PRICE TREND', 48, labelY);
+
+      const chartX = 48, chartY = labelY + 20, chartW = W - 96, chartH = 140;
+      const minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
+      const minT = pts[0].t, maxT = pts[pts.length - 1].t;
+      const xOf = t => chartX + (maxT > minT ? (t - minT) / (maxT - minT) : 0) * chartW;
+      const yOf = v => chartY + chartH - (maxV > minV ? (v - minV) / (maxV - minV) : 0.5) * chartH;
+
+      g.beginPath();
+      g.moveTo(xOf(pts[0].t), chartY + chartH);
+      pts.forEach(p => g.lineTo(xOf(p.t), yOf(p.v)));
+      g.lineTo(xOf(pts[pts.length - 1].t), chartY + chartH);
+      g.closePath();
+      const areaGrad = g.createLinearGradient(0, chartY, 0, chartY + chartH);
+      areaGrad.addColorStop(0, 'rgba(38,166,154,0.28)');
+      areaGrad.addColorStop(1, 'rgba(38,166,154,0.02)');
+      g.fillStyle = areaGrad;
+      g.fill();
+
+      g.beginPath();
+      pts.forEach((p, i) => {
+        const x = xOf(p.t), y = yOf(p.v);
+        if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      });
+      g.strokeStyle = '#FFFFFF';
+      g.lineWidth = 2;
+      g.lineJoin = 'round';
+      g.stroke();
+
+      g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillStyle = '#D9D3C7';
+      g.textAlign = 'left';
+      g.fillText(fmtGp(minV) + ' gp', chartX, chartY + chartH + 26);
+      g.textAlign = 'right';
+      g.fillText(fmtGp(maxV) + ' gp', chartX + chartW, chartY + chartH + 26);
+      g.font = '600 10px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillStyle = '#8A8274';
+      g.fillText('1Y HIGH', chartX + chartW, chartY + chartH + 40);
+      g.textAlign = 'left';
+      g.fillText('1Y LOW', chartX, chartY + chartH + 40);
+    }
   }
 
   // Footer watermark.
