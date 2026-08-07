@@ -2319,25 +2319,38 @@ function deleteFavoriteListLocal(listId) {
   renderWatchlist();
 }
 
-/* Drag-to-reorder favorites (TradingView-style) — grab the handle, drag up
-   or down, a thin line shows where it'll land, drop to commit. Custom
-   pointer tracking rather than native HTML5 drag-and-drop: native DnD's
-   ghost-image/drop-effect styling is finicky to theme and this only needs
-   to work with the mouse (drag handles are hidden on touch breakpoints,
-   same as the price steppers). Only wired when favSort === 'manual' — a
-   computed sort order has no meaningful "position" to drag into. */
+/* Drag-to-reorder favorites (TradingView-style) — grab anywhere on the row,
+   drag up or down, a thin line shows where it'll land, drop to commit.
+   Custom pointer tracking rather than native HTML5 drag-and-drop: native
+   DnD's ghost-image/drop-effect styling is finicky to theme. Only wired
+   when favSort === 'manual' — a computed sort order has no meaningful
+   "position" to drag into.
+   The whole row is the drag surface (not just the handle icon) — a mouse
+   grab that misses a small handle by a couple pixels used to fall through
+   to native text selection instead of doing anything. A 6px movement
+   threshold is what tells a plain click (open the item) apart from an
+   actual drag (reorder) now that the whole row triggers both; suppressClick
+   on the dragged row skips the click-to-navigate that would otherwise still
+   fire on mouseup right after a drag. preventDefault on mousedown itself
+   (not just once dragging starts) is what actually stops text selection —
+   waiting until the threshold is crossed is too late, the selection anchor
+   is already set by then. */
 let favDragId = null;
 function wireFavoritesDrag(container) {
-  container.querySelectorAll('.wl-drag-handle').forEach(handle => {
-    handle.addEventListener('mousedown', (ev) => {
-      if (ev.button !== 0) return;
-      ev.preventDefault(); ev.stopPropagation();
-      const row = handle.closest('.wl-item');
-      if (!row) return;
-      favDragId = handle.getAttribute('data-fav-id');
-      row.classList.add('dragging');
+  container.querySelectorAll('.wl-item[data-fav-row="1"]').forEach(row => {
+    row.addEventListener('mousedown', (ev) => {
+      if (ev.button !== 0 || ev.target.closest('.wl-fav-remove')) return;
+      ev.preventDefault();
+      const startX = ev.clientX, startY = ev.clientY;
+      let dragging = false;
       const clearIndicators = () => container.querySelectorAll('.drop-above, .drop-below').forEach(r => r.classList.remove('drop-above', 'drop-below'));
       const onMove = (mev) => {
+        if (!dragging) {
+          if (Math.abs(mev.clientX - startX) < 6 && Math.abs(mev.clientY - startY) < 6) return;
+          dragging = true;
+          favDragId = row.getAttribute('data-fav-id');
+          row.classList.add('dragging');
+        }
         const overRow = document.elementFromPoint(mev.clientX, mev.clientY)?.closest('.wl-item[data-fav-row="1"]');
         clearIndicators();
         if (!overRow || overRow.getAttribute('data-fav-id') === favDragId) return;
@@ -2348,9 +2361,13 @@ function wireFavoritesDrag(container) {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
         row.classList.remove('dragging');
-        const target = container.querySelector('.drop-above, .drop-below');
-        if (target && favDragId) {
-          moveFavoriteBeforeAfter(favDragId, target.getAttribute('data-fav-id'), target.classList.contains('drop-above'));
+        if (dragging) {
+          const target = container.querySelector('.drop-above, .drop-below');
+          if (target && favDragId) {
+            moveFavoriteBeforeAfter(favDragId, target.getAttribute('data-fav-id'), target.classList.contains('drop-above'));
+          }
+          row.dataset.suppressClick = '1';
+          setTimeout(() => { delete row.dataset.suppressClick; }, 0);
         }
         clearIndicators();
         favDragId = null;
@@ -2734,6 +2751,19 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
     ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
     : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
   const qtyLabel = hasLimit ? 'Qty (4H)' : 'Qty (any)';
+  // placeShareButton() may have moved the real #btnShare node into the
+  // OLD #ratingGauge/.rg-top (a descendant of #sideModule) — replacing
+  // #sideModule's innerHTML below would destroy that node outright, not
+  // just visually: it's a moved node, not a clone, so once its ancestor
+  // subtree is wiped it's gone from the document forever, and every
+  // future placeShareButton() call finds nothing to move. Rescue it back
+  // into the ticker header (its original home) first; renderRatingGauge
+  // further down re-homes it into the freshly-rebuilt .rg-top via its own
+  // placeShareButton() call, same as any other render.
+  const rescueShareBtn = $('#btnShare');
+  if (rescueShareBtn && $('#sideModule')?.contains(rescueShareBtn)) {
+    $('#tickerHeader')?.appendChild(rescueShareBtn);
+  }
   $("#sideModule").innerHTML = `
     <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
       <div class="calc-headline-left">
@@ -4272,8 +4302,11 @@ function renderWatchlist() {
   container.querySelectorAll('.wl-item[data-id]').forEach(el => {
     el.onclick = (ev) => {
       /* Don't navigate when the user clicks the per-row × / drag handle,
-         or after a swipe has revealed the remove backdrop. */
+         just finished dragging the row to reorder it (suppressClick, set by
+         wireFavoritesDrag), or after a swipe has revealed the remove
+         backdrop. */
       if (ev.target.closest('.wl-fav-remove, .wl-drag-handle')) return;
+      if (el.dataset.suppressClick) return;
       if (el.classList.contains('swipe-revealed')) {
         el.classList.remove('swipe-revealed');
         return;
