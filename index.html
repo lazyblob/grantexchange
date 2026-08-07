@@ -2890,6 +2890,26 @@ function shareCard30dInfo() {
   if (!isFinite(pos)) return null;
   return { pos, lo: lo.textContent.trim(), hi: hi.textContent.trim(), price: priceEl ? priceEl.textContent.trim() : '' };
 }
+/** Greedy word-wrap for canvas fillText, which has no native wrapping.
+ *  Returns the y just below the last line drawn, so callers can lay out
+ *  whatever comes next without hardcoding a line count. */
+function wrapCanvasText(g, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for (const word of words) {
+    const testLine = line + word + ' ';
+    if (g.measureText(testLine).width > maxWidth && line !== '') {
+      g.fillText(line.trim(), x, curY);
+      line = word + ' ';
+      curY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  g.fillText(line.trim(), x, curY);
+  return curY + lineHeight;
+}
 function roundRectPath(g, x, y, w, h, r) {
   g.beginPath();
   if (typeof g.roundRect === 'function') {
@@ -2901,7 +2921,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 1120;
+  const W = 1200, H = 1260;
   // Backing store rendered at the device's actual pixel density, then
   // scaled back down to logical W/H — without this every draw call below
   // still WORKS (same W/H coordinates throughout), it just comes out soft
@@ -2947,16 +2967,24 @@ async function buildShareCardCanvas() {
     g.strokeRect(1, 1, W - 2, H - 2);
   }
 
-  // Brand row.
+  // Brand row — the same Gilded scimitar mark used everywhere else on the
+  // site (favicon, header logo), not just the wordmark on its own.
+  let brandTextX = 48;
+  try {
+    const logo = await loadImageCORS('https://oldschool.runescape.wiki/images/Gilded_scimitar.png');
+    g.imageSmoothingEnabled = false;
+    g.drawImage(logo, 48, 40, 34, 34);
+    brandTextX = 48 + 34 + 10;
+  } catch (e) { /* logo load failed (CORS/network) — card still works without it */ }
   g.fillStyle = '#E5C158';
   g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-  g.fillText('Pocket', 48, 64);
+  g.fillText('Pocket', brandTextX, 64);
   const pocketW = g.measureText('Pocket').width;
   g.fillStyle = '#D9D3C7';
-  g.fillText('GE', 48 + pocketW, 64);
+  g.fillText('GE', brandTextX + pocketW, 64);
   g.fillStyle = '#8A8274';
   g.font = '400 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-  g.fillText('Live OSRS Grand Exchange tracker', 48, 88);
+  g.fillText('Live OSRS Grand Exchange tracker', brandTextX, 88);
 
   if (hlColor) {
     const badgeText = isHigh5d ? '▲ 5-DAY HIGH' : '▼ 5-DAY LOW';
@@ -2986,6 +3014,28 @@ async function buildShareCardCanvas() {
   g.fillStyle = '#FFFFFF';
   g.font = '700 44px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(selected.name, 168, 172);
+
+  // F2P/P2P eligibility badge — a reader unfamiliar with the item shouldn't
+  // have to already know whether it needs membership. Same green=F2P,
+  // gold=P2P language as the site's own mode pill.
+  {
+    const nameW = g.measureText(selected.name).width;
+    const badgeText = selected.members ? 'P2P' : 'F2P';
+    const badgeColor = selected.members ? '#FFB300' : '#1FB85C';
+    g.font = '800 14px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    const bw = g.measureText(badgeText).width + 16;
+    const bx = 168 + nameW + 12, by = 150;
+    roundRectPath(g, bx, by, bw, 24, 5);
+    g.fillStyle = badgeColor + '26'; // ~15% alpha fill
+    g.fill();
+    g.strokeStyle = badgeColor;
+    g.lineWidth = 1;
+    g.stroke();
+    g.fillStyle = badgeColor;
+    g.textAlign = 'center';
+    g.fillText(badgeText, bx + bw / 2, by + 17);
+    g.textAlign = 'left';
+  }
 
   // Live price, big — liveSellRaw is specifically the insta-sell price, so
   // it stays the standard sell color (the same teal Target Sell always
@@ -3020,6 +3070,20 @@ async function buildShareCardCanvas() {
   let cx = 168;
   cx = drawChangeChip(cx, '1D', chg1d);
   cx = drawChangeChip(cx, '5D', chg5d);
+  // Volume gets its own chip, not buried as a small aside — "is this a
+  // real move or thin-volume noise" is usually the first skeptical
+  // question on a shared economy post.
+  const shareVol = dailyVolume(selected.id);
+  if (shareVol > 0) {
+    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    const volText = 'VOL ' + abbreviateNumber(shareVol) + '/day';
+    const vw = g.measureText(volText).width + 28;
+    roundRectPath(g, cx, chipY, vw, 40, 8);
+    g.fillStyle = 'rgba(255,255,255,0.06)';
+    g.fill();
+    g.fillStyle = '#D9D3C7';
+    g.fillText(volText, cx + 14, chipY + 27);
+  }
 
   // Target Buy / Target Sell + Analyst Rating row.
   const rowY = 380;
@@ -3045,14 +3109,14 @@ async function buildShareCardCanvas() {
   }
 
   // 30-day range meter — same warm-champagne "position in range" track as
-  // the on-page insight meter, plus daily volume on the same label line.
+  // the on-page insight meter. Volume has its own chip above now instead
+  // of living here.
   const d30 = shareCard30dInfo();
-  const vol = dailyVolume(selected.id);
   if (d30) {
     const labelY = 468;
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText('30-DAY RANGE' + (vol > 0 ? '   ·   VOL ' + abbreviateNumber(vol) + '/day' : ''), 48, labelY);
+    g.fillText('30-DAY RANGE', 48, labelY);
 
     const trackX = 48, trackY = labelY + 22, trackW = W - 96, trackH = 12;
     const fillW = Math.max(0, Math.min(100, d30.pos)) / 100 * trackW;
@@ -3240,13 +3304,38 @@ async function buildShareCardCanvas() {
     drawMiniTrend('1y', '1-YEAR PRICE TREND', '1Y', 48 + colW + gap, colW, chartY, chartH);
   }
 
-  // Footer watermark.
+  // Auto-generated market summary — the exact sentence #insText already
+  // shows on the page, reused rather than recomputed so it can never
+  // disagree with what's shown live. Gives a shared card actual "why this
+  // matters" narrative instead of just a grid of numbers.
+  const insText = document.getElementById('insText')?.textContent;
+  if (insText) {
+    const summaryY = 1032;
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText('MARKET SUMMARY', 48, summaryY);
+    g.fillStyle = '#D9D3C7';
+    g.font = '400 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    wrapCanvasText(g, insText, 48, summaryY + 28, W - 96, 24);
+  }
+
+  // Footer watermark + live timestamp — a screenshot can circulate for
+  // days, and "live" alone reads as unverifiable once it's no longer
+  // fresh; stamping the actual fetch time gives it a real reference point.
   g.strokeStyle = '#2B2621';
   g.lineWidth = 1;
   g.beginPath(); g.moveTo(48, H - 72); g.lineTo(W - 48, H - 72); g.stroke();
   g.fillStyle = '#8A8274';
   g.font = '400 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText('pocketge.com', 48, H - 38);
+  if (lastLiveFetchAt) {
+    const stamp = new Date(lastLiveFetchAt * 1000).toLocaleString(undefined, {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+    g.textAlign = 'right';
+    g.fillText('Live as of ' + stamp, W - 48, H - 38);
+    g.textAlign = 'left';
+  }
 
   return cv;
 }
