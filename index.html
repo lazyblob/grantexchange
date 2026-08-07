@@ -2902,9 +2902,17 @@ function roundRectPath(g, x, y, w, h, r) {
 }
 async function buildShareCardCanvas() {
   const W = 1200, H = 1000;
+  // Backing store rendered at the device's actual pixel density, then
+  // scaled back down to logical W/H — without this every draw call below
+  // still WORKS (same W/H coordinates throughout), it just comes out soft
+  // on any high-DPI/Retina-class display, since a flat 1200x1000 canvas
+  // gets upscaled to fill the same on-screen/exported size a 2x or 3x
+  // display expects far more actual pixels for.
+  const dpr = window.devicePixelRatio || 1;
   const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
+  cv.width = W * dpr; cv.height = H * dpr;
   const g = cv.getContext('2d');
+  g.scale(dpr, dpr);
 
   // 5-day high/low — often THE reason someone is sharing this in the
   // first place ("look, it's at a 5-day low right now"), so it needs to
