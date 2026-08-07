@@ -2751,6 +2751,19 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
     ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
     : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
   const qtyLabel = hasLimit ? 'Qty (4H)' : 'Qty (any)';
+  // placeShareButton() may have moved the real #btnShare node into the
+  // OLD #ratingGauge/.rg-top (a descendant of #sideModule) — replacing
+  // #sideModule's innerHTML below would destroy that node outright, not
+  // just visually: it's a moved node, not a clone, so once its ancestor
+  // subtree is wiped it's gone from the document forever, and every
+  // future placeShareButton() call finds nothing to move. Rescue it back
+  // into the ticker header (its original home) first; renderRatingGauge
+  // further down re-homes it into the freshly-rebuilt .rg-top via its own
+  // placeShareButton() call, same as any other render.
+  const rescueShareBtn = $('#btnShare');
+  if (rescueShareBtn && $('#sideModule')?.contains(rescueShareBtn)) {
+    $('#tickerHeader')?.appendChild(rescueShareBtn);
+  }
   $("#sideModule").innerHTML = `
     <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
       <div class="calc-headline-left">
