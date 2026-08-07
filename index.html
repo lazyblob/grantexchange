@@ -3159,24 +3159,29 @@ async function buildShareCardCanvas() {
   // always a consistent 1Y snapshot rather than whatever the viewer
   // happened to have open.
   if (currentItemSrc) {
-    const yearSeries = filterSeries(seriesForView('1y', currentItemSrc, currentItemLowVol), getPeriod('1y'));
-    const pts = [];
-    for (let i = 0; i < yearSeries.labels.length; i++) {
-      const lo = yearSeries.low[i], hi = yearSeries.high[i];
-      if (lo == null && hi == null) continue;
-      const mid = (lo != null && hi != null) ? (lo + hi) / 2 : (lo != null ? lo : hi);
-      if (mid > 0) pts.push({ t: yearSeries.labels[i], v: mid });
-    }
-    if (pts.length >= 2) {
-      const labelY = 712;
+    // One chart-drawing routine, called twice side by side (1-month, then
+    // 1-year) at half width each, rather than duplicating the whole block —
+    // same reasoning as everywhere else on this card: independent of
+    // whatever timeframe the real chart currently has open, so the card is
+    // always the same consistent pair of snapshots.
+    const drawMiniTrend = (periodKey, label, shortLabel, x, w, chartY, chartH) => {
+      const series = filterSeries(seriesForView(periodKey, currentItemSrc, currentItemLowVol), getPeriod(periodKey));
+      const pts = [];
+      for (let i = 0; i < series.labels.length; i++) {
+        const lo = series.low[i], hi = series.high[i];
+        if (lo == null && hi == null) continue;
+        const mid = (lo != null && hi != null) ? (lo + hi) / 2 : (lo != null ? lo : hi);
+        if (mid > 0) pts.push({ t: series.labels[i], v: mid });
+      }
+      if (pts.length < 2) return;
+
       g.fillStyle = '#8A8274';
       g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillText('1-YEAR PRICE TREND', 48, labelY);
+      g.fillText(label, x, chartY - 20);
 
-      const chartX = 48, chartY = labelY + 20, chartW = W - 96, chartH = 140;
       const minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
       const minT = pts[0].t, maxT = pts[pts.length - 1].t;
-      const xOf = t => chartX + (maxT > minT ? (t - minT) / (maxT - minT) : 0) * chartW;
+      const xOf = t => x + (maxT > minT ? (t - minT) / (maxT - minT) : 0) * w;
       const yOf = v => chartY + chartH - (maxV > minV ? (v - minV) / (maxV - minV) : 0.5) * chartH;
 
       g.beginPath();
@@ -3192,26 +3197,31 @@ async function buildShareCardCanvas() {
 
       g.beginPath();
       pts.forEach((p, i) => {
-        const x = xOf(p.t), y = yOf(p.v);
-        if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+        const px = xOf(p.t), py = yOf(p.v);
+        if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
       });
       g.strokeStyle = '#FFFFFF';
       g.lineWidth = 2;
       g.lineJoin = 'round';
       g.stroke();
 
-      g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.font = '700 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.fillStyle = '#D9D3C7';
       g.textAlign = 'left';
-      g.fillText(fmtGp(minV) + ' gp', chartX, chartY + chartH + 26);
+      g.fillText(fmtGp(minV) + ' gp', x, chartY + chartH + 26);
       g.textAlign = 'right';
-      g.fillText(fmtGp(maxV) + ' gp', chartX + chartW, chartY + chartH + 26);
+      g.fillText(fmtGp(maxV) + ' gp', x + w, chartY + chartH + 26);
       g.font = '600 10px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.fillStyle = '#8A8274';
-      g.fillText('1Y HIGH', chartX + chartW, chartY + chartH + 40);
+      g.fillText(shortLabel + ' HIGH', x + w, chartY + chartH + 40);
       g.textAlign = 'left';
-      g.fillText('1Y LOW', chartX, chartY + chartH + 40);
-    }
+      g.fillText(shortLabel + ' LOW', x, chartY + chartH + 40);
+    };
+
+    const chartY = 732, chartH = 140, gap = 32;
+    const colW = (W - 96 - gap) / 2;
+    drawMiniTrend('1m', '1-MONTH PRICE TREND', '1M', 48, colW, chartY, chartH);
+    drawMiniTrend('1y', '1-YEAR PRICE TREND', '1Y', 48 + colW + gap, colW, chartY, chartH);
   }
 
   // Footer watermark.
