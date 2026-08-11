@@ -2319,8 +2319,14 @@ function placeItemInsight() {
     // the about-section (below the app) rather than squeezing the chart.
     if (about.previousElementSibling !== insight) about.before(insight);
   } else {
-    // desktop: back under the chart in the main column (full-width band)
-    if (quickFacts.nextElementSibling !== insight) quickFacts.after(insight);
+    /* desktop: back under the chart in the main column (full-width band).
+       Anchor on the ROW, not on #quickFacts itself — the strip now sits
+       inside a flex wrapper alongside the Refresh button, so inserting
+       "after quickFacts" would drop this whole band INTO that row as a
+       third flex child, squashing the strip (VOL/LIMIT scrolled out of
+       view) and stranding Refresh mid-line. */
+    const qfAnchor = document.getElementById('quickFactsRow') || quickFacts;
+    if (qfAnchor.nextElementSibling !== insight) qfAnchor.after(insight);
   }
 }
 placeItemInsight();
