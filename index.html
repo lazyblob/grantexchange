@@ -1699,11 +1699,14 @@ button, input { touch-action: manipulation; }
    holding a row of their own — collapsing that row is most of the height
    saving, so leaving it in place would defeat the point. */
 .rg-wrap { position:relative; }
-.rg-toggle { background:transparent; border:none; padding:2px; margin-left:2px; color:var(--text-muted);
-  cursor:pointer; display:inline-flex; align-items:center; border-radius:4px; flex:0 0 auto; }
-.rg-toggle:hover { color:#fff; }
-.rg-toggle .ui-ic { width:12px; height:12px; display:block; transition:transform .18s ease; }
-.rg-wrap.is-collapsed .rg-toggle .ui-ic { transform:rotate(-90deg); }
+/* Wears .calc-caret so this expander is literally the same component as the
+   Potential Profit one — size, chip, chevron and the .closed rotation all
+   come from there, so the two can't drift apart. Only the <button> resets
+   and the placement are specific to this one.
+   order:3 puts it AFTER Share (which carries margin-left:auto), so every
+   expander on the page ends up hard against the right edge. */
+.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:6px; }
+.rg-toggle:hover { background:rgba(201,166,77,0.22); }
 .rg-wrap.is-collapsed .rg-scale { display:none; }
 .rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
 .rg-wrap.is-collapsed .rg-top { position:absolute; top:6px; right:0; margin:0; gap:4px; z-index:2; }
@@ -5954,6 +5957,7 @@ document.addEventListener('click', (ev) => {
   try { localStorage.setItem('ge_ratingCollapsed', next ? '1' : '0'); } catch (e) {}
   document.querySelectorAll('.rg-wrap').forEach(el => el.classList.toggle('is-collapsed', next));
   document.querySelectorAll('.rg-toggle').forEach(b => {
+    b.classList.toggle('closed', next);
     b.setAttribute('aria-expanded', next ? 'false' : 'true');
     b.setAttribute('aria-label', (next ? 'Expand' : 'Collapse') + ' Analyst Rating details');
   });
@@ -6026,7 +6030,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
   mountEl.innerHTML =
     '<div class="rg-top"><span class="rg-eyebrow">Analyst Rating</span>' +
       '<span class="pg-help" title="' + tip + '" role="button" aria-label="What does the Analyst Rating mean?">?</span>' +
-      '<button type="button" class="rg-toggle" aria-expanded="' + (collapsed ? 'false' : 'true') + '" ' +
+      '<button type="button" class="rg-toggle calc-caret' + (collapsed ? ' closed' : '') + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" ' +
         'aria-label="' + (collapsed ? 'Expand' : 'Collapse') + ' Analyst Rating details">' + uiIcon('chev') + '</button></div>' +
     '<div class="rg-label' + (strong ? ' is-strong' : '') + '" style="color:' + hue + '">' + label + '</div>' +
     '<div class="rg-meter' + (muted ? ' is-muted' : '') + '" role="meter" aria-valuemin="-100" aria-valuemax="100" ' +
