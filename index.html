@@ -3192,8 +3192,17 @@ async function buildShareCardCanvas() {
 
     const barX = 48, barY = labelY + 56, barW = W - 96, barH = 14, gap = 3;
     const segW = (barW - gap * 4) / 5;
-    const SEG = ['rgba(38,166,154,0.34)', 'rgba(38,166,154,0.17)', 'rgba(120,123,134,0.16)', 'rgba(230,195,92,0.17)', 'rgba(230,195,92,0.34)'];
-    const SEG_LIVE = ['rgba(38,166,154,0.9)', 'rgba(38,166,154,0.65)', 'rgba(160,163,174,0.55)', 'rgba(230,195,92,0.65)', 'rgba(230,195,92,0.9)'];
+    /* Left-to-right = STRONG BUY -> BUY -> NEUTRAL -> SELL -> STRONG SELL,
+       i.e. gold on the BUY end, teal on the SELL end, matching both the
+       BUY/SELL labels drawn underneath and the on-page gauge. Easy to get
+       backwards: the page's own .rg-seg colors are declared in the opposite
+       (strong-sell-first) order and only end up gold-on-the-left because
+       renderRatingGauge emits them reversed, as [4,3,2,1,0]. This loop
+       draws index 0 leftmost, so it needs the already-reversed order —
+       gaugeInfo.liveIdx is likewise a DOM position, not a rating enum, so
+       it lines up with this array as written. */
+    const SEG = ['rgba(230,195,92,0.34)', 'rgba(230,195,92,0.17)', 'rgba(120,123,134,0.16)', 'rgba(38,166,154,0.17)', 'rgba(38,166,154,0.34)'];
+    const SEG_LIVE = ['rgba(230,195,92,0.9)', 'rgba(230,195,92,0.65)', 'rgba(160,163,174,0.55)', 'rgba(38,166,154,0.65)', 'rgba(38,166,154,0.9)'];
     for (let i = 0; i < 5; i++) {
       const sx = barX + i * (segW + gap);
       roundRectPath(g, sx, barY, segW, barH, 4);
@@ -3339,6 +3348,64 @@ async function buildShareCardCanvas() {
 
   return cv;
 }
+/* The caption that rides along with the shared image, so a post arrives
+   ready to publish instead of just "Ruby — PocketGE". Composed from the
+   same already-computed live state the card itself draws (rating, 5D
+   flag, 30-day position, targets, volume) so the words can never
+   disagree with the picture, and kept tight enough to paste into a
+   280-char tweet without editing — a full paragraph like #insText reads
+   fine under a chart on the site but is too long as a social caption. */
+function buildShareText() {
+  if (!selected) return '';
+  const node = latest && latest.data ? latest.data[String(selected.id)] : null;
+  const p24 = past24h && past24h.data ? past24h.data[String(selected.id)] : null;
+  const hl = dayState(node, p24, selected.id);
+  const gauge = shareCardGaugeInfo();
+  const d30 = shareCard30dInfo();
+  const vol = dailyVolume(selected.id);
+  const lines = [];
+
+  /* Headline leads with the single most notable thing about it right now —
+     that's the reason someone is sharing at all. */
+  const flag = hl === 'high5d' ? ' — at a 5-DAY HIGH'
+    : hl === 'low5d' ? ' — at a 5-DAY LOW'
+    : hl === 'high' ? ' — at its 24h high'
+    : hl === 'low' ? ' — at its 24h low' : '';
+  lines.push(`${selected.name} is ${fmtGp(liveSellRaw)} gp${flag}`);
+
+  const why = [];
+  if (gauge && gauge.text) why.push(`Analyst Rating: ${gauge.text}`);
+  if (d30) {
+    why.push((d30.pos <= 25 ? 'near its 30-day low' : d30.pos >= 75 ? 'near its 30-day high' : 'mid 30-day range')
+      + ` (${d30.lo}–${d30.hi} gp)`);
+  }
+  if (why.length) lines.push(why.join(' · '));
+
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
+    let trade = `Flip: buy ${fmtGp(recommendedBuy)} → sell ${fmtGp(recommendedSell)} = `
+      + `${margin >= 0 ? '+' : ''}${fmtGp(margin)} gp/item after tax`;
+    if (selected.limit > 0) {
+      const total = margin * selected.limit;
+      trade += ` (${total >= 0 ? '+' : ''}${abbreviateNumber(total)} per 4h limit)`;
+    }
+    lines.push(trade);
+  }
+
+  const ctx = [];
+  if (vol > 0) ctx.push(`${abbreviateNumber(vol)} traded/day`);
+  const c1 = viewChanges && viewChanges['1d'], c5 = viewChanges && viewChanges['5d'];
+  if (c1 != null) ctx.push(`1D ${c1 >= 0 ? '+' : ''}${c1.toFixed(1)}%`);
+  if (c5 != null) ctx.push(`5D ${c5 >= 0 ? '+' : ''}${c5.toFixed(1)}%`);
+  if (ctx.length) lines.push(ctx.join(' · '));
+
+  /* Link lives inside the text rather than navigator.share's separate url
+     field — targets that only read one of the two still get both. */
+  lines.push('');
+  lines.push(`Live OSRS prices: https://pocketge.com/?q=${encodeURIComponent(selected.name)}`);
+  return lines.join('\n');
+}
+
 async function shareCard() {
   if (!selected) return;
   const btn = $('#btnShare');
@@ -3354,7 +3421,7 @@ async function shareCard() {
     // Mobile-first: hand it to the native share sheet when available —
     // exactly the "post this to Reddit/Discord" flow this button exists for.
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: selected.name + ' — PocketGE' });
+      await navigator.share({ files: [file], title: selected.name + ' — PocketGE', text: buildShareText() });
       label.textContent = originalText;
       btn.disabled = false;
       return;
