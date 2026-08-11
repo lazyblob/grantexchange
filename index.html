@@ -2410,12 +2410,44 @@ function wireFavoritesDrag(container) {
     });
   });
 }
+/* Rewrites `favorites` to match what's currently on screen, so a manual
+   reorder can start from a sorted view without the list visibly jumping.
+   Favorites hidden by the active F2P/P2P filter aren't in the DOM at all —
+   they're appended in their existing relative order rather than dropped,
+   which is the whole reason this doesn't just assign the DOM order. */
+function adoptDisplayedOrderAsManual() {
+  const favSet = new Set(favorites);
+  const shown = Array.from(document.querySelectorAll('.wl-item[data-fav-row="1"]'))
+    .map(el => el.getAttribute('data-fav-id'))
+    .filter(id => id && favSet.has(id));
+  if (!shown.length) return;
+  const shownSet = new Set(shown);
+  favorites = shown.concat(favorites.filter(id => !shownSet.has(id)));
+}
+
 function moveFavoriteBeforeAfter(dragId, targetId, before) {
-  const idx = favorites.indexOf(dragId);
-  if (idx < 0) return;
-  favorites.splice(idx, 1);
+  /* Dragging while a computed sort is active used to silently no-op: the
+     array reordered, then renderWatchlist re-sorted and threw it away, so
+     the row snapped back. A manual position and a computed sort can't
+     coexist, and the drag is the clearer statement of intent — so adopt the
+     order already on screen (nothing moves) and switch to manual, which
+     makes the drop stick and leaves re-applying a sort one header click
+     away. */
+  /* Both membership checks run BEFORE adopting, so a drag that can't be
+     applied (either id gone mid-drag) never leaves favSort flipped behind
+     it. Safe to hoist: adoption only reorders `favorites`, it never adds or
+     removes, so these verdicts are identical either side of it. */
+  if (favorites.indexOf(dragId) < 0 || favorites.indexOf(targetId) < 0) return;
+  if (favSort !== 'manual') {
+    adoptDisplayedOrderAsManual();
+    favSort = 'manual';
+    try { localStorage.setItem('ge_favSort', favSort); } catch (e) {}
+  }
+  favorites.splice(favorites.indexOf(dragId), 1);
+  /* dragId is already removed, and targetId can never equal it (the drop
+     indicator is suppressed on the dragged row itself), so this index is
+     the post-removal one the splice below wants. */
   let targetIdx = favorites.indexOf(targetId);
-  if (targetIdx < 0) { favorites.splice(idx, 0, dragId); return; } // target vanished mid-drag — put it back, no-op
   if (!before) targetIdx += 1;
   favorites.splice(targetIdx, 0, dragId);
   persistFavoriteLists();
