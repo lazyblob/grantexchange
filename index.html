@@ -3072,12 +3072,17 @@ async function buildShareCardCanvas() {
 
   // Live price, big — carries the ACTION, so it takes the 5D signal's color:
   // gold at a 5-day low (buy opportunity), green at a 5-day high (sell
-  // opportunity), brand gold when neither applies. Deliberately not pinned
-  // to the sell-teal that Target Sell uses just because liveSellRaw happens
-  // to be an insta-sell figure — that's an internal data-model distinction,
-  // and this card exists to make the call obvious to someone scrolling past
-  // it on Reddit. The subtitle below inherits the same fill on purpose.
-  g.fillStyle = hlColor || '#E5C158';
+  // opportunity). Deliberately not pinned to the sell-teal that Target Sell
+  // uses just because liveSellRaw happens to be an insta-sell figure —
+  // that's an internal data-model distinction, and this card exists to make
+  // the call obvious to someone scrolling past it on Reddit. The subtitle
+  // below inherits the same fill on purpose.
+  // Neutral is the muted body cream, NOT the brand gold it used to be:
+  // these cards are read in isolation, so a viewer has no second card to
+  // compare against and brand gold sat close enough to the 5D-low gold to
+  // imply a buy call that isn't being made. Cream reads as plain data, and
+  // keeps the hierarchy the pure-white item name above establishes.
+  g.fillStyle = hlColor || '#D9D3C7';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
   if (hlColor) {
