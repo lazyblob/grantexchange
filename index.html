@@ -1416,6 +1416,28 @@ button, input { touch-action: manipulation; }
      container). Let the WHOLE sidebar scroll as one unit instead, so the
      flip card, calculator, then every watchlist row are all reachable. */
   .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  /* Favorites is the reason this column exists, but it sat behind ~320px of
+     modules in a viewport only ~390-515px tall, so it opened essentially
+     below the fold. The container is a flex column, so `order` re-stacks it
+     for this breakpoint with no JS and no markup change.
+     Recommended Flip drops to last: expanded it's the single biggest block
+     here (~200px vs ~60px collapsed), and unlike the modules above it it
+     describes a DIFFERENT item — it's a discovery prompt, so it belongs
+     with Find Opportunities at the bottom rather than above the list.
+     It already defaults to collapsed at this breakpoint, but that default
+     is overridden the moment ge_flipCollapsed is set on any device, so
+     order (not the collapse state) is what reliably keeps it out of the way.
+     #sideModule stays on top deliberately: Potential Profit + Analyst
+     Rating are compact (~120px together) and they're the verdict on the
+     chart being viewed right now. Pushing them below a long favorites list
+     would mean never seeing them, which is a worse trade than the space
+     they cost. colHeader has to travel with watchlistContent — it's that
+     list's column header, not a standalone block. */
+  .watchlist-container > .mode-pill-side { order: 0; }
+  .watchlist-container > #sideModule { order: 1; }
+  .watchlist-container > #colHeader { order: 2; }
+  .watchlist-container > #watchlistContent { order: 3; }
+  .watchlist-container > #flipFinder { order: 4; }
   /* Fixed compact width here (not --wl-width), so the drag handle has
      nothing meaningful to resize — keep it hidden in this cramped view. */
   .wl-resize { display: none; }
