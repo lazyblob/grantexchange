@@ -1019,13 +1019,6 @@ button, input { touch-action: manipulation; }
    ones. */
 .wl-item.drop-above { box-shadow: inset 0 2px 0 0 #fff; }
 .wl-item.drop-below { box-shadow: inset 0 -2px 0 0 #fff; }
-.wl-drag-handle { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted); cursor: grab; touch-action: none; }
-.wl-drag-handle:hover { color: var(--text-main); }
-.wl-drag-handle:active { cursor: grabbing; }
-.wl-drag-handle .ui-ic { width: 12px; height: 12px; }
-@media (max-width: 640px) {
-  .wl-drag-handle { display: none; }
-}
 /* Day-high / Day-low highlight — RuneScape-styled so the "take action" cue
    reads at a glance: bright RS-green or RS-gold fill, double borders, the
    item name flipped to a bright callout color, plus a slow inset pulse so it
@@ -1119,7 +1112,7 @@ button, input { touch-action: manipulation; }
    up exactly under their labels (the header reserves that space for the ⋯). */
 .wl-item-right { display: flex; align-items: center; gap: 5px; text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 /* Favorites row management: remove (×) reveals on hover/touch, and — in
-   Manual sort only — a drag handle for reordering (see .wl-drag-handle).
+   Manual sort only — drag anywhere on a row to reorder (see wireFavoritesDrag).
    Swipe-to-remove on touch works regardless of sort mode. */
 .wl-item { position: relative; touch-action: pan-y; }
 .wl-edit-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; font-size: 9px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; padding: 2px 8px; margin-right: 8px; cursor: pointer; transition: all 0.15s ease; }
@@ -1483,12 +1476,6 @@ button, input { touch-action: manipulation; }
   .watchlist-container > #watchlistContent { order: 3; }
   .watchlist-container > #flipFinder { order: 4; }
   .watchlist-container > #findOppsHost { order: 5; }
-  /* The grip handle is redundant now that the whole row is the drag
-     surface, and it was pushing the item icon off the left edge —
-     hidden here exactly as portrait already does. No functional loss:
-     reordering is wired to mouse events, so the handle never drove
-     touch dragging in the first place. */
-  .wl-drag-handle { display: none; }
   /* Fixed compact width here (not --wl-width), so the drag handle has
      nothing meaningful to resize — keep it hidden in this cramped view. */
   .wl-resize { display: none; }
@@ -2655,7 +2642,6 @@ const UI_ICONS = {
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
   loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
   pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
-  grip: '<circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>',
   external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/>'
 };
 function uiIcon(name, cls) {
@@ -4697,18 +4683,10 @@ function renderWatchlist() {
            is unavailable. */
         const removeBtn = isFavGroup ? `<button type="button" class="wl-fav-remove wl-fav-remove-row" data-fav-id="${item.id}" title="Remove from favorites" aria-label="Remove ${item.name} from favorites"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg></button>` : '';
         const swipeBg = isFavGroup ? `<span class="wl-swipe-bg">REMOVE</span>` : '';
-        /* Drag-to-reorder only makes sense in Manual sort — any other mode
-           is a computed order, so there's nothing meaningful to drag. Also
-           skip it for a row that's only showing because a linked RuneLite
-           list happened to include it (not actually in the local favorites
-           array) — there's no local position for it to occupy. */
-        const draggable = isFavGroup && favSort === 'manual' && favorites.includes(String(item.id));
-        const dragHandle = draggable ? `<span class="wl-drag-handle" data-fav-id="${item.id}" title="Drag to reorder" aria-hidden="true">${uiIcon('grip')}</span>` : '';
         inner += `
           <div class="wl-item ${activeClass} ${hlClass}" data-id="${item.id}" ${isFavGroup ? `data-fav-row="1" data-fav-id="${item.id}"` : ''}>
             ${swipeBg}
             <div class="wl-item-left">
-              ${dragHandle}
               <img src="${itemIconUrl(item.id)}" alt="${item.name} icon" loading="lazy">
               <span class="wl-item-name">${item.name}</span>
               ${hlBadge}
@@ -4867,7 +4845,7 @@ function renderWatchlist() {
          just finished dragging the row to reorder it (suppressClick, set by
          wireFavoritesDrag), or after a swipe has revealed the remove
          backdrop. */
-      if (ev.target.closest('.wl-fav-remove, .wl-drag-handle')) return;
+      if (ev.target.closest('.wl-fav-remove')) return;
       if (el.dataset.suppressClick) return;
       if (el.classList.contains('swipe-revealed')) {
         el.classList.remove('swipe-revealed');
