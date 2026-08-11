@@ -343,20 +343,12 @@ button, input { touch-action: manipulation; }
   .panel-left { min-width: 0; flex-wrap: nowrap; }
   .search-group { min-width: 0; }
   .sbar { min-width: 0; }   /* keeps its clamp width, but may shrink when tight */
-  /* Menu sits at the far right of the row — the conventional home for a
-     nav menu, and it was otherwise crowding the search box while a wide
-     gap sat unused to its right. Bare glyph rather than a bordered chip:
-     it's a secondary control and the boxed treatment competed with the
-     search field beside it. Keeping a hover fill so losing the border
-     doesn't also lose the "this is clickable" affordance. */
-  /* .sbar caps at 640px while .search-group keeps growing, so the slack
-     to its right is what margin-left:auto pushes the menu across — no DOM
-     move needed (which would risk the narrow breakpoints that style
-     .search-group / .more-wrap around the current nesting). */
+  /* Menu leads the row, left of the logo — same place YouTube and
+     TradingView put theirs, and consistent with mobile now that the button
+     is a real DOM sibling of the logo rather than nested in .search-group.
+     Its bare-glyph + hover-fill treatment lives in the base rules, so
+     there's nothing breakpoint-specific left to say about it here. */
   .search-group { flex: 1 1 auto; }
-  .search-group > .more-wrap { margin-left: auto; }
-  .more-toggle { background: transparent; border-color: transparent; font-size: 18px; padding: 4px 6px; }
-  .more-toggle:hover, .more-toggle[aria-expanded="true"] { background: var(--bg-input); border-color: var(--border-light); color: var(--text-main); }
 }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
 /* Combined search+item+wiki overlay — off by default, enabled in landscape
@@ -399,14 +391,44 @@ button, input { touch-action: manipulation; }
    gets the room instead of splitting it three ways with icon buttons used
    far less often. */
 .more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
-.more-toggle { display: inline-flex; font-size: 16px; line-height: 1; padding: 4px 8px; min-width: 34px; justify-content: center; }
+/* Bare glyph, no chip — a secondary control shouldn't carry the same
+   boxed weight as the search field it sits beside. Hover/open still fill
+   so losing the border doesn't cost the "this is clickable" affordance.
+   The 3 lines are an SVG rather than the ☰ character on purpose: text
+   glyphs carry font-specific baseline offsets and won't reliably centre. */
+.more-toggle { display: inline-flex; background: transparent; border-color: transparent; padding: 4px 8px; min-width: 34px; min-height: 30px; align-items: center; justify-content: center; }
+.more-toggle:hover, .more-toggle[aria-expanded="true"] { background: var(--bg-input); border-color: var(--border-light); color: var(--text-main); }
+/* Slide-in nav drawer rather than a small dropdown. A dropdown anchored to
+   a far-left button would open off-screen, and the menu is worth more than
+   four icons in a popover — this gives room to actually navigate the site.
+   Kept in flow and moved with transform (not display:none) so it animates;
+   visibility keeps it out of the tab order and away from pointer events
+   while closed, which offscreen-but-visible content would not. */
 .more-actions {
-  display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
-  flex-direction: column; gap: 2px; min-width: 168px; padding: 6px;
-  background: var(--bg-panel); border: 1px solid var(--border-light);
-  border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+  display: flex; position: fixed; top: 0; bottom: 0; left: 0; z-index: 1100;
+  width: min(290px, 84vw); flex-direction: column; gap: 2px; padding: 10px;
+  background: var(--bg-panel); border-right: 1px solid var(--border-light);
+  box-shadow: 8px 0 34px rgba(0,0,0,0.6);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  transform: translateX(-100%); visibility: hidden;
+  transition: transform 0.22s ease, visibility 0.22s;
 }
-.more-actions.open { display: flex; }
+.more-actions.open { transform: translateX(0); visibility: visible; }
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 1090; background: rgba(5,7,12,0.6);
+  backdrop-filter: blur(2px); opacity: 0; visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s;
+}
+.drawer-backdrop.open { opacity: 1; visibility: visible; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; }
+.drawer-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--text-main); font-size: 15px; }
+.drawer-brand img { width: 20px; height: 20px; image-rendering: pixelated; }
+.drawer-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 6px; font-size: 20px; line-height: 1; border-radius: 6px; }
+.drawer-close:hover { color: #fff; background: var(--bg-input); }
+.drawer-sep { height: 1px; background: var(--border-main); margin: 8px 4px; flex: 0 0 auto; }
+.drawer-label { color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase; padding: 4px 10px; }
+.drawer-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; color: var(--text-main); text-decoration: none; font-size: 13.5px; }
+.drawer-link:hover { background: var(--bg-input); text-decoration: none; }
 .more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 14px; border-color: transparent; background: transparent; }
 .more-actions .icon-btn:hover, .more-actions .icon-btn:active { background: var(--bg-input); }
 .more-actions .icon-label { display: inline; font-size: 13px; }
@@ -527,7 +549,11 @@ button, input { touch-action: manipulation; }
    sidebar version). Same green/gold active identity as .mode-pill-side so
    the control reads identically on every screen size: F2P = green tint,
    P2P/Members = gold tint, with the same underline + press feedback. */
-.mode-pill { display: flex; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 6px; padding: 2px; height: 28px; flex-shrink: 0; gap: 2px; }
+/* No shell around the pair — the active side's tinted text plus its 2px
+   underline already reads as a tab group, and the box was competing with
+   the search field beside it. The underline is what keeps this from
+   looking like two unrelated labels, so it stays load-bearing here. */
+.mode-pill { display: flex; background: transparent; border: none; border-radius: 6px; padding: 2px; height: 30px; flex-shrink: 0; gap: 2px; }
 .mode-pill button { background: transparent; border: none; color: var(--text-muted); padding: 0 8px; cursor: pointer; font-weight: 800; font-size: 11px; border-radius: 4px; height: 100%; letter-spacing: 0.4px; text-transform: uppercase; transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease; }
 .mode-pill button:active { transform: translateY(1px); }
 .mode-pill .mp-f2p.active {
@@ -1277,13 +1303,6 @@ button, input { touch-action: manipulation; }
   /* ⋯ overflow menu on mobile: button shows, container becomes a dropdown */
   .more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
   .more-toggle { display: inline-flex !important; font-size: 18px; line-height: 1; padding: 5px 10px; min-width: 38px; justify-content: center; }
-  .more-actions {
-    display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
-    flex-direction: column; gap: 2px; min-width: 168px; padding: 6px;
-    background: var(--bg-panel); border: 1px solid var(--border-light);
-    border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.55);
-  }
-  .more-actions.open { display: flex; }
   .more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 15px; border-color: transparent; background: transparent; }
   .more-actions .icon-btn:hover, .more-actions .icon-btn:active { background: var(--bg-input); }
   .more-actions .icon-label { display: inline; font-size: 13px; }
@@ -1358,9 +1377,9 @@ button, input { touch-action: manipulation; }
   .main-column { gap: 3px; }
   .content-area { flex-direction: row; gap: 4px; }
   .top-row-wrapper { flex-direction: row; gap: 6px; height: auto; align-items: stretch; }
-  .top-panel { flex: 1 1 64%; min-width: 0; padding: 3px 6px; }
+  .top-panel { flex: 1 1 58%; min-width: 0; padding: 3px 6px; }
   .panel-left { flex-wrap: nowrap; gap: 4px; }
-  .mode-pill { height: 28px; flex: 0 0 auto; }
+  .mode-pill { height: 30px; flex: 0 0 auto; }
   /* Trims a few px off the F2P/P2P pill so the item name next to it has
      room to spell out longer names ("Emerald necklace") instead of
      truncating — see .ticker-header split below for the other half. */
@@ -1376,7 +1395,7 @@ button, input { touch-action: manipulation; }
      hidden below. Focusing the field hides the name so you can type. */
   .search-group { flex: 1 1 auto; min-width: 0; }
   .sbar { flex: 1 1 auto; min-width: 90px; width: auto; }
-  .sbar input { padding: 2px 26px 2px 26px; height: 28px; font-size: 16px; }
+  .sbar input { padding: 2px 26px 2px 26px; height: 30px; font-size: 16px; }
   .sbar-item { display: flex; position: absolute; inset: 1px 24px 1px 24px; align-items: center;
     pointer-events: none; background: var(--bg-input); color: var(--text-main); font-weight: 700;
     font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 4px; }
@@ -1389,24 +1408,20 @@ button, input { touch-action: manipulation; }
   /* Collapse the 4 secondary actions into the ⋯ dropdown (like portrait) so
      the row isn't cluttered and the combined search has room. */
   .more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
-  .more-toggle { display: inline-flex !important; font-size: 16px; line-height: 1; padding: 4px 8px; min-width: 34px; justify-content: center; }
-  .more-actions { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
-    flex-direction: column; gap: 2px; min-width: 168px; padding: 6px;
-    background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); }
-  .more-actions.open { display: flex; }
+  .more-toggle { display: inline-flex !important; padding: 4px 8px; min-width: 32px; min-height: 30px; justify-content: center; }
   .more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 15px; border-color: transparent; background: transparent; }
   .more-actions .icon-label { display: inline; font-size: 13px; }
   /* Ticker header carries the Save button + timeframe toolbar (item name
      lives in the search box above). */
   .ticker-title-group { display: none !important; }
-  .ticker-header { flex: 1 1 36%; min-width: 0; padding: 2px; border: none; background: transparent; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; }
+  .ticker-header { flex: 1 1 42%; min-width: 0; padding: 2px; border: none; background: transparent; display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
   /* Icon-only Save button in landscape — the star + gold color already
      signal "favorite", and the "Save"/"Saved" label doesn't fit next to a
      6-button toolbar in a ~470 px header. Tap area stays big enough. */
-  .ticker-header .fav-btn { padding: 6px 7px; gap: 0; flex: 0 0 auto; min-height: 30px; }
+  .ticker-header .fav-btn { padding: 6px 8px; gap: 0; flex: 0 0 auto; min-height: 30px; }
   .ticker-header .fav-btn .fav-star { width: 15px; height: 15px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
-  .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 3px; }
+  .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 5px; }
   .toolbar button { flex: 1; min-width: 0; padding: 5px 0; font-size: 13px; min-height: 30px; }
   .pct-chg { display: none !important; }
   .chart-container { min-height: 0; }
@@ -1889,6 +1904,8 @@ button, input { touch-action: manipulation; }
   })();
 </script>
 
+<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+
 <div class="wrap">
   <div class="content-area">
 
@@ -1897,6 +1914,47 @@ button, input { touch-action: manipulation; }
       <div class="top-row-wrapper">
         <div class="top-panel" id="topPanel">
           <div class="panel-left">
+            <div class="more-wrap">
+              <button id="btnMore" class="icon-btn more-toggle" title="More" aria-label="More actions" aria-expanded="false"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></button>
+              <div class="more-actions" id="moreActions" role="dialog" aria-modal="true" aria-label="Menu">
+                <div class="drawer-head">
+                  <span class="drawer-brand"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">PocketGE</span>
+                  <button type="button" class="drawer-close" id="drawerClose" aria-label="Close menu">&times;</button>
+                </div>
+                <button id="btnRefreshPrices" class="icon-btn" title="Refresh live prices now"><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></span><span class="icon-label">Refresh</span></button>
+                <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications"><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8c0 4.5 1.2 7 2.3 8.5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" x2="22" y1="2" y2="22"/></svg></span><span class="icon-label">Alerts</span></button>
+                <button id="btnPortfolio" class="icon-btn" title="Bank of Gielinor — track your stacks &amp; total wealth">
+                  <svg class="bk-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse>
+                    <ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse>
+                    <ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse>
+                    <ellipse cx="12" cy="8"  rx="8" ry="2.2" fill="#FFD24D"></ellipse>
+                    <ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse>
+                  </svg>
+                  <span class="icon-label">Bank</span>
+                </button>
+                <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <!-- Real navigation, which is what makes a drawer worth
+                     opening at all — these standalone pages previously only
+                     existed as footer links, below everything. -->
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Scanners</div>
+                <a class="drawer-link" href="/high-vol-margins.html">High Volume Margins</a>
+                <a class="drawer-link" href="/low-vol-margins.html">Low Volume Margins</a>
+                <a class="drawer-link" href="/biggest-losers-24h.html">Biggest Losers (24h)</a>
+                <a class="drawer-link" href="/reliable-14d-margins.html">Reliable 14-Day Margins</a>
+                <a class="drawer-link" href="/at-5d-highs.html">At 5-Day Highs</a>
+                <a class="drawer-link" href="/at-5d-lows.html">At 5-Day Lows</a>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Calculators &amp; Guides</div>
+                <a class="drawer-link" href="/high-alch-calculator.html">High Alch Calculator</a>
+                <a class="drawer-link" href="/cannonball-profit-calculator.html">Cannonball Profit</a>
+                <a class="drawer-link" href="/flipping-guide.html">Flipping Guide</a>
+                <a class="drawer-link" href="/burnt-food-collectors.html">Burnt Food &amp; Collectors</a>
+              </div>
+            </div>
             <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" title="PocketGE — tap to refresh"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
             <!-- Same live build stamp the footer carries (synced from the
                  repo's latest commit, see syncBuildInfo) — surfaced up here
@@ -1917,24 +1975,6 @@ button, input { touch-action: manipulation; }
                 <span id="sbarItem" class="sbar-item" aria-hidden="true"></span>
                 <a id="sbarWiki" class="sbar-wiki" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" title="Open this item on the OSRS Wiki" aria-label="Open current item on the OSRS Wiki">↗</a>
                 <div id="suggestBox" class="suggest" style="display:none"></div>
-              </div>
-              <div class="more-wrap">
-                <button id="btnMore" class="icon-btn more-toggle" title="More" aria-label="More actions" aria-expanded="false"><span aria-hidden="true">☰</span></button>
-                <div class="more-actions" id="moreActions">
-                  <button id="btnRefreshPrices" class="icon-btn" title="Refresh live prices now"><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></span><span class="icon-label">Refresh</span></button>
-                  <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications"><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8c0 4.5 1.2 7 2.3 8.5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" x2="22" y1="2" y2="22"/></svg></span><span class="icon-label">Alerts</span></button>
-                  <button id="btnPortfolio" class="icon-btn" title="Bank of Gielinor — track your stacks &amp; total wealth">
-                    <svg class="bk-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse>
-                      <ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse>
-                      <ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse>
-                      <ellipse cx="12" cy="8"  rx="8" ry="2.2" fill="#FFD24D"></ellipse>
-                      <ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse>
-                    </svg>
-                    <span class="icon-label">Bank</span>
-                  </button>
-                  <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
-                </div>
               </div>
             </div>
           </div>
@@ -7804,15 +7844,30 @@ setItem._userPicked = false;
     /* Mobile ⋯ overflow menu. On desktop the wrapper is display:contents so
        this just no-ops visually (the buttons are inline). On mobile, tap the
        ⋯ to open the dropdown; it closes on any action tap or an outside tap. */
-    const moreBtn = $('#btnMore'), moreMenu = $('#moreActions');
-    const closeMore = () => { moreMenu.classList.remove('open'); moreBtn.setAttribute('aria-expanded', 'false'); };
-    moreBtn.onclick = (ev) => {
-      ev.stopPropagation();
-      const open = moreMenu.classList.toggle('open');
+    const moreBtn = $('#btnMore'), moreMenu = $('#moreActions'), moreBackdrop = $('#drawerBackdrop');
+    /* Backdrop tracks the drawer so the dimmer can't be left stranded over
+       the page if the two ever get toggled from different places. */
+    const setMore = (open) => {
+      moreMenu.classList.toggle('open', open);
+      if (moreBackdrop) moreBackdrop.classList.toggle('open', open);
       moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
-    /* Close after any action inside fires (Simple/Alerts/Bank/Help). */
-    moreMenu.addEventListener('click', () => { closeMore(); });
+    const closeMore = () => setMore(false);
+    moreBtn.onclick = (ev) => {
+      ev.stopPropagation();
+      setMore(!moreMenu.classList.contains('open'));
+    };
+    /* Close after any action inside fires (Refresh/Alerts/Bank/Help) and on
+       any nav link tap, so the drawer isn't still open behind the new page
+       if the browser restores this one from bfcache. */
+    moreMenu.addEventListener('click', (ev) => {
+      if (ev.target.closest('.drawer-head') && !ev.target.closest('#drawerClose')) return;
+      closeMore();
+    });
+    if (moreBackdrop) moreBackdrop.addEventListener('click', closeMore);
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && moreMenu.classList.contains('open')) closeMore();
+    });
     document.addEventListener('click', (ev) => {
       if (moreMenu.classList.contains('open') && !moreMenu.contains(ev.target) && ev.target !== moreBtn && !moreBtn.contains(ev.target)) closeMore();
     });
