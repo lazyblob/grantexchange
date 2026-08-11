@@ -2954,7 +2954,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 1260;
+  const W = 1200, H = 1300;
   // Backing store rendered at the device's actual pixel density, then
   // scaled back down to logical W/H — without this every draw call below
   // still WORKS (same W/H coordinates throughout), it just comes out soft
@@ -3359,13 +3359,18 @@ async function buildShareCardCanvas() {
   // matters" narrative instead of just a grid of numbers.
   const insText = document.getElementById('insText')?.textContent;
   if (insText) {
+    /* This paragraph is the one part of the card that's actually READ rather
+       than glanced at, so it's sized to survive a downscaled social preview
+       — 16px/400 was the smallest thing on a 1200px canvas and turned to
+       mush at thumbnail size. Card height below carries enough slack for
+       the 4 lines the longest summaries wrap to at this size. */
     const summaryY = 1032;
     g.fillStyle = '#8A8274';
-    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText('MARKET SUMMARY', 48, summaryY);
     g.fillStyle = '#D9D3C7';
-    g.font = '400 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    wrapCanvasText(g, insText, 48, summaryY + 28, W - 96, 24);
+    g.font = '600 24px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    wrapCanvasText(g, insText, 48, summaryY + 36, W - 96, 34);
   }
 
   // Footer watermark + live timestamp — a screenshot can circulate for
@@ -3921,7 +3926,7 @@ function updateFootFresh() {
    bump it for a week the footer doesn't go suspiciously stale-looking
    (which would HURT trust). Updated in the same commit as user-facing
    changes — git history is the source of truth, this is the surface. */
-const BUILD_DATE = '2026-07-21';
+const BUILD_DATE = '2026-08-11';
 function agoLabel(dateStr) {
   const built = new Date(dateStr);
   const days = Math.max(0, Math.floor((Date.now() - built.getTime()) / 86400000));
@@ -3946,7 +3951,6 @@ function updateFootUpdated() {
    and every failure path silently falls back to the baked-in constants. */
 function syncBuildInfo() {
   const CACHE_KEY = 'pg_build_info';
-  const TTL = 6 * 3600 * 1000;
   const apply = (info) => {
     if (!info) return;
     const v = document.getElementById('footVersion');
@@ -3956,10 +3960,18 @@ function syncBuildInfo() {
       document.querySelectorAll('.js-build-updated').forEach(el => { el.textContent = label; });
     }
   };
+  /* Stale-while-revalidate: paint the cached value immediately so the chip
+     never flashes empty, then ALWAYS re-check in the background. This used
+     to early-return for the whole TTL, which froze the label at whatever
+     the newest commit was on the visitor's last load — so for up to six
+     hours after a deploy it advertised the PREVIOUS one ("Updated 3 days
+     ago" minutes after shipping). Being wrong right after a deploy defeats
+     the entire point of the stamp. One API call per page load is cheap
+     here: this is an SPA, so item switches don't reload, and every failure
+     path (rate limit, offline) silently keeps the cached value. */
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) {}
   if (cached && cached.info) apply(cached.info);
-  if (cached && (Date.now() - cached.t) < TTL) return;
   fetch('https://api.github.com/repos/lazyblob/pocketge.com/commits?per_page=1', { headers: { Accept: 'application/vnd.github+json' } })
     .then(r => r.ok ? r.json() : null)
     .then(arr => {
