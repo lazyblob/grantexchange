@@ -7451,10 +7451,19 @@ function inXAxisZone(clientY) {
   const y = clientY - canvas.getBoundingClientRect().top;
   return y >= chartData.y0 + chartData.h;
 }
-function applyXScaleDrag(dx) {
-  zoom = Math.max(1, Math.min(20, zoom * Math.exp(dx / 150)));
+/* Pin the visible window to the most recent data after any zoom change.
+   Without this the window's START stays fixed while its width changes, so
+   zooming visibly walks the range backwards in time and you have to drag
+   back to "now" — which is exactly how pinch-zoom behaved on mobile, since
+   it changed zoom without ever re-anchoring. Shared by all three zoom
+   entry points (wheel, x-axis drag, pinch) so they can't drift apart. */
+function anchorZoomToLatest() {
   const n = chartData.n;
   if (n) offset = Math.max(0, n - Math.max(20, Math.floor(n / zoom)));
+}
+function applyXScaleDrag(dx) {
+  zoom = Math.max(1, Math.min(20, zoom * Math.exp(dx / 150)));
+  anchorZoomToLatest();
   queueDraw();
 }
 let isDragging = false, startXMouse = 0, mouseMoved = false;
@@ -7495,13 +7504,7 @@ canvas.addEventListener('mousemove', ev => {
 canvas.addEventListener('wheel', ev => {
   ev.preventDefault();
   zoom = Math.max(1, Math.min(20, zoom * (ev.deltaY < 0 ? 1.2 : 0.8)));
-  /* Pin the view to the most recent data after zooming. Previously the
-     window's start (offset) stayed put while zoom shrank/grew its width,
-     which visibly walked the visible range backward in time and forced a
-     manual drag back to see the latest trades — this keeps zoom anchored
-     to "now" instead. */
-  const n = chartData.n;
-  if (n) offset = Math.max(0, n - Math.max(20, Math.floor(n / zoom)));
+  anchorZoomToLatest();
   queueDraw();
 }, { passive: false });
 
@@ -7548,7 +7551,12 @@ canvas.addEventListener('touchmove', ev => {
     const { dataW, win, n } = chartData;
     offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw();
   } else if (touchMode === 'pinch' && ev.touches.length === 2) {
-    const nd = dist(ev.touches); if (pinchStart > 0) { zoom = Math.max(1, Math.min(20, pinchZoom * (nd / pinchStart))); queueDraw(); }
+    const nd = dist(ev.touches);
+    if (pinchStart > 0) {
+      zoom = Math.max(1, Math.min(20, pinchZoom * (nd / pinchStart)));
+      anchorZoomToLatest();
+      queueDraw();
+    }
   }
 }, { passive: false });
 canvas.addEventListener('touchend', ev => {
