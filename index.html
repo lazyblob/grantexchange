@@ -3070,12 +3070,14 @@ async function buildShareCardCanvas() {
     g.textAlign = 'left';
   }
 
-  // Live price, big — liveSellRaw is specifically the insta-sell price, so
-  // it stays the standard sell color (the same teal Target Sell always
-  // uses) regardless of the 5D badge; the badge/border/subtitle already
-  // carry that signal separately, the price number's color has its own
-  // fixed meaning and shouldn't be hijacked by it.
-  g.fillStyle = '#26A69A';
+  // Live price, big — carries the ACTION, so it takes the 5D signal's color:
+  // gold at a 5-day low (buy opportunity), green at a 5-day high (sell
+  // opportunity), brand gold when neither applies. Deliberately not pinned
+  // to the sell-teal that Target Sell uses just because liveSellRaw happens
+  // to be an insta-sell figure — that's an internal data-model distinction,
+  // and this card exists to make the call obvious to someone scrolling past
+  // it on Reddit. The subtitle below inherits the same fill on purpose.
+  g.fillStyle = hlColor || '#E5C158';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
   if (hlColor) {
