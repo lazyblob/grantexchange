@@ -859,7 +859,7 @@ button, input { touch-action: manipulation; }
 .category-title {
   --cat-accent: var(--border-active);
   position: sticky; top: 0; z-index: 4;
-  padding: 8px 12px 8px 13px;
+  padding: 6px 12px 6px 13px;
   font-size: 11px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
   color: #F0EBDF;
   /* Soft top-lit gradient (raised panel) instead of a flat fill, a thin inner
@@ -1664,6 +1664,24 @@ button, input { touch-action: manipulation; }
 .rg-top .fav-btn { margin-left:auto; padding:3px 5px; gap:0; flex:0 0 auto; min-height:0; }
 .rg-top .fav-btn .fav-label { display:none; }
 .rg-top .fav-btn svg { width:13px; height:13px; }
+/* Collapsed: eyebrow + Buy/grade/Sell scale drop away, leaving the verdict,
+   the bar and Share. .rg-top is lifted out of the flow and pinned top-right
+   so the toggle and Share sit on the SAME line as the verdict rather than
+   holding a row of their own — collapsing that row is most of the height
+   saving, so leaving it in place would defeat the point. */
+.rg-wrap { position:relative; }
+.rg-toggle { background:transparent; border:none; padding:2px; margin-left:2px; color:var(--text-muted);
+  cursor:pointer; display:inline-flex; align-items:center; border-radius:4px; flex:0 0 auto; }
+.rg-toggle:hover { color:#fff; }
+.rg-toggle .ui-ic { width:12px; height:12px; display:block; transition:transform .18s ease; }
+.rg-wrap.is-collapsed .rg-toggle .ui-ic { transform:rotate(-90deg); }
+.rg-wrap.is-collapsed .rg-scale { display:none; }
+.rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
+.rg-wrap.is-collapsed .rg-top { position:absolute; top:6px; right:0; margin:0; gap:4px; z-index:2; }
+/* margin-left:auto is what right-aligns Share in the normal flow row; once
+   .rg-top is absolute there's no row left to push against. */
+.rg-wrap.is-collapsed .rg-top .fav-btn { margin-left:0; }
+.rg-wrap.is-collapsed .rg-label { margin-bottom:6px; }
 .rg-label { font-size:15px; font-weight:900; letter-spacing:-.2px; line-height:1.1; margin-bottom:6px; }
 .rg-label.is-strong { text-shadow:0 0 14px currentColor; }
 .rg-meter { position:relative; padding-bottom:9px; }
@@ -5880,6 +5898,24 @@ function computeGrade(item, side) {
    pass opts.gBuy/gSell or it renders nothing. The word is a strict function of
    the DOMINANT grade so it can never sit opposite the higher price-box badge.
    ════════════════════════════════════════════════════════════════════════ */
+/* Collapsed hides the eyebrow and the Buy/grade/Sell scale, leaving the
+   verdict, the bar and Share — everything a repeat user still reads. */
+function ratingCollapsed() {
+  try { return localStorage.getItem('ge_ratingCollapsed') === '1'; } catch (e) { return false; }
+}
+document.addEventListener('click', (ev) => {
+  const btn = ev.target.closest && ev.target.closest('.rg-toggle');
+  if (!btn) return;
+  ev.stopPropagation();
+  const next = !ratingCollapsed();
+  try { localStorage.setItem('ge_ratingCollapsed', next ? '1' : '0'); } catch (e) {}
+  document.querySelectorAll('.rg-wrap').forEach(el => el.classList.toggle('is-collapsed', next));
+  document.querySelectorAll('.rg-toggle').forEach(b => {
+    b.setAttribute('aria-expanded', next ? 'false' : 'true');
+    b.setAttribute('aria-label', (next ? 'Expand' : 'Collapse') + ' Analyst Rating details');
+  });
+});
+
 function renderRatingGauge(item, mountEl, opts = {}) {
   if (!mountEl) return;
   // This function is called more than once per item load (restoreCalculator,
@@ -5943,9 +5979,12 @@ function renderRatingGauge(item, mountEl, opts = {}) {
     'Buy. It points to whichever side (entry or exit) is better graded right now. Advisory only: the Target ' +
     'Buy / Target Sell prices are the actual trade. Tap for the full glossary.').replace(/"/g, '&quot;');
   mountEl.hidden = false;
+  const collapsed = ratingCollapsed();
   mountEl.innerHTML =
     '<div class="rg-top"><span class="rg-eyebrow">Analyst Rating</span>' +
-      '<span class="pg-help" title="' + tip + '" role="button" aria-label="What does the Analyst Rating mean?">?</span></div>' +
+      '<span class="pg-help" title="' + tip + '" role="button" aria-label="What does the Analyst Rating mean?">?</span>' +
+      '<button type="button" class="rg-toggle" aria-expanded="' + (collapsed ? 'false' : 'true') + '" ' +
+        'aria-label="' + (collapsed ? 'Expand' : 'Collapse') + ' Analyst Rating details">' + uiIcon('chev') + '</button></div>' +
     '<div class="rg-label' + (strong ? ' is-strong' : '') + '" style="color:' + hue + '">' + label + '</div>' +
     '<div class="rg-meter' + (muted ? ' is-muted' : '') + '" role="meter" aria-valuemin="-100" aria-valuemax="100" ' +
       'aria-valuenow="' + aria + '" aria-valuetext="' + label + '" aria-label="Analyst rating: ' + label + (sub ? ', ' + sub : '') + '">' +
@@ -5954,6 +5993,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
     '</div>' +
     '<div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span>' +
       '<span class="rg-sub">' + sub + '</span><span class="rg-end rg-end-sell">Sell</span></div>';
+  mountEl.classList.toggle('is-collapsed', collapsed);
   // Rebuilding the mount wipes any child moved into .rg-top — re-place the
   // Share button (landscape only; see placeShareButton) every render.
   placeShareButton();
