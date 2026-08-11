@@ -1339,14 +1339,19 @@ button, input { touch-action: manipulation; }
   .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
   .ticker-header .fav-btn .fav-star { width: 16px; height: 16px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
-  /* Icon-only here, so the chip around it is redundant — filled star means
-     saved, outline star means not, which is the universal affordance. Kills
-     the background, the border, and the 0 0 0 3px ring .fav-btn.active
-     paints OUTSIDE that border (the "extra box behind the box"). */
+  /* Icon-only here, so no background fill in any state — that fill was the
+     "box behind the border". The saved state keeps its gold border and a
+     glow, which is the cue worth having; unsaved shows a bare outline star.
+     border-color (not border-width) does the hiding, so the 1.5px box stays
+     reserved and the star doesn't shift when you toggle it.
+     The glow is the SOFT 0 6px 20px shadow only — the 0 0 0 3px half of the
+     original is a hard-edged ring, which is what read as a second box. */
   .ticker-header .fav-btn,
   .ticker-header .fav-btn:hover,
-  .ticker-header .fav-btn.active { background: transparent; border-color: transparent; box-shadow: none; }
-  .ticker-header .fav-btn:hover { color: #FFE0A0; }
+  .ticker-header .fav-btn.active { background: transparent; }
+  .ticker-header .fav-btn { border-color: transparent; box-shadow: none; }
+  .ticker-header .fav-btn:hover { border-color: rgba(255,179,0,0.45); color: #FFE0A0; box-shadow: none; }
+  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: 0 0 12px rgba(255,179,0,0.4); }
   .toolbar { flex: 1 1 auto; min-width: 0; justify-content: space-between; padding: 2px; align-items: center; }
   .toolbar button { flex: 1; padding: 5px 2px; font-size: 12px; min-width: 0; line-height: 1; }
   .pct-chg { display: none !important; }
@@ -1429,14 +1434,19 @@ button, input { touch-action: manipulation; }
   .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
   .ticker-header .fav-btn .fav-star { width: 17px; height: 17px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
-  /* Icon-only here, so the chip around it is redundant — filled star means
-     saved, outline star means not, which is the universal affordance. Kills
-     the background, the border, and the 0 0 0 3px ring .fav-btn.active
-     paints OUTSIDE that border (the "extra box behind the box"). */
+  /* Icon-only here, so no background fill in any state — that fill was the
+     "box behind the border". The saved state keeps its gold border and a
+     glow, which is the cue worth having; unsaved shows a bare outline star.
+     border-color (not border-width) does the hiding, so the 1.5px box stays
+     reserved and the star doesn't shift when you toggle it.
+     The glow is the SOFT 0 6px 20px shadow only — the 0 0 0 3px half of the
+     original is a hard-edged ring, which is what read as a second box. */
   .ticker-header .fav-btn,
   .ticker-header .fav-btn:hover,
-  .ticker-header .fav-btn.active { background: transparent; border-color: transparent; box-shadow: none; }
-  .ticker-header .fav-btn:hover { color: #FFE0A0; }
+  .ticker-header .fav-btn.active { background: transparent; }
+  .ticker-header .fav-btn { border-color: transparent; box-shadow: none; }
+  .ticker-header .fav-btn:hover { border-color: rgba(255,179,0,0.45); color: #FFE0A0; box-shadow: none; }
+  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: 0 0 12px rgba(255,179,0,0.4); }
   .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 5px; align-items: center; }
   /* line-height:1 so each label's box is the glyph itself. Inherited
      leading otherwise pads the text box unevenly against the 30px
@@ -1832,6 +1842,20 @@ button, input { touch-action: manipulation; }
 @container tickerhdr (max-width: 700px) {
   .ticker-header .toolbar { flex: 1 1 100%; margin-top: 8px; gap: 4px; }
   .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
+}
+/* Both compact layouts pin the toolbar to the SAME row (flex-wrap:nowrap), so
+   neither takes the wrapped-to-its-own-row shape the container query above is
+   dressing up — but that query matches on WIDTH alone, so its margin-top still
+   applied and pushed the timeframes 8px below the star, search box and mode
+   pill. Desktop still wraps, so the query itself has to stay.
+   These have to sit after that block and match its specificity to win.
+   Verified by measuring the rendered row: every control now shares one
+   centerY at both breakpoints. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ticker-header .toolbar { flex: 1 1 auto; margin-top: 0; gap: 5px; }
+}
+@media screen and (max-width: 640px) {
+  .ticker-header .toolbar { flex: 1 1 auto; margin-top: 0; }
 }
 </style>
 </head>
