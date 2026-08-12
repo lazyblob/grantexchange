@@ -1072,7 +1072,10 @@ button, input { touch-action: manipulation; }
    whichever edge the cursor is nearer shows exactly where it'll land — no
    extra DOM element between rows, just an inset box-shadow on the row
    being hovered. */
-.wl-item.dragging { opacity: 0.35; }
+.wl-item.dragging { opacity: 0.35; touch-action: none; }
+/* Picked up by a long-press: lift it off the list so the hold clearly
+   "took" before the finger has moved anywhere. */
+.wl-item.dragging { box-shadow: 0 6px 18px rgba(0,0,0,.55); }
 /* White, not the gold accent — a 5D-flagged row is already gold-tinted, and
    the indicator needs to read against any row color, not just the plain
    ones. */
@@ -2744,13 +2747,34 @@ function deleteFavoriteListLocal(listId) {
    is already set by then. */
 let favDragId = null;
 function wireFavoritesDrag(container) {
+  const clearIndicators = () => container.querySelectorAll('.drop-above, .drop-below')
+    .forEach(r => r.classList.remove('drop-above', 'drop-below'));
+  /* Shared by mouse and touch: given a pointer position, mark the row it's
+     over as the drop target, above or below depending on which half. */
+  const markDropTarget = (x, y) => {
+    const overRow = document.elementFromPoint(x, y)?.closest('.wl-item[data-fav-row="1"]');
+    clearIndicators();
+    if (!overRow || overRow.getAttribute('data-fav-id') === favDragId) return;
+    const rect = overRow.getBoundingClientRect();
+    overRow.classList.add((y - rect.top) < rect.height / 2 ? 'drop-above' : 'drop-below');
+  };
+  /* Commit whatever the indicator is pointing at. */
+  const commitDrop = (row) => {
+    const target = container.querySelector('.drop-above, .drop-below');
+    if (target && favDragId) {
+      moveFavoriteBeforeAfter(favDragId, target.getAttribute('data-fav-id'), target.classList.contains('drop-above'));
+    }
+    row.dataset.suppressClick = '1';
+    setTimeout(() => { delete row.dataset.suppressClick; }, 0);
+    clearIndicators();
+    favDragId = null;
+  };
   container.querySelectorAll('.wl-item[data-fav-row="1"]').forEach(row => {
     row.addEventListener('mousedown', (ev) => {
       if (ev.button !== 0 || ev.target.closest('.wl-fav-remove')) return;
       ev.preventDefault();
       const startX = ev.clientX, startY = ev.clientY;
       let dragging = false;
-      const clearIndicators = () => container.querySelectorAll('.drop-above, .drop-below').forEach(r => r.classList.remove('drop-above', 'drop-below'));
       const onMove = (mev) => {
         if (!dragging) {
           if (Math.abs(mev.clientX - startX) < 6 && Math.abs(mev.clientY - startY) < 6) return;
@@ -2758,30 +2782,69 @@ function wireFavoritesDrag(container) {
           favDragId = row.getAttribute('data-fav-id');
           row.classList.add('dragging');
         }
-        const overRow = document.elementFromPoint(mev.clientX, mev.clientY)?.closest('.wl-item[data-fav-row="1"]');
-        clearIndicators();
-        if (!overRow || overRow.getAttribute('data-fav-id') === favDragId) return;
-        const rect = overRow.getBoundingClientRect();
-        overRow.classList.add((mev.clientY - rect.top) < rect.height / 2 ? 'drop-above' : 'drop-below');
+        markDropTarget(mev.clientX, mev.clientY);
       };
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
         row.classList.remove('dragging');
-        if (dragging) {
-          const target = container.querySelector('.drop-above, .drop-below');
-          if (target && favDragId) {
-            moveFavoriteBeforeAfter(favDragId, target.getAttribute('data-fav-id'), target.classList.contains('drop-above'));
-          }
-          row.dataset.suppressClick = '1';
-          setTimeout(() => { delete row.dataset.suppressClick; }, 0);
-        }
-        clearIndicators();
-        favDragId = null;
+        if (dragging) commitDrop(row);
+        else { clearIndicators(); favDragId = null; }
       };
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
+
+    /* Touch: press and hold to pick a row up, then drag it. A plain
+       touch-drag can't work here because the row has no free gesture left —
+       horizontal movement is swipe-to-remove and vertical movement is page
+       scroll. Holding still is the one input that means neither, which is
+       also why every mobile list that reorders does it this way.
+       The hold has to survive without the browser starting a scroll, so the
+       timer is cancelled the moment the finger moves more than a few px;
+       once it fires the finger is stationary, so preventDefault on the
+       following touchmove reliably stops the page scrolling under it. */
+    const HOLD_MS = 380, SLOP = 8;
+    let holdTimer = null, touchDragging = false, tx = 0, ty = 0;
+    const cancelHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } };
+
+    row.addEventListener('touchstart', (ev) => {
+      if (ev.touches.length !== 1 || ev.target.closest('.wl-fav-remove')) return;
+      const t = ev.touches[0];
+      tx = t.clientX; ty = t.clientY; touchDragging = false;
+      cancelHold();
+      holdTimer = setTimeout(() => {
+        holdTimer = null;
+        touchDragging = true;
+        favDragId = row.getAttribute('data-fav-id');
+        row.classList.add('dragging');
+        /* A pickup you can feel — without it a long-press has no moment where
+           the row visibly becomes draggable. */
+        try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+      }, HOLD_MS);
+    }, { passive: true });
+
+    row.addEventListener('touchmove', (ev) => {
+      const t = ev.touches[0];
+      if (!t) return;
+      if (holdTimer) {
+        if (Math.abs(t.clientX - tx) > SLOP || Math.abs(t.clientY - ty) > SLOP) cancelHold();
+        return;
+      }
+      if (!touchDragging) return;
+      ev.preventDefault();
+      markDropTarget(t.clientX, t.clientY);
+    }, { passive: false });
+
+    const endTouch = () => {
+      cancelHold();
+      if (!touchDragging) return;
+      touchDragging = false;
+      row.classList.remove('dragging');
+      commitDrop(row);
+    };
+    row.addEventListener('touchend', endTouch);
+    row.addEventListener('touchcancel', endTouch);
   });
 }
 /* Rewrites `favorites` to match what's currently on screen, so a manual
@@ -5248,6 +5311,9 @@ function renderWatchlist() {
       row.classList.add('swiping');
     }, { passive: true });
     row.addEventListener('touchmove', (ev) => {
+      /* A row being reordered is not being swiped — without this the row
+         would slide sideways under the finger mid-drag. */
+      if (favDragId) return;
       const t = ev.touches[0]; const x = t.clientX - startX; const y = t.clientY - startY;
       if (!dragging && Math.abs(x) > Math.abs(y) + 4 && Math.abs(x) > 6) dragging = true;
       if (!dragging) return;
