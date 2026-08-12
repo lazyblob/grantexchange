@@ -753,6 +753,15 @@ button, input { touch-action: manipulation; }
   .price-steppers { display: none; }
 }
 .chart-footer { background: var(--bg-panel); border-top: 1px solid var(--border-main); padding: 3px 10px; display: flex; gap: 10px; font-size: 9px; color: var(--text-muted); align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+/* Dropped on compact screens. It's a colour key you read once and then never
+   again, but it costs 17px in landscape and 37px in portrait (where it wraps
+   to two lines) — more than the volume pane did, out of the same budget the
+   chart is short of. The information stays reachable two ways that don't cost
+   permanent height: tapping any marker on the chart names it in the tooltip,
+   and the glossary (Menu → Help) has the full key. Desktop keeps it. */
+@media (max-width: 640px), (max-height: 600px) and (orientation: landscape) {
+  .chart-footer.legend { display: none; }
+}
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dash { width: 10px; height: 2px; display: inline-block; }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -2311,7 +2320,17 @@ button, input { touch-action: manipulation; }
       <div class="glossary-row"><span class="wl-trend up">+450K ea avg</span><span>30-day average per-item margin (for 1M lists). More stable than a one-day snapshot.</span></div>
 
       <div class="glossary-section">Favorite reorder</div>
-      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">▲ / ▼</span><span>Move a favorite up or down inside the Favorites list (tap the small chevrons on hover-revealed reorder controls). Tap × on a row to remove it, or swipe-left on touch.</span></div>
+      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Drag</span><span>Drag anywhere on a favorite's row to move it up or down the list; the order is saved. Tap 🗑 on a row to remove it, or swipe-left on touch.</span></div>
+
+      <!-- Swatches carry inline colours rather than the .legend-* classes:
+           those are scoped under a .legend ancestor, which the modal has no
+           reason to have. -->
+      <div class="glossary-section">Chart markers</div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dash" style="background:var(--buy-color)"></span><span class="legend-dash" style="background:var(--sell-color)"></span></span><span><strong>Lows</strong> (gold) — insta-sell prints, the price sellers actually accepted. <strong>Highs</strong> (teal) — insta-buy prints, what buyers paid.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dot" style="background:var(--buy-color)"></span><span class="legend-dot" style="background:var(--sell-color)"></span></span><span><strong>Period Low / Period High</strong> — solid dot with a pale centre. The lowest and highest price across the whole timeframe you're viewing.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-ring" style="border-color:var(--buy-color)"></span><span class="legend-ring" style="border-color:var(--sell-color)"></span></span><span><strong>Recent Low / Recent High</strong> — hollow ring. The extreme within just the most recent quarter of the window, so you can tell an old peak from a fresh one.</span></div>
+      <div class="glossary-row"><span class="legend-dash" style="background:rgba(244,241,232,0.85)"></span><span><strong>Trend</strong> — the smoothed mid-price line. Follows direction without the print-to-print noise.</span></div>
+      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and teal for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
 
       <div class="glossary-section">Analyst Rating (sidebar gauge — the one opinion on the page)</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell; mid-range reads Neutral. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
