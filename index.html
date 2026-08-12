@@ -1239,6 +1239,10 @@ button, input { touch-action: manipulation; }
 .col-menu-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; font-size: 12px; color: var(--text-main); cursor: pointer; border-radius: 4px; }
 .col-menu-row:hover { background: var(--bg-input); }
 .col-menu-row input { margin: 0; accent-color: var(--border-active); cursor: pointer; }
+/* Each row leads with the exact header token that column shows, because the
+   descriptive names didn't connect: "Margin (after tax)" and the "EA" column
+   read as two different things, so the switch for EA looked missing. */
+.col-menu-tag { display: inline-block; min-width: 30px; margin-right: 6px; font-size: 9px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--border-active); font-variant-numeric: tabular-nums; }
 
 /* Width alone, not orientation — a narrow LANDSCAPE window (mouse or
    touch) can't fit the full desktop header/target-boxes any better than a
@@ -1664,9 +1668,18 @@ button, input { touch-action: manipulation; }
 .fc-tip-band.on { color:#0C0B09; }
 .fc-tip-foot { font-size:9.5px; color:var(--text-muted); line-height:1.45; margin-top:8px; }
 .fc-prices { display:flex; gap:6px; margin:7px 0 6px; }
-.fc-price { flex:1; padding:5px 6px; border-radius:8px; text-align:center; }
+/* Buttons, not labels — tapping one moves the chart's target line the same
+   way the Target Buy / Target Sell boxes do, so they carry the same selected
+   treatment (white rim + tinted glow) as those boxes. */
+.fc-price { flex:1; padding:5px 6px; border-radius:8px; text-align:center; font:inherit; color:inherit; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease; }
 .fc-price.buy  { background:rgba(230,195,92,.10); border:1px solid rgba(230,195,92,.30); }
 .fc-price.sell { background:rgba(38,166,154,.10); border:1px solid rgba(38,166,154,.30); }
+.fc-price.buy:hover  { border-color:rgba(230,195,92,.65); }
+.fc-price.sell:hover { border-color:rgba(38,166,154,.65); }
+.fc-price.selected { border-color:#fff; }
+.fc-price.buy.selected  { box-shadow:0 0 0 1px rgba(255,184,0,.25), 0 4px 12px rgba(255,184,0,.10); }
+.fc-price.sell.selected { box-shadow:0 0 0 1px rgba(38,166,154,.30), 0 4px 12px rgba(38,166,154,.12); }
+.fc-price:focus-visible { outline:2px solid var(--border-active); outline-offset:2px; }
 .fc-plabel { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
 .fc-price.buy .fc-plabel { color:var(--buy-color); }
 .fc-price.sell .fc-plabel { color:var(--sell-color); }
@@ -1740,7 +1753,14 @@ button, input { touch-action: manipulation; }
 .rg-toggle:hover { background:rgba(201,166,77,0.22); }
 .rg-wrap.is-collapsed .rg-scale { display:none; }
 .rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
-.rg-wrap.is-collapsed .rg-top { position:absolute; top:6px; right:0; margin:0; gap:4px; z-index:2; }
+/* Lifted 5px and pulled 2px off the right edge. Collapsed, the meter rides
+   directly under this cluster, and the needle overhangs the track by 2px —
+   so on a Strong Buy/Sell (needle pinned to an end) it ran straight into the
+   Share and collapse buttons: measured touching at 1440x900 and actually
+   overlapping by 2px at 390x844. The buttons are also trimmed a touch so the
+   cluster is shorter than the verdict line it sits beside. */
+.rg-wrap.is-collapsed .rg-top { position:absolute; top:1px; right:2px; margin:0; gap:4px; z-index:2; }
+.rg-wrap.is-collapsed .rg-top .fav-btn { padding:2px 5px; }
 /* margin-left:auto is what right-aligns Share in the normal flow row; once
    .rg-top is absolute there's no row left to push against. */
 .rg-wrap.is-collapsed .rg-top .fav-btn { margin-left:0; }
@@ -3070,6 +3090,13 @@ $('#sellPrice').onclick = () => { activePriceBox = 'sell'; updateSelection(); qu
 function updateSelection() {
   $('#buyPrice').classList.toggle('selected', activePriceBox === 'buy');
   $('#sellPrice').classList.toggle('selected', activePriceBox === 'sell');
+  /* The flip card's Buy @ / Sell @ drive the same target line, so they follow
+     the strip too — but only while the card is advertising the item actually
+     on the chart, since otherwise its prices belong to something else. */
+  const card = document.querySelector('.flip-card[data-id]');
+  const onChart = !!(card && selected && String(selected.id) === card.getAttribute('data-id'));
+  document.querySelectorAll('.fc-price[data-side]').forEach(el =>
+    el.classList.toggle('selected', onChart && el.dataset.side === activePriceBox));
 }
 
 $('#btnFav').onclick = () => {
@@ -4347,9 +4374,9 @@ function buildColHeader(host) {
     <button type="button" id="btnCols" class="col-menu-btn" aria-label="Customize columns" title="Customize columns" aria-expanded="false">⋯</button>
     <div class="col-menu" id="colMenu" role="menu">
       <div class="col-menu-section">Customize columns</div>
-      <label class="col-menu-row"><input type="checkbox" data-col="change"><span>% change (24H)</span></label>
-      <label class="col-menu-row"><input type="checkbox" data-col="margin"><span>Margin (after tax)</span></label>
-      <label class="col-menu-row"><input type="checkbox" data-col="volume"><span>Daily volume</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="change"><span><b class="col-menu-tag">Chg%</b> 24h change</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="margin"><span><b class="col-menu-tag">Ea</b> Margin (after tax)</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="volume"><span><b class="col-menu-tag">Vol</b> Daily volume</span></label>
       <div class="col-menu-section">Sort favorites by</div>
       <div class="col-menu-row col-menu-sort ch-sortable" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span><span class="ch-arrow"></span></div>
     </div>
@@ -5804,6 +5831,11 @@ function renderTargetBoxes() {
   $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Live: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val"><span>${fmtGp(recommendedBuy)}</span>${steppers('buy')}</div>`;
   $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Live: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val"><span>${fmtGp(recommendedSell)}</span>${steppers('sell')}</div>`;
   wireTargetPriceSteppers();
+  /* Re-sync the flip card's Buy @ / Sell @ highlight: it only lights while the
+     card's item is the one on the chart, and that can change under it (opening
+     the card's item, or ↻ Next landing on the one already shown) without any
+     click to trigger the update. */
+  updateSelection();
 }
 /* Keeps the "· Xm ago" labels above current without a full re-render (which
    would also re-wire the stepper buttons every tick for no reason). */
@@ -6421,8 +6453,8 @@ function renderFlipCard(rec){
           </div>
         </div>
         <div class="fc-prices">
-          <div class="fc-price buy"><span class="fc-plabel">Buy @</span><span class="fc-pval">${fmtGp(rec.buy)}</span></div>
-          <div class="fc-price sell"><span class="fc-plabel">Sell @</span><span class="fc-pval">${fmtGp(rec.sell)}</span></div>
+          <button type="button" class="fc-price buy" data-side="buy" title="Show the buy target line on the chart"><span class="fc-plabel">Buy @</span><span class="fc-pval">${fmtGp(rec.buy)}</span></button>
+          <button type="button" class="fc-price sell" data-side="sell" title="Show the sell target line on the chart"><span class="fc-plabel">Sell @</span><span class="fc-pval">${fmtGp(rec.sell)}</span></button>
         </div>
         <div class="fc-stats">
           <div><span class="fc-slabel">Profit</span><span class="fc-sval pos">+${fmtGp(rec.edge)}</span></div>
@@ -6517,11 +6549,29 @@ function wireFlipButtons(){
     if (gauge) gauge.onmouseleave = () => { if (matchMedia('(hover: hover)').matches) setTip(false); };
     tip.onclick = e => e.stopPropagation();
   }
+  /* Buy @ / Sell @ drive the chart's target line, exactly like the Target Buy
+     and Target Sell boxes above the chart — same activePriceBox state, so the
+     two stay in sync and the card's own highlight mirrors the strip's. When
+     the card is advertising an item the chart isn't showing, pick the side
+     first and then open it, since nothing resets activePriceBox on load. */
+  if (card) {
+    const cardId = card.getAttribute('data-id');
+    h.querySelectorAll('.fc-price[data-side]').forEach(el => {
+      el.onclick = (e) => {
+        e.stopPropagation();
+        activePriceBox = el.dataset.side;
+        if (!selected || String(selected.id) !== String(cardId)) { openFlip(cardId); return; }
+        updateSelection();
+        queueDraw();
+      };
+    });
+    updateSelection();   // paint the card's initial highlight from current state
+  }
   if (card) {
     const id = card.getAttribute('data-id');
-    card.onclick = (e) => { if (e.target.closest('.fc-score-btn, .fc-tip')) return; openFlip(id); };
+    card.onclick = (e) => { if (e.target.closest('.fc-score-btn, .fc-tip, .fc-price')) return; openFlip(id); };
     card.onkeydown = e => {
-      if (e.target.closest && e.target.closest('.fc-score-btn, .fc-tip')) return;
+      if (e.target.closest && e.target.closest('.fc-score-btn, .fc-tip, .fc-price')) return;
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFlip(id); }
     };
   }
