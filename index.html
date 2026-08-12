@@ -3328,7 +3328,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 1210;   // one chart + a 2-line summary needs less room than two charts + four lines
+  const W = 1200, H = 990;   // one chart + a 2-line summary needs less room than two charts + four lines
   // Backing store rendered at the device's actual pixel density, then
   // scaled back down to logical W/H — without this every draw call below
   // still WORKS (same W/H coordinates throughout), it just comes out soft
@@ -3522,84 +3522,21 @@ async function buildShareCardCanvas() {
       potentialProfit >= 0 ? '#1FB85C' : '#EF5350');
   }
 
-  // 30-day range meter — same warm-champagne "position in range" track as
-  // the on-page insight meter. Volume has its own chip above now instead
-  // of living here.
-  const d30 = shareCard30dInfo();
-  if (d30) {
-    const labelY = 468;
-    g.fillStyle = '#8A8274';
-    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText('30-DAY RANGE', 48, labelY);
-
-    const trackX = 48, trackY = labelY + 22, trackW = W - 96, trackH = 12;
-    const fillW = Math.max(0, Math.min(100, d30.pos)) / 100 * trackW;
-    const markerX = trackX + fillW;
-
-    if (d30.price) {
-      g.font = '700 13px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      const bw = g.measureText(d30.price + ' gp').width + 16;
-      const bx = Math.min(Math.max(markerX - bw / 2, trackX), trackX + trackW - bw);
-      const by = trackY - 32;
-      roundRectPath(g, bx, by, bw, 22, 5);
-      g.fillStyle = 'rgba(255,255,255,0.08)';
-      g.fill();
-      g.strokeStyle = 'rgba(255,255,255,0.15)';
-      g.lineWidth = 1;
-      g.stroke();
-      g.fillStyle = '#E5C158';
-      g.textAlign = 'center';
-      g.fillText(d30.price + ' gp', bx + bw / 2, by + 15);
-      g.textAlign = 'left';
-    }
-
-    const trackGrad = g.createLinearGradient(trackX, 0, trackX + trackW, 0);
-    trackGrad.addColorStop(0, '#211d17');
-    trackGrad.addColorStop(0.55, '#443d31');
-    trackGrad.addColorStop(1, '#6f6350');
-    roundRectPath(g, trackX, trackY, trackW, trackH, trackH / 2);
-    g.fillStyle = trackGrad;
-    g.fill();
-
-    g.save();
-    roundRectPath(g, trackX, trackY, trackW, trackH, trackH / 2);
-    g.clip();
-    g.fillStyle = 'rgba(201,166,77,0.24)';
-    g.fillRect(trackX, trackY, fillW, trackH);
-    g.restore();
-
-    g.fillStyle = '#E5C158';
-    roundRectPath(g, markerX - 3, trackY - 5, 6, trackH + 10, 3);
-    g.fill();
-
-    g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillStyle = '#D9D3C7';
-    g.textAlign = 'left';
-    g.fillText(d30.lo + ' gp', trackX, trackY + trackH + 26);
-    g.textAlign = 'right';
-    g.fillText(d30.hi + ' gp', trackX + trackW, trackY + trackH + 26);
-    g.font = '600 10px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillStyle = '#8A8274';
-    g.fillText('30D HIGH', trackX + trackW, trackY + trackH + 40);
-    g.textAlign = 'left';
-    g.fillText('30D LOW', trackX, trackY + trackH + 40);
-  }
+  /* The 30-day range bar was here. It answered "where in its recent range
+     is this?" — but so does the chart below, which also shows the shape of
+     how it got there and stays legible when a feed downscales the card. Two
+     answers to one question was ~120px of the vertical the card could least
+     afford. The bar stays on the page itself, where there's room. */
 
   // Analyst Rating — the actual 5-segment gauge bar + needle, not just the
   // word, mirroring the on-page module exactly (colors pulled straight from
   // its CSS: teal = sell side, gold = buy side, brighter = live segment).
   const gaugeInfo = shareCardGaugeInfo();
   if (gaugeInfo) {
-    const labelY = 588;
+    const labelY = 468;
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText('ANALYST RATING', 48, labelY);
-    if (gaugeInfo.sub) {
-      g.font = '400 13px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.textAlign = 'right';
-      g.fillText(gaugeInfo.sub, W - 48, labelY);
-      g.textAlign = 'left';
-    }
     g.fillStyle = gaugeInfo.color;
     g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText(gaugeInfo.text, 48, labelY + 36);
@@ -3726,33 +3663,15 @@ async function buildShareCardCanvas() {
        at half width neither was legible once a feed had downscaled it. The
        30-day window is the one that matches the range meter and the summary
        above it, so it's the one that survives. */
-    const chartY = 726, chartH = 224;
+    const chartY = 626, chartH = 210;
     drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, W - 96, chartY, chartH);
   }
 
-  // Auto-generated market summary — the exact sentence #insText already
-  // shows on the page, reused rather than recomputed so it can never
-  // disagree with what's shown live. Gives a shared card actual "why this
-  // matters" narrative instead of just a grid of numbers.
-  const insText = document.getElementById('insText')?.textContent;
-  if (insText) {
-    /* This paragraph is the one part of the card that's actually READ rather
-       than glanced at, so it's sized to survive a downscaled social preview
-       — 16px/400 was the smallest thing on a 1200px canvas and turned to
-       mush at thumbnail size. Card height below carries enough slack for
-       the 4 lines the longest summaries wrap to at this size. */
-    const summaryY = 1026;
-    g.fillStyle = '#8A8274';
-    g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText('MARKET SUMMARY', 48, summaryY);
-    g.fillStyle = '#D9D3C7';
-    g.font = '600 24px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    /* Two lines, hard stop. The full sentence reads fine under a chart on the
-       page but ran to four lines here, which is what made the card feel like
-       a wall. Trimmed at a word boundary with an ellipsis so it still ends
-       like a sentence rather than mid-word. */
-    wrapCanvasText(g, clampToLines(g, insText, W - 96, 2), 48, summaryY + 36, W - 96, 34);
-  }
+  /* The market summary paragraph was here. It restated the numbers already
+     on the card in sentence form, which is the one thing nobody reads in a
+     feed preview — and it was the longest block on the card. The full
+     sentence still runs under the chart on the page, and rides along in the
+     share caption, which is where prose actually gets read. */
 
   // Footer watermark + live timestamp — a screenshot can circulate for
   // days, and "live" alone reads as unverifiable once it's no longer
