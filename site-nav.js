@@ -14,7 +14,7 @@
    somewhere. Values mirror finder-page.css's palette. */
 (function () {
   var LINKS = [
-    { href: '/', label: 'Home — Live GE Tracker' },
+    { href: '/', label: 'Home — Trading Terminal' },
     { group: 'Scanners' },
     { href: '/high-vol-margins.html', label: 'High Volume Margins' },
     { href: '/low-vol-margins.html', label: 'Low Volume Margins' },
