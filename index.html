@@ -75,42 +75,42 @@
     {
       "@type": "Question",
       "name": "What is PocketGE?",
-      "acceptedAnswer": { "@type": "Answer", "text": "A trading terminal for the Old School RuneScape Grand Exchange. It is an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists, chart any item from one day to five years, and read live prices, target buy and sell levels, after-tax margins, volume, buy limits and scored flip recommendations without switching tabs. Free, no account, and it reads public price data only - it never touches your RuneScape login." }
+      "acceptedAnswer": { "@type": "Answer", "text": "A trading terminal for the Old School RuneScape Grand Exchange: watchlists, charts from one day to five years, and the numbers that decide a trade - target buy and sell levels, after-tax margins, volume, buy limits. Free, no account, and it never touches your RuneScape login." }
     },
     {
       "@type": "Question",
       "name": "Is PocketGE useful if I am new to OSRS flipping?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes, and the plain-English parts exist for exactly that. Every item carries a written summary of how it has been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its range, and an analyst rating on the current price - so you can learn to read a chart instead of needing to already. Starting from zero, the flipping guide covers buy limits, the 2% tax and margins before you risk any gp." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every item comes with a plain-English summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling, and an analyst rating on the current price. The flipping guide covers buy limits, the 2% tax and margins if you're starting from zero." }
     },
     {
       "@type": "Question",
       "name": "How does the 2% Grand Exchange tax work in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Selling on the Grand Exchange costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few specific ones like the bond. PocketGE takes it out of every margin and every profit figure, so what you see is what you keep." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few others like the bond. PocketGE takes it out of every margin, so what you see is what you keep." }
     },
     {
       "@type": "Question",
       "name": "What are the best items to flip in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "It depends on your capital and your patience. High-volume staples - gems, bars, ores, runes, arrows, cannonballs - fill fast on thin per-item margins, so they suit active flipping. Rare gear and niche supplies carry wider spreads but take longer to fill. The sidebar splits live margins into High Vol and Low Vol lists, both sorted by gp per flip after tax." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Depends on your capital and your patience. High-volume staples - gems, bars, ores, runes, arrows - fill fast on thin margins. Rare gear and niche supplies pay wider spreads but take hours. The sidebar splits margins into High Vol and Low Vol lists, both sorted by gp per flip after tax." }
     },
     {
       "@type": "Question",
       "name": "What is a buy limit on the Grand Exchange?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Every tradeable item has a 4-hour buy limit - the most you can buy from the GE in a rolling four-hour window. It is the ceiling on what one flip can make per cycle, which is why the potential profit figure multiplies the per-item margin by that limit instead of quoting an unbounded number." }
+      "acceptedAnswer": { "@type": "Answer", "text": "The most you can buy of one item in a rolling four-hour window. It caps what a single flip can make per cycle, which is why potential profit multiplies the per-item margin by that limit instead of quoting an unbounded number." }
     },
     {
       "@type": "Question",
       "name": "How do I know when to buy or sell an item in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each with a 0-100 grade and a plain verdict for the current price — Steal Buy and Top Sell at the extremes, Wait for Dip when a setup is forming but the price has not arrived yet. The 5-day high and low badges flag when an item is testing a genuine multi-day extreme." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each with a 0-100 score and a plain verdict - Steal Buy and Top Sell at the extremes, Wait for Dip when a setup is forming but the price hasn't arrived. The 5-day badges flag a genuine multi-day extreme." }
     },
     {
       "@type": "Question",
       "name": "What is the difference between high-volume and low-volume flipping?",
-      "acceptedAnswer": { "@type": "Answer", "text": "High-volume items trade tens of thousands to millions of units a day: offers fill almost immediately, margins are thin, and the profit comes from turning your capital over repeatedly. Low-volume items move slowly on wider spreads, so each flip earns more but you may wait hours for a fill. PocketGE lists them separately so you do not tie up capital in a slow item expecting a fast one." }
+      "acceptedAnswer": { "@type": "Answer", "text": "High-volume items fill almost immediately on thin margins, so profit comes from turning capital over repeatedly. Low-volume items pay wider spreads but can take hours to fill. PocketGE lists them separately so you don't tie up capital in a slow item expecting a fast one." }
     },
     {
       "@type": "Question",
       "name": "Does PocketGE need my RuneScape login?",
-      "acceptedAnswer": { "@type": "Answer", "text": "No, and it has no accounts at all. It reads public Grand Exchange price data and nothing else. Favorites, Bank stacks and alerts stay in your own browser, and you can install it to your phone's home screen as an app." }
+      "acceptedAnswer": { "@type": "Answer", "text": "No, and there are no accounts at all. It reads public Grand Exchange data and nothing else. Favorites, Bank stacks and alerts stay in your browser, and you can install it to your home screen as an app." }
     }
   ]
 }
@@ -1711,7 +1711,12 @@ button, input { touch-action: manipulation; }
 .find-flip-btn .ff-bolt { font-size:16px; }
 .flip-card { margin:0; padding:0; cursor:pointer; background:transparent; border:none; box-shadow:none; }
 .flip-card:focus-visible { outline:2px solid var(--buy-color); outline-offset:2px; }
-.fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+/* Internal rhythm matched to the sections above. Measured, these gaps were
+   6/7/6px against Analyst Rating's 10px, so the section read tighter than
+   its peers even after it stopped being a nested card — four stacked bands
+   (name+score, edge line, buy/sell, stats) with barely a hairline between
+   them. */
+.fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
 .fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--buy-color); text-transform:uppercase; }
 .fc-head-ctrls { display:flex; align-items:center; gap:6px; flex:0 0 auto; }
 .fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer;
@@ -1751,7 +1756,7 @@ button, input { touch-action: manipulation; }
 .fc-icon { width:30px; height:30px; flex:0 0 30px; image-rendering:pixelated; }
 .fc-main { flex:1 1 auto; min-width:0; }
 .fc-name { font-weight:800; font-size:14px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.fc-why { font-size:10.5px; color:var(--text-muted); margin-top:1px; }
+.fc-why { font-size:10.5px; color:var(--text-muted); margin-top:3px; line-height:1.45; }
 .fc-gauge { flex:0 0 auto; text-align:center; min-width:58px; position:relative; }
 .fc-score { font-size:18px; font-weight:800; line-height:1; }
 .fc-verdict { font-size:9.5px; font-weight:700; margin-top:1px; }
@@ -1792,7 +1797,7 @@ button, input { touch-action: manipulation; }
 .fc-tip-band { flex:1 1 0; text-align:center; font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.2px; padding:3px 1px; border-radius:4px; background:var(--bg-input); color:var(--text-muted); }
 .fc-tip-band.on { color:#0C0B09; }
 .fc-tip-foot { font-size:9.5px; color:var(--text-muted); line-height:1.45; margin-top:8px; }
-.fc-prices { display:flex; gap:6px; margin:7px 0 6px; }
+.fc-prices { display:flex; gap:8px; margin:11px 0 10px; }
 /* Buttons, not labels — tapping one moves the chart's target line the same
    way the Target Buy / Target Sell boxes do, so they carry the same selected
    treatment (white rim + tinted glow) as those boxes. */
@@ -2098,7 +2103,7 @@ button, input { touch-action: manipulation; }
             </div>
             <span class="rg-needle" style="left:15%;--rg-hue:var(--buy-color)"></span>
           </div>
-          <div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span><span class="rg-sub">Entry grade 92 · 1D</span><span class="rg-end rg-end-sell">Sell</span></div>
+          <div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span><span class="rg-sub">Entry score 92 · 1D</span><span class="rg-end rg-end-sell">Sell</span></div>
         </div>
       </div>
       <ol class="landing-demo-callouts">
@@ -2434,7 +2439,7 @@ button, input { touch-action: manipulation; }
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>Shown on the 1D timeframe — the day-flip ask. -1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at live insta-buy so we never recommend selling below where buyers are paying right now. For high-volatility items the anchor blends toward 0.5% below the 24h high. If the live spread can't beat the 2% tax, both 1D boxes switch to the day's realized dip/peak (recency-weighted percentiles of the day's prints) — the levels worth placing patient orders at.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Swing Buy / Sell</span><span>On 5D and longer timeframes the boxes switch to swing anchors for THAT window — day trade vs swing trade. Swing Buy sits near the window's realised floor, Swing Sell near its ceiling, using recency-weighted percentiles: a high printed last week counts in full, one from months ago barely counts — so a downtrending item won't quote you a sell level the market left behind. Never the absolute min/max, so one freak spike can't set your target. Longer horizons never quote a worse level than shorter ones — the 1M ask is always at least the 5D and 1D ask, because more patience can always execute the shorter plan. The grade beside each number judges the same window.</span></div>
 
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--text-muted);font-size:10px;">GRADE 0–100</span><span>The number beside each target scores the current price against that same window, and carries a word with it: <strong>Steal Buy / Top Sell</strong> at 85+, <strong>Strong Entry / Strong Exit</strong> at 70+, <strong>OK</strong> at 50+, <strong>Weak</strong> at 30+, <strong>Avoid</strong> below that. You'll also see <strong>Wait for Dip / Wait for Peak</strong> when the setup is forming but the price hasn't arrived, <strong>Thin — Hold</strong> when the margin is too slim to be worth it, and <strong>No Margin</strong> when the spread can't beat the tax.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--text-muted);font-size:10px;">GRADE 0–100</span><span>The score beside each target rates the current price against that same window, and carries a word with it: <strong>Steal Buy / Top Sell</strong> at 85+, <strong>Strong Entry / Strong Exit</strong> at 70+, <strong>OK</strong> at 50+, <strong>Weak</strong> at 30+, <strong>Avoid</strong> below that. You'll also see <strong>Wait for Dip / Wait for Peak</strong> when the setup is forming but the price hasn't arrived, <strong>Thin — Hold</strong> when the margin is too slim to be worth it, and <strong>No Margin</strong> when the spread can't beat the tax.</span></div>
       <div class="glossary-section">Headline numbers</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--positive);font-size:10px;">POTENTIAL PROFIT</span><span>The per-item margin after the 2% tax, multiplied by the item's 4-hour buy limit — what one full cycle could clear if it all fills, not a per-item figure. Tap it to open the breakdown and edit the quantity.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--border-active);font-size:10px;">30-DAY RANGE</span><span>The slider under the chart places the live price between its 30-day low and high. Near the left means it's cheap against the last month; near the right means it's near the top of it.</span></div>
@@ -6417,7 +6422,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
         signed = dir * Math.min(mag, 0.55); strong = false;
         if (dir > 0) { label = 'Buy the Dip'; hue = 'var(--buy-color)'; liveIdx = 3; }
         else { label = 'Sell the Rip'; hue = 'var(--sell-color)'; liveIdx = 1; }
-        sub = `${dir > 0 ? 'Entry' : 'Exit'} grade ${dom} · ${tf} · not yet`;
+        sub = `${dir > 0 ? 'Entry' : 'Exit'} score ${dom} · ${tf} · not yet`;
       } else {
         signed = dir * mag;
         if      (signed >=  0.60) { label = 'Strong Buy';  hue = 'var(--buy-color)';  liveIdx = 4; strong = true; }
@@ -6425,7 +6430,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
         else if (signed >  -0.20) { label = 'Neutral';     hue = 'var(--text-muted)'; liveIdx = 2; }
         else if (signed >  -0.60) { label = 'Sell';        hue = 'var(--sell-color)'; liveIdx = 1; }
         else                      { label = 'Strong Sell'; hue = 'var(--sell-color)'; liveIdx = 0; strong = true; }
-        sub = `${dir > 0 ? 'Entry' : 'Exit'} grade ${dom} · ${tf}`;
+        sub = `${dir > 0 ? 'Entry' : 'Exit'} score ${dom} · ${tf}`;
       }
     }
   }
@@ -8924,16 +8929,17 @@ if ('serviceWorker' in navigator) {
   <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong> — TradingView-inspired charts, watchlists you build yourself, and after-tax margins on every item, in one place instead of five tabs.</p>
   <p class="about-intro-2">It won't predict the market. Nothing can. What it does is make the OSRS Grand Exchange readable — whether you've been merching for years or you're still working out how the GE works.</p>
 
-  <p class="about-questions">Five questions decide every flip. PocketGE is built to answer them:</p>
+  <p class="about-questions">Six questions decide every flip. PocketGE is built to answer them:</p>
   <ul class="about-qlist">
     <li><b>What should I watch?</b> Watchlists, plus scanners that surface items already at a 5-day extreme.</li>
     <li><b>Is this interesting right now?</b> An analyst rating and a 30-day range meter, read at a glance.</li>
     <li><b>Where do I buy and sell?</b> Target Buy and Target Sell levels, anchored to real recent trades.</li>
-    <li><b>How much could I make?</b> Margin after tax, scaled to the item's 4-hour buy limit.</li>
+    <li><b>How much could I make?</b> Potential profit after GE tax, based on the item's 4-hour buy limit.</li>
+    <li><b>What's the risk?</b> The recent range, how much it swings, how fast it fills, and what it did before now.</li>
     <li><b>How has it been moving?</b> Charts from one day to five years, plus a plain-English summary.</li>
   </ul>
 
-  <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game.</p>
+  <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too, usually around the GE on World 301/302. I'm actively building and improving this based on my own flipping and your feedback. Bug, feature idea, or just want to talk flipping? Add me in-game.</p>
 
   <h2>Watchlists: star it once, stop hunting for it</h2>
   <p>Most OSRS merching comes back to the same handful of items. Star them and they hold a row in the sidebar — live price, 24-hour change, after-tax margin and daily volume side by side — so one glance tells you whether anything moved while you were away.</p>
@@ -9035,35 +9041,35 @@ if ('serviceWorker' in navigator) {
   <div class="faq">
     <details>
       <summary>What is PocketGE?</summary>
-      <p>A trading terminal for the Old School RuneScape Grand Exchange. It's an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists, chart any item from one day to five years, and read live prices, target buy and sell levels, after-tax margins, volume, buy limits and scored flip recommendations without switching tabs. Free, no account, and it reads public price data only — it never touches your RuneScape login.</p>
+      <p>A trading terminal for the Old School RuneScape Grand Exchange: watchlists, charts from one day to five years, and the numbers that decide a trade — target buy and sell levels, after-tax margins, volume, buy limits. Free, no account, and it never touches your RuneScape login.</p>
     </details>
     <details>
       <summary>Is PocketGE useful if I'm new to OSRS flipping?</summary>
-      <p>Yes, and the plain-English parts exist for exactly that. Every item carries a written summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its range, and an analyst rating on the current price — so you can learn to read a chart instead of needing to already. Starting from zero, the <a href="/flipping-guide.html">OSRS flipping guide</a> covers buy limits, the 2% tax and margins before you risk any gp.</p>
+      <p>Yes. Every item comes with a plain-English summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling, and an analyst rating on the current price. The <a href="/flipping-guide.html">flipping guide</a> covers buy limits, the 2% tax and margins if you're starting from zero.</p>
     </details>
     <details>
       <summary>How does the 2% Grand Exchange tax work in OSRS?</summary>
-      <p>Selling on the Grand Exchange costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few specific ones like the bond. PocketGE takes it out of every margin and every profit figure, so what you see is what you keep.</p>
+      <p>Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few others like the bond. PocketGE takes it out of every margin, so what you see is what you keep.</p>
     </details>
     <details>
       <summary>What are the best items to flip in OSRS?</summary>
-      <p>It depends on your capital and your patience. High-volume staples — gems, bars, ores, runes, arrows, cannonballs — fill fast on thin per-item margins, so they suit active flipping. Rare gear and niche supplies carry wider spreads but take longer to fill. The sidebar splits live margins into High Vol and Low Vol lists, both sorted by gp per flip after tax, so you can pick the style that fits your time.</p>
+      <p>Depends on your capital and your patience. High-volume staples — gems, bars, ores, runes, arrows — fill fast on thin margins. Rare gear and niche supplies pay wider spreads but take hours. The sidebar splits margins into High Vol and Low Vol lists, both sorted by gp per flip after tax.</p>
     </details>
     <details>
       <summary>What is a buy limit on the Grand Exchange?</summary>
-      <p>Every tradeable item has a 4-hour buy limit — the most you can buy from the GE in a rolling four-hour window. It's the ceiling on what one flip can make per cycle, which is why the potential profit figure multiplies the per-item margin by that limit instead of quoting an unbounded number.</p>
+      <p>The most you can buy of one item in a rolling four-hour window. It caps what a single flip can make per cycle, which is why potential profit multiplies the per-item margin by that limit instead of quoting an unbounded number.</p>
     </details>
     <details>
       <summary>How do I know when to buy or sell an item?</summary>
-      <p>Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each carrying a 0–100 grade and a plain verdict for the current price — "Steal Buy" and "Top Sell" at the extremes, "Wait for Dip" when a setup is forming but the price hasn't arrived yet. The 5-day high and low badges flag when an item is testing a genuine multi-day extreme.</p>
+      <p>Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each with a 0–100 score and a plain verdict — "Steal Buy" and "Top Sell" at the extremes, "Wait for Dip" when a setup is forming but the price hasn't arrived. The 5-day badges flag a genuine multi-day extreme.</p>
     </details>
     <details>
       <summary>What's the difference between high-volume and low-volume flipping?</summary>
-      <p>High-volume items trade tens of thousands to millions of units a day: offers fill almost immediately, margins are thin, and the profit comes from turning your capital over repeatedly. Low-volume items move slowly on wider spreads, so each flip earns more but you may wait hours for a fill. PocketGE lists them separately so you don't tie up capital in a slow item expecting a fast one.</p>
+      <p>High-volume items fill almost immediately on thin margins, so profit comes from turning capital over repeatedly. Low-volume items pay wider spreads but can take hours to fill. PocketGE lists them separately so you don't tie up capital in a slow item expecting a fast one.</p>
     </details>
     <details>
       <summary>Does PocketGE need my RuneScape login?</summary>
-      <p>No, and it has no accounts at all. It reads public Grand Exchange price data and nothing else. Favorites, Bank stacks and alerts stay in your own browser, and you can install it to your phone's home screen as an app.</p>
+      <p>No, and there are no accounts at all. It reads public Grand Exchange data and nothing else. Favorites, Bank stacks and alerts stay in your browser, and you can install it to your home screen as an app.</p>
     </details>
   </div>
 
