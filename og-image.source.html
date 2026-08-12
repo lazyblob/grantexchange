@@ -1,0 +1,89 @@
+<!-- Source for og-image-v2.png (the link-preview card every share shows).
+     Regenerate after editing:
+       npx playwright screenshot --viewport-size=1200,630 og-image.source.html og-image-v2.png
+     or load this file at exactly 1200x630 with deviceScaleFactor 1 and capture it.
+     Bump the filename (v2 -> v3) and repoint the og:image / twitter:image tags in
+     every *.html when the artwork changes — social scrapers cache the URL hard,
+     so overwriting in place leaves old previews in circulation for weeks. -->
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:630px; }
+  body {
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(900px 520px at 78% 8%, rgba(38,166,154,0.10), transparent 62%),
+      radial-gradient(760px 480px at 8% 4%, rgba(255,179,0,0.09), transparent 60%),
+      #0A0908;
+    color:#F4F1E8; position:relative; overflow:hidden;
+  }
+  .chart { position:absolute; left:0; right:0; bottom:0; height:340px; }
+  .wrap { position:relative; padding:64px 72px; height:100%; }
+
+  .brand { display:flex; align-items:center; gap:18px; }
+  .ge {
+    width:66px; height:66px; border-radius:14px; flex:0 0 66px;
+    background:linear-gradient(160deg,#FFD24D,#E0A82E);
+    display:flex; align-items:center; justify-content:center;
+    font-size:30px; font-weight:700; color:#241B06; letter-spacing:-.5px;
+    box-shadow:0 0 34px rgba(255,179,0,.34);
+  }
+  .word { font-size:50px; font-weight:700; letter-spacing:-1.2px; line-height:1; }
+  .word b { color:#FFB300; font-weight:700; }
+
+  h1 { font-size:60px; line-height:1.04; font-weight:700; letter-spacing:-1.6px; margin-top:46px; }
+  h1 span { color:#26A69A; }
+  .sub { margin-top:20px; font-size:25px; font-weight:700; color:#B3AB9B; letter-spacing:-.2px; }
+  .sub em { font-style:normal; color:#E6C35C; }
+
+  .boxes { position:absolute; top:64px; right:72px; display:flex; flex-direction:column; gap:14px; }
+  .box { width:246px; padding:14px 18px; border-radius:12px; background:rgba(18,16,13,.86); }
+  .box.buy  { border:2px solid rgba(230,195,92,.85);  box-shadow:0 0 30px rgba(255,179,0,.14); }
+  .box.sell { border:2px solid rgba(38,166,154,.85);  box-shadow:0 0 30px rgba(38,166,154,.14); }
+  .lbl { font-size:14px; font-weight:700; letter-spacing:1.4px; }
+  .box.buy .lbl { color:#E6C35C; } .box.sell .lbl { color:#26A69A; }
+  .val { font-size:33px; font-weight:700; margin-top:3px; letter-spacing:-.6px; }
+
+  .ticks { position:absolute; left:72px; bottom:44px; display:flex; gap:34px; font-size:19px; font-weight:700; }
+  .ticks i { font-style:normal; color:#4FFF8E; margin-right:8px; }
+  .ticks span { color:#D5CEBF; }
+
+  .url { position:absolute; right:72px; bottom:44px; font-size:19px; font-weight:700; color:#8A8274; }
+</style>
+
+<svg class="chart" viewBox="0 0 1200 340" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#26A69A" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="#26A69A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M0,250 L100,196 L200,244 L300,150 L400,198 L500,106 L600,158 L700,74 L800,126 L900,52 L1000,96 L1100,34 L1200,66 L1200,340 L0,340 Z" fill="url(#fill)"/>
+  <polyline points="0,250 100,196 200,244 300,150 400,198 500,106 600,158 700,74 800,126 900,52 1000,96 1100,34 1200,66"
+            fill="none" stroke="#26A69A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="0,312 100,262 200,306 300,214 400,262 500,172 600,222 700,140 800,190 900,116 1000,160 1100,100 1200,130"
+            fill="none" stroke="#E6C35C" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 16" opacity=".85"/>
+</svg>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="ge">GE</div>
+    <div class="word">Pocket<b>GE</b></div>
+  </div>
+
+  <h1>The OSRS <span>Trading Terminal</span></h1>
+  <div class="sub">Live Grand Exchange prices · target buy &amp; sell levels<br>margins with the <em>2% GE tax</em> already taken out</div>
+
+  <div class="boxes">
+    <div class="box buy"><div class="lbl">TARGET BUY</div><div class="val">1,842 gp</div></div>
+    <div class="box sell"><div class="lbl">TARGET SELL</div><div class="val">1,918 gp</div></div>
+  </div>
+
+  <div class="ticks">
+    <span><i>✓</i>Watchlists</span>
+    <span><i>✓</i>Live charts</span>
+    <span><i>✓</i>Flip finder</span>
+    <span><i>✓</i>Bank tracker</span>
+  </div>
+  <div class="url">pocketge.com</div>
+</div>
