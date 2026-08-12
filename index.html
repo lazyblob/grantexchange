@@ -1571,6 +1571,27 @@ button, input { touch-action: manipulation; }
     border: 1px solid var(--border-main); border-radius: 999px; white-space: nowrap;
   }
 }
+/* Deploy-detail card behind the "Updated …" stamp (see wireBuildInfoCard).
+   Both stamps get a pointer cursor so the rounded label reads as openable. */
+.js-build-updated { cursor: help; }
+.build-info-pop {
+  position: fixed; z-index: 1200; width: 264px; padding: 11px 12px;
+  background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.65); text-align: left; color: var(--text-main);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); pointer-events: none;
+  transition: opacity .14s ease, visibility .14s, transform .14s ease;
+}
+.build-info-pop.open { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+.build-info-pop .bi-eyebrow { font-size: 9px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: var(--text-muted); }
+.build-info-pop .bi-when { font-size: 13px; font-weight: 800; margin-top: 3px; }
+.build-info-pop .bi-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.build-info-pop .bi-msg { font-size: 10.5px; color: var(--text-main); line-height: 1.45; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border-main); }
+.build-info-pop .bi-sha { display: inline-block; margin-top: 7px; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--border-active); text-decoration: none; }
+.build-info-pop .bi-sha:hover { text-decoration: underline; }
+.build-info-pop .bi-by { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border-main); font-size: 10.5px; }
+.build-info-pop .bi-by-k { color: var(--text-muted); margin-right: 5px; }
+.build-info-pop .bi-by b { color: var(--fav-gold); font-weight: 800; }
+.build-info-pop .bi-by-n { display: block; color: var(--text-muted); font-size: 9.5px; margin-top: 2px; line-height: 1.45; }
 .site-footer .foot-cta { color: var(--border-active); font-weight: 700; }
 .site-footer .foot-sources { font-size: 10.5px; opacity: 0.8; }
 .site-footer a { color: var(--border-active); text-decoration: none; }
@@ -1753,18 +1774,20 @@ button, input { touch-action: manipulation; }
 .rg-toggle:hover { background:rgba(201,166,77,0.22); }
 .rg-wrap.is-collapsed .rg-scale { display:none; }
 .rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
-/* Lifted 5px and pulled 2px off the right edge. Collapsed, the meter rides
-   directly under this cluster, and the needle overhangs the track by 2px —
-   so on a Strong Buy/Sell (needle pinned to an end) it ran straight into the
-   Share and collapse buttons: measured touching at 1440x900 and actually
-   overlapping by 2px at 390x844. The buttons are also trimmed a touch so the
-   cluster is shorter than the verdict line it sits beside. */
-.rg-wrap.is-collapsed .rg-top { position:absolute; top:1px; right:2px; margin:0; gap:4px; z-index:2; }
+/* Collapsed, the meter rides directly under this cluster and the needle
+   overhangs the track by 2px — so on a Strong Buy/Sell (needle pinned to an
+   end) it collided with the Share and collapse buttons. The clearance comes
+   from pushing the meter down rather than from jamming the buttons upward:
+   lifting them alone put them hard against the panel's top border. So they
+   sit a comfortable 5px below that border, are trimmed slightly, pulled 2px
+   off the right edge, and the verdict line carries the extra bottom margin
+   that opens the gap. */
+.rg-wrap.is-collapsed .rg-top { position:absolute; top:5px; right:2px; margin:0; gap:4px; z-index:2; }
 .rg-wrap.is-collapsed .rg-top .fav-btn { padding:2px 5px; }
 /* margin-left:auto is what right-aligns Share in the normal flow row; once
    .rg-top is absolute there's no row left to push against. */
 .rg-wrap.is-collapsed .rg-top .fav-btn { margin-left:0; }
-.rg-wrap.is-collapsed .rg-label { margin-bottom:6px; }
+.rg-wrap.is-collapsed .rg-label { margin-bottom:11px; }
 .rg-label { font-size:15px; font-weight:900; letter-spacing:-.2px; line-height:1.1; margin-bottom:6px; }
 .rg-label.is-strong { text-shadow:0 0 14px currentColor; }
 .rg-meter { position:relative; padding-bottom:9px; }
@@ -4194,10 +4217,43 @@ function updateFootUpdated() {
    the commit date drives the "Updated N ago" label. Cached 6h in
    localStorage so we make at most a handful of API calls per user per day,
    and every failure path silently falls back to the baked-in constants. */
+/* In-game name shown as the byline on the deploy card. Empty string hides
+   the whole block, so the card degrades to just the deploy facts. */
+const OWNER_RSN = '';
+const REPO_URL = 'https://github.com/lazyblob/pocketge.com';
+/* "Updated today" is a rounded label, which is exactly what a passer-by
+   wants — but it can't answer "did my fix actually ship?". This card gives
+   the precise answer behind it: the real timestamp, how long ago, the commit
+   that shipped and its subject line, all straight from the same GitHub
+   response that drives the rounded label. */
+function buildInfoCardHtml(info) {
+  if (!info || !info.date) {
+    return '<div class="bi-eyebrow">Last deploy</div><div class="bi-sub">Couldn\'t reach GitHub — showing the last known build.</div>';
+  }
+  const d = new Date(info.date);
+  const exact = d.toLocaleString([], { weekday: 'short', year: 'numeric', month: 'short',
+                                       day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const rel = fmtAge(Math.floor(d.getTime() / 1000));
+  const sha = (info.sha || '').slice(0, 7);
+  const subject = (info.msg || '').split('\n')[0].trim();
+  return '<div class="bi-eyebrow">Last deploy</div>'
+    + `<div class="bi-when">${exact}</div>`
+    + `<div class="bi-sub">${rel} · ${d.toLocaleTimeString([], { timeZoneName: 'short' }).replace(/^[\d:apm\s]+/i, '')}</div>`
+    + (subject ? `<div class="bi-msg">${subject.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</div>` : '')
+    + (sha ? `<a class="bi-sha" href="${REPO_URL}/commit/${info.sha}" target="_blank" rel="noopener noreferrer">${sha} on GitHub ↗</a>` : '')
+    + (OWNER_RSN ? `<div class="bi-by"><span class="bi-by-k">Built by</span><b>${OWNER_RSN}</b><span class="bi-by-n">Add me in game — always happy to talk flips.</span></div>` : '');
+}
+let buildInfoLatest = null;
+function paintBuildInfoCard() {
+  const pop = document.getElementById('buildInfoPop');
+  if (pop) pop.innerHTML = buildInfoCardHtml(buildInfoLatest);
+}
 function syncBuildInfo() {
   const CACHE_KEY = 'pg_build_info';
   const apply = (info) => {
     if (!info) return;
+    buildInfoLatest = info;
+    paintBuildInfoCard();
     const v = document.getElementById('footVersion');
     if (v && info.sha) { v.textContent = info.sha.slice(0, 7); v.title = 'Latest commit ' + info.sha.slice(0, 7); }
     if (info.date) {
@@ -4224,12 +4280,74 @@ function syncBuildInfo() {
       if (!c || !c.sha) return;
       const commit = c.commit || {};
       const date = (commit.committer && commit.committer.date) || (commit.author && commit.author.date) || null;
-      const info = { sha: c.sha, date };
+      const info = { sha: c.sha, date, msg: commit.message || '' };
       apply(info);
       try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), info })); } catch (e) {}
     })
     .catch(() => {});
 }
+/* Lives on <body>, not inside the stamp: .top-build is shown by a
+   :not(:empty) rule (so a failed lookup takes no space), and any child node
+   would defeat that. Fixed positioning also keeps it clear of the header's
+   clipping. Bound once — the stamp text is rewritten by syncBuildInfo but the
+   elements themselves persist. */
+(function wireBuildInfoCard(){
+  const ready = (fn) => document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', fn) : fn();
+  ready(() => {
+    const triggers = Array.from(document.querySelectorAll('.js-build-updated'));
+    if (!triggers.length) return;
+    const pop = document.createElement('div');
+    pop.className = 'build-info-pop';
+    pop.id = 'buildInfoPop';
+    pop.setAttribute('role', 'tooltip');
+    document.body.appendChild(pop);
+    paintBuildInfoCard();
+
+    let anchor = null;
+    const place = () => {
+      if (!anchor) return;
+      const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+      let top = r.bottom + 8;
+      if (top + h > window.innerHeight - 8) top = r.top - h - 8;
+      pop.style.left = left + 'px';
+      pop.style.top = Math.max(8, Math.min(top, window.innerHeight - h - 8)) + 'px';
+    };
+    const open = (el) => { anchor = el; paintBuildInfoCard(); place(); pop.classList.add('open'); };
+    const close = () => { pop.classList.remove('open'); anchor = null; };
+
+    triggers.forEach(el => {
+      el.tabIndex = 0;
+      /* The rounded label is the summary; the card is the detail. Drop the
+         native title so the two don't both appear on hover. */
+      el.removeAttribute('title');
+      let lastPointer = '';
+      el.addEventListener('pointerdown', e => { lastPointer = e.pointerType || ''; });
+      el.addEventListener('mouseenter', () => { if (matchMedia('(hover: hover)').matches) open(el); });
+      el.addEventListener('mouseleave', (e) => {
+        if (!matchMedia('(hover: hover)').matches) return;
+        if (e.relatedTarget && pop.contains(e.relatedTarget)) return;   // heading into the card
+        close();
+      });
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (lastPointer === 'mouse') return;   // hover already owns it
+        pop.classList.contains('open') ? close() : open(el);
+        lastPointer = '';
+      });
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pop.classList.contains('open') ? close() : open(el); }
+      });
+    });
+    pop.addEventListener('mouseleave', () => { if (matchMedia('(hover: hover)').matches) close(); });
+    pop.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', (e) => { if (!e.target.closest('.js-build-updated, .build-info-pop')) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+  });
+})();
 
 /* Per-item meta refresh. Updates description / OG / Twitter / canonical so a
    shared `/?q=Cake` link's social card shows the actual item, and so each
