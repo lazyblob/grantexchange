@@ -4287,18 +4287,21 @@ function removeItemJsonLd() {
    column-visibility menu. Replaces the old two-row "sort strip + column
    header" stack. */
 function renderColToggles() { renderColHeader(); } // back-compat alias
+/* Built once, then repainted. This used to rewrite the whole header's
+   innerHTML on every column toggle — which destroyed the open menu mid-click.
+   Tapping a checkbox made the panel vanish, so the change read as "that did
+   nothing", and the natural response (tap it again) put the column straight
+   back. Hence "I can't turn off Ea". Repainting only the column strip keeps
+   the menu alive so several columns can be toggled in one visit, and stops a
+   fresh document click-listener being registered on every toggle. */
+let colHeaderBuilt = false;
 function renderColHeader() {
   const host = document.getElementById('colHeader');
   if (!host) return;
-  const arrow = (key) => favSort === key ? '<span class="ch-arrow">↓</span>' : '';
-  /* Each column header doubles as a sort button. data-sort maps the column
-     to its favSort key. */
-  const col = (cls, sortKey, label) =>
-    `<span class="${cls} ch-sortable ${favSort === sortKey ? 'sorted' : ''}" data-sort="${sortKey}" role="button" tabindex="0" title="Sort favorites by ${label}">${label}${arrow(sortKey)}</span>`;
-  let cols = col('ch-last', 'price', 'Last');
-  if (columnPrefs.change) cols += col('ch-chg', 'change', 'Chg%');
-  if (columnPrefs.margin) cols += col('ch-ea', 'margin', 'Ea');
-  if (columnPrefs.volume) cols += col('ch-vol', 'volume', 'Vol');
+  if (!colHeaderBuilt) { buildColHeader(host); colHeaderBuilt = true; }
+  paintColHeader(host);
+}
+function buildColHeader(host) {
   /* ⋯ lives on the LEFT of the header (a tiny gear-style button) so the data
      columns can run all the way to the right edge — no reserved right gutter
      eating into every row, which frees ~22px for the item name. */
@@ -4306,28 +4309,15 @@ function renderColHeader() {
     <button type="button" id="btnCols" class="col-menu-btn" aria-label="Customize columns" title="Customize columns" aria-expanded="false">⋯</button>
     <div class="col-menu" id="colMenu" role="menu">
       <div class="col-menu-section">Customize columns</div>
-      <label class="col-menu-row"><input type="checkbox" data-col="change" ${columnPrefs.change ? 'checked' : ''}><span>% change (24H)</span></label>
-      <label class="col-menu-row"><input type="checkbox" data-col="margin" ${columnPrefs.margin ? 'checked' : ''}><span>Margin (after tax)</span></label>
-      <label class="col-menu-row"><input type="checkbox" data-col="volume" ${columnPrefs.volume ? 'checked' : ''}><span>Daily volume</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="change"><span>% change (24H)</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="margin"><span>Margin (after tax)</span></label>
+      <label class="col-menu-row"><input type="checkbox" data-col="volume"><span>Daily volume</span></label>
       <div class="col-menu-section">Sort favorites by</div>
-      <div class="col-menu-row col-menu-sort ch-sortable ${favSort === 'type' ? 'sorted' : ''}" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span>${arrow('type')}</div>
+      <div class="col-menu-row col-menu-sort ch-sortable" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span><span class="ch-arrow"></span></div>
     </div>
-    <span class="ch-name ch-sortable ${favSort === 'name' ? 'sorted' : ''}" data-sort="name" role="button" tabindex="0" title="Sort favorites by name">Item${arrow('name')}</span>
-    <span class="ch-cols">${cols}</span>`;
-  /* Column-label click → sort favorites. Clicking the already-active column
-     toggles back to Manual (the user's drag order). */
-  host.querySelectorAll('.ch-sortable').forEach(el => {
-    const apply = () => {
-      const key = el.getAttribute('data-sort');
-      favSort = (favSort === key) ? 'manual' : key;
-      try { localStorage.setItem('ge_favSort', favSort); } catch (e) {}
-      renderColHeader();
-      renderWatchlist();
-    };
-    el.onclick = apply;
-    el.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); apply(); } };
-  });
-  /* ⋯ column-visibility menu. */
+    <span class="ch-name ch-sortable" data-sort="name" role="button" tabindex="0" title="Sort favorites by name">Item<span class="ch-arrow"></span></span>
+    <span class="ch-cols"></span>`;
+
   const btn = host.querySelector('#btnCols');
   const menu = host.querySelector('#colMenu');
   const closeMenu = () => { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
@@ -4336,17 +4326,61 @@ function renderColHeader() {
     const open = menu.classList.toggle('open');
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   };
-  menu.addEventListener('click', (ev) => ev.stopPropagation());
   menu.querySelectorAll('input[data-col]').forEach(cb => {
     cb.onchange = () => {
       columnPrefs[cb.getAttribute('data-col')] = cb.checked;
       saveColPrefs();
-      renderColHeader();
+      paintColHeader(host);
       renderWatchlist();
     };
   });
+  /* Column-label click → sort favorites. Clicking the already-active column
+     toggles back to Manual (the user's drag order). Delegated, because the
+     column labels are recreated by every paint. Sorting is a one-shot action,
+     so picking one from the menu closes it — unlike the checkboxes. */
+  const applySort = (el) => {
+    const key = el.getAttribute('data-sort');
+    favSort = (favSort === key) ? 'manual' : key;
+    try { localStorage.setItem('ge_favSort', favSort); } catch (e) {}
+    if (menu.contains(el)) closeMenu();
+    paintColHeader(host);
+    renderWatchlist();
+  };
+  host.addEventListener('click', (ev) => {
+    const el = ev.target.closest('.ch-sortable');
+    if (el && host.contains(el)) applySort(el);
+  });
+  host.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const el = ev.target.closest && ev.target.closest('.ch-sortable');
+    if (el && host.contains(el)) { ev.preventDefault(); applySort(el); }
+  });
+  /* Menu clicks are already excluded by the contains() check, so the menu
+     doesn't need to stop propagation — which would otherwise also hide the
+     delegated sort handler above from its own "Item type" row. */
   document.addEventListener('click', (ev) => {
     if (menu.classList.contains('open') && !menu.contains(ev.target) && ev.target !== btn) closeMenu();
+  });
+}
+function paintColHeader(host) {
+  const arrow = (key) => favSort === key ? '↓' : '';
+  /* Each column header doubles as a sort button. data-sort maps the column
+     to its favSort key. */
+  const col = (cls, sortKey, label) =>
+    `<span class="${cls} ch-sortable ${favSort === sortKey ? 'sorted' : ''}" data-sort="${sortKey}" role="button" tabindex="0" title="Sort favorites by ${label}">${label}<span class="ch-arrow">${arrow(sortKey)}</span></span>`;
+  let cols = col('ch-last', 'price', 'Last');
+  if (columnPrefs.change) cols += col('ch-chg', 'change', 'Chg%');
+  if (columnPrefs.margin) cols += col('ch-ea', 'margin', 'Ea');
+  if (columnPrefs.volume) cols += col('ch-vol', 'volume', 'Vol');
+  host.querySelector('.ch-cols').innerHTML = cols;
+  host.querySelectorAll('.col-menu input[data-col]').forEach(cb => {
+    cb.checked = !!columnPrefs[cb.getAttribute('data-col')];
+  });
+  host.querySelectorAll('.ch-name, .col-menu-sort').forEach(el => {
+    const key = el.getAttribute('data-sort');
+    el.classList.toggle('sorted', favSort === key);
+    const a = el.querySelector('.ch-arrow');
+    if (a) a.textContent = arrow(key);
   });
 }
 
