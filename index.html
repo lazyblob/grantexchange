@@ -1388,6 +1388,25 @@ button, input { touch-action: manipulation; }
   .more-actions .icon-btn:hover, .more-actions .icon-btn:active { background: var(--bg-input); }
   .more-actions .icon-label { display: inline; font-size: 13px; }
   .content-area { flex-direction: column; gap: 3px; }
+  /* Portrait stacking order. Everything below the chart collapses into one
+     column, and the default DOM order buried the watchlist under the range
+     meter, the written summary AND the Recommended Flip — roughly a full
+     screen of scrolling before the list you actually came back for.
+     Reordered to: the verdict on the item you're looking at (Potential
+     Profit + Analyst Rating), then your other items, then the supporting
+     detail, then discovery. Navigation you use constantly outranks reference
+     you consult occasionally.
+     #itemInsight is a direct child here because placeItemInsight() moves it
+     into this container in portrait, so plain `order` is enough — no second
+     relocation needed. */
+  .watchlist-container > .mode-pill-side { order: 0; }
+  .watchlist-container > #sideModule { order: 1; }
+  .watchlist-container > #favHeadHost { order: 2; }
+  .watchlist-container > #colHeader { order: 3; }
+  .watchlist-container > #watchlistContent { order: 4; }
+  .watchlist-container > #itemInsight { order: 5; }
+  .watchlist-container > #flipFinder { order: 6; }
+  .watchlist-container > #findOppsHost { order: 7; }
   /* Combined search overlay: the current item name overlays the search box
      (so it also acts as a display of the loaded item), with a ↗ wiki chip
      at the right. Same pattern as landscape — the ticker-title-group's
