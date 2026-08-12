@@ -1524,9 +1524,10 @@ button, input { touch-action: manipulation; }
      here (~200px vs ~60px collapsed), and unlike the modules above it it
      describes a DIFFERENT item — it's a discovery prompt, so it belongs
      with Find Opportunities at the bottom rather than above the list.
-     It already defaults to collapsed at this breakpoint, but that default
-     is overridden the moment ge_flipCollapsed is set on any device, so
-     order (not the collapse state) is what reliably keeps it out of the way.
+     It also defaults to collapsed at this breakpoint, and the preference is
+     now stored per layout (see collapseKey), so collapsing here no longer
+     follows you to desktop — but order is still what reliably keeps it out
+     of the way regardless of collapse state.
      #sideModule stays on top deliberately: Potential Profit + Analyst
      Rating are compact (~120px together) and they're the verdict on the
      chart being viewed right now. Pushing them below a long favorites list
@@ -6241,17 +6242,26 @@ function computeGrade(item, side) {
    pass opts.gBuy/gSell or it renders nothing. The word is a strict function of
    the DOMINANT grade so it can never sit opposite the higher price-box badge.
    ════════════════════════════════════════════════════════════════════════ */
+/* Collapse preferences are stored PER LAYOUT. A phone and a desktop have
+   completely different space budgets, so collapsing a card to survive a
+   cramped landscape column shouldn't also collapse it on a 27-inch monitor —
+   which is exactly what one shared key did, and why a desktop could open
+   collapsed despite the default being expanded. Desktop reads its own key,
+   so it gets the expanded-by-default first run even for someone who has been
+   using the app on a phone for weeks. */
+const isRoomyLayout = () => window.matchMedia('(min-width: 1024px)').matches;
+const collapseKey = (base) => isRoomyLayout() ? base + '_wide' : base;
 /* Collapsed hides the eyebrow and the Buy/grade/Sell scale, leaving the
    verdict, the bar and Share — everything a repeat user still reads. */
 function ratingCollapsed() {
-  try { return localStorage.getItem('ge_ratingCollapsed') === '1'; } catch (e) { return false; }
+  try { return localStorage.getItem(collapseKey('ge_ratingCollapsed')) === '1'; } catch (e) { return false; }
 }
 document.addEventListener('click', (ev) => {
   const btn = ev.target.closest && ev.target.closest('.rg-toggle');
   if (!btn) return;
   ev.stopPropagation();
   const next = !ratingCollapsed();
-  try { localStorage.setItem('ge_ratingCollapsed', next ? '1' : '0'); } catch (e) {}
+  try { localStorage.setItem(collapseKey('ge_ratingCollapsed'), next ? '1' : '0'); } catch (e) {}
   document.querySelectorAll('.rg-wrap').forEach(el => el.classList.toggle('is-collapsed', next));
   document.querySelectorAll('.rg-toggle').forEach(b => {
     b.classList.toggle('closed', next);
@@ -6616,7 +6626,7 @@ function renderFlipState(kind){
 }
 function flipCollapsed(){
   try {
-    const v = localStorage.getItem('ge_flipCollapsed');
+    const v = localStorage.getItem(collapseKey('ge_flipCollapsed'));
     if (v === '1') return true;
     if (v === '0') return false;
     // No explicit user preference yet — default to collapsed in the cramped
@@ -6626,7 +6636,7 @@ function flipCollapsed(){
     return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)').matches;
   } catch (e) { return false; }
 }
-function setFlipCollapsed(v){ try { localStorage.setItem('ge_flipCollapsed', v ? '1' : '0'); } catch (e) {} }
+function setFlipCollapsed(v){ try { localStorage.setItem(collapseKey('ge_flipCollapsed'), v ? '1' : '0'); } catch (e) {} }
 function renderFlipCard(rec){
   const h = flipHost(); if (!h) return;
   const collapsed = flipCollapsed();
