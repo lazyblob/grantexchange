@@ -1263,13 +1263,28 @@ button, input { touch-action: manipulation; }
    name gets maximum room. Column widths match the data-row cells. */
 /* List-name row above the column labels. position:relative because the ⋯
    menu anchors to it now that both live here rather than in .col-header. */
-.fav-head-host { position: relative; display: flex; align-items: center; background: var(--bg-panel); }
+/* The bar's gold stripe, gradient and edge-glow move UP to the host, because
+   the host is the full-width row now — the title only spans as far as the ⋯,
+   so decorating the title left the menu button sitting outside the bar on
+   bare panel. Same treatment .category-title carries, applied one level out
+   so it runs the whole width and continues under the ⋯. */
+.fav-head-host {
+  position: relative; display: flex; align-items: center;
+  background: linear-gradient(180deg, #312b23 0%, #231e18 100%);
+  border-left: 3px solid var(--fav-gold, #FFB300);
+  border-bottom: 1px solid #141210;
+  box-shadow: inset 6px 0 20px -15px var(--fav-gold, #FFB300),
+              inset 0 1px 0 rgba(255,255,255,0.05),
+              0 2px 6px -3px rgba(0,0,0,0.6);
+}
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
 .fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
 .fav-head-host .col-menu { left: auto; right: 6px; }
-/* The title was a row inside the list; as the host's only child it no longer
-   needs its own background or bottom rule. */
-.fav-head-host .category-title { border-bottom: none; background: transparent; }
+/* Title keeps only its type and spacing; every decoration is the host's now. */
+.fav-head-host .category-title {
+  background: transparent; border-left: none; border-bottom: none;
+  box-shadow: none; padding-left: 10px;
+}
 .col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 6px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-top: 1px solid var(--border-main); border-bottom: 1px solid var(--border-main); }
 .col-header .ch-name { flex: 1 1 auto; min-width: 0; }
 .col-header .ch-cols { display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
@@ -3476,9 +3491,22 @@ async function buildShareCardCanvas() {
   g.fillStyle = hlColor || '#D9D3C7';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
+  /* The zone line only appears at a 5-day extreme, but the extreme is read
+     over 5 days while the Analyst Rating is read over the selected timeframe
+     — so they can genuinely disagree, and an item can sit at a 5-day low
+     while the rating says Sell. Printing "Potential buy zone" directly above
+     "Strong Sell" would put the card at odds with itself, so the line is
+     dropped whenever the rating leans the other way. */
   if (hlColor) {
-    g.font = '700 18px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(isHigh5d ? 'Potential sell zone' : 'Potential buy zone', 168, 266);
+    const rating = (shareCardGaugeInfo()?.text || '');
+    const saysBuy = /buy/i.test(rating), saysSell = /sell/i.test(rating);
+    const zone = isHigh5d
+      ? (saysBuy ? null : 'Potential sell zone')
+      : (saysSell ? null : 'Potential buy zone');
+    if (zone) {
+      g.font = '700 18px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillText(zone, 168, 266);
+    }
   }
 
   // 1D / 5D change chips.
@@ -3663,16 +3691,18 @@ async function buildShareCardCanvas() {
       g.stroke();
 
       g.font = '700 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      /* Values only — the 10px "30D LOW"/"30D HIGH" captions under them were
+         the smallest type on the card and rendered at under 3px once a feed
+         downscaled it, i.e. never read by anyone. The section label above the
+         chart already names the window, so the two numbers at its ends are
+         unambiguous without them. Bumped to 20px for the same reason. */
       g.fillStyle = '#D9D3C7';
+      g.font = '700 20px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.textAlign = 'left';
-      g.fillText(fmtGp(minV) + ' gp', x, chartY + chartH + 26);
+      g.fillText(fmtGp(minV) + ' gp', x, chartY + chartH + 28);
       g.textAlign = 'right';
-      g.fillText(fmtGp(maxV) + ' gp', x + w, chartY + chartH + 26);
-      g.font = '600 10px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillStyle = '#8A8274';
-      g.fillText(shortLabel + ' HIGH', x + w, chartY + chartH + 40);
+      g.fillText(fmtGp(maxV) + ' gp', x + w, chartY + chartH + 28);
       g.textAlign = 'left';
-      g.fillText(shortLabel + ' LOW', x, chartY + chartH + 40);
     };
 
     /* One chart, full width, instead of two half-width ones. The pair made
@@ -3680,7 +3710,7 @@ async function buildShareCardCanvas() {
        at half width neither was legible once a feed had downscaled it. The
        30-day window is the one that matches the range meter and the summary
        above it, so it's the one that survives. */
-    const chartY = 626, chartH = 210;
+    const chartY = 640, chartH = 198;
     drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, W - 96, chartY, chartH);
   }
 
