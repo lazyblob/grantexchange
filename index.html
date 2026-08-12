@@ -309,7 +309,31 @@ button, input { touch-action: manipulation; }
 /* A human aside, not more SEO copy — quieter and slightly set apart so it
    reads as a personal note rather than continuing the product description
    above it. */
-.about-section .about-questions { font-size: 13px; margin-bottom: 20px; }
+.about-section .about-intro-2 { font-size: 13.5px; color: var(--text-main); margin-bottom: 20px; }
+.about-section .about-questions { font-size: 13px; margin-bottom: 6px; color: var(--text-main); }
+.about-section .about-qlist { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 6px; }
+.about-section .about-qlist li { padding-left: 14px; position: relative; }
+.about-section .about-qlist li::before { content: "→"; position: absolute; left: 0; color: var(--border-active); }
+.about-section .about-qlist b { color: var(--text-main); }
+/* Live component figures rather than screenshots. These reuse the app's own
+   classes (.wl-item, .price-box, .flip-card …) exactly as the landing demo
+   does, so they restyle with the product instead of going stale the moment
+   the UI moves — which, at the rate this thing changes, a PNG would. They
+   also cost no image bytes, stay sharp at any zoom, and are real text for a
+   screen reader. Purely illustrative: nothing here is interactive. */
+.about-section .ex { margin: 14px 0 22px; }
+.about-section .ex-frame {
+  border: 1px solid var(--border-main); border-radius: 10px; overflow: hidden;
+  background: var(--bg-panel); max-width: 460px; pointer-events: none; user-select: none;
+}
+.about-section .ex-frame-pad { padding: 10px; }
+.about-section .ex figcaption { font-size: 11.5px; color: var(--text-muted); margin-top: 7px; max-width: 460px; }
+/* The app sizes these against its own containers; inside a prose column they
+   need their own footing. */
+.about-section .ex .price-strip { display: flex; gap: 6px; padding: 8px; }
+.about-section .ex .price-box { flex: 1 1 0; min-width: 0; }
+.about-section .ex .wl-item { cursor: default; }
+.about-section .ex .flip-card { margin: 0; }
 .about-section .about-devnote { font-size: 12.5px; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border-active); margin-bottom: 24px; }
 .about-section .faq { margin-top: 4px; }
 .about-section .faq details { border: 1px solid var(--border-main); border-radius: 6px; margin-bottom: 8px; background: var(--bg-panel); overflow: hidden; }
@@ -8735,39 +8759,102 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <section class="about-section" aria-label="About PocketGE">
-  <p class="about-intro">PocketGE is an <strong>Old School RuneScape merching and market-tracking platform</strong> — a trading terminal for the OSRS Grand Exchange, built to make trading easier to understand and easier to act on. Build watchlists for the items you care about, follow price action with TradingView-inspired charts, and quickly see the information that matters before you buy or sell: 30-day and 5-day highs and lows, historical trends, live buy and sell prices, target buy and sell levels, GE-tax-adjusted margins, volume, buy limits, potential profit, analyst ratings and flip recommendations, all in one place. Everything below is live in the app above — no separate accounts, no signup required.</p>
-  <p class="about-questions">It's built for merchers and flippers around the questions you actually ask at the GE: <strong>What should I watch? Is this item interesting right now? Where should I buy? Where should I sell? How much could I potentially make? How has the price been moving?</strong> PocketGE won't predict the market for you — nothing can — but it puts the information you'd need to answer those questions on one screen instead of five browser tabs. Watch the market, find opportunities, and trade with more information.</p>
+  <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong>. TradingView-inspired charts, watchlists you build yourself, and the numbers that decide a trade — live buy and sell prices, target levels, margins after the 2% GE tax, volume, buy limits, potential profit — on one screen instead of five tabs.</p>
+  <p class="about-intro-2">It won't predict the market. Nothing can. What it does is make trading on the OSRS Grand Exchange easier to read and easier to act on, whether you've been merching for years or you're still working out how the GE actually works.</p>
+
+  <p class="about-questions">Five questions decide every flip. PocketGE is built to answer them:</p>
+  <ul class="about-qlist">
+    <li><b>What should I watch?</b> Watchlists, plus scanners that surface items already at a 5-day extreme.</li>
+    <li><b>Is this interesting right now?</b> An analyst rating and a 30-day range meter, read at a glance.</li>
+    <li><b>Where do I buy and sell?</b> Target Buy and Target Sell levels, anchored to real recent trades.</li>
+    <li><b>How much could I make?</b> Margin after tax, scaled to the item's 4-hour buy limit.</li>
+    <li><b>How has it been moving?</b> Charts from one day to five years, plus a plain-English summary.</li>
+  </ul>
+
   <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game.</p>
 
-  <h2>Custom watchlists for the items you actually trade</h2>
-  <p>Most OSRS merching comes back to a handful of items you trade again and again. Star anything to add it to a watchlist and it sits in the sidebar with its live price, 24-hour change, after-tax margin and daily volume side by side, so one glance tells you whether anything has moved since you last looked. Rows can be dragged into whatever order you think in, sorted by price, change, margin, volume, name or item type, and the columns themselves can be switched off if you'd rather see less. Items sitting at a 5-day high or low get flagged in the list itself, which is usually the first sign an item is worth opening.</p>
+  <h2>Watchlists: stop re-finding the same items</h2>
+  <p>Most OSRS merching comes back to a handful of items you trade again and again. Star them and they sit in the sidebar with live price, 24-hour change, after-tax margin and daily volume side by side — one glance tells you if anything moved. Anything hitting a 5-day high or low gets flagged in the list itself, which is usually the first sign an item is worth opening.</p>
+  <p>Drag rows into whatever order you think in, sort by price, change, margin, volume, name or item type, and switch off columns you don't use.</p>
+  <figure class="ex">
+    <div class="ex-frame">
+      <div class="col-header" style="padding:5px 10px 6px 6px">
+        <span class="ch-name">Item</span>
+        <span class="ch-cols"><span class="ch-last">Last</span><span class="ch-chg">Chg%</span><span class="ch-ea">Ea</span><span class="ch-vol">Vol</span></span>
+      </div>
+      <div class="wl-item"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1601.png" alt="" loading="lazy"><span class="wl-item-name">Diamond</span></div><div class="wl-item-right"><span class="wl-item-price">1.8K</span><span class="meta-piece meta-chg up">+1.3%</span><span class="meta-piece meta-ea up">+8</span><span class="meta-piece meta-vol">2.11M</span></div></div>
+      <div class="wl-item at-low5d"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1617.png" alt="" loading="lazy"><span class="wl-item-name">Uncut diamond</span><span class="hl-badge low5d">▼ 5D</span></div><div class="wl-item-right"><span class="wl-item-price">2.5K</span><span class="meta-piece meta-chg down">-1.0%</span><span class="meta-piece meta-ea neutral">—</span><span class="meta-piece meta-vol">2M</span></div></div>
+      <div class="wl-item"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1603.png" alt="" loading="lazy"><span class="wl-item-name">Emerald</span></div><div class="wl-item-right"><span class="wl-item-price">417</span><span class="meta-piece meta-chg up">+0.4%</span><span class="meta-piece meta-ea up">+6</span><span class="meta-piece meta-vol">2.57M</span></div></div>
+      <div class="wl-item at-high5d"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1621.png" alt="" loading="lazy"><span class="wl-item-name">Ruby</span><span class="hl-badge high5d">▲ 5D</span></div><div class="wl-item-right"><span class="wl-item-price">860</span><span class="meta-piece meta-chg up">+1.6%</span><span class="meta-piece meta-ea up">+10</span><span class="meta-piece meta-vol">3.02M</span></div></div>
+    </div>
+    <figcaption>A watchlist, with two items flagged at a 5-day extreme.</figcaption>
+  </figure>
 
-  <h2>OSRS price charts, TradingView-style</h2>
-  <p>The chart is the centre of the app rather than an afterthought. Every item gets 1D, 5D, 1M, 6M, 1Y and 5Y views with separate insta-buy and insta-sell prints, a trend line, traded volume underneath, and marked period and recent highs and lows so you can see where the price has actually been before deciding where to put an order. Pinch or scroll to zoom, drag to pan, and tap any point for its price and volume. Alongside it, a 30-day range meter shows whether the current price sits near the floor or the ceiling of its recent range, and a plain-English summary describes how the item has been moving — useful if you're newer to merching and still building a feel for what a chart is telling you.</p>
+  <h2>Charts that show where the price has actually been</h2>
+  <p>The chart is the centre of the app, not an afterthought. 1D through 5Y, with insta-buy and insta-sell prints kept separate, a trend line through the noise, volume underneath, and period and recent highs and lows marked — so you can see where an item has traded before deciding where to put an order. Pinch or scroll to zoom, drag to pan, tap any point for its price and volume.</p>
+  <p>Underneath, a 30-day range meter shows whether the current price sits near the floor or the ceiling of its recent range, and a written summary describes how the item has been moving. That's for the times you want a read without doing the reading.</p>
 
-  <h2>Live OSRS margins with the 2% GE tax built in</h2>
-  <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins. Potential profit is scaled to the item's 4-hour buy limit, so the number in front of you is what that flip could realistically clear in one cycle rather than an unbounded per-item figure.</p>
+  <h2>Margins that survive the tax</h2>
+  <p>A margin that looks good before tax often isn't one. Every item shows live insta-buy and insta-sell alongside a Target Buy and Target Sell anchored to recent competitive trades rather than the spread midpoint — and every profit figure has the Grand Exchange's 2% sales tax (capped at 5,000,000 gp) already taken out. Potential profit is scaled to the 4-hour buy limit, so it's what one realistic cycle clears, not an unbounded per-item number.</p>
+  <figure class="ex">
+    <div class="ex-frame">
+      <div class="price-strip">
+        <div class="price-box low"><div class="price-label">Target Buy <span class="live-val">Live: 2,486</span></div><div class="price-val"><span>2,434</span></div></div>
+        <div class="price-box high"><div class="price-label">Target Sell <span class="live-val">Live: 2,486</span></div><div class="price-val"><span>2,495</span></div></div>
+      </div>
+    </div>
+    <figcaption>Where to bid and where to ask, both already net of the 2% tax.</figcaption>
+  </figure>
 
-  <h2>Analyst ratings and scored flip recommendations</h2>
-  <p>Two features answer "is this worth my time right now?" without you reading the chart yourself. The <strong>Analyst Rating</strong> grades the current price against the selected timeframe's range — near the floor with a real margin reads Buy, near the ceiling reads Sell, mid-range reads Neutral — so it's a read on where the price sits, not a prediction of where it goes. <strong>Recommended Flip</strong> works the other way round — an OSRS flip finder that scans the market for an item worth a look and hands you a specific buy and sell level with the edge, the realistic 4-hour fill and the daily volume attached. Each pick carries a score out of 100 built from its net edge and its liquidity, and hovering the number shows exactly how that score was reached. Both are advisory — the target prices are the actual trade.</p>
+  <h2>A second opinion, and a place to start</h2>
+  <p>Two features answer "is this worth my time?" without you reading the chart yourself.</p>
+  <p><strong>Analyst Rating</strong> grades the current price against the selected timeframe's range: near the floor with a real margin reads Buy, near the ceiling reads Sell, mid-range reads Neutral. It's a read on where the price <em>sits</em> — not a call on where it goes next.</p>
+  <p><strong>Recommended Flip</strong> is an OSRS flip finder for when nothing on your watchlist looks interesting. It scans the market and hands you one item with a concrete buy and sell level, its net edge, the realistic 4-hour fill and the daily volume. Each pick carries a score out of 100 from its edge and its liquidity; hover the number to see exactly how it was reached. Both are advisory — the target prices are the actual trade.</p>
+  <figure class="ex">
+    <div class="ex-frame ex-frame-pad">
+      <div class="flip-card" style="cursor:default">
+        <div class="fc-head"><span class="fc-kicker"><span class="fc-kicker-txt">Recommended Flip</span></span></div>
+        <div class="fc-body">
+          <img class="fc-icon" src="https://static.runelite.net/cache/item/icon/1654.png" alt="" loading="lazy">
+          <div class="fc-main">
+            <div class="fc-name">Gold necklace</div>
+            <div class="fc-why">3.97% net edge · 18K/4h fillable · both sides recently traded</div>
+          </div>
+          <div class="fc-gauge">
+            <div class="fc-score" style="color:#4FFF8E">91</div>
+            <div class="fc-verdict" style="color:#4FFF8E">Prime Flip</div>
+            <div class="fc-meter"><span style="width:91%;background:#4FFF8E"></span></div>
+          </div>
+        </div>
+        <div class="fc-prices">
+          <span class="fc-price buy"><span class="fc-plabel">Buy @</span><span class="fc-pval">151</span></span>
+          <span class="fc-price sell"><span class="fc-plabel">Sell @</span><span class="fc-pval">160</span></span>
+        </div>
+        <div class="fc-stats">
+          <div><span class="fc-slabel">Profit</span><span class="fc-sval pos">+6</span></div>
+          <div><span class="fc-slabel">Per 4h</span><span class="fc-sval pos">+108K</span></div>
+          <div><span class="fc-slabel">Daily vol</span><span class="fc-sval">1.64M</span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>A scored recommendation, with the buy and sell levels attached.</figcaption>
+  </figure>
 
-  <h2>5-day breakout scanner: true extremes, not noise</h2>
-  <p>The sidebar's <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> lists are built from rolling 1-hour volume-weighted price buckets fetched from the OSRS Wiki API. An item only appears when its live competitive price is within 0.5% of (or breaching) its actual 5-day extreme, with a minimum 3% 5-day range required so flat items don't false-positive. The scan runs against a bounded ~100-item candidate pool (top volume + top price) so it never floods the API with per-item requests.</p>
+  <h2>Scanners that find the extremes for you</h2>
+  <p>When you don't know what to watch yet, the scanners pick for you. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> are built from rolling 1-hour volume-weighted buckets: an item only lists when its live price is within 0.5% of (or breaching) a genuine 5-day extreme, and only if the 5-day range is at least 3% — so flat items don't false-positive as breakouts.</p>
+  <p>Margins are split by how fast they fill. <strong>High Vol</strong> covers items trading 100,000+ a day (gems, ores, bars, arrows, runes, cannonballs) — small edges, quick cycles. <strong>Low Vol</strong> covers slower items with bigger absolute spreads: quest gear, rares, niche supplies. Both sort by gp per flip after tax.</p>
 
-  <h2>Margin lists split by daily volume</h2>
-  <p>Live 1-day margins are split into <strong>High Vol Margins</strong> (items trading 100,000+ units a day — gems, ores, bars, arrows, runes, cannonballs) and <strong>Low Vol Margins</strong> (slower-moving items with bigger absolute spreads — quest stuff, rare gear, niche commodities). Sort is absolute gp profit per flip, after GE tax. Volume tier comes from the OSRS Wiki bulk volumes endpoint, so the categorisation matches the real tape.</p>
+  <h2>Bank of Gielinor: know what you're holding</h2>
+  <p>Log stacks with quantity and, optionally, what you paid. Live valuations update every 5 minutes with running P&amp;L per stack and a total at the top. Give any stack a ±% threshold and a browser notification fires when it crosses — useful for long holds where you want to know your sigil stack dropped 10% without watching the chart all day.</p>
 
-  <h2>Bank of Gielinor — portfolio tracker with per-stack alerts</h2>
-  <p>The 🪙 Bank button opens a portfolio panel where you log stacks with their quantity and (optionally) average cost. Live valuations update on every 5-minute refresh, with running P&amp;L per stack and a total bank value at the top. Each stack can have a custom ±% alert threshold: when its value crosses the threshold versus your cost basis, a browser notification fires. Useful for long-term holds where you want to know if your sigil stack drops 10% without staring at the chart all day.</p>
+  <h2>Alerts you can see and control</h2>
+  <p>The 🔔 button opens a Notification Center listing exactly what's armed: every favorite (alerting when its live price breaks its 24-hour or 5-day extreme, with 5D flagged separately because those are rarer and bigger), and every Bank stack with its threshold inline-editable. There's a master switch, a test-fire button to prove the browser permission works, and a tab-title <code>(N)</code> badge counting favorites currently at a 5-day extreme — so a background tab still tells you when something needs eyes.</p>
 
-  <h2>Browser push notifications you can actually see and control</h2>
-  <p>The 🔔 button opens a Notification Center that shows exactly what's armed: every favorite (auto-alerts when its live price breaks above/below its 24-hour or 5-day extreme — 5D breaks are flagged separately because they're rarer and bigger), and every Bank stack with its ±% threshold inline-editable. There's a master on/off, a test-fire button so you can verify the browser permission actually works, and a tab-title <code>(N)</code> badge that counts how many favorites are currently at a 5-day extreme — so a background PocketGE tab tells you at a glance when something needs eyes.</p>
+  <h2>Works on the phone you're holding</h2>
+  <p>Mobile-first by design: a dense vertical stack on phones, a full three-column terminal on desktop. Install it from the browser's Add to Home Screen and a service worker loads the shell instantly with no URL bar. On iOS that step is also what enables notifications — the bell button walks you through it.</p>
 
-  <h2>Built for the phone, fast enough on desktop</h2>
-  <p>The layout is mobile-first: dense vertical stack on phones, full three-column dashboard on tablets and desktops. Installable as a PWA via the browser's Add-to-Home-Screen, with a service worker so the shell loads instantly and the home-screen icon hides the URL bar like a native app. iOS requires the Add-to-Home-Screen step for browser notifications to work — the bell button walks you through it if you haven't done that yet.</p>
-
-  <h2>No signup, runs entirely in your browser</h2>
-  <p>PocketGE never asks for an account or game credentials. All your favorites, Bank stacks, alert thresholds, and notification settings live in your browser's localStorage — wipe your cache and they're gone, which also means none of it leaves your device. Prices come from the public <a href="https://prices.runescape.wiki/" rel="noopener">OSRS Wiki real-time prices API</a>; historical context comes from the public <a href="https://api.weirdgloop.org/" rel="noopener">Weird Gloop exchange history</a>. Open the help (❓) inside the app for the badge / verdict glossary.</p>
+  <h2>No signup, nothing leaves your browser</h2>
+  <p>PocketGE never asks for an account or your RuneScape login. Favorites, Bank stacks, alert thresholds and settings all live in your browser's localStorage — clear your cache and they're gone, which is the same reason none of it reaches a server. Prices come from the public <a href="https://prices.runescape.wiki/" rel="noopener">OSRS Wiki real-time prices API</a>; long-range history from <a href="https://api.weirdgloop.org/" rel="noopener">Weird Gloop</a>. Open the help (❓) in the app for the badge and signal glossary.</p>
 
   <h2 id="faq">Frequently asked questions</h2>
   <p style="margin:-4px 0 12px;">New to merchanting? Read the <a href="/flipping-guide.html">full OSRS flipping guide</a> — GE tax, buy limits, picking items, and setting offers that actually fill.</p>
