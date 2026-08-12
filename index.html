@@ -7341,7 +7341,17 @@ function drawChart(series) {
   /* price chart occupies the top 84%, volume bars the bottom 16%. The y-axis
      gridlines/labels must use h_price (not h) so the labels line up with where
      prices are actually plotted. */
-  const h_price = h * 0.84, h_vol = h * 0.16, y0_vol = y0 + h_price;
+  /* Below ~290px of plot the volume pane renders under 46px tall — too short
+     to read as a chart of its own, while still taking a sixth of an already
+     cramped price area. In landscape on a phone that left the price pane at
+     ~195px, half the viewport. Under that threshold volume moves BEHIND the
+     price as a translucent underlay instead: same information, none of the
+     height cost, which is what TradingView does on compact layouts. Roomier
+     plots keep the dedicated pane, where it reads better. */
+  const volOverlay = h < 290;
+  const h_price = volOverlay ? h : h * 0.84;
+  const h_vol   = volOverlay ? h * 0.28 : h * 0.16;
+  const y0_vol  = volOverlay ? y0 + h - h_vol : y0 + h_price;
 
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, W, win, n, h_price, axisW, yRight };
 
@@ -7461,6 +7471,73 @@ function drawChart(series) {
     if (LO[i] != null && HI[i] != null) { bothCount++; if (Math.abs(HI[i] - LO[i]) < 1e-9) eqCount++; }
   }
   const singlePrice = bothCount > 0 && eqCount / bothCount > 0.9;
+
+  /* Aggregated two-tone volume bars. Painting one thin bar per data point
+     turned the strip into a dense noise band on 5D/1M/6M; grouping into
+     ~14px-wide chunks (~60 bars max) makes each bar a readable "period"
+     instead. Split by side: LOWVOL (traded at the low price = insta-sells)
+     stacks at the bottom in gold, HIGHVOL (traded at the high price =
+     insta-buys) stacks above in teal — so the bar shows both total volume
+     and which side drove it. Colors match the price dots directly above
+     so the eye reads them as the same series, not as new information.
+     Hoisted into a function so it can run either BEFORE the price series
+     (overlay mode, so the bars sit behind it) or after (paned mode). */
+  function drawVolumeBars(alpha) {
+    /* Aim for ~14px between bars. groupSize = ceil(14/stepX): if points are
+       already ≥14 px apart (short views), no aggregation; on 6M/1Y where
+       stepX shrinks to 2–3 px, groups of 5–7 points become one chunky bar. */
+    const targetBarPx = 14;
+    const groupSize = Math.max(1, Math.round(targetBarPx / Math.max(0.5, stepX)));
+    const groups = [];
+    for (let i = 0; i < L.length; i += groupSize) {
+      let sumLow = 0, sumHigh = 0, count = 0, jEnd = Math.min(i + groupSize, L.length);
+      for (let j = i; j < jEnd; j++) {
+        if (LOWVOL[j] != null) sumLow += LOWVOL[j];
+        if (HIGHVOL[j] != null) sumHigh += HIGHVOL[j];
+        if (LOWVOL[j] != null || HIGHVOL[j] != null) count++;
+      }
+      if (count === 0) continue;
+      const cx = x0 + (i + (jEnd - i - 1) / 2) * stepX;
+      groups.push({ cx, sumLow, sumHigh });
+    }
+    if (!groups.length) return;
+    const maxGroupVol = Math.max(1, ...groups.map(g => g.sumLow + g.sumHigh));
+    const groupPx = groupSize * stepX;
+    const barWidth = Math.max(2, groupPx * 0.72);
+    const gapPx = 1; // hairline gap between the two-side stack, so they read as separate
+    const gold = `rgba(230, 195, 92, ${alpha})`, teal = `rgba(38, 166, 154, ${alpha})`;
+    for (const g of groups) {
+      const totalH = ((g.sumLow + g.sumHigh) / maxGroupVol) * h_vol;
+      if (totalH < 0.5) continue;
+      const lowH = (g.sumLow / maxGroupVol) * h_vol;
+      const highH = (g.sumHigh / maxGroupVol) * h_vol;
+      const x = g.cx - barWidth / 2;
+      const baseY = y0_vol + h_vol;
+      if (singlePrice) {
+        /* Single-price historical (5Y): the "insta-sell / insta-buy" split
+           is meaningless, so paint one unified teal bar matching the price
+           line/area above. Prevents the all-gold band that looked broken. */
+        ctx.fillStyle = teal;
+        ctx.fillRect(x, baseY - Math.max(lowH, highH, totalH), barWidth, Math.max(lowH, highH, totalH));
+      } else {
+        /* Insta-sells (yellow) at the bottom, insta-buys (teal) above — same
+           gold/teal identity as the price dots the volume corresponds to. */
+        if (lowH > 0.3) {
+          ctx.fillStyle = gold;
+          ctx.fillRect(x, baseY - lowH, barWidth, lowH);
+        }
+        if (highH > 0.3) {
+          const stackedY = baseY - lowH - (lowH > 0.3 ? gapPx : 0) - highH;
+          ctx.fillStyle = teal;
+          ctx.fillRect(x, stackedY, barWidth, highH);
+        }
+      }
+    }
+  }
+  /* Overlay mode paints them first and faint, so they read as background
+     texture the price line sits on top of rather than a second series
+     competing with it. */
+  if (volOverlay) drawVolumeBars(0.22);
 
   /* With a manual y-scale < 1 the data range exceeds the plot — clip every
      price layer to the price area so amplified swings can't paint over the
@@ -7647,62 +7724,9 @@ function drawChart(series) {
     ring(recLoIdx, LO, buyColor);
     ctx.restore(); // end price-area clip
 
-    /* Aggregated two-tone volume bars. Painting one thin bar per data point
-       turned the strip into a dense noise band on 5D/1M/6M; grouping into
-       ~14px-wide chunks (~60 bars max) makes each bar a readable "period"
-       instead. Split by side: LOWVOL (traded at the low price = insta-sells)
-       stacks at the bottom in gold, HIGHVOL (traded at the high price =
-       insta-buys) stacks above in teal — so the bar shows both total volume
-       and which side drove it. Colors match the price dots directly above
-       so the eye reads them as the same series, not as new information. */
-    /* Aim for ~14px between bars. groupSize = ceil(14/stepX): if points are
-       already ≥14 px apart (short views), no aggregation; on 6M/1Y where
-       stepX shrinks to 2–3 px, groups of 5–7 points become one chunky bar. */
-    const targetBarPx = 14;
-    const groupSize = Math.max(1, Math.round(targetBarPx / Math.max(0.5, stepX)));
-    const groups = [];
-    for (let i = 0; i < L.length; i += groupSize) {
-      let sumLow = 0, sumHigh = 0, count = 0, jEnd = Math.min(i + groupSize, L.length);
-      for (let j = i; j < jEnd; j++) {
-        if (LOWVOL[j] != null) sumLow += LOWVOL[j];
-        if (HIGHVOL[j] != null) sumHigh += HIGHVOL[j];
-        if (LOWVOL[j] != null || HIGHVOL[j] != null) count++;
-      }
-      if (count === 0) continue;
-      const cx = x0 + (i + (jEnd - i - 1) / 2) * stepX;
-      groups.push({ cx, sumLow, sumHigh });
-    }
-    const maxGroupVol = Math.max(1, ...groups.map(g => g.sumLow + g.sumHigh));
-    const groupPx = groupSize * stepX;
-    const barWidth = Math.max(2, groupPx * 0.72);
-    const gapPx = 1; // hairline gap between the two-side stack, so they read as separate
-    for (const g of groups) {
-      const totalH = ((g.sumLow + g.sumHigh) / maxGroupVol) * h_vol;
-      if (totalH < 0.5) continue;
-      const lowH = (g.sumLow / maxGroupVol) * h_vol;
-      const highH = (g.sumHigh / maxGroupVol) * h_vol;
-      const x = g.cx - barWidth / 2;
-      const baseY = y0_vol + h_vol;
-      if (singlePrice) {
-        /* Single-price historical (5Y): the "insta-sell / insta-buy" split
-           is meaningless, so paint one unified teal bar matching the price
-           line/area above. Prevents the all-gold band that looked broken. */
-        ctx.fillStyle = "rgba(38, 166, 154, 0.55)";
-        ctx.fillRect(x, baseY - Math.max(lowH, highH, totalH), barWidth, Math.max(lowH, highH, totalH));
-      } else {
-        /* Insta-sells (yellow) at the bottom, insta-buys (teal) above — same
-           gold/teal identity as the price dots the volume corresponds to. */
-        if (lowH > 0.3) {
-          ctx.fillStyle = "rgba(230, 195, 92, 0.55)";
-          ctx.fillRect(x, baseY - lowH, barWidth, lowH);
-        }
-        if (highH > 0.3) {
-          const stackedY = baseY - lowH - (lowH > 0.3 ? gapPx : 0) - highH;
-          ctx.fillStyle = "rgba(38, 166, 154, 0.55)";
-          ctx.fillRect(x, stackedY, barWidth, highH);
-        }
-      }
-    }
+    /* Paned mode only — in overlay mode these were already painted underneath
+       the price series, before the clip opened. */
+    if (!volOverlay) drawVolumeBars(0.55);
   }
 
   const activePrice = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
