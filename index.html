@@ -983,7 +983,7 @@ button, input { touch-action: manipulation; }
    rotates -90° when closed. No more mixed ▼ / ▶ / ▾ glyph styles. */
 .cat-chevron .ui-ic, .calc-caret .ui-ic { width: 13px; height: 13px; transition: transform 0.15s ease; }
 .cat-chevron.closed .ui-ic, .calc-caret.closed .ui-ic { transform: rotate(-90deg); }
-.fc-collapse .ui-ic { width: 14px; height: 14px; display: block; }
+
 .category-list { display: block; }
 .category-list.collapsed { display: none; }
 .wl-page-link { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 11.5px; color: var(--text-muted); text-decoration: none; border-top: 1px solid var(--border-light); }
@@ -1675,15 +1675,19 @@ button, input { touch-action: manipulation; }
 .site-footer .foot-disclaimer { opacity: 0.7; font-size: 10.5px; }
 
 /* ── Recommended-flip finder ─────────────────────────────────────────────── */
-.flip-finder { padding: 8px 8px 0; }
+/* Same section treatment as .calc-container (Potential Profit + Analyst
+   Rating): full-bleed panel, one bottom rule, matching padding. Recommended
+   Flip used to be a rounded, shadowed card floating inside a padded wrapper,
+   which read as a widget parked inside the sidebar rather than a section of
+   it — a nested box among flat siblings. */
+.flip-finder { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; }
 .find-flip-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
   padding:12px; border:none; border-radius:10px; cursor:pointer; font-weight:800; font-size:14px;
   color:#1a1200; background:linear-gradient(135deg,var(--buy-color) 0%,#FFD24D 100%);
   box-shadow:0 2px 10px rgba(255,184,0,.25); }
 .find-flip-btn:active { transform:translateY(1px); }
 .find-flip-btn .ff-bolt { font-size:16px; }
-.flip-card { margin:8px; padding:9px 10px; border-radius:12px; cursor:pointer; background:var(--bg-panel);
-  border:1px solid rgba(230,195,92,.12); box-shadow:0 4px 16px rgba(0,0,0,.35); }
+.flip-card { margin:0; padding:0; cursor:pointer; background:transparent; border:none; box-shadow:none; }
 .flip-card:focus-visible { outline:2px solid var(--buy-color); outline-offset:2px; }
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
 .fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--buy-color); text-transform:uppercase; }
@@ -1693,19 +1697,21 @@ button, input { touch-action: manipulation; }
 .fc-next:active { transform:translateY(1px); }
 .fc-next:disabled { opacity:.5; cursor:default; }
 /* Collapse toggle + collapsed one-line summary. Collapsing hides everything
-   in .fc-collapsible and reveals .fc-mini (name · score · edge). */
-.fc-collapse { flex:0 0 auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center;
-  font-size:12px; line-height:1; cursor:pointer; border-radius:8px; color:var(--text-main);
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); transition:transform .18s ease; }
-.fc-collapse:active { transform:translateY(1px); }
-.flip-card.collapsed .fc-collapse { transform:rotate(-90deg); }
+   in .fc-collapsible and reveals .fc-mini (name · score · edge).
+   The button wears .calc-caret, so it IS the same component as the Analyst
+   Rating and Potential Profit expanders — same 22px gold chip, same 13px
+   glyph, and the icon rotates via .closed rather than the button rotating
+   itself. It was a 30px white-bordered square with a 14px glyph, which
+   matched nothing else on the page. */
+.fc-collapse { flex:0 0 auto; border:none; padding:0; cursor:pointer; }
+
 .fc-mini { display:none; align-items:center; gap:8px; min-width:0; }
 .fc-mini-icon { width:22px; height:22px; flex:0 0 22px; image-rendering:pixelated; }
 .fc-mini-name { flex:1 1 auto; min-width:0; font-weight:800; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .fc-mini-score { flex:0 0 auto; font-weight:900; font-size:14px; line-height:1; }
 .fc-mini-edge { flex:0 0 auto; font-size:11.5px; font-weight:700; }
 .fc-mini-edge.pos { color:var(--rs-green-deep); }
-.flip-card.collapsed { padding:5px 8px 6px; }
+.flip-card.collapsed { padding:0; }
 .flip-card.collapsed .fc-head { margin-bottom:0; }
 .flip-card.collapsed .fc-collapsible { display:none; }
 .flip-card.collapsed .fc-mini { display:flex; margin-top:3px; }
@@ -1787,7 +1793,7 @@ button, input { touch-action: manipulation; }
 .fc-sval { font-size:12.5px; font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums; }
 .fc-sval.pos { color:var(--rs-green-deep); }
 .fc-subnote { font-size:9px; color:var(--text-muted); }
-.flip-card.ff-msg { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; cursor:default; }
+.flip-card.ff-msg { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; cursor:default; padding:6px 0; }
 .ff-msg-txt { font-size:12px; color:var(--text-muted); }
 
 /* landscape flip-card compaction — MUST live here (after the .flip-card base
@@ -1796,8 +1802,8 @@ button, input { touch-action: manipulation; }
    Profit / Est-per-4h / Daily-vol on ONE inline line. (pointer: coarse)
    scopes this to real touch devices — see the matching block above. */
 @media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
-  .flip-finder { padding: 4px 4px 0; }
-  .flip-card { margin: 4px; padding: 6px 8px; }
+  .flip-finder { padding: 4px 6px; }
+  .flip-card { margin: 0; padding: 0; }
   .flip-card .fc-why { display: none; }
   .flip-card .fc-head { margin-bottom: 4px; }
   .flip-card .fc-icon { width: 24px; height: 24px; flex-basis: 24px; }
@@ -1805,12 +1811,10 @@ button, input { touch-action: manipulation; }
   .flip-card .fc-gauge { min-width: 50px; }
   .flip-card .fc-score { font-size: 15px; }
   .flip-card .fc-next { min-height: 26px; padding: 4px 9px; font-size: 11px; }
-  .flip-card .fc-collapse { width: 26px; height: 26px; }
   /* Collapsed header in the narrow landscape sidebar: shrink Next and the
      chevron so kicker text ("⚡ Recommended flip") has room to sit alongside
      them without ellipsizing. */
   .flip-card.collapsed .fc-next { min-height: 22px; padding: 3px 7px; font-size: 10px; }
-  .flip-card.collapsed .fc-collapse { width: 22px; height: 22px; font-size: 11px; }
   .flip-card.collapsed .fc-head-ctrls { gap: 4px; }
   .flip-card.collapsed .fc-kicker-txt { font-size: 9px; letter-spacing: .2px; }
   .flip-card .fc-prices { margin: 4px 0; gap: 4px; }
@@ -6663,7 +6667,7 @@ function renderFlipCard(rec){
         <span class="fc-kicker">${uiIcon('zap')}<span class="fc-kicker-txt">Recommended flip</span></span>
         <div class="fc-head-ctrls">
           <button type="button" class="fc-next" id="btnNextFlip" title="Show another flip">↻ Next</button>
-          <button type="button" class="fc-collapse" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
+          <button type="button" class="fc-collapse calc-caret${collapsed ? ' closed' : ''}" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
         </div>
       </div>
       <div class="fc-mini">
@@ -6735,6 +6739,7 @@ function wireFlipButtons(){
     col.onclick = e => {
       e.stopPropagation();
       const isCollapsed = card.classList.toggle('collapsed');
+      col.classList.toggle('closed', isCollapsed);
       col.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
       setFlipCollapsed(isCollapsed);
     };
