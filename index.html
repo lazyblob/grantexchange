@@ -1017,7 +1017,7 @@ button, input { touch-action: manipulation; }
 .fls-current:hover, .fls-current.open { color: #FFE0A0; }
 .fls-current .fls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fls-current .fls-caret { display: flex; flex-shrink: 0; }
-.fls-current .fls-caret .ui-ic { width: 11px; height: 11px; transition: transform 0.15s ease; }
+.fls-current .fls-caret .ui-ic { width: 15px; height: 15px; transition: transform 0.15s ease; }
 .fls-current.open .fls-caret .ui-ic { transform: rotate(180deg); }
 .fls-add {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -1180,6 +1180,7 @@ button, input { touch-action: manipulation; }
 .wl-sort-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; font-size: 9px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; padding: 2px 7px; margin-right: 8px; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
 .wl-sort-btn:hover { color: var(--text-main); border-color: var(--border-active); }
 .cat-title-right { display: inline-flex; align-items: center; }
+.cat-title-label .fls-add { margin-left: 6px; }
 /* Remove × — pinned to the right edge, hidden by default. There's no longer
    a reserved gutter (columns run to the edge for max name room), so on hover
    the row's data slides left ~22px to open space and the × fades in at the
@@ -1260,6 +1261,15 @@ button, input { touch-action: manipulation; }
 /* Single header bar — ⋯ menu on the LEFT, then the clickable sortable column
    labels. No right gutter: the data columns run to the right edge so the item
    name gets maximum room. Column widths match the data-row cells. */
+/* List-name row above the column labels. position:relative because the ⋯
+   menu anchors to it now that both live here rather than in .col-header. */
+.fav-head-host { position: relative; display: flex; align-items: center; background: var(--bg-panel); }
+.fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
+.fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
+.fav-head-host .col-menu { left: auto; right: 6px; }
+/* The title was a row inside the list; as the host's only child it no longer
+   needs its own background or bottom rule. */
+.fav-head-host .category-title { border-bottom: none; background: transparent; }
 .col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 6px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-top: 1px solid var(--border-main); border-bottom: 1px solid var(--border-main); }
 .col-header .ch-name { flex: 1 1 auto; min-width: 0; }
 .col-header .ch-cols { display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
@@ -1536,10 +1546,11 @@ button, input { touch-action: manipulation; }
      list's column header, not a standalone block. */
   .watchlist-container > .mode-pill-side { order: 0; }
   .watchlist-container > #sideModule { order: 1; }
-  .watchlist-container > #colHeader { order: 2; }
-  .watchlist-container > #watchlistContent { order: 3; }
-  .watchlist-container > #flipFinder { order: 4; }
-  .watchlist-container > #findOppsHost { order: 5; }
+  .watchlist-container > #favHeadHost { order: 2; }
+  .watchlist-container > #colHeader { order: 3; }
+  .watchlist-container > #watchlistContent { order: 4; }
+  .watchlist-container > #flipFinder { order: 5; }
+  .watchlist-container > #findOppsHost { order: 6; }
   /* Fixed compact width here (not --wl-width), so the drag handle has
      nothing meaningful to resize — keep it hidden in this cramped view. */
   .wl-resize { display: none; }
@@ -2318,6 +2329,12 @@ button, input { touch-action: manipulation; }
            lists — same order the portrait view pioneered. -->
       <div class="calc-container" id="sideModule"></div>
       <div class="flip-finder" id="flipFinder"></div>
+      <!-- List name row sits ABOVE the column labels, the way every trading
+           terminal orders it: which list am I looking at, then what the
+           columns mean. #favHeadTitle is re-rendered by renderWatchlist; the
+           ⋯ button and its menu are appended once by buildColHeader and live
+           as siblings of it, so a re-render can't destroy them. -->
+      <div class="fav-head-host" id="favHeadHost"><div id="favHeadTitle"></div></div>
       <div class="col-header" id="colHeader"></div>
       <div class="watchlist-content" id="watchlistContent"></div>
       <!-- Find Opportunities lives in its own host, NOT inside
@@ -4532,6 +4549,15 @@ function buildColHeader(host) {
      columns can run all the way to the right edge — no reserved right gutter
      eating into every row, which frees ~22px for the item name. */
   host.innerHTML = `
+    <span class="ch-name ch-sortable" data-sort="name" role="button" tabindex="0" title="Sort favorites by name">Item<span class="ch-arrow"></span></span>
+    <span class="ch-cols"></span>`;
+  /* ⋯ and its menu live in the list-name row above, not in the label row —
+     appended once here rather than by renderWatchlist, so re-rendering the
+     favorites title can't take them with it. */
+  const menuHost = document.getElementById('favHeadHost') || host;
+  const menuWrap = document.createElement('div');
+  menuWrap.className = 'ch-menu-wrap';
+  menuWrap.innerHTML = `
     <button type="button" id="btnCols" class="col-menu-btn" aria-label="Customize columns" title="Customize columns" aria-expanded="false">⋯</button>
     <div class="col-menu" id="colMenu" role="menu">
       <div class="col-menu-section">Customize columns</div>
@@ -4540,12 +4566,11 @@ function buildColHeader(host) {
       <label class="col-menu-row"><input type="checkbox" data-col="volume"><span><b class="col-menu-tag">Vol</b> Daily volume</span></label>
       <div class="col-menu-section">Sort favorites by</div>
       <div class="col-menu-row col-menu-sort ch-sortable" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span><span class="ch-arrow"></span></div>
-    </div>
-    <span class="ch-name ch-sortable" data-sort="name" role="button" tabindex="0" title="Sort favorites by name">Item<span class="ch-arrow"></span></span>
-    <span class="ch-cols"></span>`;
+    </div>`;
+  menuHost.appendChild(menuWrap);
 
-  const btn = host.querySelector('#btnCols');
-  const menu = host.querySelector('#colMenu');
+  const btn = menuWrap.querySelector('#btnCols');
+  const menu = menuWrap.querySelector('#colMenu');
   const closeMenu = () => { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
   btn.onclick = (ev) => {
     ev.stopPropagation();
@@ -4572,14 +4597,18 @@ function buildColHeader(host) {
     paintColHeader(host);
     renderWatchlist();
   };
-  host.addEventListener('click', (ev) => {
-    const el = ev.target.closest('.ch-sortable');
-    if (el && host.contains(el)) applySort(el);
-  });
-  host.addEventListener('keydown', (ev) => {
-    if (ev.key !== 'Enter' && ev.key !== ' ') return;
-    const el = ev.target.closest && ev.target.closest('.ch-sortable');
-    if (el && host.contains(el)) { ev.preventDefault(); applySort(el); }
+  const sortRoots = [host, menuWrap];
+  const owns = (el) => el && sortRoots.some(r => r.contains(el));
+  sortRoots.forEach(root => {
+    root.addEventListener('click', (ev) => {
+      const el = ev.target.closest('.ch-sortable');
+      if (owns(el)) applySort(el);
+    });
+    root.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      const el = ev.target.closest && ev.target.closest('.ch-sortable');
+      if (owns(el)) { ev.preventDefault(); applySort(el); }
+    });
   });
   /* Menu clicks are already excluded by the contains() check, so the menu
      doesn't need to stop propagation — which would otherwise also hide the
@@ -4599,10 +4628,10 @@ function paintColHeader(host) {
   if (columnPrefs.margin) cols += col('ch-ea', 'margin', 'Ea');
   if (columnPrefs.volume) cols += col('ch-vol', 'volume', 'Vol');
   host.querySelector('.ch-cols').innerHTML = cols;
-  host.querySelectorAll('.col-menu input[data-col]').forEach(cb => {
+  document.querySelectorAll('.col-menu input[data-col]').forEach(cb => {
     cb.checked = !!columnPrefs[cb.getAttribute('data-col')];
   });
-  host.querySelectorAll('.ch-name, .col-menu-sort').forEach(el => {
+  document.querySelectorAll('#colHeader .ch-name, .col-menu-sort').forEach(el => {
     const key = el.getAttribute('data-sort');
     el.classList.toggle('sorted', favSort === key);
     const a = el.querySelector('.ch-arrow');
@@ -4613,6 +4642,8 @@ function paintColHeader(host) {
 function renderWatchlist() {
   const container = $("#watchlistContent");
   container.innerHTML = "";
+  const favHeadTitle = document.getElementById('favHeadTitle');
+  if (favHeadTitle) favHeadTitle.innerHTML = "";
 
   let activeItems = membersOn ? mapping : mapping.filter(m => !m.members);
 
@@ -4873,9 +4904,9 @@ function renderWatchlist() {
             <span class="fls-name">${escapeHtml(group.name)}</span>
             <span class="fls-caret">${uiIcon('chev')}</span>
           </button>
+          <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
           ${rlBadge}
         </span>
-        <span class="cat-title-right"><button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button></span>
         <div class="fls-menu${flsMenuOpen ? ' open' : ''}" id="flsMenu" role="menu">${listMenuHtml}</div>`;
     } else {
       titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
@@ -4973,7 +5004,12 @@ function renderWatchlist() {
       inner += `<a class="wl-page-link" href="${group.pageUrl}">${uiIcon('external')} About this list &amp; a live top 10 →</a>`;
     }
     listDiv.innerHTML = inner;
-    groupDiv.appendChild(titleDiv);
+    /* The favorites title is hoisted out of the list and into the header
+       host above the column labels; every other group keeps its title
+       inline, since only the active list gets the terminal treatment. */
+    const favHead = document.getElementById('favHeadTitle');
+    if (isFavTitle && favHead) favHead.appendChild(titleDiv);
+    else groupDiv.appendChild(titleDiv);
     groupDiv.appendChild(listDiv);
     return groupDiv;
   }
@@ -5013,8 +5049,8 @@ function renderWatchlist() {
      landscape without needing to live inside the favorites container. */
   const oppsHost = $("#findOppsHost");
   if (oppsHost) { oppsHost.innerHTML = ""; oppsHost.appendChild(findOppsDiv); }
-  const flsCurrent = container.querySelector('#flsCurrent');
-  const flsMenu = container.querySelector('#flsMenu');
+  const flsCurrent = document.querySelector('#flsCurrent');
+  const flsMenu = document.querySelector('#flsMenu');
   const closeFlsMenu = () => { if (!flsCurrent) return; flsCurrent.classList.remove('open'); flsMenu.classList.remove('open'); flsCurrent.setAttribute('aria-expanded', 'false'); };
   if (flsCurrent) {
     flsCurrent.onclick = (ev) => {
@@ -5034,12 +5070,12 @@ function renderWatchlist() {
     if (flsMenu && flsMenu.classList.contains('open') && !flsMenu.contains(ev.target) && ev.target !== flsCurrent) closeFlsMenu();
   };
   document.addEventListener('click', _flsOutsideClickHandler);
-  container.querySelectorAll('.fls-menu-name').forEach(el => {
+  document.querySelectorAll('.fls-menu-name').forEach(el => {
     const apply = () => { closeFlsMenu(); switchFavoriteList(el.getAttribute('data-list-id')); };
     el.onclick = apply;
     el.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); apply(); } };
   });
-  container.querySelectorAll('.fls-rename').forEach(el => {
+  document.querySelectorAll('.fls-rename').forEach(el => {
     el.onclick = (ev) => {
       ev.stopPropagation();
       flsCreatingNew = false;
@@ -5047,7 +5083,7 @@ function renderWatchlist() {
       renderWatchlist();
     };
   });
-  container.querySelectorAll('.fls-delete').forEach(el => {
+  document.querySelectorAll('.fls-delete').forEach(el => {
     el.onclick = (ev) => {
       ev.stopPropagation();
       const listId = el.getAttribute('data-list-id');
@@ -5055,7 +5091,7 @@ function renderWatchlist() {
       if (l && confirm(`Delete the "${l.name}" list and its favorites?`)) deleteFavoriteListLocal(listId);
     };
   });
-  const addListBtn = container.querySelector('.fls-add');
+  const addListBtn = document.querySelector('.fls-add');
   if (addListBtn) {
     addListBtn.onclick = (ev) => {
       ev.stopPropagation();
@@ -5069,7 +5105,7 @@ function renderWatchlist() {
      Escape cancels, blur commits (so clicking away still saves, matching
      how most inline-rename UIs behave) — guarded against double-firing
      since Enter's commit and the resulting blur can both fire. */
-  container.querySelectorAll('.fls-menu-input').forEach(input => {
+  document.querySelectorAll('.fls-menu-input').forEach(input => {
     let done = false;
     const isNew = input.getAttribute('data-new') === '1';
     const listId = input.getAttribute('data-list-id');
@@ -5093,7 +5129,7 @@ function renderWatchlist() {
     });
     input.addEventListener('blur', commit);
   });
-  const flsFocusInput = container.querySelector('.fls-menu-input');
+  const flsFocusInput = document.querySelector('.fls-menu-input');
   if (flsFocusInput) { flsFocusInput.focus(); flsFocusInput.select(); }
   /* Tell CSS whether the VOL column is present, so the fav-delete fallback
      knows when the in-cell trash exists (see .wl-fav-remove-row rules). */
