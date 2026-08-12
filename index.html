@@ -75,37 +75,42 @@
     {
       "@type": "Question",
       "name": "What is PocketGE?",
-      "acceptedAnswer": { "@type": "Answer", "text": "PocketGE is an OSRS trading terminal — a merching and market-tracking platform for the Old School RuneScape Grand Exchange. It works as an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists around the items you trade, follow Grand Exchange prices across timeframes from one day to five years, and see live buy and sell prices, target buy and sell levels, after-tax margins, trading volume, buy limits, potential profit, analyst ratings and flip recommendations without switching tabs. It is free, needs no account, and reads public price data — it does not touch your RuneScape account." }
+      "acceptedAnswer": { "@type": "Answer", "text": "A trading terminal for the Old School RuneScape Grand Exchange. It is an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists, chart any item from one day to five years, and read live prices, target buy and sell levels, after-tax margins, volume, buy limits and scored flip recommendations without switching tabs. Free, no account, and it reads public price data only - it never touches your RuneScape login." }
     },
     {
       "@type": "Question",
       "name": "Is PocketGE useful if I am new to OSRS flipping?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Alongside the raw numbers, each item gets a written summary of how it has been moving, a 30-day range meter showing whether the price sits near the floor or the ceiling of its recent range, and an analyst rating that reads the current price against the selected timeframe — so you can learn what the chart is telling you rather than needing to already know. The flipping guide covers the mechanics, including buy limits, the 2% tax and margins." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, and the plain-English parts exist for exactly that. Every item carries a written summary of how it has been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its range, and an analyst rating on the current price - so you can learn to read a chart instead of needing to already. Starting from zero, the flipping guide covers buy limits, the 2% tax and margins before you risk any gp." }
     },
     {
       "@type": "Question",
       "name": "How does the 2% Grand Exchange tax work in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "When you sell an item on the Grand Exchange, Old School RuneScape takes a 2% sales tax from the sale, rounded down, capped at 5,000,000 gp per item. Items selling for under 50 gp are exempt, and certain items like the bond are also exempt. PocketGE bakes this into every margin and into the flip calculator, so the profit you see is what you actually keep after tax." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Selling on the Grand Exchange costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few specific ones like the bond. PocketGE takes it out of every margin and every profit figure, so what you see is what you keep." }
     },
     {
       "@type": "Question",
       "name": "What are the best items to flip in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "It depends on your capital and patience. High-volume staples like gems, bars, ores, runes, arrows and cannonballs flip fast with small per-item margins, suiting active flipping. Low-volume items such as rare gear and niche supplies carry bigger absolute spreads but fill slower. PocketGE splits live margins into High Vol and Low Vol lists, sorted by gp profit per flip after tax." }
+      "acceptedAnswer": { "@type": "Answer", "text": "It depends on your capital and your patience. High-volume staples - gems, bars, ores, runes, arrows, cannonballs - fill fast on thin per-item margins, so they suit active flipping. Rare gear and niche supplies carry wider spreads but take longer to fill. The sidebar splits live margins into High Vol and Low Vol lists, both sorted by gp per flip after tax." }
     },
     {
       "@type": "Question",
       "name": "What is a buy limit on the Grand Exchange?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Every tradeable item has a 4-hour buy limit, the maximum quantity you can purchase from the GE in a rolling four-hour window. PocketGE multiplies the current per-item margin by the item's buy limit to show the realistic profit ceiling for one 4-hour flip." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Every tradeable item has a 4-hour buy limit - the most you can buy from the GE in a rolling four-hour window. It is the ceiling on what one flip can make per cycle, which is why the potential profit figure multiplies the per-item margin by that limit instead of quoting an unbounded number." }
     },
     {
       "@type": "Question",
       "name": "How do I know when to buy or sell an item in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "PocketGE gives each item a Target Buy and Target Sell anchored to recent competitive bids, plus a letter-grade verdict for the current price. The chart marks support and resistance walls — flat price levels where heavy buy or sell orders repeatedly sit — and flags when an item is testing a genuine 5-day high or low." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each with a 0-100 grade and a plain verdict for the current price — Steal Buy and Top Sell at the extremes, Wait for Dip when a setup is forming but the price has not arrived yet. The 5-day high and low badges flag when an item is testing a genuine multi-day extreme." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between high-volume and low-volume flipping?",
+      "acceptedAnswer": { "@type": "Answer", "text": "High-volume items trade tens of thousands to millions of units a day: offers fill almost immediately, margins are thin, and the profit comes from turning your capital over repeatedly. Low-volume items move slowly on wider spreads, so each flip earns more but you may wait hours for a fill. PocketGE lists them separately so you do not tie up capital in a slow item expecting a fast one." }
     },
     {
       "@type": "Question",
       "name": "Does PocketGE need my RuneScape login?",
-      "acceptedAnswer": { "@type": "Answer", "text": "No — PocketGE never asks for your RuneScape credentials, and it doesn't use accounts at all. It only reads public Grand Exchange price data. Everything you save stays in your own browser, and you can install it to your phone's home screen as an app." }
+      "acceptedAnswer": { "@type": "Answer", "text": "No, and it has no accounts at all. It reads public Grand Exchange price data and nothing else. Favorites, Bank stacks and alerts stay in your own browser, and you can install it to your phone's home screen as an app." }
     }
   ]
 }
@@ -8789,7 +8794,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <section class="about-section" aria-label="About PocketGE">
-  <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong> — TradingView-inspired charts, watchlists you build yourself, and every number a flip turns on, in one place instead of five tabs.</p>
+  <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong> — TradingView-inspired charts, watchlists you build yourself, and after-tax margins on every item, in one place instead of five tabs.</p>
   <p class="about-intro-2">It won't predict the market. Nothing can. What it does is make the OSRS Grand Exchange readable — whether you've been merching for years or you're still working out how the GE works.</p>
 
   <p class="about-questions">Five questions decide every flip. PocketGE is built to answer them:</p>
@@ -8875,7 +8880,8 @@ if ('serviceWorker' in navigator) {
   </figure>
 
   <h2>Scanners: a shortlist when you don't have one</h2>
-  <p>Not knowing what to look at is the hardest part of starting. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> hand you a list: an item only appears when its live price is within 0.5% of a genuine 5-day extreme, and only if the 5-day range is at least 3%, so flat items can't pass themselves off as breakouts.</p>
+  <p>Not knowing what to look at is the hardest part of starting. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> hand you a shortlist of items already at an extreme.</p>
+  <p>The bar to get on it is deliberately high: an item only appears when its live price is within 0.5% of a genuine 5-day extreme, and only if the 5-day range is at least 3% — so flat items can't pass themselves off as breakouts.</p>
   <p>The margin lists split by how fast an item fills, which is really a question about your own time:</p>
   <ul class="about-qlist">
     <li><b>High Vol</b> — gems, ores, bars, arrows, runes, cannonballs. Small edges that fill fast. Suits sitting at the GE and cycling.</li>
@@ -8902,41 +8908,41 @@ if ('serviceWorker' in navigator) {
   <div class="faq">
     <details>
       <summary>What is PocketGE?</summary>
-      <p>PocketGE is an OSRS trading terminal — a merching and market-tracking platform for the Old School RuneScape Grand Exchange. It works as an OSRS price tracker, a charting tool, and a flip finder in one place: build watchlists around the items you trade, follow Grand Exchange prices across timeframes from one day to five years, and see live buy and sell prices, target buy and sell levels, after-tax margins, trading volume, buy limits, potential profit, analyst ratings and flip recommendations without switching tabs. It's free, needs no account, and reads public price data — it doesn't touch your RuneScape account.</p>
+      <p>A trading terminal for the Old School RuneScape Grand Exchange. It's an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists, chart any item from one day to five years, and read live prices, target buy and sell levels, after-tax margins, volume, buy limits and scored flip recommendations without switching tabs. Free, no account, and it reads public price data only — it never touches your RuneScape login.</p>
     </details>
     <details>
       <summary>Is PocketGE useful if I'm new to OSRS flipping?</summary>
-      <p>Yes — that's part of why the plain-English pieces exist. Alongside the raw numbers, each item gets a written summary of how it's been moving, a 30-day range meter showing whether the price sits near the floor or the ceiling of its recent range, and an analyst rating that reads the current price against the selected timeframe. Those are there so you can learn what the chart is telling you rather than needing to already know. If you're starting from scratch, the <a href="/flipping-guide.html">OSRS flipping guide</a> covers the mechanics — buy limits, the 2% tax, margins — before you put gp at risk.</p>
+      <p>Yes, and the plain-English parts exist for exactly that. Every item carries a written summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its range, and an analyst rating on the current price — so you can learn to read a chart instead of needing to already. Starting from zero, the <a href="/flipping-guide.html">OSRS flipping guide</a> covers buy limits, the 2% tax and margins before you risk any gp.</p>
     </details>
     <details>
       <summary>How does the 2% Grand Exchange tax work in OSRS?</summary>
-      <p>When you sell an item on the Grand Exchange, Old School RuneScape takes a 2% sales tax from the sale, rounded down, capped at 5,000,000 gp per item. Items selling for under 50 gp are exempt, and certain items (like the old school bond) are also exempt. PocketGE bakes this into every margin and into the flip calculator, so the profit you see is what you actually keep after tax — not the raw buy/sell spread.</p>
+      <p>Selling on the Grand Exchange costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few specific ones like the bond. PocketGE takes it out of every margin and every profit figure, so what you see is what you keep.</p>
     </details>
     <details>
       <summary>What are the best items to flip in OSRS?</summary>
-      <p>It depends on your capital and patience. High-volume staples — gems (rubies, diamonds), bars, ores, runes, arrows, cannonballs — flip fast with small per-item margins, so they suit active flipping. Low-volume items (rare gear, niche supplies) carry bigger absolute spreads but fill slower. PocketGE's sidebar splits live margins into High Vol and Low Vol lists, sorted by gp profit per flip after tax, so you can pick the style that fits how often you can hop to a GE.</p>
+      <p>It depends on your capital and your patience. High-volume staples — gems, bars, ores, runes, arrows, cannonballs — fill fast on thin per-item margins, so they suit active flipping. Rare gear and niche supplies carry wider spreads but take longer to fill. The sidebar splits live margins into High Vol and Low Vol lists, both sorted by gp per flip after tax, so you can pick the style that fits your time.</p>
     </details>
     <details>
       <summary>What is a buy limit on the Grand Exchange?</summary>
-      <p>Every tradeable item has a 4-hour buy limit — the maximum quantity you can purchase from the GE in a rolling four-hour window. It caps how much profit a single flip can make per cycle. PocketGE's "potential profit" headline multiplies the current per-item margin by the item's buy limit, so you can see the realistic ceiling for one 4-hour flip rather than a per-item figure.</p>
+      <p>Every tradeable item has a 4-hour buy limit — the most you can buy from the GE in a rolling four-hour window. It's the ceiling on what one flip can make per cycle, which is why the potential profit figure multiplies the per-item margin by that limit instead of quoting an unbounded number.</p>
     </details>
     <details>
       <summary>How do I know when to buy or sell an item?</summary>
-      <p>PocketGE gives each item a Target Buy and Target Sell anchored to recent competitive bids, plus a letter-grade verdict (e.g. "Strong Entry", "Top Sell") for the current price. The chart marks support and resistance walls — flat price levels where heavy buy or sell orders repeatedly sit — so you can place offers just inside them. The 5-day high / low badges flag when an item is testing a genuine multi-day extreme.</p>
+      <p>Each item gets a Target Buy and a Target Sell anchored to recent competitive trades, each carrying a 0–100 grade and a plain verdict for the current price — "Steal Buy" and "Top Sell" at the extremes, "Wait for Dip" when a setup is forming but the price hasn't arrived yet. The 5-day high and low badges flag when an item is testing a genuine multi-day extreme.</p>
     </details>
     <details>
       <summary>What's the difference between high-volume and low-volume flipping?</summary>
-      <p>High-volume items trade tens of thousands to millions of units per day, so offers fill almost instantly but margins are thin — profit comes from turning capital over many times. Low-volume items trade slowly but with wider spreads, so each flip earns more gp but you may wait hours for a fill. PocketGE separates the two so you don't accidentally tie up capital in a slow item expecting a fast flip.</p>
+      <p>High-volume items trade tens of thousands to millions of units a day: offers fill almost immediately, margins are thin, and the profit comes from turning your capital over repeatedly. Low-volume items move slowly on wider spreads, so each flip earns more but you may wait hours for a fill. PocketGE lists them separately so you don't tie up capital in a slow item expecting a fast one.</p>
     </details>
     <details>
       <summary>Does PocketGE need my RuneScape login?</summary>
-      <p>No — PocketGE never asks for your RuneScape credentials, and it doesn't use accounts at all. It only reads public Grand Exchange price data. Everything you save (favorites, Bank stacks, alerts) stays in your own browser. You can also install it to your phone's home screen as an app.</p>
+      <p>No, and it has no accounts at all. It reads public Grand Exchange price data and nothing else. Favorites, Bank stacks and alerts stay in your own browser, and you can install it to your phone's home screen as an app.</p>
     </details>
   </div>
 
   <div class="popular" aria-label="Popular OSRS item prices">
     <h2 id="popular-items">Popular OSRS item prices</h2>
-    <p>Jump straight to any of these — live insta-buy / insta-sell, target flip prices with GE tax baked in, support &amp; resistance walls, and 5-day breakout markers for each.</p>
+    <p>Jump straight to any of these — live insta-buy / insta-sell, target flip prices with the GE tax baked in, period and recent highs and lows, and 5-day breakout markers for each.</p>
 
     <h3 id="new-items">New &amp; recent items (2025–2026 updates)</h3>
     <p>Fresh drops settle fast and swing hard — track the newest gear from The Blood Moon Rises (Maggot King), Doom of Mokhaiotl, Yama and the Royal Titans while the market finds its price.</p>
