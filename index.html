@@ -8804,7 +8804,8 @@ if ('serviceWorker' in navigator) {
   <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game.</p>
 
   <h2>Watchlists: star it once, stop hunting for it</h2>
-  <p>Most OSRS merching comes back to the same handful of items. Star them and they hold a row in the sidebar — live price, 24-hour change, after-tax margin and daily volume side by side — so one glance tells you whether anything moved while you were away. Items hitting a 5-day high or low are flagged in the list itself, which is usually the first sign one is worth opening.</p>
+  <p>Most OSRS merching comes back to the same handful of items. Star them and they hold a row in the sidebar — live price, 24-hour change, after-tax margin and daily volume side by side — so one glance tells you whether anything moved while you were away.</p>
+  <p>Items hitting a 5-day high or low are flagged in the list itself, which is usually the first sign one is worth opening.</p>
   <p>Drag rows into whatever order you think in, sort by any column, and switch off the columns you don't use.</p>
   <figure class="ex">
     <div class="ex-frame">
@@ -8821,11 +8822,13 @@ if ('serviceWorker' in navigator) {
   </figure>
 
   <h2>Charts: see where an item has actually traded</h2>
-  <p>Knowing where a price has been is what tells you whether today's number is cheap. Every item charts 1D through 5Y with insta-buy and insta-sell prints kept apart, a trend line through the noise, volume underneath, and period and recent highs and lows marked. Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume.</p>
+  <p>Knowing where a price has been is what tells you whether today's number is cheap. Every item charts 1D through 5Y, with insta-buy and insta-sell prints kept apart, a trend line through the noise, volume underneath, and period and recent highs and lows marked.</p>
+  <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume.</p>
   <p>If you'd rather not read it yourself, a 30-day range meter shows whether the price sits nearer the floor or the ceiling of its recent range, and a written summary says how the item has been moving.</p>
 
   <h2>Margins: a good spread that survives the tax</h2>
-  <p>A margin that looks good before tax often isn't one. Every profit figure here already has the Grand Exchange's 2% sales tax (capped at 5,000,000 gp) taken out, and potential profit is scaled to the 4-hour buy limit — so it's what one realistic cycle clears, not an unbounded per-item number. Target Buy and Target Sell sit alongside the live prices, anchored to recent competitive trades rather than the middle of the spread.</p>
+  <p>A margin that looks good before tax often isn't one. Every profit figure here already has the Grand Exchange's 2% sales tax (capped at 5,000,000 gp) taken out, and potential profit is scaled to the 4-hour buy limit — what one realistic cycle clears, not an unbounded per-item number.</p>
+  <p>Target Buy and Target Sell sit alongside the live prices, anchored to recent competitive trades rather than the middle of the spread.</p>
   <figure class="ex">
     <div class="ex-frame">
       <div class="price-strip">
@@ -8837,9 +8840,10 @@ if ('serviceWorker' in navigator) {
   </figure>
 
   <h2>Two opinions: on this item, and on the whole market</h2>
-  <p>They answer different questions, and it's worth knowing which is which.</p>
+  <p>Use the <strong>Analyst Rating</strong> when you already have an item open. Use <strong>Recommended Flip</strong> when you don't.</p>
   <p><strong>Analyst Rating</strong> judges the item in front of you. It grades the current price against the selected timeframe's range: near the floor with a real margin reads Buy, near the ceiling reads Sell, mid-range reads Neutral. A read on where the price <em>sits</em> — never a call on where it goes next.</p>
-  <p><strong>Recommended Flip</strong> finds the item you weren't looking at. It's an OSRS flip finder for when nothing on your watchlist is doing anything: it scans the market and hands you one item with a buy level, a sell level, its net edge, the realistic 4-hour fill and the daily volume. Every pick is scored out of 100 on edge and liquidity, and hovering the score shows the arithmetic behind it. Both are advisory — the target prices are the actual trade.</p>
+  <p><strong>Recommended Flip</strong> finds the item you weren't looking at. An OSRS flip finder for when nothing on your watchlist is doing anything: it scans the market and hands you one item, with a buy level, a sell level, its net edge, the realistic 4-hour fill and the daily volume.</p>
+  <p>Every pick is scored out of 100 on edge and liquidity, and hovering the score shows the arithmetic behind it. Both features are advisory — the target prices are the actual trade.</p>
   <figure class="ex">
     <div class="ex-frame ex-frame-pad">
       <div class="flip-card" style="cursor:default">
@@ -8872,13 +8876,20 @@ if ('serviceWorker' in navigator) {
 
   <h2>Scanners: a shortlist when you don't have one</h2>
   <p>Not knowing what to look at is the hardest part of starting. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> hand you a list: an item only appears when its live price is within 0.5% of a genuine 5-day extreme, and only if the 5-day range is at least 3%, so flat items can't pass themselves off as breakouts.</p>
-  <p>The margin lists split by how fast an item fills, which is really a choice about your own time. <strong>High Vol</strong> — gems, ores, bars, arrows, runes, cannonballs, anything trading 100,000+ a day — pays small edges that fill fast, so it suits sitting at the GE and cycling. <strong>Low Vol</strong> — quest gear, rares, niche supplies — pays bigger spreads that take hours to fill, so it suits setting an offer and going to do something else. Both sort by gp per flip after tax.</p>
+  <p>The margin lists split by how fast an item fills, which is really a question about your own time:</p>
+  <ul class="about-qlist">
+    <li><b>High Vol</b> — gems, ores, bars, arrows, runes, cannonballs. Small edges that fill fast. Suits sitting at the GE and cycling.</li>
+    <li><b>Low Vol</b> — quest gear, rares, niche supplies. Bigger spreads that take hours. Suits placing an offer and going to do something else.</li>
+  </ul>
+  <p>Both sort by gp per flip after tax.</p>
 
   <h2>Bank: know what your stacks are worth</h2>
-  <p>A stack you're sitting on is a position, and its value moves whether you're watching or not. Log one with its quantity and, if you want P&amp;L, what you paid. Valuations refresh every 5 minutes with running profit per stack and a total at the top. Give any stack a ±% threshold and a browser notification fires when it crosses — for long holds where you want to hear that your sigil stack dropped 10% without watching a chart all day.</p>
+  <p>A stack you're sitting on is a position, and its value moves whether you're watching or not. Log one with its quantity and, if you want P&amp;L, what you paid — valuations refresh every 5 minutes with running profit per stack and a total at the top.</p>
+  <p>Give any stack a ±% threshold and a browser notification fires when it crosses. For long holds, where you want to hear that your sigil stack dropped 10% without watching a chart all day.</p>
 
   <h2>Alerts you can actually verify</h2>
-  <p>You should never have to wonder whether an alert is really armed. The 🔔 button opens a Notification Center listing every one: each favorite (firing when its live price breaks its 24-hour or 5-day extreme, with 5D flagged separately because those are rarer and bigger) and each Bank stack with its threshold editable inline. There's a master switch, a test-fire button that proves the browser permission works, and a tab-title <code>(N)</code> badge counting favorites currently at a 5-day extreme — so a background tab still tells you when something needs eyes.</p>
+  <p>You should never have to wonder whether an alert is really armed. The 🔔 button lists every one: each favorite, firing when its live price breaks its 24-hour or 5-day extreme — 5D flagged separately, because those are rarer and bigger — and each Bank stack with its threshold editable inline.</p>
+  <p>There's a master switch and a test-fire button that proves the browser permission actually works. The tab title carries an <code>(N)</code> badge counting favorites at a 5-day extreme right now, so a background tab still tells you when something needs eyes.</p>
 
   <h2>Built for the phone you check between runs</h2>
   <p>Nothing here is a cut-down mobile version. Phones get a dense vertical stack, desktop gets the full three-column terminal. Add it to your home screen and a service worker loads the shell instantly with no URL bar. On iOS that step is also what enables notifications — the bell button walks you through it.</p>
