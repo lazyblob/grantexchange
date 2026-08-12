@@ -2482,6 +2482,12 @@ let preferredView = "1d";
    range (chart flattens), <1 narrows it (swings amplify). Reset on item /
    timeframe change and by double-tapping the axis. */
 let yScale = 1;
+/* Vertical pan, as a FRACTION of the visible price range rather than a gp
+   amount — so it stays proportionate when the range changes underneath it,
+   which it does constantly: zooming the x-axis re-fits the y-axis to fewer
+   points, and that re-fit is exactly what pushes a target line off-screen.
+   Reset alongside yScale. */
+let yOffset = 0;
 /* Per-item % change for each timeframe (computed once on item load); the
    header hero shows the entry for the active view. */
 let viewChanges = {};
@@ -7371,6 +7377,12 @@ function drawChart(series) {
     const midV = (vmin + vmax) / 2, halfV = (vmax - vmin) / 2 * yScale;
     vmin = midV - halfV; vmax = midV + halfV;
   }
+  /* Then slide the whole window (drag the plot up/down). Applied after the
+     scale so the pan is measured in the range you're actually looking at. */
+  if (yOffset !== 0) {
+    const shift = (vmax - vmin) * yOffset;
+    vmin += shift; vmax += shift;
+  }
 
   /* Fixed 12px of breathing room after the last point (enough for its 7px
      orb + ring) — a percentage margin turned into a ~70px dead gutter on
@@ -7944,6 +7956,19 @@ function applyYScaleDrag(dy) {
   yScale = Math.max(0.15, Math.min(12, yScale * Math.exp(dy / 150)));
   queueDraw();
 }
+/* Vertical pan on the plot itself. Content follows the finger: drag down and
+   the prices you're looking at rise, the way dragging a map works. Zooming
+   the time axis re-fits the price axis to just the visible points, which is
+   what leaves a Target Buy or Sell line stranded off the top or bottom —
+   before this there was no way to reach it short of zooming back out.
+   Clamped to two viewport heights either way so the data can't be flung
+   somewhere you'd have to hunt for it. */
+function applyYPan(dy) {
+  const hp = chartData.h_price;
+  if (!hp) return;
+  yOffset = Math.max(-2, Math.min(2, yOffset + dy / hp));
+  queueDraw();
+}
 /* Same idea, the other axis: grabbing the date strip along the bottom and
    dragging horizontally zooms time in/out — drag RIGHT zooms in (narrower
    window, matching the wheel-zoom direction), drag LEFT zooms out. Reuses
@@ -7973,13 +7998,13 @@ function applyXScaleDrag(dx) {
   anchorZoomToLatest();
   queueDraw();
 }
-let isDragging = false, startXMouse = 0, mouseMoved = false;
+let isDragging = false, startXMouse = 0, startYMouse = 0, mouseMoved = false;
 let axisDragging = false, axisLastY = 0;
 let xAxisDragging = false, xAxisLastX = 0;
 canvas.addEventListener('mousedown', ev => {
   if (inYAxisZone(ev.clientX)) { axisDragging = true; axisLastY = ev.clientY; return; }
   if (inXAxisZone(ev.clientY)) { xAxisDragging = true; xAxisLastX = ev.clientX; return; }
-  isDragging = true; mouseMoved = false; startXMouse = ev.clientX;
+  isDragging = true; mouseMoved = false; startXMouse = ev.clientX; startYMouse = ev.clientY;
 });
 canvas.addEventListener('mouseup', ev => {
   if (axisDragging) { axisDragging = false; return; }
@@ -7989,7 +8014,7 @@ canvas.addEventListener('mouseup', ev => {
 });
 canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; xAxisDragging = false; tip.style.display = "none"; hoverIdx = null; hoverY = null; queueDraw(); });
 canvas.addEventListener('dblclick', ev => {
-  if (inYAxisZone(ev.clientX)) { yScale = 1; queueDraw(); }
+  if (inYAxisZone(ev.clientX)) { yScale = 1; yOffset = 0; queueDraw(); }
   else if (inXAxisZone(ev.clientY)) { zoom = 1; offset = 0; queueDraw(); }
 });
 canvas.addEventListener('mousemove', ev => {
@@ -8002,8 +8027,11 @@ canvas.addEventListener('mousemove', ev => {
   }
   if (isDragging) {
     const dx = ev.clientX - startXMouse; if (Math.abs(dx) > 3) mouseMoved = true; startXMouse = ev.clientX;
+    const dy = ev.clientY - startYMouse; startYMouse = ev.clientY;
     const { dataW, win, n } = chartData;
-    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw(); return;
+    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset));
+    if (dy) applyYPan(dy); else queueDraw();
+    return;
   }
   canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize' : inXAxisZone(ev.clientY) ? 'ew-resize' : '';
   handleTooltip(ev.clientX, ev.clientY);
@@ -8028,7 +8056,7 @@ canvas.addEventListener('touchstart', ev => {
       touchMode = 'yscale'; lastTouchY = t.clientY;
       /* double-tap the axis = reset to auto-fit */
       const nowT = Date.now();
-      if (nowT - lastAxisTapT < 320) { yScale = 1; queueDraw(); }
+      if (nowT - lastAxisTapT < 320) { yScale = 1; yOffset = 0; queueDraw(); }
       lastAxisTapT = nowT;
     } else if (inXAxisZone(t.clientY)) {
       touchMode = 'xscale'; lastTouchX = t.clientX;
@@ -8037,7 +8065,7 @@ canvas.addEventListener('touchstart', ev => {
       if (nowT - lastAxisTapT < 320) { zoom = 1; offset = 0; queueDraw(); }
       lastAxisTapT = nowT;
     } else {
-      touchMode = 'pan'; lastTouchX = t.clientX;
+      touchMode = 'pan'; lastTouchX = t.clientX; lastTouchY = t.clientY;
     }
   }
   else if (ev.touches.length === 2) { touchMode = 'pinch'; pinchStart = dist(ev.touches); pinchZoom = zoom; }
@@ -8055,8 +8083,10 @@ canvas.addEventListener('touchmove', ev => {
     const cx = ev.touches[0].clientX, cy = ev.touches[0].clientY;
     if (Math.abs(cx - tStartX) > 6 || Math.abs(cy - tStartY) > 6) touchMoved = true;
     const dx = cx - lastTouchX; lastTouchX = cx;
+    const dy = cy - lastTouchY; lastTouchY = cy;
     const { dataW, win, n } = chartData;
-    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset)); queueDraw();
+    offset -= dx / (dataW / win); offset = Math.max(0, Math.min(n - win, offset));
+    if (dy) applyYPan(dy); else queueDraw();
   } else if (touchMode === 'pinch' && ev.touches.length === 2) {
     const nd = dist(ev.touches);
     if (pinchStart > 0) {
@@ -8159,7 +8189,7 @@ function refreshChart() {
 
 async function setItem(m, opts = {}) {
   selected = m;
-  yScale = 1; // manual axis scale is per-item — fresh item, auto-fit
+  yScale = 1; yOffset = 0; // manual axis scale is per-item — fresh item, auto-fit
 
   /* keepHomepage = true when we're showing the default boot item (no ?q=
      in the URL) — restore the brand-level title / meta / canonical so a
@@ -8382,7 +8412,7 @@ setItem._userPicked = false;
     document.querySelectorAll(".view-btn").forEach(b => {
       b.onclick = () => {
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
-        b.classList.add("active"); view = preferredView = b.dataset.view; zoom = 1.0; yScale = 1;
+        b.classList.add("active"); view = preferredView = b.dataset.view; zoom = 1.0; yScale = 1; yOffset = 0;
         setItem._userPicked = true;
         updateHeaderChange();
         refreshChart();
