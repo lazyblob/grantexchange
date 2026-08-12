@@ -17,7 +17,7 @@
 <link rel="manifest" href="/manifest.json">
 
 <meta property="og:title" content="PocketGE — The OSRS Trading Terminal">
-<meta property="og:description" content="Build watchlists for the items you trade, follow Grand Exchange price action on TradingView-inspired charts, and see margins, volume, buy limits and flip recommendations in one place.">
+<meta property="og:description" content="Live Grand Exchange prices, target buy and sell levels, and margins with the 2% tax already taken out. Watchlists, charts and a flip finder. Free, no login.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/">
 <meta property="og:image" content="https://pocketge.com/og-image.png">
@@ -29,7 +29,7 @@
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PocketGE — The OSRS Trading Terminal">
-<meta name="twitter:description" content="Watchlists, Grand Exchange price charts, after-tax margins, volume, buy limits and flip recommendations for OSRS merchers and flippers.">
+<meta name="twitter:description" content="Live Grand Exchange prices, target buy and sell levels, and margins with the 2% tax already taken out. Watchlists, charts and a flip finder. Free, no login.">
 <meta name="twitter:image" content="https://pocketge.com/og-image.png">
 <meta name="twitter:image:alt" content="PocketGE — OSRS trading terminal showing Grand Exchange price charts, watchlists and after-tax margins">
 
@@ -3283,6 +3283,23 @@ function shareCard30dInfo() {
 /** Greedy word-wrap for canvas fillText, which has no native wrapping.
  *  Returns the y just below the last line drawn, so callers can lay out
  *  whatever comes next without hardcoding a line count. */
+/* Longest prefix of `text` that wraps to at most `maxLines` at the canvas's
+   current font, cut on a word boundary and ellipsised if anything was lost. */
+function clampToLines(g, text, maxWidth, maxLines) {
+  const words = text.split(' ');
+  let line = '', lines = 1, out = [];
+  for (const word of words) {
+    const test = line + word + ' ';
+    if (g.measureText(test).width > maxWidth && line !== '') {
+      /* Hitting the cap: keep the line we've just filled — dropping it was
+         losing half the allowance and clamping two lines down to one. */
+      if (lines === maxLines) return out.concat(line.trim()).join(' ').replace(/[,.;:]\s*$/, '') + '…';
+      lines++; out.push(line.trim()); line = word + ' ';
+    } else line = test;
+  }
+  out.push(line.trim());
+  return out.join(' ');
+}
 function wrapCanvasText(g, text, x, y, maxWidth, lineHeight) {
   const words = text.split(' ');
   let line = '';
@@ -3311,7 +3328,7 @@ function roundRectPath(g, x, y, w, h, r) {
   }
 }
 async function buildShareCardCanvas() {
-  const W = 1200, H = 1300;
+  const W = 1200, H = 1210;   // one chart + a 2-line summary needs less room than two charts + four lines
   // Backing store rendered at the device's actual pixel density, then
   // scaled back down to logical W/H — without this every draw call below
   // still WORKS (same W/H coordinates throughout), it just comes out soft
@@ -3704,10 +3721,13 @@ async function buildShareCardCanvas() {
       g.fillText(shortLabel + ' LOW', x, chartY + chartH + 40);
     };
 
-    const chartY = 732, chartH = 220, gap = 32;
-    const colW = (W - 96 - gap) / 2;
-    drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, colW, chartY, chartH);
-    drawMiniTrend('1y', '1-YEAR PRICE TREND', '1Y', 48 + colW + gap, colW, chartY, chartH);
+    /* One chart, full width, instead of two half-width ones. The pair made
+       the card read as a dashboard screenshot rather than a trading card, and
+       at half width neither was legible once a feed had downscaled it. The
+       30-day window is the one that matches the range meter and the summary
+       above it, so it's the one that survives. */
+    const chartY = 726, chartH = 224;
+    drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, W - 96, chartY, chartH);
   }
 
   // Auto-generated market summary — the exact sentence #insText already
@@ -3721,13 +3741,17 @@ async function buildShareCardCanvas() {
        — 16px/400 was the smallest thing on a 1200px canvas and turned to
        mush at thumbnail size. Card height below carries enough slack for
        the 4 lines the longest summaries wrap to at this size. */
-    const summaryY = 1032;
+    const summaryY = 1026;
     g.fillStyle = '#8A8274';
     g.font = '700 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText('MARKET SUMMARY', 48, summaryY);
     g.fillStyle = '#D9D3C7';
     g.font = '600 24px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    wrapCanvasText(g, insText, 48, summaryY + 36, W - 96, 34);
+    /* Two lines, hard stop. The full sentence reads fine under a chart on the
+       page but ran to four lines here, which is what made the card feel like
+       a wall. Trimmed at a word boundary with an ellipsis so it still ends
+       like a sentence rather than mid-word. */
+    wrapCanvasText(g, clampToLines(g, insText, W - 96, 2), 48, summaryY + 36, W - 96, 34);
   }
 
   // Footer watermark + live timestamp — a screenshot can circulate for
@@ -3735,16 +3759,19 @@ async function buildShareCardCanvas() {
   // fresh; stamping the actual fetch time gives it a real reference point.
   g.strokeStyle = '#2B2621';
   g.lineWidth = 1;
-  g.beginPath(); g.moveTo(48, H - 72); g.lineTo(W - 48, H - 72); g.stroke();
+  g.beginPath(); g.moveTo(48, H - 78); g.lineTo(W - 48, H - 78); g.stroke();
+  g.fillStyle = '#E6C35C';
+  g.font = '800 20px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText('PocketGE', 48, H - 44);
   g.fillStyle = '#8A8274';
-  g.font = '400 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-  g.fillText('pocketge.com', 48, H - 38);
+  g.font = '600 16px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+  g.fillText('The OSRS Trading Terminal · pocketge.com', 48, H - 22);
   if (lastLiveFetchAt) {
     const stamp = new Date(lastLiveFetchAt * 1000).toLocaleString(undefined, {
       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
     });
     g.textAlign = 'right';
-    g.fillText('Live as of ' + stamp, W - 48, H - 38);
+    g.fillText('Live as of ' + stamp, W - 48, H - 22);
     g.textAlign = 'left';
   }
 
@@ -3767,44 +3794,49 @@ function buildShareText() {
   const vol = dailyVolume(selected.id);
   const lines = [];
 
-  /* Headline leads with the single most notable thing about it right now —
-     that's the reason someone is sharing at all. */
-  const flag = hl === 'high5d' ? ' — at a 5-DAY HIGH'
-    : hl === 'low5d' ? ' — at a 5-DAY LOW'
-    : hl === 'high' ? ' — at its 24h high'
-    : hl === 'low' ? ' — at its 24h low' : '';
-  lines.push(`${selected.name} is ${fmtGp(liveSellRaw)} gp${flag}`);
-
-  const why = [];
-  if (gauge && gauge.text) why.push(`Analyst Rating: ${gauge.text}`);
-  if (d30) {
-    why.push((d30.pos <= 25 ? 'near its 30-day low' : d30.pos >= 75 ? 'near its 30-day high' : 'mid 30-day range')
-      + ` (${d30.lo}–${d30.hi} gp)`);
-  }
-  if (why.length) lines.push(why.join(' · '));
+  /* One idea per line. The old caption packed the rating and the 30-day
+     position onto one line and four numbers onto the next, which is dense to
+     read anywhere and unreadable in a Reddit comment on a phone. Each line
+     now answers a single question: what is it, where do I trade it, how much,
+     and how liquid. */
+  const flag = hl === 'high5d' ? '5-DAY HIGH'
+    : hl === 'low5d' ? '5-DAY LOW'
+    : hl === 'high' ? '24h high'
+    : hl === 'low' ? '24h low' : '';
+  /* Headline carries the two things worth a glance: the price, and the single
+     most notable thing about it. A 5-day extreme outranks the rating, because
+     it's usually the reason the post exists at all. */
+  const head = [`${selected.name} — ${fmtGp(liveSellRaw)} gp`];
+  if (flag) head.push(flag);
+  if (gauge && gauge.text) head.push(gauge.text);
+  lines.push(head.join(' · '));
 
   if (recommendedBuy > 0 && recommendedSell > 0) {
     const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
-    let trade = `Flip: buy ${fmtGp(recommendedBuy)} → sell ${fmtGp(recommendedSell)} = `
-      + `${margin >= 0 ? '+' : ''}${fmtGp(margin)} gp/item after tax`;
+    lines.push('');
+    lines.push(`Buy ${fmtGp(recommendedBuy)} → Sell ${fmtGp(recommendedSell)}`);
+    const money = [`${margin >= 0 ? '+' : ''}${fmtGp(margin)} gp/ea after tax`];
     if (selected.limit > 0) {
       const total = margin * selected.limit;
-      trade += ` (${total >= 0 ? '+' : ''}${abbreviateNumber(total)} per 4h limit)`;
+      money.push(`${total >= 0 ? '+' : ''}${abbreviateNumber(total)} per 4h limit`);
     }
-    lines.push(trade);
+    lines.push(money.join(' · '));
   }
 
+  /* One liquidity fact and one range fact — enough to judge whether the flip
+     above is realistic, without turning the caption into a stat block. */
   const ctx = [];
   if (vol > 0) ctx.push(`${abbreviateNumber(vol)} traded/day`);
-  const c1 = viewChanges && viewChanges['1d'], c5 = viewChanges && viewChanges['5d'];
-  if (c1 != null) ctx.push(`1D ${c1 >= 0 ? '+' : ''}${c1.toFixed(1)}%`);
-  if (c5 != null) ctx.push(`5D ${c5 >= 0 ? '+' : ''}${c5.toFixed(1)}%`);
+  if (d30) {
+    ctx.push((d30.pos <= 25 ? 'near 30-day low' : d30.pos >= 75 ? 'near 30-day high' : 'mid 30-day range')
+      + ` (${d30.lo}–${d30.hi})`);
+  }
   if (ctx.length) lines.push(ctx.join(' · '));
 
   /* Link lives inside the text rather than navigator.share's separate url
      field — targets that only read one of the two still get both. */
   lines.push('');
-  lines.push(`Live OSRS prices: https://pocketge.com/?q=${encodeURIComponent(selected.name)}`);
+  lines.push(`Live prices & chart → https://pocketge.com/?q=${encodeURIComponent(selected.name)}`);
   return lines.join('\n');
 }
 
