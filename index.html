@@ -606,16 +606,19 @@ button, input { touch-action: manipulation; }
 /* No card here either (see .top-panel) — the item name/price is its own
    visual anchor and the timeframe pills carry their own selected-state
    highlight, so a wrapping box was just doubling up on both. */
-.ticker-header { padding: 6px 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+/* Packed left, never space-between. space-between sets the Save button
+   adrift: it's spaced against whatever else shares its flex line, so its
+   distance from the item name is a function of viewport width — and once
+   the header wraps and the timeframe toolbar drops to its own line, Save is
+   the only thing left to push, so it flies to the far right edge. Measured
+   before this change, the name-to-Save gap ran 372px at 1023w, 249px at
+   900w and 49px at 700w, versus a flat 12px above 1024. Packing left makes
+   it the same 12px everywhere, so Save always reads as belonging to the
+   item name it saves — TradingView-style symbol+star. */
+.ticker-header { padding: 6px 4px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 .ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ticker-header .toolbar { flex-shrink: 0; }
-/* Desktop: space-between was centering the Save button in the empty middle
-   ("floating in no man's land"). Pack name + Save together on the left —
-   right under the search bar, TradingView-style symbol+star — and push
-   only the timeframe toolbar to the right edge. Mobile blocks below keep
-   their own arrangement (title group hidden, Save leads the row). */
 @media (min-width: 1024px) {
-  .ticker-header { justify-content: flex-start; }
   /* TradingView's company page gives the logo real presence — a sizeable
      mark in its own rounded chip beside the name, not a small inline icon.
      Match that proportion: a bigger backdrop chip (item sprites are small,
