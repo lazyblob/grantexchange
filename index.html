@@ -7383,9 +7383,20 @@ function drawChart(series) {
     return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
   };
   ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = mutedCol;
+  /* Gridlines are drawn as we go, but labels are gathered and drawn after, so
+     each one can be measured against the canvas and its neighbour.
+     Centred text over a tick sitting at the plot's left edge runs half off the
+     canvas — x0 is only 8px on the y-axis-right layout, so anything wider than
+     16px lost its left half. That clipped the FIRST label on every timeframe:
+     "2021" showed as "021", "Aug 25" as "ug 25", "10:35 AM" as "35 AM". */
+  const axisLabels = [];
   if (spanSec > 730 * 86400) {
     /* multi-year span: put one tick + label at the first point of each calendar
        year so the year labels line up with the actual year boundaries. */
+    const startsOnYearBoundary = (() => {
+      const d = new Date(L[0] * 1000);
+      return d.getMonth() === 0 && d.getDate() <= 15;
+    })();
     let lastYear = null;
     for (let i = 0; i < L.length; i++) {
       const yr = new Date(L[i] * 1000).getFullYear();
@@ -7393,7 +7404,13 @@ function drawChart(series) {
       lastYear = yr;
       const x = x0 + i * stepX;
       ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
-      ctx.fillText(String(yr), Math.round(x), Math.round(y0 + h + 4));
+      /* i === 0 is wherever the series happens to start, which for a 5Y window
+         is mid-year — labelling it plants a year marker a fraction of a year
+         from the next one, and that uneven first gap is what made the 5Y axis
+         look mis-spaced. Every other label is a real January boundary, so
+         dropping this one leaves them evenly spaced. Kept when the window
+         genuinely does open on a year boundary. */
+      if (i > 0 || startsOnYearBoundary) axisLabels.push({ x, text: String(yr) });
     }
   } else {
     let lastAxisLabel = null;
@@ -7401,8 +7418,19 @@ function drawChart(series) {
       const x = x0 + i * stepX;
       ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
       const dateStr = fmtAxis(L[i]);
-      if (dateStr !== lastAxisLabel) { ctx.fillText(dateStr, Math.round(x), Math.round(y0 + h + 4)); lastAxisLabel = dateStr; }
+      if (dateStr !== lastAxisLabel) { axisLabels.push({ x, text: dateStr }); lastAxisLabel = dateStr; }
     }
+  }
+  const axisLabelY = Math.round(y0 + h + 4);
+  let prevLabelRight = -Infinity;
+  for (const lab of axisLabels) {
+    const half = ctx.measureText(lab.text).width / 2;
+    const cx = Math.min(Math.max(lab.x, half + 2), W - half - 2);
+    /* Nudging a label inward can push it into its neighbour; skip rather than
+       overprint. Only the edge labels ever move, so this rarely fires. */
+    if (cx - half < prevLabelRight + 6) continue;
+    ctx.fillText(lab.text, Math.round(cx), axisLabelY);
+    prevLabelRight = cx + half;
   }
 
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
