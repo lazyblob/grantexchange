@@ -10,28 +10,28 @@
 <meta name="application-name" content="PocketGE">
 <meta name="theme-color" content="#0B0E14">
 
-<title>PocketGE — Live OSRS Grand Exchange Prices & Flipping Margins</title>
-<meta name="description" content="Find profitable OSRS flips in seconds. Live Grand Exchange prices with the 2% GE tax built in, reliable-margin finder, 5-day breakouts, Bank tracker. No login.">
-<meta name="keywords" content="OSRS GE tracker, OSRS flipping app, Old School RuneScape price alerts, OSRS bank portfolio tracker, OSRS live margins, OSRS 5-day price breakouts, Grand Exchange tax calculator, OSRS merchanting tools">
+<title>PocketGE — OSRS Trading Terminal | Live Grand Exchange Prices</title>
+<meta name="description" content="OSRS trading terminal for merchers and flippers. Build watchlists, follow Grand Exchange price action, and see margins, volume and flip recommendations.">
+<meta name="keywords" content="OSRS trading terminal, OSRS flipping, OSRS merching, OSRS price tracker, Grand Exchange prices, OSRS flip finder, OSRS trading, OSRS live margins, OSRS watchlist, Grand Exchange tax calculator">
 <link rel="canonical" href="https://pocketge.com/">
 <link rel="manifest" href="/manifest.json">
 
-<meta property="og:title" content="PocketGE — Live OSRS Grand Exchange Prices & Flipping Margins">
-<meta property="og:description" content="Find profitable OSRS flips in seconds. Live GE prices, target buy/sell with the 2% tax built in, reliable-margin finder, 5-day breakouts, Bank tracker. No login.">
+<meta property="og:title" content="PocketGE — The OSRS Trading Terminal">
+<meta property="og:description" content="Build watchlists for the items you trade, follow Grand Exchange price action on TradingView-inspired charts, and see margins, volume, buy limits and flip recommendations in one place.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/">
 <meta property="og:image" content="https://pocketge.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="PocketGE — live OSRS Grand Exchange prices and flip margins after tax">
+<meta property="og:image:alt" content="PocketGE — OSRS trading terminal showing Grand Exchange price charts, watchlists and after-tax margins">
 <meta property="og:site_name" content="PocketGE">
 <meta property="og:locale" content="en_US">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PocketGE — Live OSRS Grand Exchange Prices & Flipping Margins">
-<meta name="twitter:description" content="Find profitable OSRS flips in seconds. Live GE prices, 2% tax built in, reliable-margin finder, Bank tracker. No login.">
+<meta name="twitter:title" content="PocketGE — The OSRS Trading Terminal">
+<meta name="twitter:description" content="Watchlists, Grand Exchange price charts, after-tax margins, volume, buy limits and flip recommendations for OSRS merchers and flippers.">
 <meta name="twitter:image" content="https://pocketge.com/og-image.png">
-<meta name="twitter:image:alt" content="PocketGE — live OSRS Grand Exchange prices and flip margins after tax">
+<meta name="twitter:image:alt" content="PocketGE — OSRS trading terminal showing Grand Exchange price charts, watchlists and after-tax margins">
 
 <link id="favicon1" rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link id="favicon2" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
@@ -43,12 +43,12 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "PocketGE",
-  "alternateName": "PocketGE OSRS Grand Exchange Tracker",
+  "alternateName": "PocketGE OSRS Trading Terminal",
   "url": "https://pocketge.com/",
   "applicationCategory": "FinanceApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript. Works in any modern browser.",
-  "description": "Mobile-first OSRS Grand Exchange tracker — live margins with 2% GE tax baked in, 5-day breakout scanner split by high vs low volume, Bank of Gielinor stack tracker with per-stack alerts, and browser push notifications when favorites break above/below their 24H or 5D extremes.",
+  "description": "An Old School RuneScape merching and market-tracking platform. Build custom watchlists, follow Grand Exchange price action on TradingView-inspired charts, and see 30-day and 5-day highs and lows, historical trends, live buy and sell prices, target buy and sell levels, margins with the 2% GE tax applied, trading volume, buy limits, potential profit, analyst ratings and scored flip recommendations in one place.",
   "image": "https://pocketge.com/og-image.png",
   "codeRepository": "https://github.com/lazyblob/pocketge.com",
   "sameAs": ["https://github.com/lazyblob/pocketge.com"]
@@ -72,6 +72,16 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is PocketGE?",
+      "acceptedAnswer": { "@type": "Answer", "text": "PocketGE is an OSRS trading terminal — a merching and market-tracking platform for the Old School RuneScape Grand Exchange. It works as an OSRS price tracker, a charting tool and a flip finder in one place: build watchlists around the items you trade, follow Grand Exchange prices across timeframes from one day to five years, and see live buy and sell prices, target buy and sell levels, after-tax margins, trading volume, buy limits, potential profit, analyst ratings and flip recommendations without switching tabs. It is free, needs no account, and reads public price data — it does not touch your RuneScape account." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is PocketGE useful if I am new to OSRS flipping?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Alongside the raw numbers, each item gets a written summary of how it has been moving, a 30-day range meter showing whether the price sits near the floor or the ceiling of its recent range, and an analyst rating that reads the current price against the selected timeframe — so you can learn what the chart is telling you rather than needing to already know. The flipping guide covers the mechanics, including buy limits, the 2% tax and margins." }
+    },
     {
       "@type": "Question",
       "name": "How does the 2% Grand Exchange tax work in OSRS?",
@@ -299,6 +309,7 @@ button, input { touch-action: manipulation; }
 /* A human aside, not more SEO copy — quieter and slightly set apart so it
    reads as a personal note rather than continuing the product description
    above it. */
+.about-section .about-questions { font-size: 13px; margin-bottom: 20px; }
 .about-section .about-devnote { font-size: 12.5px; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border-active); margin-bottom: 24px; }
 .about-section .faq { margin-top: 4px; }
 .about-section .faq details { border: 1px solid var(--border-main); border-radius: 6px; margin-bottom: 8px; background: var(--bg-panel); overflow: hidden; }
@@ -1938,7 +1949,7 @@ button, input { touch-action: manipulation; }
 </head>
 <body>
 
-<h1 class="sr-only">PocketGE: The Mobile-First OSRS Grand Exchange Margin &amp; Bank Tracker</h1>
+<h1 class="sr-only">PocketGE: The OSRS Trading Terminal — Grand Exchange Prices, Watchlists &amp; Flip Finder</h1>
 
 <!-- Landing screen — shown on first visit to "/" with no ?q= deep link.
      Gives organic visitors a real brand/education page instead of dumping
@@ -1950,8 +1961,8 @@ button, input { touch-action: manipulation; }
       <img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon">
       <span class="landing-brand-text">Pocket<span>GE</span></span>
     </div>
-    <h2 class="landing-hero">Find profitable OSRS flips in seconds.</h2>
-    <p class="landing-sub">Live Grand Exchange prices with the <strong>2% GE tax already applied</strong>. No login, mobile-first.</p>
+    <h2 class="landing-hero">Watch the market. Find opportunities.</h2>
+    <p class="landing-sub">The OSRS trading terminal — watchlists, price charts, and margins with the <strong>2% GE tax already applied</strong>. No login, mobile-first.</p>
 
     <!-- Annotated mock — actual UI components styled to match what the
          visitor will see, with numbered callouts. Beats a generic emoji
@@ -2010,26 +2021,30 @@ button, input { touch-action: manipulation; }
       Launch the app <span aria-hidden="true">→</span>
     </button>
 
+    <!-- These four lead with what the app is actually built around now:
+         watchlists and charts first, then the numbers you act on. Alerts and
+         the Bank tracker are still in the product and still described in the
+         about section — they just aren't the headline any more. -->
     <div class="landing-features">
       <div class="lf-card">
+        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <h3>Watchlists you build</h3>
+        <p>Star the items you actually trade and watch them in one place — live price, change, margin and volume side by side.</p>
+      </div>
+      <div class="lf-card">
+        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+        <h3>Charts for OSRS price action</h3>
+        <p>TradingView-inspired charts from 1 day to 5 years, with buy and sell prints, volume, and marked highs and lows.</p>
+      </div>
+      <div class="lf-card">
         <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></span>
-        <h3>Live margins, tax included</h3>
-        <p>Target buy and sell prices with the 2% GE sales tax already deducted. The profit shown is what you actually keep.</p>
+        <h3>Margins with the tax applied</h3>
+        <p>Target buy and sell levels, buy limits and potential profit with the 2% GE tax already deducted from every figure.</p>
       </div>
       <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></span>
-        <h3>Reliable 14-day grinds</h3>
-        <p>See which items have paid a consistent margin every day for two weeks. The boring grinds that actually make gp.</p>
-      </div>
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
-        <h3>Browser push alerts</h3>
-        <p>Get notified when a favorite breaks above its 24H or 5D high — or when a Bank stack crosses your ±% threshold.</p>
-      </div>
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="12" cy="12" r="4"/><path d="m12 12 2.5-2.5"/></svg></span>
-        <h3>Bank portfolio tracker</h3>
-        <p>Log every stack with its cost basis. Live valuation, per-stack P&amp;L, and threshold alerts at a glance.</p>
+        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
+        <h3>Ratings &amp; flip finder</h3>
+        <p>An analyst rating on where the price sits in its range, plus scored flip recommendations with a buy and sell level.</p>
       </div>
     </div>
 
@@ -3294,7 +3309,7 @@ async function buildShareCardCanvas() {
   g.fillText('GE', brandTextX + pocketW, 64);
   g.fillStyle = '#8A8274';
   g.font = '400 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-  g.fillText('Live OSRS Grand Exchange tracker', brandTextX, 88);
+  g.fillText('The OSRS trading terminal', brandTextX, 88);
 
   if (hlColor) {
     const badgeText = isHigh5d ? '▲ 5-DAY HIGH' : '▼ 5-DAY LOW';
@@ -4152,7 +4167,7 @@ function countFavoriteBreakouts() {
    PocketGE". isHomepageDefault is true while showing the boot default
    landing (not an explicit item navigation), which keeps the crawler-
    visible title/meta/canonical brand-focused instead of itemising "/". */
-const BRAND_TITLE = 'PocketGE — Live OSRS Grand Exchange Prices & Flipping Margins';
+const BRAND_TITLE = 'PocketGE — OSRS Trading Terminal | Live Grand Exchange Prices';
 let isHomepageDefault = false;
 /* SERP title, keyword-first ("<Item> Price OSRS") with the live gp figure
    once prices land — numbers in titles measurably lift click-through and
@@ -4175,7 +4190,7 @@ function applyTitleBadge() {
 /* Restore the brand-level meta/canonical for the homepage so a crawl of "/"
    indexes the brand page, not whatever item happens to be displayed. */
 function restoreBrandMeta() {
-  const desc = 'Find profitable OSRS flips in seconds. Live Grand Exchange prices with the 2% GE tax built in, reliable-margin finder, 5-day breakouts, Bank tracker. No login.';
+  const desc = 'OSRS trading terminal for merchers and flippers. Build watchlists, follow Grand Exchange price action, and see margins, volume and flip recommendations.';
   setMetaTag('description', desc);
   setMetaTag('og:title', BRAND_TITLE, true);
   setMetaTag('og:description', desc, true);
@@ -8677,11 +8692,21 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <section class="about-section" aria-label="About PocketGE">
-  <p class="about-intro">PocketGE is a mobile-first <strong>Old School RuneScape Grand Exchange tracker</strong> built for flippers and merchers. Everything below is live in the app above — no separate accounts, no signup required.</p>
+  <p class="about-intro">PocketGE is an <strong>Old School RuneScape merching and market-tracking platform</strong> — a trading terminal for the OSRS Grand Exchange, built to make trading easier to understand and easier to act on. Build watchlists for the items you care about, follow price action with TradingView-inspired charts, and quickly see the information that matters before you buy or sell: 30-day and 5-day highs and lows, historical trends, live buy and sell prices, target buy and sell levels, GE-tax-adjusted margins, volume, buy limits, potential profit, analyst ratings and flip recommendations, all in one place. Everything below is live in the app above — no separate accounts, no signup required.</p>
+  <p class="about-questions">It's built for merchers and flippers around the questions you actually ask at the GE: <strong>What should I watch? Is this item interesting right now? Where should I buy? Where should I sell? How much could I potentially make? How has the price been moving?</strong> PocketGE won't predict the market for you — nothing can — but it puts the information you'd need to answer those questions on one screen instead of five browser tabs. Watch the market, find opportunities, and trade with more information.</p>
   <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too (usually around the GE on World 301/302), and I'm actively building and improving this thing based on my own flipping and your feedback. Got a bug, a feature idea, or just want to talk flipping? Add me in-game.</p>
 
+  <h2>Custom watchlists for the items you actually trade</h2>
+  <p>Most OSRS merching comes back to a handful of items you trade again and again. Star anything to add it to a watchlist and it sits in the sidebar with its live price, 24-hour change, after-tax margin and daily volume side by side, so one glance tells you whether anything has moved since you last looked. Rows can be dragged into whatever order you think in, sorted by price, change, margin, volume, name or item type, and the columns themselves can be switched off if you'd rather see less. Items sitting at a 5-day high or low get flagged in the list itself, which is usually the first sign an item is worth opening.</p>
+
+  <h2>OSRS price charts, TradingView-style</h2>
+  <p>The chart is the centre of the app rather than an afterthought. Every item gets 1D, 5D, 1M, 6M, 1Y and 5Y views with separate insta-buy and insta-sell prints, a trend line, traded volume underneath, and marked period and recent highs and lows so you can see where the price has actually been before deciding where to put an order. Pinch or scroll to zoom, drag to pan, and tap any point for its price and volume. Alongside it, a 30-day range meter shows whether the current price sits near the floor or the ceiling of its recent range, and a plain-English summary describes how the item has been moving — useful if you're newer to merching and still building a feel for what a chart is telling you.</p>
+
   <h2>Live OSRS margins with the 2% GE tax built in</h2>
-  <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins.</p>
+  <p>Every item view shows the live insta-buy and insta-sell from the OSRS Wiki real-time prices API, alongside a target buy and target sell from a trade engine that anchors against competitive bids rather than the spread midpoint. The flip profit calculator applies the Grand Exchange's 2% sales tax (capped at 5,000,000 gp per trade) so the displayed profit is the gp you actually keep, not a pre-tax figure that overstates margins. Potential profit is scaled to the item's 4-hour buy limit, so the number in front of you is what that flip could realistically clear in one cycle rather than an unbounded per-item figure.</p>
+
+  <h2>Analyst ratings and scored flip recommendations</h2>
+  <p>Two features answer "is this worth my time right now?" without you reading the chart yourself. The <strong>Analyst Rating</strong> grades the current price against the selected timeframe's range — near the floor with a real margin reads Buy, near the ceiling reads Sell, mid-range reads Neutral — so it's a read on where the price sits, not a prediction of where it goes. <strong>Recommended Flip</strong> works the other way round — an OSRS flip finder that scans the market for an item worth a look and hands you a specific buy and sell level with the edge, the realistic 4-hour fill and the daily volume attached. Each pick carries a score out of 100 built from its net edge and its liquidity, and hovering the number shows exactly how that score was reached. Both are advisory — the target prices are the actual trade.</p>
 
   <h2>5-day breakout scanner: true extremes, not noise</h2>
   <p>The sidebar's <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> lists are built from rolling 1-hour volume-weighted price buckets fetched from the OSRS Wiki API. An item only appears when its live competitive price is within 0.5% of (or breaching) its actual 5-day extreme, with a minimum 3% 5-day range required so flat items don't false-positive. The scan runs against a bounded ~100-item candidate pool (top volume + top price) so it never floods the API with per-item requests.</p>
@@ -8704,6 +8729,14 @@ if ('serviceWorker' in navigator) {
   <h2 id="faq">Frequently asked questions</h2>
   <p style="margin:-4px 0 12px;">New to merchanting? Read the <a href="/flipping-guide.html">full OSRS flipping guide</a> — GE tax, buy limits, picking items, and setting offers that actually fill.</p>
   <div class="faq">
+    <details>
+      <summary>What is PocketGE?</summary>
+      <p>PocketGE is an OSRS trading terminal — a merching and market-tracking platform for the Old School RuneScape Grand Exchange. It works as an OSRS price tracker, a charting tool, and a flip finder in one place: build watchlists around the items you trade, follow Grand Exchange prices across timeframes from one day to five years, and see live buy and sell prices, target buy and sell levels, after-tax margins, trading volume, buy limits, potential profit, analyst ratings and flip recommendations without switching tabs. It's free, needs no account, and reads public price data — it doesn't touch your RuneScape account.</p>
+    </details>
+    <details>
+      <summary>Is PocketGE useful if I'm new to OSRS flipping?</summary>
+      <p>Yes — that's part of why the plain-English pieces exist. Alongside the raw numbers, each item gets a written summary of how it's been moving, a 30-day range meter showing whether the price sits near the floor or the ceiling of its recent range, and an analyst rating that reads the current price against the selected timeframe. Those are there so you can learn what the chart is telling you rather than needing to already know. If you're starting from scratch, the <a href="/flipping-guide.html">OSRS flipping guide</a> covers the mechanics — buy limits, the 2% tax, margins — before you put gp at risk.</p>
+    </details>
     <details>
       <summary>How does the 2% Grand Exchange tax work in OSRS?</summary>
       <p>When you sell an item on the Grand Exchange, Old School RuneScape takes a 2% sales tax from the sale, rounded down, capped at 5,000,000 gp per item. Items selling for under 50 gp are exempt, and certain items (like the old school bond) are also exempt. PocketGE bakes this into every margin and into the flip calculator, so the profit you see is what you actually keep after tax — not the raw buy/sell spread.</p>
