@@ -1623,11 +1623,46 @@ button, input { touch-action: manipulation; }
 .fc-main { flex:1 1 auto; min-width:0; }
 .fc-name { font-weight:800; font-size:14px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .fc-why { font-size:10.5px; color:var(--text-muted); margin-top:1px; }
-.fc-gauge { flex:0 0 auto; text-align:center; min-width:58px; }
+.fc-gauge { flex:0 0 auto; text-align:center; min-width:58px; position:relative; }
 .fc-score { font-size:18px; font-weight:800; line-height:1; }
 .fc-verdict { font-size:9.5px; font-weight:700; margin-top:1px; }
 .fc-meter { height:3px; border-radius:2px; background:rgba(255,255,255,.10); margin-top:3px; overflow:hidden; }
 .fc-meter span { display:block; height:100%; border-radius:2px; }
+/* Score explainer. The score is the one figure on the card with no unit and
+   no label, so it invites "91 out of what?". A generic definition wouldn't
+   answer that — two picks can sit points apart for completely different
+   reasons — so this shows THIS flip's own point breakdown, plus the band
+   ladder so the number has a visible scale. Trigger is a real <button>:
+   hover on a mouse, tap on touch, and reachable from the keyboard. */
+.fc-score-btn { display:block; width:100%; background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; cursor:help; text-align:center; }
+.fc-score-btn:focus-visible { outline:2px solid var(--border-active); outline-offset:2px; border-radius:4px; }
+/* Fixed, not absolute, and positioned in JS. The card lives inside the
+   scrolling watchlist sidebar, which clips its overflow — in compact landscape
+   that container is barely taller than this popup, so an absolutely-positioned
+   one was measured getting cut off entirely. Fixed escapes every clipping
+   ancestor; the trade is that it has to be placed (and dismissed on scroll)
+   by hand. Stays a DOM child of .fc-gauge so mouseleave still ignores the
+   pointer travelling from the number into the popup. */
+.fc-tip {
+  position:fixed; z-index:1200; width:230px;
+  background:var(--bg-panel); border:1px solid var(--border-light); border-radius:8px;
+  box-shadow:0 12px 32px rgba(0,0,0,.65); padding:10px; text-align:left;
+  opacity:0; visibility:hidden; transform:translateY(-4px); pointer-events:none;
+  transition:opacity .14s ease, visibility .14s, transform .14s ease;
+}
+.fc-tip.open { opacity:1; visibility:visible; transform:translateY(0); pointer-events:auto; }
+.fc-tip-h { font-size:11.5px; font-weight:800; letter-spacing:.2px; }
+.fc-tip-sub { font-size:10px; color:var(--text-muted); line-height:1.45; margin:2px 0 8px; }
+.fc-tip-row { display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:10.5px; color:var(--text-main); padding:2.5px 0; }
+.fc-tip-row span:first-child { color:var(--text-muted); }
+.fc-tip-row b { font-weight:800; font-variant-numeric:tabular-nums; flex:0 0 auto; }
+.fc-tip-row.tot { border-top:1px solid var(--border-main); margin-top:5px; padding-top:6px; font-size:11.5px; }
+.fc-tip-row.tot span:first-child { color:var(--text-main); font-weight:800; }
+.fc-tip-cap { font-size:9px; color:var(--fav-gold); margin:-1px 0 4px; }
+.fc-tip-bands { display:flex; gap:3px; margin-top:9px; }
+.fc-tip-band { flex:1 1 0; text-align:center; font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.2px; padding:3px 1px; border-radius:4px; background:var(--bg-input); color:var(--text-muted); }
+.fc-tip-band.on { color:#0C0B09; }
+.fc-tip-foot { font-size:9.5px; color:var(--text-muted); line-height:1.45; margin-top:8px; }
 .fc-prices { display:flex; gap:6px; margin:7px 0 6px; }
 .fc-price { flex:1; padding:5px 6px; border-radius:8px; text-align:center; }
 .fc-price.buy  { background:rgba(230,195,92,.10); border:1px solid rgba(230,195,92,.30); }
@@ -6205,18 +6240,58 @@ function recPreScore({ relax = false } = {}) {
   out.sort((a, b) => b.preScore - a.preScore);
   return out;
 }
-function recFlipScore(edgePct, vol, lowConf){
-  const sEdge = Math.max(0, Math.min(1, edgePct / 0.03)) * 45;
-  const sLiq  = Math.max(0, Math.min(1, (Math.log10(Math.max(1, vol)) - 4) / 3)) * 35;
-  let s = 20 + sEdge + sLiq;   // +20 base: engine already certified viable + reachable
-  if (lowConf) s *= 0.8;
-  return Math.round(Math.max(0, Math.min(100, s)));
+/* Score parts, kept separate from the total so the card can show its work.
+   The number is the only thing on the card with no unit and no label, which
+   invites "91 out of what?" — and a generic definition wouldn't answer it,
+   because two picks can sit a few points apart for completely different
+   reasons. Note the edge term SATURATES at a 3% net edge: an 11.8% edge and
+   a flat 3.0% edge both score the full 45, so between two liquid picks the
+   gap is almost entirely liquidity, not margin. */
+const REC_EDGE_FULL = 0.03;      // net edge that earns the full edge points
+function recScoreParts(edgePct, vol, lowConf){
+  const base = 20;               // engine already certified viable + reachable
+  const edge = Math.max(0, Math.min(1, edgePct / REC_EDGE_FULL)) * 45;
+  const liq  = Math.max(0, Math.min(1, (Math.log10(Math.max(1, vol)) - 4) / 3)) * 35;
+  const raw  = base + edge + liq;
+  const total = Math.round(Math.max(0, Math.min(100, lowConf ? raw * 0.8 : raw)));
+  return { base, edge, liq, penalty: lowConf ? raw * 0.2 : 0, lowConf: !!lowConf, total,
+           edgeMaxed: edgePct >= REC_EDGE_FULL, liqMaxed: vol >= 1e7 };
 }
+function recFlipScore(edgePct, vol, lowConf){ return recScoreParts(edgePct, vol, lowConf).total; }
+const REC_BANDS = [
+  { min: 0,  word: 'Thin Flip',   color: '#FF9F43' },
+  { min: 55, word: 'Solid Flip',  color: '#FFD24D' },
+  { min: 70, word: 'Strong Flip', color: '#1FB85C' },
+  { min: 85, word: 'Prime Flip',  color: '#4FFF8E' }
+];
 function recVerdict(s){
-  if (s >= 85) return { word: 'Prime Flip', color: '#4FFF8E' };
-  if (s >= 70) return { word: 'Strong Flip', color: '#1FB85C' };
-  if (s >= 55) return { word: 'Solid Flip', color: '#FFD24D' };
-  return { word: 'Thin Flip', color: '#FF9F43' };
+  for (let i = REC_BANDS.length - 1; i >= 0; i--) if (s >= REC_BANDS[i].min) return REC_BANDS[i];
+  return REC_BANDS[0];
+}
+/* Popup body for the score. Deliberately shows the live arithmetic instead of
+   a definition: it's the only way to answer "why is this one 91 and that one
+   100" — and it makes the edge cap visible rather than hiding it, since a
+   3% edge and an 11% edge both bank the full 45. */
+function flipScoreTip(rec){
+  const p = rec.parts, r = n => Math.round(n);
+  const row = (k, v, note) =>
+    `<div class="fc-tip-row"><span>${k}</span><b>${v}</b></div>`
+    + (note ? `<div class="fc-tip-cap">${note}</div>` : '');
+  const bands = REC_BANDS.map(b =>
+    `<div class="fc-tip-band${b.word === rec.verdict ? ' on' : ''}"${b.word === rec.verdict ? ` style="background:${b.color}"` : ''}>${b.word.replace(' Flip','')}<br>${b.min ? b.min + '+' : '&lt;55'}</div>`).join('');
+  return `<div class="fc-tip" id="flipScoreTip" role="tooltip">
+    <div class="fc-tip-h" style="color:${rec.color}">${rec.verdict} · ${rec.flipScore}/100</div>
+    <div class="fc-tip-sub">How good this specific flip looks right now — not a rating of the item itself.</div>
+    ${row('Base (engine-cleared)', '+' + r(p.base))}
+    ${row(`Net edge ${(rec.edgePct * 100).toFixed(rec.edgePct < 0.1 ? 2 : 1)}%`, '+' + r(p.edge) + ' / 45',
+          p.edgeMaxed ? 'Maxed — anything past a 3% edge scores the same.' : 'Full 45 at a 3% net edge.')}
+    ${row(`Liquidity ${abbreviateNumber(rec.vol)}/day`, '+' + r(p.liq) + ' / 35',
+          p.liqMaxed ? 'Maxed — 10M+ traded a day.' : 'Full 35 at 10M traded a day.')}
+    ${p.lowConf ? row('Thin tape', '−' + r(p.penalty), 'One side hasn\'t traded recently.') : ''}
+    <div class="fc-tip-row tot"><span>Score</span><b style="color:${rec.color}">${rec.flipScore}</b></div>
+    <div class="fc-tip-bands">${bands}</div>
+    <div class="fc-tip-foot">Tap ↻ Next to walk down the ranking — scores fall as the picks get thinner.</div>
+  </div>`;
 }
 function recWhy(edgePct, qtyEff, lowConf){
   return [ `${(edgePct * 100).toFixed(edgePct < 0.1 ? 2 : 1)}% net edge`,
@@ -6228,14 +6303,15 @@ function buildRec(c, eng){
   const edge = eng.edge, edgePct = edge / Math.max(1, eng.buy);
   const hasLimit = item.limit > 0, limit = hasLimit ? item.limit : REC_NO_LIMIT_QTY;
   const qtyEff = recQtyEff(item, c.vol);
-  const flipScore = recFlipScore(edgePct, c.vol, eng.lowConf);
+  const parts = recScoreParts(edgePct, c.vol, eng.lowConf);
+  const flipScore = parts.total;
   const v = recVerdict(flipScore);
   const hrsToLimit = Math.max(1, Math.round(limit / Math.max(1, c.vol / 24)));
   return {
     id: String(item.id), item, node, buy: eng.buy, sell: eng.sell, edge, edgePct, lowConf: eng.lowConf,
     hasLimit, limit, qtyEff, hrsToLimit,
     realizable: edge * qtyEff, perLimit: edge * limit,
-    vol: c.vol, flipScore, verdict: v.word, color: v.color,
+    vol: c.vol, flipScore, parts, verdict: v.word, color: v.color,
     rankValue: edge * qtyEff * recLiqMult(c.vol) * (eng.lowConf ? 0.8 : 1),
     why: recWhy(edgePct, qtyEff, eng.lowConf), series: null
   };
@@ -6325,7 +6401,7 @@ function renderFlipCard(rec){
       <div class="fc-mini">
         <img class="fc-mini-icon" src="${itemIconUrl(rec.id)}" alt="" loading="lazy">
         <span class="fc-mini-name">${rec.item.name}</span>
-        <span class="fc-mini-score" style="color:${rec.color}">${rec.flipScore}</span>
+        <span class="fc-mini-score" style="color:${rec.color}" title="${rec.verdict} — ${rec.flipScore}/100. Expand the card for the breakdown.">${rec.flipScore}</span>
         <span class="fc-mini-edge pos">+${fmtGp(rec.edge)}/ea</span>
       </div>
       <div class="fc-collapsible">
@@ -6336,9 +6412,12 @@ function renderFlipCard(rec){
             <div class="fc-why">${rec.why}</div>
           </div>
           <div class="fc-gauge">
-            <div class="fc-score" style="color:${rec.color}">${rec.flipScore}</div>
-            <div class="fc-verdict" style="color:${rec.color}">${rec.verdict}</div>
-            <div class="fc-meter"><span style="width:${rec.flipScore}%;background:${rec.color}"></span></div>
+            <button type="button" class="fc-score-btn" id="btnFlipScore" aria-label="How this flip score is calculated" aria-expanded="false">
+              <div class="fc-score" style="color:${rec.color}">${rec.flipScore}</div>
+              <div class="fc-verdict" style="color:${rec.color}">${rec.verdict}</div>
+              <div class="fc-meter"><span style="width:${rec.flipScore}%;background:${rec.color}"></span></div>
+            </button>
+            ${flipScoreTip(rec)}
           </div>
         </div>
         <div class="fc-prices">
@@ -6354,6 +6433,27 @@ function renderFlipCard(rec){
     </div>`;
   wireFlipButtons();
 }
+/* Dismissal is bound once, not per render — wireFlipButtons runs on every
+   Next / 5-min re-validate, so binding here would stack a listener per card.
+   It re-queries the live tip each time instead of closing over one. */
+(function wireFlipTipDismiss(){
+  const close = () => {
+    document.querySelectorAll('.fc-tip.open').forEach(t => {
+      t.classList.remove('open');
+      const b = t.parentElement && t.parentElement.querySelector('.fc-score-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  };
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.fc-score-btn, .fc-tip')) close();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  /* Fixed-position popups don't travel with their anchor, so dismiss rather
+     than let one hang detached over the page. Capture phase catches the
+     sidebar's own scroll, which doesn't bubble. */
+  document.addEventListener('scroll', close, true);
+  window.addEventListener('resize', close);
+})();
 function wireFlipButtons(){
   const h = flipHost(); if (!h) return;
   const next = h.querySelector('#btnNextFlip');
@@ -6371,10 +6471,59 @@ function wireFlipButtons(){
       setFlipCollapsed(isCollapsed);
     };
   }
+  /* Score explainer. Hover opens it on a mouse; click/tap toggles it, which is
+     the only way in on touch. Every handler stops propagation because the whole
+     card is a click target that navigates to the item — without that, reading
+     the score would yank you onto the item page. */
+  const scoreBtn = h.querySelector('#btnFlipScore');
+  const tip = h.querySelector('#flipScoreTip');
+  if (scoreBtn && tip) {
+    /* Right-aligned to the score, below it — flipped above when the viewport
+       bottom is closer than the popup is tall, and clamped inside both edges
+       so a narrow phone can't push it off-screen. */
+    const placeTip = () => {
+      const r = scoreBtn.getBoundingClientRect();
+      const w = tip.offsetWidth || 230, hgt = tip.offsetHeight || 0;
+      const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+      let top = r.bottom + 8;
+      if (top + hgt > window.innerHeight - 8) top = r.top - hgt - 8;
+      top = Math.max(8, Math.min(top, window.innerHeight - hgt - 8));
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    };
+    const setTip = (open) => {
+      if (open) placeTip();
+      tip.classList.toggle('open', open);
+      scoreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    /* A real mouse owns the open state via hover — letting it also toggle on
+       click would close what the arriving pointer had just opened, with no way
+       back until the pointer left and returned. Touch has no hover, so there
+       the click IS the way in. Branch on the actual pointerType that produced
+       the click rather than a hover media query: a coarse-pointer device can
+       still report hover:hover, and keyboard-fired clicks report no pointer
+       type at all, which correctly falls through to toggling. */
+    let lastPointer = '';
+    scoreBtn.onpointerdown = e => { lastPointer = e.pointerType || ''; };
+    scoreBtn.onclick = e => {
+      e.stopPropagation();
+      if (lastPointer !== 'mouse') setTip(!tip.classList.contains('open'));
+      lastPointer = '';
+    };
+    scoreBtn.onmouseenter = () => { if (matchMedia('(hover: hover)').matches) setTip(true); };
+    /* Leaving the gauge (not just the button) so the pointer can travel from
+       the number down into the popup without it closing underneath. */
+    const gauge = scoreBtn.closest('.fc-gauge');
+    if (gauge) gauge.onmouseleave = () => { if (matchMedia('(hover: hover)').matches) setTip(false); };
+    tip.onclick = e => e.stopPropagation();
+  }
   if (card) {
     const id = card.getAttribute('data-id');
-    card.onclick = () => openFlip(id);
-    card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFlip(id); } };
+    card.onclick = (e) => { if (e.target.closest('.fc-score-btn, .fc-tip')) return; openFlip(id); };
+    card.onkeydown = e => {
+      if (e.target.closest && e.target.closest('.fc-score-btn, .fc-tip')) return;
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFlip(id); }
+    };
   }
 }
 function openFlip(id){
