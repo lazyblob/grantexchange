@@ -684,12 +684,22 @@ button, input { touch-action: manipulation; }
 .ticker-name-link:hover h2 { text-decoration: underline; text-decoration-color: var(--text-muted); text-underline-offset: 3px; }
 .ticker-wiki-link:focus-visible { outline: 2px solid var(--border-active); outline-offset: 2px; border-radius: 4px; }
 .ticker-info h2 { margin: 0; font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-/* Explicit "Wiki ↗" indicator on the ticker title link — desktop is wide
-   enough that the wiki affordance is obvious, but on mobile the title block
-   looked exactly like a search bar and users were tapping it by accident
-   reaching for the timeframe buttons. The chip is hidden by default
-   (desktop) and revealed by the mobile media queries below. */
-.wiki-hint { display: none; }
+/* The item name has always linked to the OSRS wiki, but it rendered as plain
+   white heading text, so nothing suggested it was clickable — the underline
+   only showed once you were already hovering it. This glyph is the standing
+   affordance: muted enough to stay out of the way of the name, and it picks
+   up the gold alongside the underline on hover so the whole title reads as
+   one control. Sits OUTSIDE the h2 on purpose — inside, the h2's
+   text-overflow would clip the glyph away on exactly the long item names
+   where a wiki link is most useful. Only the desktop header carries it:
+   both mobile layouts hide .ticker-title-group entirely and surface the
+   wiki through .sbar-wiki instead. */
+.wiki-hint {
+  flex: 0 0 auto; align-self: center; width: 13px; height: 13px;
+  margin-left: 6px; color: var(--text-muted);
+  transition: color .12s ease;
+}
+.ticker-name-link:hover .wiki-hint { color: var(--border-active); }
 /* Hero live price + timeframe change, left-aligned under the item name —
    the familiar TradingView symbol-header treatment. Kept medium so it
    frames the live quote without competing with the Target Buy/Sell boxes
@@ -2355,7 +2365,11 @@ button, input { touch-action: manipulation; }
             <div class="ticker-info">
               <a id="tickerNameLink" class="ticker-wiki-link ticker-name-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/">
                 <h2 id="tickerName">Loading...</h2>
-                <span class="wiki-hint" aria-hidden="true">Wiki ↗</span>
+                <!-- The name has always opened the wiki; nothing said so.
+                     Muted external-link glyph, gold on hover with the
+                     underline. aria-hidden because the anchor's own title
+                     already announces the destination. -->
+                <svg class="wiki-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7h8v8"/><path d="M17 7 7 17"/></svg>
               </a>
               <div class="ticker-price-row">
                 <span id="tickerLivePrice" class="price">---</span>
@@ -8943,6 +8957,11 @@ async function setItem(m, opts = {}) {
   const wikiURL = `https://oldschool.runescape.wiki/w/${encodeURIComponent(wikiSlug)}`;
   $("#tickerHeaderIconLink").href = wikiURL;
   $("#tickerNameLink").href = wikiURL;
+  /* Names the destination on hover, so the glyph beside the title doesn't
+     have to carry the whole explanation on its own. */
+  const wikiTitle = `Open ${m.name} on the OSRS Wiki`;
+  $("#tickerNameLink").title = wikiTitle;
+  $("#tickerHeaderIconLink").title = wikiTitle;
   /* Combined search control (landscape only, shown via CSS): the current item
      name overlays the otherwise-cramped search box, and the ↗ opens its wiki —
      so the item appears once, and the search stays usable. */
