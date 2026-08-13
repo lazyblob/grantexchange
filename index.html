@@ -1646,10 +1646,13 @@ button, input { touch-action: manipulation; }
 }
 @keyframes cl-spin { to { transform: rotate(360deg); } }
 
-/* Sits top-right of the plot, clear of the y-axis labels on either side and
-   of the last data point, which hugs the right edge at the current price. */
+/* Top-LEFT of the plot. The right side is the busy one: the y-axis labels
+   live there (yAxisOnRight() is unconditional), and the newest data point —
+   the current price, the thing you actually came to look at — always sits
+   hard against the right edge. The left edge holds the oldest data, which
+   is where a chip costs the least. */
 .chart-reset {
-  position: absolute; top: 8px; right: 10px; z-index: 4;
+  position: absolute; top: 8px; left: 10px; z-index: 4;
   padding: 4px 9px; border-radius: 5px; cursor: pointer;
   background: rgba(27,24,21,0.92); border: 1px solid var(--border-active);
   color: var(--border-active); font: 700 10.5px/1 inherit; letter-spacing: .2px;
