@@ -1825,18 +1825,41 @@ button, input { touch-action: manipulation; }
 
 .fc-mini { display:none; align-items:center; gap:8px; min-width:0; }
 .fc-mini-icon { width:22px; height:22px; flex:0 0 22px; image-rendering:pixelated; }
-.fc-mini-name { flex:1 1 auto; min-width:0; font-weight:800; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.fc-mini-score { flex:0 0 auto; font-weight:900; font-size:14px; line-height:1; }
-.fc-mini-edge { flex:0 0 auto; font-size:11.5px; font-weight:700; }
-.fc-mini-edge.pos { color:var(--rs-green-deep); }
+/* Packed LEFT, not spread. Pinned right, the score sat directly beneath the
+   Next button with nothing between them, so the two read as one cluster and
+   it wasn't obvious which control the number belonged to. The name shrinks
+   (0 1 auto + ellipsis) instead of pushing the score across, and the score
+   claims the leftover space so the right-hand column under Next stays
+   empty. */
+.fc-mini-name { flex:0 1 auto; min-width:0; font-weight:800; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fc-mini-score { flex:0 0 auto; margin-right:auto; font-weight:900; font-size:14px; line-height:1; }
+/* A bare number needed a noun. Keeps the figure in its verdict colour while
+   the label stays muted, so the colour still carries the verdict. */
+.fc-mini-score-k { font-size:9px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--text-muted); }
 .flip-card.collapsed { padding:0; }
 .flip-card.collapsed .fc-head { margin-bottom:0; }
 .flip-card.collapsed .fc-collapsible { display:none; }
-.flip-card.collapsed .fc-mini { display:flex; margin-top:3px; }
+/* Reserve the column the header controls occupy. margin-right:auto alone
+   only holds the score left while there IS slack — a long item name eats it
+   and slides the score right back under Next. The controls measure 84px
+   (56 Next + 6 gap + 22 caret) and 75px in coarse landscape, so 92px clears
+   both with a margin; the name simply ellipsizes sooner, which is the right
+   thing to sacrifice on a one-line summary. */
+.flip-card.collapsed .fc-mini { display:flex; margin-top:6px; padding-right:92px; }
 .flip-card.collapsed .fc-mini-icon { width:18px; height:18px; flex-basis:18px; }
 .flip-card.collapsed .fc-mini-name { font-size:12px; }
 .flip-card.collapsed .fc-mini-score { font-size:13px; }
-.flip-card.collapsed .fc-mini-edge { font-size:10.5px; }
+/* Secondary while collapsed: no fill, quieter text, tighter box — so Next
+   reads as a control beside the label rather than a second headline
+   competing with the score below it. Lights up on hover/focus. */
+.flip-card.collapsed .fc-next {
+  background:transparent; border-color:rgba(255,255,255,.10);
+  color:var(--text-muted); font-size:10.5px; font-weight:700;
+  min-height:26px; padding:4px 10px;
+}
+.flip-card.collapsed .fc-next:hover:not(:disabled) {
+  background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); color:var(--text-main);
+}
 /* Keep "Next" available while collapsed so recs can be cycled without
    expanding. Header layout when collapsed: kicker takes what's left after
    Next + chevron; the label ellipsizes as a last-resort safety net rather
@@ -7151,8 +7174,7 @@ function renderFlipCard(rec){
       <div class="fc-mini">
         <img class="fc-mini-icon" src="${itemIconUrl(rec.id)}" alt="" loading="lazy">
         <span class="fc-mini-name">${rec.item.name}</span>
-        <span class="fc-mini-score" style="color:${rec.color}" title="${rec.verdict} — ${rec.flipScore}/100. Expand the card for the breakdown.">${rec.flipScore}</span>
-        <span class="fc-mini-edge pos">+${fmtGp(rec.edge)}/ea</span>
+        <span class="fc-mini-score" style="color:${rec.color}" title="${rec.verdict} — ${rec.flipScore}/100. Expand the card for the breakdown."><span class="fc-mini-score-k">Score</span> ${rec.flipScore}</span>
       </div>
       <div class="fc-collapsible">
         <div class="fc-body">
