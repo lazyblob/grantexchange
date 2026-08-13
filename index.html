@@ -2216,6 +2216,19 @@ button, input { touch-action: manipulation; }
    label is what tells you which one is armed without hovering for the
    tooltip. */
 .qf-rlabel { display:none; }
+/* Portrait parks this button in the chart's bottom-right corner instead of
+   the quick-facts row (see placeRefreshBtn). On a phone that row is already
+   scrolling sideways, and a 26px button plus its gap was the difference
+   between SPREAD being readable and being cut in half. The chart's bottom
+   corner is the emptiest space on the screen: the legend is hidden at this
+   width, and the price-axis gutter runs out below its last label. Given a
+   plate of its own so it reads as a control floating over the chart rather
+   than a hole punched in it. */
+.qf-refresh.is-float {
+  position:absolute; right:5px; bottom:5px; z-index:5;
+  background:rgba(12,11,9,0.86); backdrop-filter:blur(3px);
+  border-color:var(--border-light);
+}
 @media (min-width: 1024px) {
   .qf-refresh { width:auto; padding:0 10px; }
   .qf-rlabel { display:inline; font-size:10.5px; font-weight:700; letter-spacing:.2px; white-space:nowrap; }
@@ -2970,6 +2983,29 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   if (mq.addEventListener) mq.addEventListener('change', placeItemInsight);
   else if (mq.addListener) mq.addListener(placeItemInsight);
 });
+
+/* Refresh moves between the quick-facts row (roomy layouts) and the chart's
+   bottom-right corner (portrait, where the row has no spare width). Moves
+   the real node rather than cloning, so its click handler and every
+   getElementById('btnRefreshPrices') lookup keep working untouched — same
+   approach as placeShareButton below. Safe to re-parent: it lives OUTSIDE
+   #quickFacts precisely so renderQuickFacts's innerHTML rewrite can't
+   destroy it. */
+const _refreshPortraitMQ = window.matchMedia('(max-width: 640px)');
+function placeRefreshBtn() {
+  const btn = document.getElementById('btnRefreshPrices');
+  const chart = document.querySelector('.chart-container');
+  const row = document.getElementById('quickFactsRow');
+  if (!btn || !chart || !row) return;
+  const float = _refreshPortraitMQ.matches;
+  const host = float ? chart : row;
+  if (btn.parentElement !== host) host.appendChild(btn);
+  btn.classList.toggle('is-float', float);
+}
+placeRefreshBtn();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeRefreshBtn);
+if (_refreshPortraitMQ.addEventListener) _refreshPortraitMQ.addEventListener('change', placeRefreshBtn);
+else if (_refreshPortraitMQ.addListener) _refreshPortraitMQ.addListener(placeRefreshBtn);
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
