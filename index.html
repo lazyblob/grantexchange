@@ -1690,6 +1690,61 @@ button, input { touch-action: manipulation; }
 .build-info-pop .bi-by-k { color: var(--text-muted); margin-right: 5px; }
 .build-info-pop .bi-by b { color: var(--fav-gold); font-weight: 800; }
 .build-info-pop .bi-by-n { display: block; color: var(--text-muted); font-size: 9.5px; margin-top: 2px; line-height: 1.45; }
+
+/* ── Share: hover hint + share sheet ─────────────────────────────────────── */
+/* The Share button sits in the Analyst Rating header (that's simply where
+   there's room for it), which makes it read as "share the rating". It isn't —
+   it shares the whole item. The hint names the item so there's no guessing,
+   and lists what actually ends up in the card. Same shell as
+   .build-info-pop so the two hovers feel like one thing. */
+.share-tip {
+  position: fixed; z-index: 1200; width: 250px; padding: 10px 12px;
+  background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.65); text-align: left; color: var(--text-main);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); pointer-events: none;
+  transition: opacity .14s ease, visibility .14s, transform .14s ease;
+}
+.share-tip.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.share-tip .st-title { font-size: 12.5px; font-weight: 800; line-height: 1.35; }
+.share-tip .st-title b { color: var(--fav-gold); font-weight: 800; }
+.share-tip .st-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+.share-tip .st-list { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--border-main); list-style: none; }
+.share-tip .st-list li { font-size: 10.5px; color: var(--text-main); line-height: 1.6; padding-left: 13px; position: relative; }
+.share-tip .st-list li::before { content: '·'; position: absolute; left: 4px; color: var(--border-active); font-weight: 800; }
+
+/* Our own share sheet, shown instead of the OS one on pointer devices — see
+   the comment on shareCard(). Card width is driven by the preview, which is
+   the whole point of the dialog: you see the exact PNG before it goes out. */
+.share-sheet .modal-card { max-width: 460px; }
+.share-preview { border: 1px solid var(--border-main); border-radius: 6px; overflow: hidden; background: #0A0908; line-height: 0; }
+/* The card is tall (roughly 1200x990), so on a short laptop an unbounded
+   preview pushes the action tiles below the fold — and the tiles are the
+   reason the dialog exists. Cap it against the viewport and letterbox
+   rather than crop, so the preview stays an honest picture of the PNG. */
+.share-preview img { width: 100%; height: auto; max-height: min(360px, 38vh); object-fit: contain; display: block; }
+.share-caption {
+  margin-top: 10px; padding: 8px 10px; border: 1px solid var(--border-main); border-radius: 6px;
+  background: var(--bg-base); color: var(--text-muted); font-size: 10.5px; line-height: 1.55;
+  white-space: pre-wrap; max-height: 74px; overflow-y: auto;
+}
+.share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 12px; }
+.share-act {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 11px 5px;
+  background: var(--bg-base); border: 1px solid var(--border-main); border-radius: 7px;
+  color: var(--text-main); font-size: 11px; font-weight: 700; text-align: center;
+  cursor: pointer; text-decoration: none; transition: border-color .12s ease, background .12s ease;
+}
+.share-act:hover { background: var(--bg-input); border-color: var(--border-active); text-decoration: none; color: #fff; }
+.share-act svg { width: 19px; height: 19px; flex: 0 0 19px; }
+.share-act .sa-sub { font-size: 9px; font-weight: 600; color: var(--text-muted); line-height: 1.3; }
+.share-act.done { border-color: var(--positive); color: var(--positive); }
+.share-act.done .sa-sub { color: var(--positive); }
+.share-foot { margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--border-main); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.share-foot .sf-note { font-size: 9.5px; color: var(--text-muted); line-height: 1.45; }
+.share-foot .sf-native { flex: 0 0 auto; background: transparent; border: none; padding: 0; cursor: pointer; font-size: 10.5px; font-weight: 700; color: var(--border-active); }
+.share-foot .sf-native:hover { text-decoration: underline; }
+@media (max-width: 480px) { .share-grid { grid-template-columns: repeat(2, 1fr); } }
+
 .site-footer .foot-cta { color: var(--border-active); font-weight: 700; }
 .site-footer .foot-sources { font-size: 10.5px; opacity: 0.8; }
 .site-footer a { color: var(--border-active); text-decoration: none; }
@@ -2300,7 +2355,9 @@ button, input { touch-action: manipulation; }
                (client-side, canvas — no server round trip) and copies/
                downloads it, so a redditor/streamer can post a clean,
                data-full image instead of a raw screenshot. -->
-          <button id="btnShare" class="fav-btn" type="button" title="Share this item as an image">
+          <!-- No title= on purpose: the .share-tip hover below is the
+               explanation, and the native tooltip would stack on top of it. -->
+          <button id="btnShare" class="fav-btn" type="button" aria-label="Share this item as an image">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
               <circle cx="18" cy="5" r="3"></circle>
               <circle cx="6" cy="12" r="3"></circle>
@@ -2475,6 +2532,26 @@ button, input { touch-action: manipulation; }
     </div>
     <div class="modal-body" id="notifCenterBody">
       <!-- populated by renderNotifCenter() -->
+    </div>
+  </div>
+</div>
+
+<!-- Our own share sheet, used on pointer devices in place of the OS one.
+     Phones still get the native sheet — see shareCard(). -->
+<div id="shareModal" class="modal-overlay share-sheet" style="display:none">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <div class="modal-header">
+      <h3 id="shareModalTitle">Share</h3>
+      <button class="modal-close" id="closeShare" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-preview"><img id="sharePreviewImg" alt="Preview of the image that will be shared"></div>
+      <div class="share-caption" id="shareCaption"></div>
+      <div class="share-grid" id="shareGrid"></div>
+      <div class="share-foot">
+        <span class="sf-note">Reddit and X can't receive the image directly — PocketGE copies it first so you can paste it into the post.</span>
+        <button type="button" class="sf-native" id="shareNative" hidden>Device share…</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3915,6 +3992,147 @@ function buildShareText() {
   return lines.join('\n');
 }
 
+function shareItemUrl() {
+  return `https://pocketge.com/?q=${encodeURIComponent(selected ? selected.name : '')}`;
+}
+function shareFileName() {
+  return `pocketge-${(selected ? selected.name : 'item').replace(/[^a-z0-9]+/gi, '-')}.png`;
+}
+
+/* ── Our own share sheet ─────────────────────────────────────────────────
+   navigator.share() on a desktop browser opens the OS sheet — on Windows
+   that's the system flyout listing your contacts and whichever UWP apps
+   happen to be installed. It can't be styled, filtered or previewed, none
+   of its targets are where OSRS players actually post, and it puts personal
+   contacts on screen at the exact moment someone is likely screenshotting.
+   So pointer devices get this dialog instead: the real PNG previewed at the
+   top (you see precisely what goes out), the caption, and targets that
+   matter here. Touch devices keep the native sheet — there it's genuinely
+   better, since it hands the actual image file to the installed Discord /
+   Reddit / WhatsApp apps, which no web intent can do. The footer keeps the
+   OS sheet reachable on desktop for anyone who wants it. */
+let shareBlob = null, sharePreviewUrl = null;
+
+function shareCanUseNativeFiles(file) {
+  return !!(navigator.canShare && navigator.canShare({ files: [file] }));
+}
+
+async function shareNativeWith(file) {
+  await navigator.share({ files: [file], title: selected.name + ' — PocketGE', text: buildShareText() });
+}
+
+async function copyImageToClipboard() {
+  if (!shareBlob || !navigator.clipboard || !window.ClipboardItem) return false;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })]);
+    return true;
+  } catch (e) { return false; }
+}
+async function copyTextToClipboard(txt) {
+  try { await navigator.clipboard.writeText(txt); return true; } catch (e) { return false; }
+}
+function downloadShareImage() {
+  if (!shareBlob) return false;
+  const url = URL.createObjectURL(shareBlob);
+  const a = document.createElement('a');
+  a.href = url; a.download = shareFileName();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return true;
+}
+
+const SHARE_ICONS = {
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+  down: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>',
+  text: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>',
+  reddit: '<circle cx="12" cy="13" r="8"/><circle cx="9" cy="12.5" r="1"/><circle cx="15" cy="12.5" r="1"/><path d="M9 16c1.8 1.2 4.2 1.2 6 0"/><path d="m13 5 1.4 3.3"/><circle cx="15.5" cy="4.2" r="1.4"/>',
+  x: '<path d="m4 4 16 16"/><path d="M20 4 4 20"/>'
+};
+const shareIcon = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SHARE_ICONS[k]}</svg>`;
+
+/* Confirmation lands on the tile you pressed, not in a corner toast — the
+   pointer is already there and each tile has its own outcome. */
+function shareFlash(btn, msg) {
+  const sub = btn.querySelector('.sa-sub');
+  if (!sub) return;
+  if (btn._shareTimer) clearTimeout(btn._shareTimer);
+  if (btn._shareSub == null) btn._shareSub = sub.textContent;
+  sub.textContent = msg;
+  btn.classList.add('done');
+  btn._shareTimer = setTimeout(() => {
+    sub.textContent = btn._shareSub;
+    btn.classList.remove('done');
+    btn._shareTimer = null;
+  }, 2200);
+}
+
+function shareActions() {
+  return [
+    { key: 'copy', icon: 'copy', label: 'Copy image', sub: 'Paste into Discord',
+      run: async (b) => shareFlash(b, await copyImageToClipboard() ? 'Copied ✓' : 'Blocked — use Download') },
+    { key: 'download', icon: 'down', label: 'Download', sub: 'PNG to your device',
+      run: (b) => shareFlash(b, downloadShareImage() ? 'Saved ✓' : 'Failed') },
+    { key: 'caption', icon: 'text', label: 'Copy caption', sub: 'Prices as text',
+      run: async (b) => shareFlash(b, await copyTextToClipboard(buildShareText()) ? 'Copied ✓' : 'Failed') },
+    { key: 'link', icon: 'link', label: 'Copy link', sub: 'Straight to this item',
+      run: async (b) => shareFlash(b, await copyTextToClipboard(shareItemUrl()) ? 'Copied ✓' : 'Failed') },
+    /* Reddit and X take a title + URL but no image, so copy the PNG on the
+       way out — the compose window opens with the clipboard already loaded
+       and the poster just pastes. */
+    { key: 'reddit', icon: 'reddit', label: 'Reddit', sub: 'Opens a new post',
+      run: async (b) => {
+        const ok = await copyImageToClipboard();
+        shareFlash(b, ok ? 'Image copied — paste it' : 'Opening…');
+        window.open('https://www.reddit.com/submit?title='
+          + encodeURIComponent(`${selected.name} — ${shareCardGaugeInfo()?.text || 'OSRS flip'} on PocketGE`)
+          + '&url=' + encodeURIComponent(shareItemUrl()), '_blank', 'noopener');
+      } },
+    { key: 'x', icon: 'x', label: 'X', sub: 'Opens a new post',
+      run: async (b) => {
+        const ok = await copyImageToClipboard();
+        shareFlash(b, ok ? 'Image copied — paste it' : 'Opening…');
+        window.open('https://x.com/intent/post?text=' + encodeURIComponent(buildShareText()),
+          '_blank', 'noopener');
+      } }
+  ];
+}
+
+function closeShareModal() {
+  $('#shareModal').style.display = 'none';
+  if (sharePreviewUrl) { URL.revokeObjectURL(sharePreviewUrl); sharePreviewUrl = null; }
+}
+
+function openShareModal(blob) {
+  shareBlob = blob;
+  if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+  sharePreviewUrl = URL.createObjectURL(blob);
+  $('#sharePreviewImg').src = sharePreviewUrl;
+  $('#shareModalTitle').textContent = 'Share ' + selected.name;
+  $('#shareCaption').textContent = buildShareText();
+
+  const grid = $('#shareGrid');
+  grid.innerHTML = '';
+  shareActions().forEach(a => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'share-act';
+    b.innerHTML = `${shareIcon(a.icon)}<span>${a.label}</span><span class="sa-sub">${a.sub}</span>`;
+    b.onclick = () => a.run(b);
+    grid.appendChild(b);
+  });
+
+  /* Only offer the OS sheet where it can actually carry the image. */
+  const nativeBtn = $('#shareNative');
+  const file = new File([blob], shareFileName(), { type: 'image/png' });
+  nativeBtn.hidden = !shareCanUseNativeFiles(file);
+  nativeBtn.onclick = async () => {
+    try { await shareNativeWith(file); } catch (e) { /* user dismissed the OS sheet */ }
+  };
+
+  $('#shareModal').style.display = 'flex';
+}
+
 async function shareCard() {
   if (!selected) return;
   const btn = $('#btnShare');
@@ -3922,46 +4140,86 @@ async function shareCard() {
   const originalText = label.textContent;
   label.textContent = '…';
   btn.disabled = true;
+
+  /* Only the render is allowed to report "Failed" — everything after it is
+     either a dialog or a sheet the user can simply dismiss. */
+  let blob;
   try {
     const cv = await buildShareCardCanvas();
-    const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+    blob = await new Promise(res => cv.toBlob(res, 'image/png'));
     if (!blob) throw new Error('toBlob failed');
-    const file = new File([blob], `pocketge-${selected.name.replace(/[^a-z0-9]+/gi, '-')}.png`, { type: 'image/png' });
-    // Mobile-first: hand it to the native share sheet when available —
-    // exactly the "post this to Reddit/Discord" flow this button exists for.
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: selected.name + ' — PocketGE', text: buildShareText() });
-      label.textContent = originalText;
-      btn.disabled = false;
-      return;
-    }
-    // Desktop: try copying the image straight to the clipboard first (paste
-    // directly into a Reddit/Discord post) — Chromium-only API, so fall
-    // back to a plain download if it's unavailable or denied.
-    let copied = false;
-    if (navigator.clipboard && window.ClipboardItem) {
-      try {
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        copied = true;
-      } catch (e) { /* clipboard write blocked — fall through to download */ }
-    }
-    if (!copied) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = file.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-    }
-    label.textContent = copied ? 'Copied!' : 'Saved!';
-    setTimeout(() => { label.textContent = originalText; }, 1800);
   } catch (e) {
     label.textContent = 'Failed';
     setTimeout(() => { label.textContent = originalText; }, 1800);
-  } finally {
     btn.disabled = false;
+    return;
   }
+  label.textContent = originalText;
+  btn.disabled = false;
+
+  const file = new File([blob], shareFileName(), { type: 'image/png' });
+  // Touch first: the OS sheet is the right answer on a phone.
+  if (matchMedia('(pointer: coarse)').matches && shareCanUseNativeFiles(file)) {
+    // Cancelling the OS sheet rejects with AbortError — not a failure.
+    try { await shareNativeWith(file); } catch (e) { /* dismissed */ }
+    return;
+  }
+  openShareModal(blob);
 }
 $('#btnShare').onclick = shareCard;
+$('#closeShare').onclick = closeShareModal;
+$('#shareModal').addEventListener('click', (ev) => { if (ev.target === $('#shareModal')) closeShareModal(); });
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && $('#shareModal').style.display === 'flex') closeShareModal();
+});
+
+/* ── "What am I sharing?" hover ──────────────────────────────────────────
+   placeShareButton() parks Share in the Analyst Rating header, so at a
+   glance it reads as "share the rating". Naming the item in the hover, and
+   listing what the card contains, removes the guess before the click. */
+(function shareHint() {
+  const tip = document.createElement('div');
+  tip.className = 'share-tip';
+  tip.setAttribute('role', 'tooltip');
+  tip.id = 'shareTip';
+  document.body.appendChild(tip);
+
+  const paint = () => {
+    const name = selected ? selected.name : 'this item';
+    tip.innerHTML = `<div class="st-title">Share this <b>${escapeHtml(name)}</b> trade idea</div>
+      <div class="st-sub">Builds an image card of the whole item — not just the rating.</div>
+      <ul class="st-list">
+        <li>Price chart and 30-day range</li>
+        <li>Target buy &amp; sell, margin after tax</li>
+        <li>Caption and a link back to ${escapeHtml(name)}</li>
+      </ul>`;
+  };
+  const place = (el) => {
+    const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+    let top = r.bottom + 8;
+    if (top + h > window.innerHeight - 8) top = r.top - h - 8;
+    tip.style.left = left + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+  };
+  const open = (el) => { paint(); place(el); tip.classList.add('open'); };
+  const close = () => tip.classList.remove('open');
+
+  /* Delegated: #btnShare is re-parented by placeShareButton() on every
+     rating re-render, and a directly-bound listener would ride along fine
+     but a rebuilt node would not. Hover only — on touch the tap should
+     open the sheet, which answers the question better than a tooltip. */
+  document.addEventListener('mouseover', (ev) => {
+    const b = ev.target.closest && ev.target.closest('#btnShare');
+    if (!b || !matchMedia('(hover: hover)').matches) return;
+    open(b);
+  });
+  document.addEventListener('mouseout', (ev) => {
+    if (ev.target.closest && ev.target.closest('#btnShare')) close();
+  });
+  document.addEventListener('scroll', close, true);
+  window.addEventListener('resize', close);
+})();
 
 /* CSS-pixel drawing space of the last resizeCanvas() — drawChart must use
    these exact values so its coordinates always match the bitmap + transform. */
