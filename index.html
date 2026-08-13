@@ -1739,6 +1739,16 @@ button, input { touch-action: manipulation; }
 .share-act .sa-sub { font-size: 9px; font-weight: 600; color: var(--text-muted); line-height: 1.3; }
 .share-act.done { border-color: var(--positive); color: var(--positive); }
 .share-act.done .sa-sub { color: var(--positive); }
+.share-step {
+  margin-top: 11px; padding: 9px 11px; border-radius: 7px;
+  background: rgba(201,166,77,0.10); border: 1px solid var(--border-active);
+  color: var(--text-main); font-size: 11px; line-height: 1.55;
+}
+.share-step b { color: var(--border-active); font-weight: 800; }
+.share-step kbd {
+  font-family: inherit; font-size: 10px; font-weight: 700; padding: 1px 4px;
+  border: 1px solid var(--border-light); border-radius: 3px; background: var(--bg-base);
+}
 .share-foot { margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--border-main); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .share-foot .sf-note { font-size: 9.5px; color: var(--text-muted); line-height: 1.45; }
 .share-foot .sf-native { flex: 0 0 auto; background: transparent; border: none; padding: 0; cursor: pointer; font-size: 10.5px; font-weight: 700; color: var(--border-active); }
@@ -2548,8 +2558,11 @@ button, input { touch-action: manipulation; }
       <div class="share-preview"><img id="sharePreviewImg" alt="Preview of the image that will be shared"></div>
       <div class="share-caption" id="shareCaption"></div>
       <div class="share-grid" id="shareGrid"></div>
+      <!-- Persists until the dialog closes: clicking Reddit/X moves focus to
+           a new tab, so a 2-second toast would be gone before it was read. -->
+      <div class="share-step" id="shareStep" role="status" hidden></div>
       <div class="share-foot">
-        <span class="sf-note">Reddit and X can't receive the image directly — PocketGE copies it first so you can paste it into the post.</span>
+        <span class="sf-note" id="shareNote">Neither Reddit nor X can take the image straight from a link — PocketGE copies it to your clipboard so you can paste it into the post.</span>
         <button type="button" class="sf-native" id="shareNative" hidden>Device share…</button>
       </div>
     </div>
@@ -4067,6 +4080,19 @@ function shareFlash(btn, msg) {
   }, 2200);
 }
 
+/* Reddit and X open in a new tab, so the "now paste it" instruction has to
+   survive losing focus — it stays put until the dialog is closed, and takes
+   the general footer note's place once there's something specific to say. */
+function shareStep(html) {
+  const el = $('#shareStep');
+  el.innerHTML = html;
+  el.hidden = false;
+  $('#shareNote').hidden = true;
+  // On a short screen the dialog body scrolls, and the step lands below the
+  // tiles — pull it into view so it isn't missed on the way to the new tab.
+  el.scrollIntoView({ block: 'nearest' });
+}
+
 function shareActions() {
   return [
     { key: 'copy', icon: 'copy', label: 'Copy image', sub: 'Paste into Discord',
@@ -4080,18 +4106,33 @@ function shareActions() {
     /* Reddit and X take a title + URL but no image, so copy the PNG on the
        way out — the compose window opens with the clipboard already loaded
        and the poster just pastes. */
-    { key: 'reddit', icon: 'reddit', label: 'Reddit', sub: 'Opens a new post',
+    /* Reddit's composer prefills two things and only two: `title` and `url`.
+       Passing `url` is precisely what turns the submission into a LINK post
+       — and a link post renders whatever og:image the target serves, which
+       for a static host is the one site-wide banner for every ?q=. That's
+       why sharing Uncut diamond used to preview a generic "Trading
+       Terminal" card. Sending only `title` leaves the composer on a post
+       type that accepts the image, so the card we just built becomes the
+       post itself. The link still travels: it's printed on the card and
+       sits in the caption. */
+    { key: 'reddit', icon: 'reddit', label: 'Reddit', sub: 'Card becomes the post',
       run: async (b) => {
         const ok = await copyImageToClipboard();
-        shareFlash(b, ok ? 'Image copied — paste it' : 'Opening…');
+        shareStep(ok
+          ? '<b>Image copied.</b> In the Reddit tab, paste it with <kbd>Ctrl</kbd>+<kbd>V</kbd> — or open the <b>Images</b> tab and drop it in. The card becomes the post; use <b>Copy caption</b> if you also want the numbers and link as text.'
+          : '<b>Couldn\'t copy the image</b> — your browser blocks clipboard images. Hit <b>Download</b>, then drag the PNG into the Reddit post.');
         window.open('https://www.reddit.com/submit?title='
-          + encodeURIComponent(`${selected.name} — ${shareCardGaugeInfo()?.text || 'OSRS flip'} on PocketGE`)
-          + '&url=' + encodeURIComponent(shareItemUrl()), '_blank', 'noopener');
+          + encodeURIComponent(`${selected.name} — ${shareCardGaugeInfo()?.text || 'OSRS flip'} on PocketGE`),
+          '_blank', 'noopener');
       } },
-    { key: 'x', icon: 'x', label: 'X', sub: 'Opens a new post',
+    /* X does take prefilled body text, so the caption and link land on their
+       own — only the image needs pasting. */
+    { key: 'x', icon: 'x', label: 'X', sub: 'Caption prefilled',
       run: async (b) => {
         const ok = await copyImageToClipboard();
-        shareFlash(b, ok ? 'Image copied — paste it' : 'Opening…');
+        shareStep(ok
+          ? '<b>Image copied.</b> Paste it into the X composer with <kbd>Ctrl</kbd>+<kbd>V</kbd> — the caption and link are already filled in.'
+          : '<b>Couldn\'t copy the image</b> — your browser blocks clipboard images. Hit <b>Download</b>, then attach the PNG in X.');
         window.open('https://x.com/intent/post?text=' + encodeURIComponent(buildShareText()),
           '_blank', 'noopener');
       } }
@@ -4110,6 +4151,9 @@ function openShareModal(blob) {
   $('#sharePreviewImg').src = sharePreviewUrl;
   $('#shareModalTitle').textContent = 'Share ' + selected.name;
   $('#shareCaption').textContent = buildShareText();
+  $('#shareStep').hidden = true;
+  $('#shareStep').innerHTML = '';
+  $('#shareNote').hidden = false;
 
   const grid = $('#shareGrid');
   grid.innerHTML = '';
