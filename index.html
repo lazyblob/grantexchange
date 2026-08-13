@@ -708,7 +708,9 @@ button, input { touch-action: manipulation; }
 .ticker-price-row .price { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.4px; line-height: 1; }
 .ticker-price-row .price .tlp-gp { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0; }
 .ticker-price-row .change { font-size: 13px; font-weight: 700; }
-.ticker-price-row .change .tc-tf { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-right: 3px; }
+/* Empty for every normal item now, and an empty flex child would still eat
+   the row's 8px gap after the price. */
+.ticker-price-row .change:empty { display: none; }
 .change.positive { color: var(--positive); }
 .change.negative { color: var(--negative); }
 .change.neutral { color: var(--text-muted); }
@@ -2707,17 +2709,20 @@ let yScale = 1;
    points, and that re-fit is exactly what pushes a target line off-screen.
    Reset alongside yScale. */
 let yOffset = 0;
-/* Per-item % change for each timeframe (computed once on item load); the
-   header hero shows the entry for the active view. */
+/* Per-item % change for each timeframe. Each timeframe BUTTON prints its
+   own figure, so the header no longer repeats the active one next to the
+   price — same number twice, a few hundred pixels apart. Still computed
+   here because the mini trend charts colour themselves from it. */
 let viewChanges = {};
-function updateHeaderChange() {
+/* #tickerChange survives for one job only: the over-max path parks an
+   "Estimated Value" note there, because those items have an aggregated
+   price rather than a live one and that needs saying. Every normal item
+   render clears it, so that note can't outlive the item it describes. */
+function clearHeaderChange() {
   const el = document.getElementById('tickerChange');
   if (!el) return;
-  const val = viewChanges[view];
-  if (val == null || !isFinite(val)) { el.innerHTML = ''; return; }
-  const cls = val > 0 ? 'positive' : val < 0 ? 'negative' : 'neutral';
-  el.className = 'change ' + cls;
-  el.innerHTML = `<span class="tc-tf">${view.toUpperCase()}</span>${val > 0 ? '+' : ''}${val.toFixed(2)}%`;
+  el.className = 'change neutral';
+  el.innerHTML = '';
 }
 /* Y-axis always sits on the right edge — TradingView convention. On desktop
    it also lands right next to the favorites sidebar, so scanning the price
@@ -9009,10 +9014,7 @@ async function setItem(m, opts = {}) {
     b.innerHTML = `${p.toUpperCase()}<br/><span class="pct-chg ${cls}">${val > 0 ? '+' : ''}${val.toFixed(2)}%</span>`;
   });
 
-  /* Header hero: live price + the SELECTED timeframe's % change (TradingView
-     style). Keyed to the active view so it always matches the highlighted
-     toolbar button and the chart — no contradiction. */
-  updateHeaderChange();
+  clearHeaderChange();
 
   currentSeries = filterSeries(seriesForView(view, currentItemSrc, currentItemLowVol), getPeriod(view));
   selectedAbsIdx = null;
@@ -9101,7 +9103,6 @@ setItem._userPicked = false;
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
         b.classList.add("active"); view = preferredView = b.dataset.view; zoom = 1.0; yScale = 1; yOffset = 0;
         setItem._userPicked = true;
-        updateHeaderChange();
         refreshChart();
       };
     });
