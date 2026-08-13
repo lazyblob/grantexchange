@@ -1771,7 +1771,7 @@ button, input { touch-action: manipulation; }
 /* Our own share sheet, shown instead of the OS one on pointer devices — see
    the comment on shareCard(). Card width is driven by the preview, which is
    the whole point of the dialog: you see the exact PNG before it goes out. */
-.share-sheet .modal-card { max-width: 460px; }
+.share-sheet .modal-card { max-width: 520px; }
 .share-preview { border: 1px solid var(--border-main); border-radius: 6px; overflow: hidden; background: #0A0908; line-height: 0; }
 /* The card is tall (roughly 1200x990), so on a short laptop an unbounded
    preview pushes the action tiles below the fold — and the tiles are the
@@ -1801,6 +1801,17 @@ button, input { touch-action: manipulation; }
   color: var(--text-main); font-size: 11px; line-height: 1.55;
 }
 .share-step b { color: var(--border-active); font-weight: 800; }
+.share-step .ss-title { font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.share-step .ss-steps { margin: 0; padding-left: 18px; }
+.share-step .ss-steps li { margin-bottom: 3px; }
+.share-step .ss-ok { color: var(--positive); }
+.share-step .ss-go {
+  display: inline-flex; align-items: center; margin-top: 9px; padding: 7px 14px;
+  border-radius: 6px; border: 1px solid var(--border-active); background: var(--border-active);
+  color: var(--accent-ink); font: 800 11.5px/1 inherit; cursor: pointer;
+}
+.share-step .ss-go:hover { filter: brightness(1.08); }
+.share-step .ss-why { margin-top: 8px; font-size: 9.5px; color: var(--text-muted); line-height: 1.45; }
 .share-step kbd {
   font-family: inherit; font-size: 10px; font-weight: 700; padding: 1px 4px;
   border: 1px solid var(--border-light); border-radius: 3px; background: var(--bg-base);
@@ -3675,17 +3686,20 @@ function roundRectPath(g, x, y, w, h, r) {
 }
 async function buildShareCardCanvas() {
   const W = 1200, H = 990;   // one chart + a 2-line summary needs less room than two charts + four lines
-  // Backing store rendered at the device's actual pixel density, then
-  // scaled back down to logical W/H — without this every draw call below
-  // still WORKS (same W/H coordinates throughout), it just comes out soft
-  // on any high-DPI/Retina-class display, since a flat 1200x1000 canvas
-  // gets upscaled to fill the same on-screen/exported size a 2x or 3x
-  // display expects far more actual pixels for.
-  const dpr = window.devicePixelRatio || 1;
+  /* The backing store is rendered at a FIXED 2x and not at the viewer's
+     devicePixelRatio. Every draw call below still works in W/H coordinates
+     either way — the difference is what lands in the file. Keyed to dpr, the
+     same button produced a 1200px PNG on an ordinary monitor and a 2400px
+     one on a Retina display: the export's sharpness depended on who pressed
+     it, and the common case (dpr 1) shipped a card whose small print went
+     mushy the moment Reddit or Discord scaled it. 2x is deterministic,
+     stays comfortably inside every upload limit, and downsamples cleanly
+     into the dialog's own preview. */
+  const EXPORT_SCALE = 2;
   const cv = document.createElement('canvas');
-  cv.width = W * dpr; cv.height = H * dpr;
+  cv.width = W * EXPORT_SCALE; cv.height = H * EXPORT_SCALE;
   const g = cv.getContext('2d');
-  g.scale(dpr, dpr);
+  g.scale(EXPORT_SCALE, EXPORT_SCALE);
 
   // 5-day high/low — often THE reason someone is sharing this in the
   // first place ("look, it's at a 5-day low right now"), so it needs to
@@ -4218,41 +4232,58 @@ function shareActions() {
       run: async (b) => shareFlash(b, await copyTextToClipboard(buildShareText()) ? 'Copied ✓' : 'Failed') },
     { key: 'link', icon: 'link', label: 'Copy link', sub: 'Straight to this item',
       run: async (b) => shareFlash(b, await copyTextToClipboard(shareItemUrl()) ? 'Copied ✓' : 'Failed') },
-    /* Reddit and X take a title + URL but no image, so copy the PNG on the
-       way out — the compose window opens with the clipboard already loaded
-       and the poster just pastes. */
     /* Reddit's composer prefills two things and only two: `title` and `url`.
        Passing `url` is precisely what turns the submission into a LINK post
        — and a link post renders whatever og:image the target serves, which
-       for a static host is the one site-wide banner for every ?q=. That's
-       why sharing Uncut diamond used to preview a generic "Trading
-       Terminal" card. Sending only `title` leaves the composer on a post
-       type that accepts the image, so the card we just built becomes the
-       post itself. The link still travels: it's printed on the card and
-       sits in the caption. */
+       for a static host is the one site-wide banner for every ?q=. Sending
+       only `title` leaves the composer on a post type that accepts the
+       image, so the card we just built becomes the post itself. The link
+       still travels: it's printed on the card and sits in the caption. */
     { key: 'reddit', icon: 'reddit', label: 'Reddit', sub: 'Card becomes the post',
-      run: async (b) => {
-        const ok = await copyImageToClipboard();
-        shareStep(ok
-          ? '<b>Image copied.</b> In the Reddit tab, paste it with <kbd>Ctrl</kbd>+<kbd>V</kbd> — or open the <b>Images</b> tab and drop it in. The card becomes the post; use <b>Copy caption</b> if you also want the numbers and link as text.'
-          : '<b>Couldn\'t copy the image</b> — your browser blocks clipboard images. Hit <b>Download</b>, then drag the PNG into the Reddit post.');
-        window.open('https://www.reddit.com/submit?title='
+      run: async () => shareHandoff('Reddit',
+        'https://www.reddit.com/submit?title='
           + encodeURIComponent(`${selected.name} — ${shareCardGaugeInfo()?.text || 'OSRS flip'} on PocketGE`),
-          '_blank', 'noopener');
-      } },
+        'Paste it into the post with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>V</kbd> — or use Reddit\'s <b>Images</b> tab.',
+        'drag the PNG into the Reddit post') },
     /* X does take prefilled body text, so the caption and link land on their
        own — only the image needs pasting. */
     { key: 'x', icon: 'x', label: 'X', sub: 'Caption prefilled',
-      run: async (b) => {
-        const ok = await copyImageToClipboard();
-        shareStep(ok
-          ? '<b>Image copied.</b> Paste it into the X composer with <kbd>Ctrl</kbd>+<kbd>V</kbd> — the caption and link are already filled in.'
-          : '<b>Couldn\'t copy the image</b> — your browser blocks clipboard images. Hit <b>Download</b>, then attach the PNG in X.');
-        window.open('https://x.com/intent/post?text=' + encodeURIComponent(buildShareText()),
-          '_blank', 'noopener');
-      } }
+      run: async () => shareHandoff('X',
+        'https://x.com/intent/post?text=' + encodeURIComponent(buildShareText()),
+        'Paste it into the composer with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>V</kbd> — the caption and link are already filled in.',
+        'attach the PNG in X') }
   ];
 }
+
+/* Copy the image, then STOP and say what happens next — the tab does not
+   open until the second click.
+   The old flow opened it immediately and left the instructions behind in a
+   tab the poster had just navigated away from, so the first thing they saw
+   was an empty composer and no image; the reasonable conclusion was that
+   the share was broken. Neither site can be handed a file by a link, so
+   the paste is unavoidable — but it has to be read BEFORE the jump, not
+   after. Opening from a real click on the button also keeps the popup
+   blocker out of it, which an await'd window.open never quite guaranteed. */
+function shareHandoff(siteName, url, pasteHint, downloadHint) {
+  return copyImageToClipboard().then(ok => {
+    shareStep(`
+      <div class="ss-title">Post to ${siteName}</div>
+      <ol class="ss-steps">
+        <li>${ok
+          ? 'Card image copied to your clipboard <b class="ss-ok">✓</b>'
+          : '<b>Your browser blocks clipboard images</b> — press <b>Download</b> above first'}</li>
+        <li>${ok ? pasteHint : `Then ${downloadHint}.`}</li>
+      </ol>
+      <button type="button" class="ss-go" data-share-go="${escapeHtml(url)}">Open ${siteName} ↗</button>
+      <div class="ss-why">No site can attach an image to a ${siteName} post on your behalf — that's why this last step is yours.</div>`);
+  });
+}
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest && ev.target.closest('[data-share-go]');
+  if (!b) return;
+  ev.stopPropagation();
+  window.open(b.getAttribute('data-share-go'), '_blank', 'noopener');
+});
 
 function closeShareModal() {
   $('#shareModal').style.display = 'none';
