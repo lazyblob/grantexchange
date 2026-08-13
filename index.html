@@ -1646,6 +1646,17 @@ button, input { touch-action: manipulation; }
 }
 @keyframes cl-spin { to { transform: rotate(360deg); } }
 
+/* Sits top-right of the plot, clear of the y-axis labels on either side and
+   of the last data point, which hugs the right edge at the current price. */
+.chart-reset {
+  position: absolute; top: 8px; right: 10px; z-index: 4;
+  padding: 4px 9px; border-radius: 5px; cursor: pointer;
+  background: rgba(27,24,21,0.92); border: 1px solid var(--border-active);
+  color: var(--border-active); font: 700 10.5px/1 inherit; letter-spacing: .2px;
+}
+.chart-reset:hover { background: var(--border-active); color: var(--accent-ink); }
+.chart-reset[hidden] { display: none; }
+
 /* Site footer — trust / attribution signal below the about content. */
 .site-footer {
   max-width: 880px; margin: 0 auto 48px; padding: 18px 20px 0;
@@ -2403,6 +2414,10 @@ button, input { touch-action: manipulation; }
       <div class="chart-container">
         <canvas id="chart" class="chart"></canvas>
         <div id="chartLoading" class="chart-loading"><div class="cl-spinner"></div>Loading live prices…</div>
+        <!-- Appears only once the view has been zoomed/panned off default.
+             Until now the only way back was double-clicking an axis, which
+             nothing advertised. -->
+        <button type="button" id="chartReset" class="chart-reset" hidden>Reset zoom</button>
         <div id="tip" class="chart-tip"></div>
 
         <div class="chart-footer legend">
@@ -3122,6 +3137,11 @@ function queueDraw() {
         resizeCanvas(); // updates chartCssW/H + the bitmap; its own queueDraw() no-ops since isDrawing is still true here
       }
       drawChart(currentSeries);
+      /* Driven off the draw rather than off each gesture: wheel, box zoom,
+         both axis drags, pan, pinch, period switch and item switch all end
+         in a draw, so keying the chip here means no entry point can forget
+         to update it. */
+      syncChartReset();
       isDrawing = false;
     });
   }
@@ -7809,6 +7829,18 @@ function renderNotifCenter() {
   });
 }
 
+/* The price axis's auto-fit, before yScale/yOffset are applied. Shared with
+   the box-zoom, which has to know what the axis WOULD show for a candidate
+   window in order to solve for the scale/offset that frame the dragged
+   rectangle — if the two ever computed the buffer differently, a box zoom
+   would land slightly off the box you drew. */
+function fitPriceRange(vals) {
+  let vmin = Math.min(...vals), vmax = Math.max(...vals);
+  if (vmin === vmax) { vmin -= 1; vmax += 1; }
+  const buffer = (vmax - vmin) * 0.05;
+  return [vmin - buffer, vmax + buffer];
+}
+
 function drawChart(series) {
   /* Draw in the exact space the bitmap was sized for (see resizeCanvas) —
      re-measuring the DOM here can disagree with a not-yet-resynced bitmap. */
@@ -7851,9 +7883,7 @@ function drawChart(series) {
   const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) return;
 
-  let vmin = Math.min(...vals), vmax = Math.max(...vals);
-  if (vmin === vmax) { vmin -= 1; vmax += 1; }
-  const buffer = (vmax - vmin) * 0.05; vmin -= buffer; vmax += buffer;
+  let [vmin, vmax] = fitPriceRange(vals);
   /* Manual axis scale (drag the price axis): stretch/squash the visible
      range around its midpoint. yScale > 1 flattens, < 1 amplifies. */
   if (yScale !== 1) {
@@ -8351,6 +8381,33 @@ function drawChart(series) {
       ctx.restore();
     }
   }
+
+  /* Zoom-box selection, drawn last so it sits over everything. Rendered
+     inside drawChart rather than as a DOM overlay so it can't drift from
+     the plot during a resize or a redraw. */
+  if (zoomBox) {
+    const bx = Math.min(zoomBox.ax, zoomBox.bx), bw = Math.abs(zoomBox.bx - zoomBox.ax);
+    const by = Math.min(zoomBox.ay, zoomBox.by), bh2 = Math.abs(zoomBox.by - zoomBox.ay);
+    ctx.save();
+    ctx.fillStyle = 'rgba(201,166,77,0.14)';
+    ctx.fillRect(bx, by, bw, bh2);
+    ctx.strokeStyle = 'rgba(201,166,77,0.85)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(bx + 0.5, by + 0.5, bw, bh2);
+    ctx.restore();
+    /* Below the drag threshold the release is treated as a click, so say so
+       rather than letting someone twitch the mouse and wonder why nothing
+       zoomed. */
+    if (bw < ZOOM_BOX_MIN && bh2 < ZOOM_BOX_MIN) {
+      ctx.save();
+      ctx.font = `bold ${axisFontPx}px BlinkMacSystemFont, sans-serif`;
+      ctx.fillStyle = 'rgba(201,166,77,0.9)';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText('drag to zoom', bx + 6, by - 3);
+      ctx.restore();
+    }
+  }
 }
 
 function showTipFor(local, clientX, clientY) {
@@ -8481,27 +8538,148 @@ function applyXScaleDrag(dx) {
   anchorZoomToLatest();
   queueDraw();
 }
+/* ── Shift-drag box zoom ─────────────────────────────────────────────────
+   Plain drag is already pan, and pan is worth keeping on the primary
+   button, so the zoom box takes the modifier — the same chord Highcharts,
+   Plotly and most desktop graphics tools use, and the one a trader coming
+   from another charting site tries first. Both axes are applied: the box
+   you draw is the view you get, because a rectangle that only honoured its
+   width would read as a bug.
+
+   Touch is deliberately excluded — pinch already covers zoom there, and a
+   drag gesture is spoken for by pan. */
+const ZOOM_BOX_MIN = 8;   // px; below this on BOTH axes the release is a click
+let zoomBox = null;
+
+/* Turn a pixel rectangle into zoom/offset (time) plus yScale/yOffset
+   (price). The price half has to be solved rather than assigned: the axis
+   auto-fits the NEW window first, and yScale/yOffset are expressed relative
+   to that fit, which isn't known until the window is chosen. */
+function applyZoomBox(box) {
+  const { x0, stepX, n, h_price, y0, vmin, vmax } = chartData;
+  if (!n || !stepX) return;
+
+  /* Clamp to the price pane. A box dragged down into the volume strip (or
+     off the plot entirely) would otherwise extrapolate past the axis and
+     ask for a price range that was never on screen. */
+  const clampX = (v) => Math.max(x0, Math.min(x0 + chartData.dataW, v));
+  const clampY = (v) => Math.max(y0, Math.min(y0 + h_price, v));
+  const ax = clampX(Math.min(box.ax, box.bx)), bx = clampX(Math.max(box.ax, box.bx));
+  const ay = clampY(Math.min(box.ay, box.by)), by = clampY(Math.max(box.ay, box.by));
+
+  // ── time ──
+  if (bx - ax >= ZOOM_BOX_MIN) {
+    const a0 = Math.max(0, Math.round(offset + (ax - x0) / stepX));
+    const a1 = Math.min(n, Math.round(offset + (bx - x0) / stepX));
+    const wantWin = Math.max(20, a1 - a0);
+    zoom = Math.max(1, Math.min(20, n / wantWin));
+    const win = Math.max(20, Math.floor(n / zoom));
+    offset = Math.max(0, Math.min(n - win, a0));
+  }
+
+  // ── price ──
+  if (by - ay >= ZOOM_BOX_MIN) {
+    /* Pixels -> prices under the CURRENT transform, before it's replaced. */
+    const pxToVal = (py) => vmin + (1 - (py - y0) / h_price) * (vmax - vmin);
+    const tMax = pxToVal(ay), tMin = pxToVal(by);
+
+    /* What the axis will auto-fit to for the window just chosen. */
+    const win = Math.max(20, Math.floor(n / zoom));
+    const vals = [...currentSeries.low.slice(offset, offset + win),
+                  ...currentSeries.high.slice(offset, offset + win)].filter(v => v != null);
+    if (vals.length) {
+      const [b0, b1] = fitPriceRange(vals);
+      const span = b1 - b0;
+      if (span > 0) {
+        yScale = Math.max(0.15, Math.min(12, (tMax - tMin) / span));
+        const shown = span * yScale;
+        yOffset = Math.max(-2, Math.min(2, ((tMin + tMax) / 2 - (b0 + b1) / 2) / shown));
+      }
+    }
+  }
+  queueDraw();
+}
+
+/* True whenever the view has been moved off its default in any way, which
+   is what the Reset chip keys off. */
+function chartViewDirty() {
+  return zoom !== 1 || offset !== 0 || yScale !== 1 || yOffset !== 0;
+}
+function resetChartView() {
+  zoom = 1; offset = 0; yScale = 1; yOffset = 0;
+  zoomBox = null;
+  queueDraw();
+  syncChartReset();
+}
+function syncChartReset() {
+  const b = document.getElementById('chartReset');
+  if (b) b.hidden = !chartViewDirty();
+}
+document.getElementById('chartReset').onclick = (ev) => { ev.stopPropagation(); resetChartView(); };
+
 let isDragging = false, startXMouse = 0, startYMouse = 0, mouseMoved = false;
 let axisDragging = false, axisLastY = 0;
 let xAxisDragging = false, xAxisLastX = 0;
 canvas.addEventListener('mousedown', ev => {
   if (inYAxisZone(ev.clientX)) { axisDragging = true; axisLastY = ev.clientY; return; }
   if (inXAxisZone(ev.clientY)) { xAxisDragging = true; xAxisLastX = ev.clientX; return; }
+  if (ev.shiftKey) {
+    const r = canvas.getBoundingClientRect();
+    const px = ev.clientX - r.left, py = ev.clientY - r.top;
+    zoomBox = { ax: px, ay: py, bx: px, by: py };
+    /* Stops the browser turning a shift-drag into a text selection of the
+       surrounding page. */
+    ev.preventDefault();
+    /* Drop the crosshair too — left up, it stays frozen at the point the
+       drag began and reads as a second, contradictory price marker. */
+    tip.style.display = 'none';
+    hoverIdx = null; hoverY = null;
+    queueDraw();
+    return;
+  }
   isDragging = true; mouseMoved = false; startXMouse = ev.clientX; startYMouse = ev.clientY;
 });
 canvas.addEventListener('mouseup', ev => {
   if (axisDragging) { axisDragging = false; return; }
   if (xAxisDragging) { xAxisDragging = false; return; }
+  if (zoomBox) return;   // finished by the document handler below
   if (!mouseMoved) selectAt(ev.clientX, ev.clientY);
   isDragging = false;
 });
+/* The box is tracked and finished on the document, not the canvas: dragging
+   to the very edge of the plot (or a little past it, which is what you do
+   when the range you want runs to the edge) would otherwise fire mouseleave
+   and throw the selection away mid-drag. */
+document.addEventListener('mousemove', ev => {
+  if (!zoomBox) return;
+  const r = canvas.getBoundingClientRect();
+  zoomBox.bx = ev.clientX - r.left; zoomBox.by = ev.clientY - r.top;
+  queueDraw();
+});
+document.addEventListener('mouseup', ev => {
+  if (!zoomBox) return;
+  const box = zoomBox; zoomBox = null;
+  /* A shift-click that never really moved should still pick a point,
+     matching what a plain click does. */
+  if (Math.abs(box.bx - box.ax) < ZOOM_BOX_MIN && Math.abs(box.by - box.ay) < ZOOM_BOX_MIN) {
+    selectAt(ev.clientX, ev.clientY);
+  } else {
+    applyZoomBox(box);
+  }
+});
 canvas.addEventListener('mouseleave', () => { isDragging = false; axisDragging = false; xAxisDragging = false; tip.style.display = "none"; hoverIdx = null; hoverY = null; queueDraw(); });
+/* Escape abandons a box mid-drag — the standard out for any rubber-band. */
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && zoomBox) { zoomBox = null; queueDraw(); }
+});
 canvas.addEventListener('dblclick', ev => {
   if (inYAxisZone(ev.clientX)) { yScale = 1; yOffset = 0; queueDraw(); }
   else if (inXAxisZone(ev.clientY)) { zoom = 1; offset = 0; queueDraw(); }
+  else resetChartView();   // double-click the plot itself = back to everything
 });
 canvas.addEventListener('mousemove', ev => {
   if (!chartData.L) return;
+  if (zoomBox) return;   // the document-level handler owns the box
   if (axisDragging) {
     applyYScaleDrag(ev.clientY - axisLastY); axisLastY = ev.clientY; return;
   }
@@ -8516,7 +8694,11 @@ canvas.addEventListener('mousemove', ev => {
     if (dy) applyYPan(dy); else queueDraw();
     return;
   }
-  canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize' : inXAxisZone(ev.clientY) ? 'ew-resize' : '';
+  /* Holding shift over the plot swaps the cursor to a crosshair — the only
+     hint that the box zoom exists until you try it. */
+  canvas.style.cursor = inYAxisZone(ev.clientX) ? 'ns-resize'
+    : inXAxisZone(ev.clientY) ? 'ew-resize'
+    : ev.shiftKey ? 'crosshair' : '';
   handleTooltip(ev.clientX, ev.clientY);
 });
 canvas.addEventListener('wheel', ev => {
@@ -9307,7 +9489,7 @@ if ('serviceWorker' in navigator) {
 
   <h2>Charts: see where an item has actually traded</h2>
   <p>Knowing where a price has been is what tells you whether today's number is cheap. Every item charts 1D through 5Y, with insta-buy and insta-sell prints kept apart, a trend line through the noise, volume underneath, and period and recent highs and lows marked.</p>
-  <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume.</p>
+  <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume. On a desktop you can also hold <b>Shift</b> and drag a box around any region to zoom straight to it — double-click the chart, or hit Reset zoom, to go back.</p>
   <p>If you'd rather not read it yourself, a 30-day range meter shows whether the price sits nearer the floor or the ceiling of its recent range, and a written summary says how the item has been moving.</p>
 
   <h2>Margins: a good spread that survives the tax</h2>
