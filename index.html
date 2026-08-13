@@ -891,6 +891,21 @@ button, input { touch-action: manipulation; }
    short-landscape breakpoint below, where the sidebar is a fixed compact
    width rather than the --wl-width variable this drags. */
 .wl-resize { display: none; }
+/* Height counterpart to .wl-resize. Gated to the desktop layout because
+   that's the only one where the chart's height is a negotiable budget: the
+   min/max below is derived from the viewport, and .user-sized replaces it
+   with whatever was dragged. Portrait and coarse landscape size the chart
+   from vh with no slack to trade, so a handle there would be a control that
+   can't do anything useful. */
+.ch-resize { display: none; }
+@media (min-width: 1024px) {
+  .ch-resize { display: block; flex: 0 0 10px; height: 10px; margin: -4px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
+  .ch-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 2px; width: 38px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, width 0.15s; }
+  .ch-resize:hover::before, .ch-resize.dragging::before { background: var(--border-active); width: 64px; }
+  /* Only applied once the handle has actually been dragged, so the default
+     viewport-derived sizing keeps working untouched for everyone else. */
+  .chart-container.user-sized { flex: 0 0 auto; height: var(--chart-h); min-height: 0; max-height: none; }
+}
 @media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
   .wl-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 30px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, height 0.15s; }
@@ -2492,6 +2507,10 @@ button, input { touch-action: manipulation; }
           <div class="legend-item"><span class="legend-dash" style="background:rgba(244,241,232,0.85);"></span> Trend</div>
         </div>
       </div>
+      <!-- Vertical twin of .wl-resize: that one trades width between chart
+           and sidebar, this trades height between chart and everything under
+           it. Desktop only — see .ch-resize. -->
+      <div class="ch-resize" id="chResize" title="Drag to resize the chart · double-click to reset" aria-hidden="true"></div>
       <!-- Refresh sits with the "just now / 2m ago" freshness stamps it
            acts on, rather than buried in the menu. Kept OUTSIDE
            #quickFacts: renderQuickFacts rewrites that node's innerHTML
@@ -9580,6 +9599,75 @@ setItem._userPicked = false;
     root.style.setProperty('--wl-width', DEFAULT + 'px');
     try { localStorage.setItem('ge_wlWidth', String(DEFAULT)); } catch (e) {}
     if (typeof resizeCanvas === 'function') resizeCanvas();
+  });
+})();
+
+/* Vertical chart resize — the height counterpart to the sidebar's width
+   handle. Same interaction contract as .wl-resize: drag to size, double-click
+   to reset, choice persisted, and resizeCanvas() called on every frame so the
+   bitmap tracks the box instead of being stretched to fit it afterwards. */
+(function chartHeightResizer() {
+  const handle = document.getElementById('chResize');
+  const box = document.querySelector('.chart-container');
+  if (!handle || !box) return;
+  const MIN = 240;
+  /* Has to sit ABOVE the CSS default (100dvh - 248px) or dragging down would
+     shrink the chart — the first thing tried, and it would look broken.
+     Desktop .wrap is auto-height, so growing past the fold just scrolls the
+     quick-facts strip down, which is a legitimate thing to want from a
+     "make the chart bigger" handle. Bounded so the page can't become one
+     unscrollable chart. */
+  const maxH = () => Math.max(MIN + 80, window.innerHeight - 120);
+
+  const setH = (h) => {
+    box.style.setProperty('--chart-h', Math.round(h) + 'px');
+    box.classList.add('user-sized');
+  };
+  const clear = () => {
+    box.classList.remove('user-sized');
+    box.style.removeProperty('--chart-h');
+    try { localStorage.removeItem('ge_chartHeight'); } catch (e) {}
+    if (typeof resizeCanvas === 'function') resizeCanvas();
+  };
+
+  const saved = parseInt(localStorage.getItem('ge_chartHeight') || '', 10);
+  if (saved >= MIN) setH(Math.min(saved, maxH()));
+
+  let startY = 0, startH = 0, dragging = false, raf = 0;
+  const apply = (clientY) => {
+    const h = Math.max(MIN, Math.min(maxH(), startH + (clientY - startY)));
+    setH(h);
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (typeof resizeCanvas === 'function') resizeCanvas(); });
+  };
+  const begin = (clientY) => {
+    if (!matchMedia('(min-width: 1024px)').matches) return;
+    dragging = true; startY = clientY; startH = box.getBoundingClientRect().height;
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none'; document.body.style.cursor = 'row-resize';
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false; handle.classList.remove('dragging');
+    document.body.style.userSelect = ''; document.body.style.cursor = '';
+    const h = Math.round(box.getBoundingClientRect().height);
+    if (h) { try { localStorage.setItem('ge_chartHeight', String(h)); } catch (e) {} }
+    if (typeof resizeCanvas === 'function') resizeCanvas();
+  };
+  handle.addEventListener('mousedown', (e) => { begin(e.clientY); e.preventDefault(); });
+  window.addEventListener('mousemove', (e) => { if (dragging) apply(e.clientY); });
+  window.addEventListener('mouseup', end);
+  handle.addEventListener('touchstart', (e) => { begin(e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchmove', (e) => { if (dragging) apply(e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchend', end);
+  handle.addEventListener('dblclick', clear);
+  /* A height saved on a tall window would otherwise bury the controls on a
+     short one — re-clamp rather than dropping the preference, so going back
+     to the big screen restores what was set there. */
+  window.addEventListener('resize', () => {
+    if (!box.classList.contains('user-sized')) return;
+    const cur = parseInt(box.style.getPropertyValue('--chart-h'), 10);
+    const cap = maxH();
+    if (cur > cap) { box.style.setProperty('--chart-h', cap + 'px'); if (typeof resizeCanvas === 'function') resizeCanvas(); }
   });
 })();
 
