@@ -1946,7 +1946,24 @@ button, input { touch-action: manipulation; }
    deliberately NOT the gold/teal buy-sell language — it shows "where in the
    range", not a recommendation, so it can't be confused with the Analyst
    Rating gauge below it. The champagne marker is the only accent. */
-.item-insight { margin:8px 2px 0; padding-top:8px; border-top:1px solid var(--border-main); text-align:center; }
+/* Collapse the written summary down to just the range bar. Portrait stacks
+   every module into one column, and this paragraph is the longest thing
+   between the watchlist and the flip finder — useful the first few times you
+   look at an item, dead weight once you can read the bar itself. The bar
+   stays either way; only the prose folds away.
+   Scoped to portrait: the control is hidden and the collapsed class inert at
+   every other size, where the block sits under the chart with room to spare.
+   Stored per layout via collapseKey, so folding it on a phone never reaches
+   desktop. */
+.item-insight { margin:8px 2px 0; padding-top:8px; border-top:1px solid var(--border-main); text-align:center; position:relative; }
+.ins-collapse { display:none; border:none; padding:0; cursor:pointer; }
+@media (max-width: 640px) {
+  .ins-collapse { display:flex; position:absolute; top:6px; right:8px; z-index:2; }
+  /* keeps the track and its end labels clear of the button */
+  .item-insight .ins-meter { padding-right:34px; }
+  .item-insight.is-collapsed .ins-divider,
+  .item-insight.is-collapsed .ins-text { display:none; }
+}
 .ins-meter { max-width:440px; margin:0 auto; }
 /* The track reserves clear space ABOVE for the floating price bubble (there's
    no caption in that lane anymore, so the bubble can never cover it). */
@@ -2344,6 +2361,7 @@ button, input { touch-action: manipulation; }
            flipper sees at a glance whether the price sits near its floor
            (buy zone) or ceiling (sell zone). -->
       <div class="item-insight" id="itemInsight" style="display:none">
+        <button type="button" class="ins-collapse calc-caret" id="btnInsCollapse" aria-label="Collapse market summary" aria-expanded="true" title="Collapse / expand"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="ins-meter" aria-hidden="true">
           <div class="ins-track">
             <span class="ins-fill" id="insFill"></span>
@@ -6367,6 +6385,31 @@ const collapseKey = (base) => isRoomyLayout() ? base + '_wide' : base;
 function ratingCollapsed() {
   try { return localStorage.getItem(collapseKey('ge_ratingCollapsed')) === '1'; } catch (e) { return false; }
 }
+/* Market-summary collapse. Delegated for the same reason the rating gauge's
+   toggle is: renderItemInsight repaints this block on every price refresh,
+   and a handler bound to the button would be re-bound (or lost) each time. */
+function insightCollapsed() {
+  try { return localStorage.getItem(collapseKey('ge_insCollapsed')) === '1'; } catch (e) { return false; }
+}
+function applyInsightCollapsed() {
+  const box = document.getElementById('itemInsight');
+  if (!box) return;
+  const c = insightCollapsed();
+  box.classList.toggle('is-collapsed', c);
+  const btn = document.getElementById('btnInsCollapse');
+  if (btn) {
+    btn.classList.toggle('closed', c);
+    btn.setAttribute('aria-expanded', c ? 'false' : 'true');
+    btn.setAttribute('aria-label', c ? 'Expand market summary' : 'Collapse market summary');
+  }
+}
+document.addEventListener('click', (ev) => {
+  const btn = ev.target.closest && ev.target.closest('#btnInsCollapse');
+  if (!btn) return;
+  ev.stopPropagation();
+  try { localStorage.setItem(collapseKey('ge_insCollapsed'), insightCollapsed() ? '0' : '1'); } catch (e) {}
+  applyInsightCollapsed();
+});
 document.addEventListener('click', (ev) => {
   const btn = ev.target.closest && ev.target.closest('.rg-toggle');
   if (!btn) return;
@@ -6553,6 +6596,7 @@ function renderItemInsight(m, node) {
     + `. It's currently ${zone}.` + marginSentence;
   document.getElementById('insText').textContent = text;
   box.style.display = '';
+  applyInsightCollapsed();
 }
 
 function refreshItemInsights(m, node) {
