@@ -2045,6 +2045,7 @@ button, input { touch-action: manipulation; }
 .rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:6px; }
 .rg-toggle:hover { background:rgba(201,166,77,0.22); }
 .rg-wrap.is-collapsed .rg-scale { display:none; }
+.rg-wrap.is-collapsed .rg-why { display:none; }
 .rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
 /* Collapsed, the meter rides directly under this cluster and the needle
    overhangs the track by 2px — so on a Strong Buy/Sell (needle pinned to an
@@ -2083,6 +2084,30 @@ button, input { touch-action: manipulation; }
 .rg-scale { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:4px; font-size:9px; font-weight:700; letter-spacing:.3px; }
 .rg-end { text-transform:uppercase; opacity:.75; } .rg-end-sell { color:var(--sell-color); } .rg-end-buy { color:var(--buy-color); }
 .rg-sub { flex:1; text-align:center; font-size:9.5px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Score breakdown — expanded only. Deliberately plain: rows of
+   name / plain-English reason / points, so it reads as the arithmetic
+   behind the word rather than a second chart to interpret. */
+.rg-why { margin-top:10px; padding-top:9px; border-top:1px solid var(--border-main); }
+.rg-why-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:7px; }
+.rg-why .rw-t { font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--text-muted); }
+.rg-why .rw-sides { display:inline-flex; align-items:baseline; gap:5px; font-size:10.5px; font-weight:800; }
+.rg-why .rw-sides i { font-style:normal; font-weight:600; color:var(--text-muted); font-size:9px; }
+.rg-why .rw-buy { color:var(--buy-color); }
+.rg-why .rw-sell { color:var(--sell-color); }
+.rg-why-row { display:grid; grid-template-columns:52px 1fr 42px 46px; align-items:center; gap:6px; margin-bottom:4px; }
+.rg-why .rw-k { font-size:9.5px; font-weight:800; color:var(--text-main); }
+.rg-why .rw-v { font-size:9.5px; color:var(--text-muted); line-height:1.35; }
+.rg-why .rw-bar { height:4px; border-radius:2px; background:rgba(255,255,255,0.07); overflow:hidden; }
+.rg-why .rw-bar i { display:block; height:100%; background:var(--border-active); }
+.rg-why .rw-p { font-size:9.5px; font-weight:800; color:var(--text-main); text-align:right; font-variant-numeric:tabular-nums; }
+.rg-why .rw-p em { font-style:normal; font-weight:600; color:var(--text-muted); }
+.rg-why-foot { margin-top:7px; font-size:9px; color:var(--text-muted); line-height:1.5; }
+@media (max-width: 640px) {
+  /* The reason text is the first thing to wrap on a narrow column, so give
+     it the room and let the bar go. */
+  .rg-why-row { grid-template-columns:50px 1fr 44px; }
+  .rg-why .rw-bar { display:none; }
+}
 @media (min-width:1024px){ .rg-wrap{padding:10px 14px;} .rg-label{font-size:16px;} .rg-track{height:10px;} .rg-sub{font-size:10px;} }
 /* Sidebar variant: lives inside the Potential Profit module (.calc-container is
    already a panel) — divider instead of its own box. */
@@ -2637,7 +2662,7 @@ button, input { touch-action: manipulation; }
       <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and teal for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
 
       <div class="glossary-section">Analyst Rating (sidebar gauge — the one opinion on the page)</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell; mid-range reads Neutral. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell; mid-range reads Neutral. Underneath, the item is graded twice — once as a buy, once as a sell — and how far apart those two scores land is what decides how strong the word is. A near-tie means the item flips about as well in either direction, so it reads Neutral rather than picking a side. Expand the gauge to see both scores and the four things that produced them. Because each timeframe has its own price range, the same price can rate differently on 1D and 6M — that's the window changing, not the item. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
 
       <!-- The Recommended Flip card shows a 0-100 score and a band word;
            neither was explained anywhere. The numbers here mirror REC_BANDS
@@ -6756,13 +6781,14 @@ function computeGrade(item, side) {
     if (L != null && H != null) valid.push((L + H) / 2);
     else if (L || H) valid.push(L || H);
   }
-  let trendScore = 12;
+  let trendScore = 12, trendPct = null;
   if (valid.length >= 5) {
     const xs = valid.map((_, i) => i);
     const { slope } = linearRegression(xs, valid);
     const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
     if (avg > 0) {
       const slopePct = (slope * valid.length) / avg;
+      trendPct = slopePct;
       const dir = side === 'buy' ? -slopePct : slopePct;
       trendScore = Math.max(0, Math.min(25, 12 + dir * 100));
     }
@@ -6822,6 +6848,16 @@ function computeGrade(item, side) {
 
   let grade = Math.max(0, Math.min(100, Math.round(rangeScore + trendScore + liqScore + longScore + marginScore)));
 
+  /* Returned so the gauge can show its working. Every figure here is one
+     the user can check against the chart in front of them, which is the
+     point — a 0-100 score nobody can audit is just a number. */
+  const parts = {
+    pos, rangeScore, trendScore, trendPct, liqScore, longScore, marginScore, side,
+    marginPct: bestMarginPct > -Infinity ? bestMarginPct : null,
+    gpVol: (() => { const q = past24h?.data?.[id]; return q ? ((q.highPriceVolume || 0) + (q.lowPriceVolume || 0)) * (q.avgHighPrice || 0) : 0; })(),
+    minV, maxV, current
+  };
+
   let verdict, color;
   /* Hard gate: only when BOTH right-now and day-potential are unprofitable
      — that means the timeframe genuinely has no flip in it. */
@@ -6830,12 +6866,12 @@ function computeGrade(item, side) {
   if (bothNegative) {
     grade = Math.min(grade, 22);
     verdict = 'No Margin'; color = '#EF5350';
-    return { grade, verdict, color };
+    return { grade, verdict, color, parts };
   }
   if (bothThin) {
     grade = Math.min(grade, 42);
     verdict = 'Thin — Hold'; color = '#FF9F43';
-    return { grade, verdict, color };
+    return { grade, verdict, color, parts };
   }
   /* Right-now is tight but the timeframe shows a real range — tell the user
      the opportunity is there if they're patient (don't hide it behind "Fair"). */
@@ -6851,7 +6887,7 @@ function computeGrade(item, side) {
        Buy box blended into the price and read as more "buy" signal. Cream
        says "fine / not yet" without borrowing an action color. */
     color = '#D6CCB2';
-    return { grade, verdict, color };
+    return { grade, verdict, color, parts };
   }
   /* Verdict colors lean on the RuneScape palette: bright RS-green for the
      elite tier, RS-gold for the middle, scaling down to red. */
@@ -6860,7 +6896,7 @@ function computeGrade(item, side) {
   else if (grade >= 50) { verdict = side === 'buy' ? 'OK Buy' : 'OK Sell'; color = '#D6CCB2'; }
   else if (grade >= 30) { verdict = side === 'buy' ? 'Weak Buy' : 'Weak Sell'; color = '#FF9F43'; }
   else { verdict = side === 'buy' ? 'Avoid Buying' : 'Avoid Selling'; color = '#EF5350'; }
-  return { grade, verdict, color };
+  return { grade, verdict, color, parts };
 }
 
 /* The per-box grade/fill badges were removed: they duplicated the Analyst
@@ -6928,6 +6964,51 @@ document.addEventListener('click', (ev) => {
   });
 });
 
+/* The expanded gauge shows its working. A 0-100 score nobody can audit is
+   just a number — and this one moves when you change timeframe, which reads
+   as noise until you can see that it's the RANGE that changed underneath it.
+   Every row here is checkable against the chart on screen. */
+function ratingWhyHtml(gBuy, gSell, tf) {
+  const b = gBuy.grade, s = gSell.grade;
+  const dom = (b >= s) ? gBuy : gSell;
+  const p = dom.parts;
+  if (!p) return '';
+  const pct = (n) => Math.round(n * 100);
+  const bar = (score, max) => {
+    const w = Math.max(0, Math.min(100, (score / max) * 100));
+    return '<span class="rw-bar"><i style="width:' + w.toFixed(0) + '%"></i></span>'
+      + '<span class="rw-p">' + Math.round(score) + '<em>/' + max + '</em></span>';
+  };
+  const row = (k, v, score, max) =>
+    '<div class="rg-why-row"><span class="rw-k">' + k + '</span>'
+    + '<span class="rw-v">' + v + '</span>' + bar(score, max) + '</div>';
+
+  const trendTxt = p.trendPct == null ? 'Flat over ' + tf
+    : (p.trendPct > 0.005 ? 'Rising ' : p.trendPct < -0.005 ? 'Falling ' : 'Flat ')
+      + (Math.abs(p.trendPct) > 0.005 ? Math.abs(pct(p.trendPct)) + '% ' : '') + 'over ' + tf;
+  const marginTxt = p.marginPct == null ? 'No workable spread'
+    : (p.marginPct * 100).toFixed(1) + '% after the 2% tax';
+
+  /* The gap between the two sides is what decides how strong the call is,
+     so it gets said out loud rather than left as an unexplained jump. */
+  const gap = Math.abs(b - s);
+  const verdictNote = gap >= 30
+    ? 'One side wins by ' + gap + ' points, so this is a firm call.'
+    : gap >= 12
+      ? 'One side leads by ' + gap + ' points — a lean, not a firm call.'
+      : 'The two sides are within ' + gap + ' points, so this reads Neutral: at this price the item flips about as well either way.';
+
+  return '<div class="rg-why">'
+    + '<div class="rg-why-head"><span class="rw-t">Why this rating · ' + tf + '</span>'
+    + '<span class="rw-sides"><b class="rw-buy">Buy ' + b + '</b><i>vs</i><b class="rw-sell">Sell ' + s + '</b></span></div>'
+    + row('Range', pct(p.pos) + '% up the ' + tf + ' range (' + fmtGp(Math.round(p.minV)) + '–' + fmtGp(Math.round(p.maxV)) + ')', p.rangeScore, 45)
+    + row('Trend', trendTxt, p.trendScore, 25)
+    + row('Margin', marginTxt, p.marginScore, 25)
+    + row('Liquidity', p.gpVol > 0 ? abbreviateNumber(p.gpVol) + ' gp traded a day' : 'Barely traded', p.liqScore, 15)
+    + '<div class="rg-why-foot">Scored from the ' + (p.side === 'buy' ? 'buy' : 'sell') + ' side, the better graded of the two. ' + verdictNote + '</div>'
+    + '</div>';
+}
+
 function renderRatingGauge(item, mountEl, opts = {}) {
   if (!mountEl) return;
   // This function is called more than once per item load (restoreCalculator,
@@ -6950,7 +7031,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
     gBuy = computeGrade(item, 'buy'); gSell = computeGrade(item, 'sell');
   }
   const tf = (opts.timeframe || view || '').toUpperCase();
-  let label, hue = 'var(--text-muted)', sub = '', signed = 0, liveIdx = -1, muted = false, strong = false;
+  let label, hue = 'var(--text-muted)', sub = '', signed = 0, liveIdx = -1, muted = false, strong = false, whyHtml = '';
 
   if (item && overMaxData[String(item.id)]) { muted = true; label = 'No live gauge'; sub = 'Rare item — off the live market'; }
   else if (!gBuy || !gSell) { muted = true; label = 'Analyzing…'; sub = 'Waiting for price history'; }
@@ -6960,7 +7041,26 @@ function renderRatingGauge(item, mountEl, opts = {}) {
     else if (/^Thin/.test(vB) && /^Thin/.test(vS)) { muted = true; hue = '#FF9F43'; label = 'Too thin to flip'; sub = `Margin under 0.5% on ${tf}`; }
     else {
       const b = gBuy.grade, s = gSell.grade;
-      const dir = (b >= s) ? 1 : -1, dom = Math.max(b, s), mag = Math.max(0, Math.min(1, (dom - 40) / 60));
+      /* Conviction is the MARGIN OF VICTORY, not the winner's absolute
+         score. It used to be (dom - 40) / 60 — the better side's own grade —
+         which meant that whenever both sides scored well (any liquid item
+         with a real range) mag pinned near 1 and the label jumped straight
+         to Strong Buy or Strong Sell on whichever side led, however
+         narrowly. Measured: at 70% through the range the two grades tied at
+         86/86 and it still read "Strong Buy"; three gp higher, at a 7-point
+         deficit, it read "Strong Sell". Buy / Neutral / Sell were
+         unreachable, and switching timeframe re-rolled the near-tie, which
+         is why one item read Strong Sell on 1D, Strong Buy on 5D, Strong
+         Sell on 1M and Strong Buy on 6M at one unchanged price.
+         Now: quality asks "is the better side any good", conviction asks
+         "does it win clearly", and BOTH have to hold for a strong call. A
+         genuine tie is Neutral — which for a mid-range item with a healthy
+         spread is the honest answer, since it flips fine in either
+         direction. */
+      const dir = (b >= s) ? 1 : -1, dom = Math.max(b, s);
+      const quality = Math.max(0, Math.min(1, (dom - 40) / 60));
+      const conviction = Math.max(0, Math.min(1, Math.abs(b - s) / 30));
+      const mag = quality * conviction;
       /* Patient only when the DOMINANT side is itself a wait — a ripe
          "100 Steal Buy" paired with the other side's "Wait for Peak" is an
          act-now Strong Buy, not "not yet". */
@@ -6979,6 +7079,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
         else                      { label = 'Strong Sell'; hue = 'var(--sell-color)'; liveIdx = 0; strong = true; }
         sub = `${dir > 0 ? 'Entry' : 'Exit'} score ${dom} · ${tf}`;
       }
+      whyHtml = ratingWhyHtml(gBuy, gSell, tf);
     }
   }
   /* Track runs BUY (left) → SELL (right) to mirror the page layout: Target
@@ -7004,7 +7105,8 @@ function renderRatingGauge(item, mountEl, opts = {}) {
       '<span class="rg-needle" style="left:' + needleX + '%;--rg-hue:' + hue + '"></span>' +
     '</div>' +
     '<div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span>' +
-      '<span class="rg-sub">' + sub + '</span><span class="rg-end rg-end-sell">Sell</span></div>';
+      '<span class="rg-sub">' + sub + '</span><span class="rg-end rg-end-sell">Sell</span></div>' +
+    whyHtml;
   mountEl.classList.toggle('is-collapsed', collapsed);
   // Rebuilding the mount wipes any child moved into .rg-top — re-place the
   // Share button (landscape only; see placeShareButton) every render.
