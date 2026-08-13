@@ -251,19 +251,29 @@
      --text-muted (#8A8274) if the temperature clash bothers you, it's the
      only place this hue is used. */
   --text-structural: #8A8D9B;
-  --buy-color: #E6C35C;
-  --sell-color: #26A69A;
-  --vol-buy: rgba(230, 195, 92, 0.35);
-  --vol-sell: rgba(38, 166, 154, 0.35);
-  --positive: #26A69A;
+  --buy-color: #E5B842;
+  --sell-color: #10B981;
+  --vol-buy: rgba(229, 184, 66, 0.35);
+  --vol-sell: rgba(16, 185, 129, 0.35);
+  --positive: #10B981;
   --negative: #EF5350;
   --fav-gold: #FFB300;
   --shadow: rgba(0, 0, 0, 0.5);
   /* RuneScape accent palette — used for favorite highlights and headline
      callouts. Picked to read as "in-game GE" without overwhelming the dark
-     trading-style chrome. */
+     trading-style chrome.
+     Two greens, not three, and they are split by JOB rather than by taste:
+     --rs-green is the bright signal green, reserved for things that are
+     shouting (a 5-day-high badge, a row accent, a Prime Flip band), and
+     --rs-green-deep is the same emerald as --positive/--sell-color, used
+     wherever green is just stating a number (profit figures, a live dot, a
+     fresh timestamp). They used to be #4FFF8E and #1FB85C against a TEAL
+     sell colour; once sell became emerald, #1FB85C and the emerald were the
+     same colour two hex codes apart, so the deep token now points at the
+     one green the data tier uses. Keep it that way — a third mid-green
+     buys nothing and just makes "which green means what" unanswerable. */
   --rs-green: #4FFF8E;
-  --rs-green-deep: #1FB85C;
+  --rs-green-deep: #10B981;
   --rs-gold: #FFD24D;
   --rs-gold-deep: #C8841C;
   --rs-parchment: #F2D49B;
@@ -579,7 +589,7 @@ button, input { touch-action: manipulation; }
 .bk-rl { margin: 10px 0 12px; }
 .bk-rl-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .rl-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); margin-right: 7px; vertical-align: 1px; }
-.rl-dot.on { background: var(--rs-green-deep); box-shadow: 0 0 6px rgba(31,184,92,0.7); }
+.rl-dot.on { background: var(--rs-green-deep); box-shadow: 0 0 6px rgba(16,185,129,0.7); }
 .rl-body { margin-top: 8px; font-size: 12px; }
 .rl-hint { color: var(--text-muted); line-height: 1.5; }
 .rl-hint a { color: var(--border-active); }
@@ -688,7 +698,7 @@ button, input { touch-action: manipulation; }
 .mode-pill button { background: transparent; border: none; color: var(--text-muted); padding: 0 8px; cursor: pointer; font-weight: 800; font-size: 11px; border-radius: 4px; height: 100%; letter-spacing: 0.4px; text-transform: uppercase; transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease; }
 .mode-pill button:active { transform: translateY(1px); }
 /* One active treatment for BOTH sides, gold. F2P used to light up green,
-   which collides with what green already means on this page: teal-green is
+   which collides with what green already means on this page: emerald is
    the positive/sell price colour and the 5D-high badge, so a green chip
    sitting in the header read for a beat like price action rather than a
    filter. Gold is the app's existing "you selected this" colour — the
@@ -829,7 +839,7 @@ button, input { touch-action: manipulation; }
    recommendation. Side-tinted background, a colored accent stripe on the
    left, and a soft glow on the number itself so the eye lands here first
    instead of having to scan past the chart and sidebar. Buy / Sell color
-   identity (gold / teal) stays consistent with the rest of the app. The
+   identity (gold / green) stays consistent with the rest of the app. The
    3-side border is deliberately faint (not "light") — .selected below is
    the one that should visibly pop, not both boxes equally. */
 .price-box {
@@ -846,22 +856,22 @@ button, input { touch-action: manipulation; }
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .price-box.low  { border-left-color: var(--buy-color);  background: linear-gradient(90deg, rgba(255,184,0,0.10), rgba(32,28,22,0.85) 35%); }
-.price-box.high { border-left-color: var(--sell-color); background: linear-gradient(90deg, rgba(38,166,154,0.12), rgba(32,28,22,0.85) 35%); }
+.price-box.high { border-left-color: var(--sell-color); background: linear-gradient(90deg, rgba(16, 185, 129,0.12), rgba(32,28,22,0.85) 35%); }
 .price-box.selected { border-color: #fff; border-left-width: 3px; }
 .price-box.low.selected  { border-left-color: var(--buy-color);  box-shadow: 0 0 0 1px rgba(255,184,0,0.25), 0 4px 12px rgba(255,184,0,0.10); }
-.price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(38,166,154,0.30), 0 4px 12px rgba(38,166,154,0.12); }
+.price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(16, 185, 129,0.30), 0 4px 12px rgba(16, 185, 129,0.12); }
 .price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; letter-spacing: 0.4px; }
 .live-val { font-weight: normal; color: #E0D9CB; font-size: 10px; text-transform: none; letter-spacing: 0; }
 .live-age { color: var(--text-muted); }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
-.price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38,166,154,0.30); }
+.price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(16, 185, 129,0.30); }
 .price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
 /* Nudge the target price gp-by-gp without opening the Potential Profit
    breakdown. These used to be two 16x11 arrows stacked in the corner of a
    card with plenty of room to spare — a sniper shot for a 1 gp change, and
    the wrong side of Fitts's law. Now they flank the numeral as square
    buttons, sized up with the card at each breakpoint, tinted to their own
-   side (gold buys, teal sells) so the pair reads as part of the box rather
+   side (gold buys, green sells) so the pair reads as part of the box rather
    than generic browser chrome.
    Still hidden below 641px: a phone price box is 3px-padded and 17px-tall
    text, with no room for a target big enough to be worth tapping, and the
@@ -874,15 +884,15 @@ button, input { touch-action: manipulation; }
   cursor: pointer; user-select: none;
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
-.price-box.low  .price-step { color: rgba(230,195,92,0.75); }
-.price-box.high .price-step { color: rgba(38,166,154,0.85); }
+.price-box.low  .price-step { color: rgba(229, 184, 66,0.75); }
+.price-box.high .price-step { color: rgba(16, 185, 129,0.85); }
 .price-box.low .price-step:hover {
   background: rgba(255,184,0,0.18); border-color: rgba(255,184,0,0.5);
   color: var(--buy-color); box-shadow: 0 0 10px rgba(255,184,0,0.22);
 }
 .price-box.high .price-step:hover {
-  background: rgba(38,166,154,0.18); border-color: rgba(38,166,154,0.5);
-  color: var(--sell-color); box-shadow: 0 0 10px rgba(38,166,154,0.22);
+  background: rgba(16, 185, 129,0.18); border-color: rgba(16, 185, 129,0.5);
+  color: var(--sell-color); box-shadow: 0 0 10px rgba(16, 185, 129,0.22);
 }
 .price-step:active { transform: translateY(1px); }
 .price-step:focus-visible { outline: 2px solid var(--border-active); outline-offset: 1px; }
@@ -1262,7 +1272,7 @@ button, input { touch-action: manipulation; }
 /* Day-tier badges are deliberately PALE so the eye doesn't treat a routine
    intraday wiggle as a major signal. Outlined chip, muted fill, no glow. */
 .hl-badge.high { background: rgba(79,255,142,0.18); color: #6FE8A0; border: 1px solid rgba(79,255,142,0.55); }
-.hl-badge.low  { background: rgba(255,210,77,0.18); color: #E6C35C; border: 1px solid rgba(255,210,77,0.55); }
+.hl-badge.low  { background: rgba(255,210,77,0.18); color: #E5B842; border: 1px solid rgba(255,210,77,0.55); }
 /* 5D tier — fully saturated fill + glow so a real multi-day extreme pops
    sharply against the muted day-tier chips. Bright = notable. */
 .hl-badge.high5d { background: #00FF7A; color: #001a0e; box-shadow: 0 0 10px rgba(0,255,122,0.7); }
@@ -1305,7 +1315,7 @@ button, input { touch-action: manipulation; }
    itself still says which way it moved. Takes priority over the plain 5D
    pulse when both would apply. */
 .wl-item.at-spike-up {
-  border: 2px solid #1FB85C;
+  border: 2px solid #10B981;
   animation: rs-spike-up 1.4s linear infinite;
 }
 .wl-item.at-spike-down {
@@ -1314,10 +1324,10 @@ button, input { touch-action: manipulation; }
 }
 .wl-item.at-spike-up .wl-item-name, .wl-item.at-spike-down .wl-item-name { font-weight: 800; }
 @keyframes rs-spike-up {
-  0%   { border-color: #1FB85C; box-shadow: 0 0 12px rgba(31,184,92,0.6); }
+  0%   { border-color: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
   33%  { border-color: #4FFF8E; box-shadow: 0 0 12px rgba(79,255,142,0.6); }
   66%  { border-color: #FFD24D; box-shadow: 0 0 12px rgba(255,210,77,0.6); }
-  100% { border-color: #1FB85C; box-shadow: 0 0 12px rgba(31,184,92,0.6); }
+  100% { border-color: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
 }
 @keyframes rs-spike-down {
   0%   { border-color: #EF5350; box-shadow: 0 0 12px rgba(239,83,80,0.6); }
@@ -2074,13 +2084,13 @@ button, input { touch-action: manipulation; }
    way the Target Buy / Target Sell boxes do, so they carry the same selected
    treatment (white rim + tinted glow) as those boxes. */
 .fc-price { flex:1; padding:5px 6px; border-radius:8px; text-align:center; font:inherit; color:inherit; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease; }
-.fc-price.buy  { background:rgba(230,195,92,.10); border:1px solid rgba(230,195,92,.30); }
-.fc-price.sell { background:rgba(38,166,154,.10); border:1px solid rgba(38,166,154,.30); }
-.fc-price.buy:hover  { border-color:rgba(230,195,92,.65); }
-.fc-price.sell:hover { border-color:rgba(38,166,154,.65); }
+.fc-price.buy  { background:rgba(229, 184, 66,.10); border:1px solid rgba(229, 184, 66,.30); }
+.fc-price.sell { background:rgba(16, 185, 129,.10); border:1px solid rgba(16, 185, 129,.30); }
+.fc-price.buy:hover  { border-color:rgba(229, 184, 66,.65); }
+.fc-price.sell:hover { border-color:rgba(16, 185, 129,.65); }
 .fc-price.selected { border-color:#fff; }
 .fc-price.buy.selected  { box-shadow:0 0 0 1px rgba(255,184,0,.25), 0 4px 12px rgba(255,184,0,.10); }
-.fc-price.sell.selected { box-shadow:0 0 0 1px rgba(38,166,154,.30), 0 4px 12px rgba(38,166,154,.12); }
+.fc-price.sell.selected { box-shadow:0 0 0 1px rgba(16, 185, 129,.30), 0 4px 12px rgba(16, 185, 129,.12); }
 .fc-price:focus-visible { outline:2px solid var(--border-active); outline-offset:2px; }
 .fc-plabel { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
 .fc-price.buy .fc-plabel { color:var(--buy-color); }
@@ -2173,13 +2183,13 @@ button, input { touch-action: manipulation; }
 .rg-meter { position:relative; padding-bottom:9px; }
 .rg-track { display:flex; gap:2px; height:9px; border-radius:5px; overflow:hidden; }
 .rg-seg { flex:1; transition:filter .2s ease, opacity .2s ease; }
-.rg-ss { background:rgba(38,166,154,.34); } .rg-s { background:rgba(38,166,154,.17); }
+.rg-ss { background:rgba(16, 185, 129,.34); } .rg-s { background:rgba(16, 185, 129,.17); }
 .rg-n  { background:rgba(120,123,134,.16); }
-.rg-b  { background:rgba(230,195,92,.17); } .rg-sb { background:rgba(230,195,92,.34); }
+.rg-b  { background:rgba(229, 184, 66,.17); } .rg-sb { background:rgba(229, 184, 66,.34); }
 .rg-seg.is-live { filter:brightness(1.9) saturate(1.3); box-shadow:inset 0 0 0 1px rgba(255,255,255,.28); }
 /* Dim the inactive segments so the gauge reads as a SCALE with one live
    position (needle + lit segment), not a progress bar filling toward the
-   other side. The colored halves stay: gold = buy half, teal = sell half,
+   other side. The colored halves stay: gold = buy half, green = sell half,
    mirroring the Target Buy / Target Sell boxes. */
 .rg-meter:not(.is-muted) .rg-seg:not(.is-live) { opacity: 0.55; }
 .rg-meter.is-muted .rg-seg { opacity:.4; filter:grayscale(.5); }
@@ -2285,7 +2295,7 @@ button, input { touch-action: manipulation; }
 .qf-refresh .ui-ic { width:13px; height:13px; display:block; }
 /* Per-item auto-summary: a 30-day POSITION meter + one crawlable sentence of
    live market context. Neutral single-hue track (warm obsidian → champagne)
-   deliberately NOT the gold/teal buy-sell language — it shows "where in the
+   deliberately NOT the gold/green buy-sell language — it shows "where in the
    range", not a recommendation, so it can't be confused with the Analyst
    Rating gauge below it. The champagne marker is the only accent. */
 /* 30-day range bar. Portrait stacks
@@ -2784,11 +2794,11 @@ button, input { touch-action: manipulation; }
            those are scoped under a .legend ancestor, which the modal has no
            reason to have. -->
       <div class="glossary-section">Chart markers</div>
-      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dash" style="background:var(--buy-color)"></span><span class="legend-dash" style="background:var(--sell-color)"></span></span><span><strong>Lows</strong> (gold) — insta-sell prints, the price sellers actually accepted. <strong>Highs</strong> (teal) — insta-buy prints, what buyers paid.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dash" style="background:var(--buy-color)"></span><span class="legend-dash" style="background:var(--sell-color)"></span></span><span><strong>Lows</strong> (gold) — insta-sell prints, the price sellers actually accepted. <strong>Highs</strong> (green) — insta-buy prints, what buyers paid.</span></div>
       <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dot" style="background:var(--buy-color)"></span><span class="legend-dot" style="background:var(--sell-color)"></span></span><span><strong>Period Low / Period High</strong> — solid dot with a pale centre. The lowest and highest price across the whole timeframe you're viewing.</span></div>
       <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-ring" style="border-color:var(--buy-color)"></span><span class="legend-ring" style="border-color:var(--sell-color)"></span></span><span><strong>Recent Low / Recent High</strong> — hollow ring. The extreme within just the most recent quarter of the window, so you can tell an old peak from a fresh one.</span></div>
       <div class="glossary-row"><span class="legend-dash" style="background:rgba(244,241,232,0.85)"></span><span><strong>Trend</strong> — the smoothed mid-price line. Follows direction without the print-to-print noise.</span></div>
-      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and teal for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
+      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and green for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
 
       <div class="glossary-section">Analyst Rating (sidebar gauge — the one opinion on the page)</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell; mid-range reads Neutral. Underneath, the item is graded twice — once as a buy, once as a sell — and how far apart those two scores land is what decides how strong the word is. A near-tie means the item flips about as well in either direction, so it reads Neutral rather than picking a side. Expand the gauge to see both scores and the four things that produced them. Because each timeframe has its own price range, the same price can rate differently on 1D and 6M — that's the window changing, not the item. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
@@ -2798,7 +2808,7 @@ button, input { touch-action: manipulation; }
            and recScoreParts exactly — change both together. -->
       <div class="glossary-section">Recommended Flip (the &#9889; card)</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:#4FFF8E;font-size:10px;">SCORE / 100</span><span>How good <em>this particular flip</em> looks right now — not a rating of the item itself. Two things drive it: the net edge after tax (full marks at a 3% edge, and it stops counting above that, so a 12% edge scores the same as a 3% one) and liquidity (full marks at 10M traded a day). If one side hasn't traded recently the score takes a 20% cut. Hover or tap the score on the card to see the exact arithmetic.</span></div>
-      <div class="glossary-row"><span style="display:inline-flex;gap:3px;flex-wrap:wrap;max-width:118px"><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FF9F43">THIN</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFD24D">SOLID</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#1FB85C">STRONG</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#4FFF8E">PRIME</span></span><span><strong>Thin</strong> under 55 · <strong>Solid</strong> 55+ · <strong>Strong</strong> 70+ · <strong>Prime</strong> 85+. Because the finder only ever offers flips it has already checked are viable and fillable, a shown pick starts at 20 points before edge or volume are counted — so in practice you'll see the upper bands far more often than Thin. Tap &#8635; Next to walk down the ranking; the score falls as the picks get thinner.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;flex-wrap:wrap;max-width:118px"><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FF9F43">THIN</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFD24D">SOLID</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#10B981">STRONG</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#4FFF8E">PRIME</span></span><span><strong>Thin</strong> under 55 · <strong>Solid</strong> 55+ · <strong>Strong</strong> 70+ · <strong>Prime</strong> 85+. Because the finder only ever offers flips it has already checked are viable and fillable, a shown pick starts at 20 points before edge or volume are counted — so in practice you'll see the upper bands far more often than Thin. Tap &#8635; Next to walk down the ranking; the score falls as the picks get thinner.</span></div>
       <div class="glossary-section">Target prices</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>Shown on the 1D timeframe — the day-flip bid. 15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>Shown on the 1D timeframe — the day-flip ask. -1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at live insta-buy so we never recommend selling below where buyers are paying right now. For high-volatility items the anchor blends toward 0.5% below the 24h high. If the live spread can't beat the 2% tax, both 1D boxes switch to the day's realized dip/peak (recency-weighted percentiles of the day's prints) — the levels worth placing patient orders at.</span></div>
@@ -3657,8 +3667,8 @@ function updateCalculator() {
      breakdown below still shows the real signed numbers for anyone who digs in. */
   if (totalProfit > 0) {
     headline.textContent = `+${abbreviateNumber(totalProfit)}`;
-    /* Profit green, NOT teal — teal is the Sell color, and the big profit
-       number in teal cross-wired "profit" with "sell side". */
+    /* The data-tier green, not the bright signal green: this is a number
+       being stated, not an alert. */
     headline.style.color = 'var(--rs-green-deep)';
   } else {
     headline.textContent = 'No margin';
@@ -3986,7 +3996,7 @@ async function buildShareCardCanvas() {
   {
     const nameW = g.measureText(selected.name).width;
     const badgeText = selected.members ? 'P2P' : 'F2P';
-    const badgeColor = selected.members ? '#FFB300' : '#1FB85C';
+    const badgeColor = selected.members ? '#FFB300' : '#10B981';
     g.font = '800 14px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     const bw = g.measureText(badgeText).width + 16;
     const bx = 168 + nameW + 12, by = 150;
@@ -4004,7 +4014,7 @@ async function buildShareCardCanvas() {
 
   // Live price, big — carries the ACTION, so it takes the 5D signal's color:
   // gold at a 5-day low (buy opportunity), green at a 5-day high (sell
-  // opportunity). Deliberately not pinned to the sell-teal that Target Sell
+  // opportunity). Deliberately not pinned to the sell-green that Target Sell
   // uses just because liveSellRaw happens to be an insta-sell figure —
   // that's an internal data-model distinction, and this card exists to make
   // the call obvious to someone scrolling past it on Reddit. The subtitle
@@ -4041,7 +4051,7 @@ async function buildShareCardCanvas() {
   const chipY = 290;
   const drawChangeChip = (x, label, val) => {
     if (val == null) return x;
-    const color = val > 0 ? '#1FB85C' : val < 0 ? '#EF5350' : '#8A8274';
+    const color = val > 0 ? '#10B981' : val < 0 ? '#EF5350' : '#8A8274';
     const text = label + ' ' + (val > 0 ? '+' : '') + val.toFixed(1) + '%';
     g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     const w = g.measureText(text).width + 28;
@@ -4080,8 +4090,8 @@ async function buildShareCardCanvas() {
     g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText(value, x, rowY + 38);
   };
-  col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5C158');
-  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A69A');
+  col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5B842');
+  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#10B981');
   /* Potential Profit at a full 4h buy-limit cycle — same figure the
      sidebar's own "Potential Profit" headline shows (limit x margin after
      tax), not the calculator's current inputs, which might be a manual
@@ -4099,7 +4109,7 @@ async function buildShareCardCanvas() {
     const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
     const potentialProfit = marginPerItem * selected.limit;
     const capitalNeeded = recommendedBuy * selected.limit;
-    const profitColor = potentialProfit >= 0 ? '#1FB85C' : '#EF5350';
+    const profitColor = potentialProfit >= 0 ? '#10B981' : '#EF5350';
     // Buy -> Sell -> what it costs -> what it makes: the order you'd ask in.
     col(632, 'Capital Needed', abbreviateNumber(capitalNeeded) + ' gp', '#D9D3C7');
     col(924, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
@@ -4130,7 +4140,7 @@ async function buildShareCardCanvas() {
 
   // Analyst Rating — the actual 5-segment gauge bar + needle, not just the
   // word, mirroring the on-page module exactly (colors pulled straight from
-  // its CSS: teal = sell side, gold = buy side, brighter = live segment).
+  // its CSS: green = sell side, gold = buy side, brighter = live segment).
   const gaugeInfo = shareCardGaugeInfo();
   if (gaugeInfo) {
     /* 468 before the Capital Needed row's explainer line landed at 454 —
@@ -4149,7 +4159,7 @@ async function buildShareCardCanvas() {
     const barX = 48, barY = labelY + 56, barW = W - 96, barH = 14, gap = 3;
     const segW = (barW - gap * 4) / 5;
     /* Left-to-right = STRONG BUY -> BUY -> NEUTRAL -> SELL -> STRONG SELL,
-       i.e. gold on the BUY end, teal on the SELL end, matching both the
+       i.e. gold on the BUY end, green on the SELL end, matching both the
        BUY/SELL labels drawn underneath and the on-page gauge. Easy to get
        backwards: the page's own .rg-seg colors are declared in the opposite
        (strong-sell-first) order and only end up gold-on-the-left because
@@ -4157,8 +4167,8 @@ async function buildShareCardCanvas() {
        draws index 0 leftmost, so it needs the already-reversed order —
        gaugeInfo.liveIdx is likewise a DOM position, not a rating enum, so
        it lines up with this array as written. */
-    const SEG = ['rgba(230,195,92,0.34)', 'rgba(230,195,92,0.17)', 'rgba(120,123,134,0.16)', 'rgba(38,166,154,0.17)', 'rgba(38,166,154,0.34)'];
-    const SEG_LIVE = ['rgba(230,195,92,0.9)', 'rgba(230,195,92,0.65)', 'rgba(160,163,174,0.55)', 'rgba(38,166,154,0.65)', 'rgba(38,166,154,0.9)'];
+    const SEG = ['rgba(229, 184, 66,0.34)', 'rgba(229, 184, 66,0.17)', 'rgba(120,123,134,0.16)', 'rgba(16, 185, 129,0.17)', 'rgba(16, 185, 129,0.34)'];
+    const SEG_LIVE = ['rgba(229, 184, 66,0.9)', 'rgba(229, 184, 66,0.65)', 'rgba(160,163,174,0.55)', 'rgba(16, 185, 129,0.65)', 'rgba(16, 185, 129,0.9)'];
     for (let i = 0; i < 5; i++) {
       const sx = barX + i * (segW + gap);
       roundRectPath(g, sx, barY, segW, barH, 4);
@@ -4212,7 +4222,7 @@ async function buildShareCardCanvas() {
       if (pts.length < 2) return;
 
       const netPct = ((pts[pts.length - 1].v - pts[0].v) / pts[0].v) * 100;
-      const trendColor = netPct > 0.5 ? '#1FB85C' : netPct < -0.5 ? '#EF5350' : '#8A8274';
+      const trendColor = netPct > 0.5 ? '#10B981' : netPct < -0.5 ? '#EF5350' : '#8A8274';
       const trendRgb = netPct > 0.5 ? '38,184,92' : netPct < -0.5 ? '239,83,80' : '138,130,116';
 
       g.fillStyle = '#8A8274';
@@ -4286,7 +4296,7 @@ async function buildShareCardCanvas() {
   g.strokeStyle = '#2B2621';
   g.lineWidth = 1;
   g.beginPath(); g.moveTo(48, H - 78); g.lineTo(W - 48, H - 78); g.stroke();
-  g.fillStyle = '#E6C35C';
+  g.fillStyle = '#E5B842';
   g.font = '800 20px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText('PocketGE', 48, H - 44);
   g.fillStyle = '#8A8274';
@@ -6078,7 +6088,7 @@ function filterSeries(series, period) {
 /* Pick the data source for a given timeframe. We now prefer the wiki
    timeseries endpoints (which track separate insta-buy and insta-sell
    prints) over weirdgloop's daily-consensus history wherever both exist,
-   so the chart shows both gold (buy) and teal (sell) dots instead of a
+   so the chart shows both gold (buy) and green (sell) dots instead of a
    single-color scatter on low-volume items. Requires at least 5 points in
    a source before considering it valid; falls back to anything available. */
 function seriesForView(v, src, lowVol) {
@@ -7074,7 +7084,7 @@ function computeGrade(item, side) {
   /* Verdict colors lean on the RuneScape palette: bright RS-green for the
      elite tier, RS-gold for the middle, scaling down to red. */
   if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#4FFF8E'; }
-  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#1FB85C'; }
+  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#10B981'; }
   else if (grade >= 50) { verdict = side === 'buy' ? 'OK Buy' : 'OK Sell'; color = '#D6CCB2'; }
   else if (grade >= 30) { verdict = side === 'buy' ? 'Weak Buy' : 'Weak Sell'; color = '#FF9F43'; }
   else { verdict = side === 'buy' ? 'Avoid Buying' : 'Avoid Selling'; color = '#EF5350'; }
@@ -7415,7 +7425,7 @@ function recFlipScore(edgePct, vol, lowConf){ return recScoreParts(edgePct, vol,
 const REC_BANDS = [
   { min: 0,  word: 'Thin Flip',   color: '#FF9F43' },
   { min: 55, word: 'Solid Flip',  color: '#FFD24D' },
-  { min: 70, word: 'Strong Flip', color: '#1FB85C' },
+  { min: 70, word: 'Strong Flip', color: '#10B981' },
   { min: 85, word: 'Prime Flip',  color: '#4FFF8E' }
 ];
 function recVerdict(s){
@@ -8474,7 +8484,7 @@ function drawChart(series) {
 
   /* Long-range historical data (1Y / 5Y) is a single daily price — insta-buy
      and insta-sell are equal — so the two-tone buy/sell scheme is meaningless
-     and the gold dots simply paint over the teal, leaving one misleading
+     and the gold dots simply paint over the green, leaving one misleading
      color. Detect that and render both series in a neutral "price" color so
      the chart honestly reads as historical price rather than all-buy. */
   let bothCount = 0, eqCount = 0;
@@ -8488,7 +8498,7 @@ function drawChart(series) {
      ~14px-wide chunks (~60 bars max) makes each bar a readable "period"
      instead. Split by side: LOWVOL (traded at the low price = insta-sells)
      stacks at the bottom in gold, HIGHVOL (traded at the high price =
-     insta-buys) stacks above in teal — so the bar shows both total volume
+     insta-buys) stacks above in green — so the bar shows both total volume
      and which side drove it. Colors match the price dots directly above
      so the eye reads them as the same series, not as new information.
      Hoisted into a function so it can run either BEFORE the price series
@@ -8516,7 +8526,7 @@ function drawChart(series) {
     const groupPx = groupSize * stepX;
     const barWidth = Math.max(2, groupPx * 0.72);
     const gapPx = 1; // hairline gap between the two-side stack, so they read as separate
-    const gold = `rgba(230, 195, 92, ${alpha})`, teal = `rgba(38, 166, 154, ${alpha})`;
+    const gold = `rgba(229, 184, 66, ${alpha})`, green = `rgba(16, 185, 129, ${alpha})`;
     for (const g of groups) {
       const totalH = ((g.sumLow + g.sumHigh) / maxGroupVol) * h_vol;
       if (totalH < 0.5) continue;
@@ -8526,20 +8536,20 @@ function drawChart(series) {
       const baseY = y0_vol + h_vol;
       if (singlePrice) {
         /* Single-price historical (5Y): the "insta-sell / insta-buy" split
-           is meaningless, so paint one unified teal bar matching the price
+           is meaningless, so paint one unified green bar matching the price
            line/area above. Prevents the all-gold band that looked broken. */
-        ctx.fillStyle = teal;
+        ctx.fillStyle = green;
         ctx.fillRect(x, baseY - Math.max(lowH, highH, totalH), barWidth, Math.max(lowH, highH, totalH));
       } else {
-        /* Insta-sells (yellow) at the bottom, insta-buys (teal) above — same
-           gold/teal identity as the price dots the volume corresponds to. */
+        /* Insta-sells (gold) at the bottom, insta-buys (green) above — same
+           gold/green identity as the price dots the volume corresponds to. */
         if (lowH > 0.3) {
           ctx.fillStyle = gold;
           ctx.fillRect(x, baseY - lowH, barWidth, lowH);
         }
         if (highH > 0.3) {
           const stackedY = baseY - lowH - (lowH > 0.3 ? gapPx : 0) - highH;
-          ctx.fillStyle = teal;
+          ctx.fillStyle = green;
           ctx.fillRect(x, stackedY, barWidth, highH);
         }
       }
@@ -8565,7 +8575,7 @@ function drawChart(series) {
     /* The band between buy-low and sell-high IS the margin, drawn over time —
        the app's hero metric. Kept subtle but actually visible now (was 0.07,
        basically invisible). */
-    ctx.fillStyle = "rgba(38, 166, 154, 0.13)";
+    ctx.fillStyle = "rgba(16, 185, 129, 0.13)";
     let segStart = -1;
     for (let i = 0; i <= L.length; i++) {
       const valid = i < L.length && LO[i] != null && HI[i] != null;
@@ -8603,7 +8613,7 @@ function drawChart(series) {
        Blobbing is a density problem and a fixed radius cannot solve it: at
        1D the points sit ~3.3px apart, so a 2.5px radius draws 5px-wide dots
        that overlap by 1.7px each and fuse into one solid ribbon — worst on
-       the teal highs, which cluster tighter than the lows. Sizing at 0.42x
+       the green highs, which cluster tighter than the lows. Sizing at 0.42x
        the spacing keeps the diameter just inside the gap, so dense stretches
        read as separate prints again.
        The clamp is what keeps this honest: an earlier version scaled freely
@@ -8636,9 +8646,9 @@ function drawChart(series) {
   }
   /* Single-price historical (1Y/5Y where buy === sell daily) → SAME visual
      language as the intraday scatter, so switching timeframes doesn't feel
-     like landing on a different product: teal dots at the regular dot size
+     like landing on a different product: green dots at the regular dot size
      (sampled to the same on-screen cadence — daily points at 0.5 px apart
-     would smear into a rope), a faint teal thread underneath carrying every
+     would smear into a rope), a faint green thread underneath carrying every
      spike between sampled dots, the usual soft band-tone underfill, and the
      shared white EMA trend on top. Period high/low halos anchor extremes. */
   if (singlePrice) {
@@ -8648,11 +8658,11 @@ function drawChart(series) {
        (0.13 → fade), not the heavy 0.28 area fill that read off-brand. */
     const grad = ctx.createLinearGradient(0, y0, 0, y0 + h_price);
     /* Halved. On a sharp move the band between lows and highs gets tall, and
-       at 0.13 that column read as a solid teal wall that swallowed the dots
+       at 0.13 that column read as a solid green wall that swallowed the dots
        and gridlines behind it — the fill is meant to say "this is the traded
        band", not to hide what's inside it. */
-    grad.addColorStop(0, 'rgba(38, 166, 154, 0.065)');
-    grad.addColorStop(1, 'rgba(38, 166, 154, 0.005)');
+    grad.addColorStop(0, 'rgba(16, 185, 129, 0.065)');
+    grad.addColorStop(1, 'rgba(16, 185, 129, 0.005)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     let started = false, firstX = 0, lastX = 0;
@@ -8671,7 +8681,7 @@ function drawChart(series) {
     }
     /* Faint thread through every print — keeps spikes honest between the
        sampled dots without reading as a bold "line chart" line. */
-    ctx.strokeStyle = 'rgba(38, 166, 154, 0.35)'; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)'; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     started = false;
     for (let i = 0; i < HI.length; i++) {
@@ -8767,7 +8777,7 @@ function drawChart(series) {
        5Y/1Y: green = a HIGH, gold = a LOW; solid white-centre dot = a PERIOD
        extreme, hollow ring = a RECENT extreme. (Previously the recent rings
        went neutral white on single-price views while the period dots stayed
-       teal/gold — which read as three random colors.) */
+       green/gold — which read as three random colors.) */
     ring(recHiIdx, HI, sellColor);
     ring(recLoIdx, LO, buyColor);
     ctx.restore(); // end price-area clip
