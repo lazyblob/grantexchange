@@ -283,11 +283,13 @@
      (9 / 10.5 / 11 / 13px), two colours, two weights and three tracking
      values, with icons on only three of the five. Read top to bottom that
      looked like a hierarchy nobody designed. These tokens are the single
-     source; change them here, not at the call sites. */
+     source; change them here, not at the call sites.
+     No leading glyphs: five 12px line icons stacked down a 330px column
+     read as decoration competing with the accent stripe that already names
+     each section, so the stripe does that job alone. */
   --hdr-size: 11px;
   --hdr-weight: 800;
   --hdr-track: 0.7px;
-  --hdr-icon: 12px;
 }
 * { box-sizing: border-box; }
 /* Body is allowed to scroll naturally so the footer (with the suggest-a-
@@ -1055,16 +1057,14 @@ button, input { touch-action: manipulation; }
    green figure beside it carries the signal.
    Shares the ONE sidebar-header recipe (see --hdr-* below): every section
    label in the sidebar is 11px / 800 / 0.7px / --text-structural / upper,
-   with a 12px leading icon. They used to be four different sizes (9, 10.5,
-   11, 13) in two colours with icons on only three of the five, which made a
-   column of equal-rank section names read like a ranking. */
+   They used to be four different sizes (9, 10.5, 11, 13) in two colours,
+   which made a column of equal-rank section names read like a ranking. */
 .calc-headline-label {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: var(--hdr-size); font-weight: var(--hdr-weight);
   color: var(--text-structural); text-transform: uppercase;
   letter-spacing: var(--hdr-track);
 }
-.calc-headline-label .ui-ic { width: var(--hdr-icon); height: var(--hdr-icon); }
 .calc-headline-sub { font-size: 9px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .calc-headline-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .calc-headline .res-profit { font-size: 16px; font-weight: bold; white-space: nowrap; }
@@ -1098,17 +1098,22 @@ button, input { touch-action: manipulation; }
   font-size: var(--hdr-size); font-weight: var(--hdr-weight); letter-spacing: var(--hdr-track);
   text-transform: uppercase;
   color: var(--text-structural);
-  /* Soft top-lit gradient (raised panel) instead of a flat fill, a thin inner
-     highlight for a beveled edge, and a faint wash of the section's accent
-     colour bleeding in from the left stripe — modern depth, still on-brand. */
-  background: linear-gradient(180deg, #312b23 0%, #231e18 100%);
+  /* Flat panel fill, NOT a raised chip. This used to be a top-lit gradient
+     (#312b23 -> #231e18) with a bevel highlight and a drop shadow, which
+     made Favorites and Find Opportunities read as bolder and more important
+     than Potential Profit, Analyst Rating and Recommended Flip — three
+     headers of identical rank that are plain text on the panel. Same font
+     the whole time; the weight people saw was the chrome around it.
+     The fill has to stay OPAQUE because this header is sticky and list rows
+     scroll underneath it, but it can be the panel's own colour, which is
+     exactly what sits behind the other three. Section identity now rides
+     entirely on the left accent stripe. */
+  background: var(--bg-panel);
   border-left: 3px solid var(--cat-accent);
   border-bottom: 1px solid #141210;
   cursor: pointer;
   display: flex; justify-content: space-between; align-items: center;
-  box-shadow: inset 6px 0 20px -15px var(--cat-accent),
-              inset 0 1px 0 rgba(255,255,255,0.05),
-              0 2px 6px -3px rgba(0,0,0,0.6);
+  box-shadow: inset 6px 0 20px -15px var(--cat-accent);
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 /* Per-section accent colour drives the left stripe AND the left-edge glow. */
@@ -1169,7 +1174,7 @@ button, input { touch-action: manipulation; }
 /* Favorites list-switcher — TradingView-watchlist-header style: lives
    INSIDE the section title itself (no separate row, no collapse chevron —
    there's never a reason to collapse Favorites, only to switch which list
-   is showing). The title's icon is followed by a "[list name] ⌄" button
+   is showing). The title carries a "[list name] ⌄" button
    that opens a dropdown of every list; a "+" replaces the chevron slot on
    the right to create one. */
 /* Its dropdown menu can visually overflow below the title's own box, into
@@ -1332,13 +1337,13 @@ button, input { touch-action: manipulation; }
    notification badge demanding to be dismissed, and these rows sit on
    screen for as long as the list is open. */
 .wl-item.at-high5d::before, .wl-item.at-low5d::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 58px;
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 40px;
   z-index: 0; pointer-events: none;
   background: linear-gradient(90deg,
-    rgba(var(--sig-glow), 0.30) 0%,
-    rgba(var(--sig-glow), 0.10) 45%,
+    rgba(var(--sig-glow), 0.38) 0%,
+    rgba(var(--sig-glow), 0.13) 50%,
     rgba(var(--sig-glow), 0) 100%);
-  box-shadow: inset 6px 0 14px -8px rgba(var(--sig-glow), 0.9);
+  box-shadow: inset 7px 0 16px -9px rgba(var(--sig-glow), 1);
   animation: rs-glow-breathe 4.6s ease-in-out infinite;
 }
 /* The wash is a positioned child, so without this it would paint over the
@@ -1500,12 +1505,16 @@ button, input { touch-action: manipulation; }
    so it runs the whole width and continues under the ⋯. */
 .fav-head-host {
   position: relative; display: flex; align-items: center;
-  background: linear-gradient(180deg, #312b23 0%, #231e18 100%);
+  /* Carries the Favorites header's decoration because .category-title inside
+     it is stripped bare (see below), so this has to stay in lockstep with
+     the .category-title rule — it is the same bar, drawn one level up. Flat
+     panel fill, no bevel, no drop shadow: as a raised gradient chip this was
+     the single loudest header in the sidebar, which is what made FAVORITES
+     look heavier than its four peers despite identical type. */
+  background: var(--bg-panel);
   border-left: 3px solid var(--fav-gold, #FFB300);
   border-bottom: 1px solid #141210;
-  box-shadow: inset 6px 0 20px -15px var(--fav-gold, #FFB300),
-              inset 0 1px 0 rgba(255,255,255,0.05),
-              0 2px 6px -3px rgba(0,0,0,0.6);
+  box-shadow: inset 6px 0 20px -15px var(--fav-gold, #FFB300);
 }
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
 .fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
@@ -1845,7 +1854,6 @@ button, input { touch-action: manipulation; }
 .icon-btn .ui-ic { width: 15px; height: 15px; display: block; }
 .cat-title-label { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
 .fc-kicker { display: inline-flex; align-items: center; gap: 5px; }
-.fc-kicker .ui-ic { width: var(--hdr-icon); height: var(--hdr-icon); }
 .find-flip-btn .ff-bolt .ui-ic { width: 16px; height: 16px; display: block; }
 .lf-emoji .ui-ic { width: 22px; height: 22px; color: var(--border-active); }
 
@@ -2184,18 +2192,10 @@ button, input { touch-action: manipulation; }
      rather than sitting at an exact fit and ellipsizing on someone's
      device. The chip is still a comfortable target next to Next. */
   .flip-card.collapsed .fc-collapse { width: 18px; height: 18px; }
-  /* "Potential Profit" is the longest of the five section names, and in this
-     234px sidebar its leading icon costs exactly the 17px that used to be
-     its only slack — without this it wrapped to two lines while its four
-     peers stayed on one, which is the inconsistency the icon was added to
-     fix. Buy the 17px back from chrome around the value rather than from the
-     label: a 4px gap instead of 8, an 18px caret chip instead of 22, and a
-     14px figure instead of 16 — still the largest number in this sidebar
-     (the flip card's own values run 13px here). */
+  /* "Potential Profit" is the longest of the five section names and clears
+     this 234px sidebar by ~2px, so pin it to one line rather than let a
+     future tweak silently wrap it while its four peers stay single-line. */
   .calc-headline-label { white-space: nowrap; }
-  .calc-headline-right { gap: 4px; }
-  .calc-headline .calc-caret { width: 18px; height: 18px; }
-  .calc-headline .res-profit { font-size: 14px; }
   .flip-card .fc-prices { margin: 4px 0; gap: 4px; }
   .flip-card .fc-price { padding: 3px 5px; }
   .flip-card .fc-pval { font-size: 13px; }
@@ -2215,7 +2215,6 @@ button, input { touch-action: manipulation; }
   font-size:var(--hdr-size); font-weight:var(--hdr-weight); letter-spacing:var(--hdr-track);
   text-transform:uppercase; color:var(--text-structural);
 }
-.rg-eyebrow .ui-ic { width:var(--hdr-icon); height:var(--hdr-icon); }
 .rg-top .pg-help { margin-left:0; }
 /* Share button (see placeShareButton) — icon-only, pushed to the far
    right past the "?" glossary chip, on every layout. */
@@ -2523,7 +2522,7 @@ button, input { touch-action: manipulation; }
         </div>
         <div class="rg-wrap" style="position:relative;margin:0">
           <span class="ld-cnum">3</span>
-          <div class="rg-top"><span class="rg-eyebrow"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>Analyst Rating</span></div>
+          <div class="rg-top"><span class="rg-eyebrow">Analyst Rating</span></div>
           <div class="rg-label is-strong" style="color:var(--buy-color)">Strong Buy</div>
           <div class="rg-meter">
             <div class="rg-track">
@@ -3438,7 +3437,6 @@ const UI_ICONS = {
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   bellOff: '<path d="M8.7 3A6 6 0 0 1 18 8c0 4.5 1.2 7 2.3 8.5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" x2="22" y1="2" y2="22"/>',
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
-  gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
   chev: '<path d="m6 9 6 6 6-6"/>',
   crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.735H5.81a1 1 0 0 1-.957-.735L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
   loader: '<line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/>',
@@ -3791,7 +3789,7 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
   $("#sideModule").innerHTML = `
     <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
       <div class="calc-headline-left">
-        <span class="calc-headline-label">${uiIcon('coins')}Potential Profit</span>
+        <span class="calc-headline-label">Potential Profit</span>
         <span class="calc-headline-sub">${subText}</span>
       </div>
       <div class="calc-headline-right">
@@ -5741,13 +5739,13 @@ function renderWatchlist() {
     /* Display name follows whichever list is active (e.g. "Long holds"),
        but the collapse-state key stays fixed so switching lists doesn't
        reset whether the section is expanded. */
-    { name: activeFavList().name, key: "Favorites", icon: "star", className: "fav-title", entries: favEntries(favsSorted), alwaysShow: true },
-    { name: "High Vol Margins", icon: "coins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea"), pageUrl: "/high-vol-margins.html" },
-    { name: "Low Vol Margins", icon: "gem", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea"), pageUrl: "/low-vol-margins.html" },
-    { name: "Reliable 14D Margins", icon: "calendar", className: "steady-title", entries: steadyEntries, scan: "steady", pageUrl: "/reliable-14d-margins.html" },
-    { name: "Biggest Losers (24H)", icon: "down", className: "fall-title", entries: moverEntries(losers), pageUrl: "/biggest-losers-24h.html" },
-    { name: "At 5D Highs", icon: "trendUp", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-highs.html" },
-    { name: "At 5D Lows", icon: "trendDown", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-lows.html" }
+    { name: activeFavList().name, key: "Favorites", className: "fav-title", entries: favEntries(favsSorted), alwaysShow: true },
+    { name: "High Vol Margins", className: "margin-title", entries: marginEntries(marginHigh1d, "ea"), pageUrl: "/high-vol-margins.html" },
+    { name: "Low Vol Margins", className: "marginlo-title", entries: marginEntries(marginLow1d, "ea"), pageUrl: "/low-vol-margins.html" },
+    { name: "Reliable 14D Margins", className: "steady-title", entries: steadyEntries, scan: "steady", pageUrl: "/reliable-14d-margins.html" },
+    { name: "Biggest Losers (24H)", className: "fall-title", entries: moverEntries(losers), pageUrl: "/biggest-losers-24h.html" },
+    { name: "At 5D Highs", className: "high-title", entries: plainEntries(dayHighs.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-highs.html" },
+    { name: "At 5D Lows", className: "low-title", entries: plainEntries(dayLows.slice(0, 30)), scan: "fived", pageUrl: "/at-5d-lows.html" }
   ];
 
   const fragment = document.createDocumentFragment();
@@ -5795,7 +5793,6 @@ function renderWatchlist() {
       const flsMenuOpen = flsCreatingNew || flsEditingListId != null;
       titleDiv.innerHTML = `
         <span class="cat-title-label">
-          ${uiIcon(group.icon)}
           <button type="button" class="fls-current${flsMenuOpen ? ' open' : ''}" id="flsCurrent" aria-haspopup="true" aria-expanded="${flsMenuOpen ? 'true' : 'false'}">
             <span class="fls-name">${escapeHtml(group.name)}</span>
             <span class="fls-caret">${uiIcon('chev')}</span>
@@ -5805,7 +5802,7 @@ function renderWatchlist() {
         </span>
         <div class="fls-menu${flsMenuOpen ? ' open' : ''}" id="flsMenu" role="menu">${listMenuHtml}</div>`;
     } else {
-      titleDiv.innerHTML = `<span class="cat-title-label">${uiIcon(group.icon)}${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+      titleDiv.innerHTML = `<span class="cat-title-label">${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
     }
     const listDiv = document.createElement("div");
     listDiv.className = `category-list ${isGroupOpen ? "" : "collapsed"}`;
@@ -5926,7 +5923,7 @@ function renderWatchlist() {
   findOppsDiv.className = "category-group";
   const findOppsTitle = document.createElement("div");
   findOppsTitle.className = "category-title find-opps-title";
-  findOppsTitle.innerHTML = `<span class="cat-title-label">${uiIcon('search')}Find Opportunities</span><span class="cat-title-right"><span class="cat-chevron${findOppsOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
+  findOppsTitle.innerHTML = `<span class="cat-title-label">Find Opportunities</span><span class="cat-title-right"><span class="cat-chevron${findOppsOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
   const findOppsBody = document.createElement("div");
   findOppsBody.className = `category-list find-opps-body${findOppsOpen ? '' : ' collapsed'}`;
   findOppsTitle.onclick = () => {
@@ -7337,7 +7334,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
   mountEl.hidden = false;
   const collapsed = ratingCollapsed();
   mountEl.innerHTML =
-    '<div class="rg-top"><span class="rg-eyebrow">' + uiIcon('gauge') + 'Analyst Rating</span>' +
+    '<div class="rg-top"><span class="rg-eyebrow">Analyst Rating</span>' +
       '<span class="pg-help" title="' + tip + '" role="button" aria-label="What does the Analyst Rating mean?">?</span>' +
       '<button type="button" class="rg-toggle calc-caret' + (collapsed ? ' closed' : '') + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" ' +
         'aria-label="' + (collapsed ? 'Expand' : 'Collapse') + ' Analyst Rating details">' + uiIcon('chev') + '</button></div>' +
@@ -7632,7 +7629,7 @@ function renderFlipCard(rec){
   h.innerHTML = `
     <div class="flip-card${collapsed ? ' collapsed' : ''}" role="button" tabindex="0" data-id="${rec.id}" aria-label="Open ${rec.item.name} — recommended flip">
       <div class="fc-head">
-        <span class="fc-kicker">${uiIcon('zap')}<span class="fc-kicker-txt">Recommended flip</span></span>
+        <span class="fc-kicker"><span class="fc-kicker-txt">Recommended flip</span></span>
         <div class="fc-head-ctrls">
           <button type="button" class="fc-next" id="btnNextFlip" title="Show another flip">↻ Next</button>
           <button type="button" class="fc-collapse calc-caret${collapsed ? ' closed' : ''}" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
@@ -10239,7 +10236,7 @@ if ('serviceWorker' in navigator) {
   <figure class="ex">
     <div class="ex-frame ex-frame-pad">
       <div class="flip-card" style="cursor:default">
-        <div class="fc-head"><span class="fc-kicker"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="fc-kicker-txt">Recommended Flip</span></span></div>
+        <div class="fc-head"><span class="fc-kicker"><span class="fc-kicker-txt">Recommended Flip</span></span></div>
         <div class="fc-body">
           <img class="fc-icon" src="https://static.runelite.net/cache/item/icon/1654.png" alt="" loading="lazy">
           <div class="fc-main">
