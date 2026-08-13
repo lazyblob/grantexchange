@@ -286,9 +286,15 @@
      source; change them here, not at the call sites.
      No leading glyphs: five 12px line icons stacked down a 330px column
      read as decoration competing with the accent stripe that already names
-     each section, so the stripe does that job alone. */
+     each section, so the stripe does that job alone.
+     700, not 800: at 11px uppercase with 0.7px tracking a label is already
+     unmistakably a header, and at 800 these five were the heaviest text in
+     the sidebar — heavier than the item names and prices they exist to
+     label. On a 3x phone screen that overshoot is where "everything is
+     bold" comes from; structural chrome should sit under its data, not on
+     top of it. */
   --hdr-size: 11px;
-  --hdr-weight: 800;
+  --hdr-weight: 700;
   --hdr-track: 0.7px;
 }
 * { box-sizing: border-box; }
@@ -1284,12 +1290,10 @@ button, input { touch-action: manipulation; }
   background: rgba(255,255,255,0.03);
   border-left: 3px solid rgba(79,255,142,0.55);
 }
-.wl-item.at-high .wl-item-name { font-weight: 700; }
 .wl-item.at-low {
   background: rgba(255,255,255,0.03);
   border-left: 3px solid rgba(255,210,77,0.55);
 }
-.wl-item.at-low .wl-item-name { font-weight: 700; }
 /* Selected at-high / at-low rows keep their green/gold gradient + the white
    .active outline (painted on top) carries the "selected" cue. */
 /* Trimmed: at 8px/5px padding this chip was eating enough of the row that
@@ -1310,20 +1314,18 @@ button, input { touch-action: manipulation; }
    live" motion survives without the whole row breathing. */
 /* 5D tier: same neutral glass, same 3px bar — but the bar runs at FULL
    signal colour where the day tier's is 55% alpha, and only this tier
-   pulses. Tier is read off the bar's intensity, not off how much of the row
-   is stained. */
+   pulses. Tier is read off the bar's intensity and the badge, not off how
+   much of the row is stained and not off the name's weight. */
 .wl-item.at-high5d {
   background: rgba(255,255,255,0.03);
   border-left: 3px solid #00FF7A;
   --sig-glow: 0,255,122;
 }
-.wl-item.at-high5d .wl-item-name { font-weight: 800; }
 .wl-item.at-low5d {
   background: rgba(255,255,255,0.03);
   border-left: 3px solid #FFB300;
   --sig-glow: 255,179,0;
 }
-.wl-item.at-low5d .wl-item-name { font-weight: 800; }
 /* The glow is a real light source now, not a shadow.
    It used to be `inset 5px 0 8px -5px` breathing to `9px 0 12px -5px` — a
    -5px spread on an 8px blur leaves about three visible pixels of haze
@@ -1370,7 +1372,6 @@ button, input { touch-action: manipulation; }
   border: 2px solid #EF5350;
   animation: rs-spike-down 2.6s linear infinite;
 }
-.wl-item.at-spike-up .wl-item-name, .wl-item.at-spike-down .wl-item-name { font-weight: 800; }
 @keyframes rs-spike-up {
   0%   { border-color: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
   33%  { border-color: #4FFF8E; box-shadow: 0 0 12px rgba(79,255,142,0.6); }
@@ -1392,12 +1393,21 @@ button, input { touch-action: manipulation; }
 }
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1 1 auto; min-width: 0; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
-/* One colour for every item name, flagged or not. Names used to shift to
-   green / gold / pale-mint depending on why a row was highlighted, which
-   made the list's most-scanned column the least consistent thing in it —
-   and put the item's identity in the same colour language as its signal.
-   Weight still steps up on a flagged row; that reads without recolouring. */
-.wl-item-name { color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; min-width: 0; flex: 0 1 auto; }
+/* One colour AND one weight for every item name, flagged or not. Names used
+   to shift to green / gold / pale-mint depending on why a row was
+   highlighted; that went first, because it made the list's most-scanned
+   column the least consistent thing in it and put the item's identity in
+   the same colour language as its signal.
+   Weight was left stepping up on a flagged row, and it turned out to be the
+   same mistake one axis over: plain rows at 500 against flagged rows at 800
+   is a 300-unit jump, so a six-row list rendered as three bold names and
+   three thin ones and looked ragged rather than ranked. The tier is already
+   said three times — the coloured accent bar, the breathing glow, and the
+   5D badge sitting right after the name. It does not need a fourth voice,
+   least of all the one that costs the column its evenness.
+   600, not the old 500: with nothing else varying, the names carry the
+   scan on their own. */
+.wl-item-name { color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; min-width: 0; flex: 0 1 auto; }
 .wl-item-left .hl-badge { margin-left: 2px; }
 /* Fixed-width, right-aligned data columns so values stack into clean
    columns across every row (TradingView style). Tabular figures keep digits
