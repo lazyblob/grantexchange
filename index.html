@@ -2102,9 +2102,17 @@ button, input { touch-action: manipulation; }
 .rg-why .rw-p { font-size:9.5px; font-weight:800; color:var(--text-main); text-align:right; font-variant-numeric:tabular-nums; }
 .rg-why .rw-p em { font-style:normal; font-weight:600; color:var(--text-muted); }
 .rg-why-foot { margin-top:7px; font-size:9px; color:var(--text-muted); line-height:1.5; }
+/* The reason text is the first thing to wrap on a narrow column, so give it
+   the room and let the bar go. Keyed off the SIDEBAR's width, not the
+   viewport's: coarse landscape is an 844px-wide window with a 234px column,
+   so a viewport media query missed exactly the layout that needed this most
+   and left "0% up the 1D range (2,440-2,500)" wrapping to three lines
+   beside a decorative bar. */
+@container wl (max-width: 300px) {
+  .rg-why-row { grid-template-columns:50px 1fr 44px; }
+  .rg-why .rw-bar { display:none; }
+}
 @media (max-width: 640px) {
-  /* The reason text is the first thing to wrap on a narrow column, so give
-     it the room and let the bar go. */
   .rg-why-row { grid-template-columns:50px 1fr 44px; }
   .rg-why .rw-bar { display:none; }
 }
@@ -3228,22 +3236,55 @@ let groupOpenStates = {
 /* Favorites sort — 'manual' respects the user's drag order (and is the only
    mode where the drag handle appears); the others sort the displayed list
    without mutating the saved order. Persisted. */
-let favSort = (() => { try { return localStorage.getItem('ge_favSort') || 'manual'; } catch (e) { return 'manual'; } })();
-/* Sort options for favorites. Margin / Volume were added when the
-   col-toggles bar grew sort labels next to the ⋯ menu — the buttons
-   set favSort directly. */
-const FAV_SORT_LABELS = { manual: 'Manual', price: 'Price', change: '24h %', margin: 'Margin', volume: 'Vol', name: 'A–Z' };
-/* Column visibility — TradingView-style. Every list row builds the same meta
-   triplet (change · ea · vol) so the sidebar is finally consistent. Users
-   toggle which columns they want via pills at the top of the watchlist; the
-   choice persists to localStorage. All three default to ON. */
-let columnPrefs = (() => {
+let favSort = (() => {
   try {
-    const stored = JSON.parse(localStorage.getItem('ge_colPrefs') || '{}');
-    return { change: stored.change !== false, margin: stored.margin !== false, volume: stored.volume !== false };
-  } catch (e) { return { change: true, margin: true, volume: true }; }
+    const v = localStorage.getItem('ge_favSort') || 'manual';
+    /* 'type' was only reachable from the columns menu, which no longer
+       carries sort controls — without this, anyone stored on it would see an
+       order with nothing on screen explaining or undoing it. */
+    if (v === 'type') { localStorage.setItem('ge_favSort', 'manual'); return 'manual'; }
+    return v;
+  } catch (e) { return 'manual'; }
 })();
-function saveColPrefs() { try { localStorage.setItem('ge_colPrefs', JSON.stringify(columnPrefs)); } catch (e) {} }
+/* Column visibility — TradingView-style. Every list row builds the same meta
+   triplet (change · ea · vol) so the sidebar is consistent.
+   Defaults and storage are PER LAYOUT. In coarse landscape the sidebar is
+   234px wide, under the 264px container query that already drops the Vol
+   column — so Vol sat ticked in the menu while nothing rendered, and ticking
+   it did nothing. Landscape now starts at price + 24h change, which is what
+   actually fits; portrait and desktop keep all three and keep the original
+   storage key, so existing choices survive. */
+const TIGHT_COLS_MQ = '(max-height: 600px) and (orientation: landscape) and (pointer: coarse)';
+const isTightCols = () => window.matchMedia(TIGHT_COLS_MQ).matches;
+const colPrefsKey = () => isTightCols() ? 'ge_colPrefs_land' : 'ge_colPrefs';
+const colPrefsDefaults = () => isTightCols()
+  ? { change: true, margin: false, volume: false }
+  : { change: true, margin: true, volume: true };
+function loadColPrefs() {
+  const d = colPrefsDefaults();
+  try {
+    const raw = localStorage.getItem(colPrefsKey());
+    if (!raw) return { ...d };
+    const st = JSON.parse(raw);
+    /* ?? not !== false: a stored `false` must win, but a MISSING key has to
+       fall through to this layout's default rather than to a blanket true. */
+    return { change: st.change ?? d.change, margin: st.margin ?? d.margin, volume: st.volume ?? d.volume };
+  } catch (e) { return { ...d }; }
+}
+let columnPrefs = loadColPrefs();
+function saveColPrefs() { try { localStorage.setItem(colPrefsKey(), JSON.stringify(columnPrefs)); } catch (e) {} }
+/* Rotating the phone crosses the breakpoint, so re-read that layout's own
+   choice instead of carrying the other one across. */
+(function watchColLayout() {
+  const mq = window.matchMedia(TIGHT_COLS_MQ);
+  const onChange = () => {
+    columnPrefs = loadColPrefs();
+    if (typeof renderColHeader === 'function') renderColHeader();
+    if (typeof renderWatchlist === 'function') renderWatchlist();
+  };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+})();
 
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
@@ -3412,48 +3453,6 @@ function taxOf(s, exempt) {
 function netKept(b, s, exempt) { return s - taxOf(s, exempt) - b; }
 function calculateTax(price, id) { return taxOf(price, isTaxExempt(id)); }
 function emptySeries() { return { labels: [], low: [], high: [], lowVol: [], highVol: [] }; }
-
-/* Item-name -> human category label ("Runes", "Ores & Bars", …), built from
-   categories.json (a same-origin static file, not the wiki API — every
-   tradeable item isn't in it, only the curated groups it lists). Backs the
-   Favorites "sort by item type" option. Loaded once, fire-and-forget, so
-   boot() never blocks on it. */
-let itemCategoryByName = null;
-async function loadCategories() {
-  try {
-    const cats = await jget('categories.json');
-    const map = new Map();
-    for (const [key, names] of Object.entries(cats)) {
-      const label = key.replace(/-and-/g, ' & ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      for (const n of names) {
-        const k = String(n).toLowerCase();
-        if (!map.has(k)) map.set(k, label);
-      }
-    }
-    itemCategoryByName = map;
-  } catch (e) { itemCategoryByName = new Map(); }
-}
-/* categories.json is a curated list — it has no "jewelry" category at all,
-   so every ring/necklace/amulet/bracelet fell into "uncategorized" and just
-   alphabetized by full name instead of grouping by type (all rings
-   together, all necklaces together). Fall back to a simple name-suffix
-   match for exactly that gap; categories.json is still tried first since
-   it's the accurate, curated source for what it covers. */
-const TYPE_FALLBACK_PATTERNS = [
-  [/\bring(?:\s*\(.+\))?$/i, 'Rings'],
-  [/\bnecklace(?:\s*\(.+\))?$/i, 'Necklaces'],
-  [/\bamulet(?:\s*\(.+\))?$/i, 'Amulets'],
-  [/\bbracelet(?:\s*\(.+\))?$/i, 'Bracelets']
-];
-function fallbackCategory(name) {
-  for (const [re, label] of TYPE_FALLBACK_PATTERNS) { if (re.test(name)) return label; }
-  return null;
-}
-function categoryOf(item) {
-  if (!item) return null;
-  const known = itemCategoryByName ? itemCategoryByName.get(item.name.toLowerCase()) : null;
-  return known || fallbackCategory(item.name) || null;
-}
 
 /* Daily traded volume for an item — prefers the bulk /volumes endpoint,
    falls back to summing the 24h high/low print volumes. Drives both the
@@ -5221,8 +5220,6 @@ function buildColHeader(host) {
       <label class="col-menu-row"><input type="checkbox" data-col="change"><span><b class="col-menu-tag">Chg%</b> 24h change</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="margin"><span><b class="col-menu-tag">Ea</b> Margin (after tax)</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="volume"><span><b class="col-menu-tag">Vol</b> Daily volume</span></label>
-      <div class="col-menu-section">Sort favorites by</div>
-      <div class="col-menu-row col-menu-sort ch-sortable" data-sort="type" role="button" tabindex="0" title="Sort favorites by item type"><span>Item type</span><span class="ch-arrow"></span></div>
     </div>`;
   menuHost.appendChild(menuWrap);
 
@@ -5288,7 +5285,7 @@ function paintColHeader(host) {
   document.querySelectorAll('.col-menu input[data-col]').forEach(cb => {
     cb.checked = !!columnPrefs[cb.getAttribute('data-col')];
   });
-  document.querySelectorAll('#colHeader .ch-name, .col-menu-sort').forEach(el => {
+  document.querySelectorAll('#colHeader .ch-name').forEach(el => {
     const key = el.getAttribute('data-sort');
     el.classList.toggle('sorted', favSort === key);
     const a = el.querySelector('.ch-arrow');
@@ -5476,12 +5473,6 @@ function renderWatchlist() {
     else if (favSort === 'change') favsSorted.sort((a, b) => (mover1dPct[String(b.id)] ?? -Infinity) - (mover1dPct[String(a.id)] ?? -Infinity));
     else if (favSort === 'margin') favsSorted.sort((a, b) => liveMargin(b) - liveMargin(a));
     else if (favSort === 'volume') favsSorted.sort((a, b) => dailyVolume(b.id) - dailyVolume(a.id));
-    /* Uncategorized items (not in categories.json's curated groups) sort
-       after every named category, then alphabetically within a category. */
-    else if (favSort === 'type') favsSorted.sort((a, b) => {
-      const ca = categoryOf(a) || '￿', cb = categoryOf(b) || '￿';
-      return ca === cb ? a.name.localeCompare(b.name) : ca.localeCompare(cb);
-    });
   }
 
   /* Reliable 14D Margins entries — uses cache populated by
@@ -9392,7 +9383,6 @@ setItem._userPicked = false;
   });
 
   try {
-    loadCategories().then(() => { if (favSort === 'type') renderWatchlist(); });
     mapping = await loadMapping();
     latest = await loadLatest();
     lastLiveFetchAt = Math.floor(Date.now() / 1000);
