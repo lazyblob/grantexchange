@@ -2207,7 +2207,18 @@ button, input { touch-action: manipulation; }
 .ins-end-hi { align-items:flex-end; text-align:right; }
 .ins-val { color:var(--text-main); font-weight:800; font-size:12.5px; }
 .ins-elabel { color:var(--text-muted); font-size:8px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:1px; }
-.ins-text { margin:12px auto 2px; font-size:11.5px; line-height:1.6; color:var(--text-muted); max-width:560px; }
+/* A facts line, not a paragraph: wraps as a unit, keeps its figures on one
+   line each, and lets the numbers carry the weight while the connective
+   words stay muted. */
+.ins-text { margin:12px auto 2px; font-size:11.5px; line-height:1.7; color:var(--text-muted); max-width:560px;
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:0 2px;
+  font-variant-numeric:tabular-nums; }
+.ins-text .it-px { color:var(--text-main); font-weight:800; }
+.ins-text .it-zone { font-weight:700; }
+.ins-text .it-rng { color:var(--text-muted); }
+.ins-text .it-mg { color:var(--positive); font-weight:800; }
+.ins-text .it-mg-none { color:var(--text-muted); }
+.ins-text .it-sep { color:var(--border-light); padding:0 7px; }
 .ins-divider { display:none; }   /* only shown in the desktop side-by-side band */
 /* Desktop: a full-width "market context" band spanning the chart width. The
    meter and the summary sit SIDE BY SIDE so the width is actually used,
@@ -7213,29 +7224,36 @@ function renderItemInsight(m, node) {
   document.getElementById('insLo').textContent = fmtGp(stats.lo);
   document.getElementById('insHi').textContent = fmtGp(stats.hi);
 
-  // 30-day change
-  const chgPct = (stats.first > 0) ? ((stats.last - stats.first) / stats.first) * 100 : 0;
-  const chgWord = chgPct >= 1.5 ? `up ${chgPct.toFixed(1)}%`
-    : chgPct <= -1.5 ? `down ${Math.abs(chgPct).toFixed(1)}%`
-    : 'roughly flat';
-  // where in the range, in words
-  const zone = pos <= 0.25 ? 'near its 30-day low — a potential buy zone'
-    : pos >= 0.75 ? 'near its 30-day high — a potential sell zone'
-    : 'in the middle of its 30-day range';
+  /* One scannable line of facts, not a paragraph. The prose version opened
+     with "<Item> is trading around..." and then restated, in words, what the
+     bar directly above already draws — where the price sits between its
+     30-day low and high, both of which are printed on the bar's own end
+     labels. For a supporting element under the chart that was a lot of
+     reading for information the eye had already taken in.
+     The 30-day change is dropped rather than shortened: the 1M timeframe
+     button prints that same figure a few hundred pixels up, and the header
+     lost its duplicate of it for the same reason.
+     Zone keeps the app's colour language — gold near the floor (buy side),
+     teal near the ceiling (sell side), muted in between — so the one word
+     worth acting on is also the one that stands out. */
+  const zone = pos <= 0.25 ? { txt: 'near 30-day low', col: 'var(--buy-color)' }
+    : pos >= 0.75 ? { txt: 'near 30-day high', col: 'var(--sell-color)' }
+    : { txt: 'mid 30-day range', col: '' };
   const vol = dailyVolume(m.id);
   // flip margin after tax — prefer the app's recommended targets, else live spread
   let margin = null;
   if (recommendedSell > 0 && recommendedBuy > 0) margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, m.id);
   else if (high > 0 && low > 0) margin = high - low - calculateTax(high, m.id);
-  const marginSentence = (margin != null && margin > 0)
-    ? ` The live flip margin after the 2% GE tax is about +${fmtGp(margin)} gp per item.`
-    : ` The spread is tight right now — no clean margin after the 2% GE tax.`;
 
-  const text = `${m.name} is trading around ${fmtGp(price)} gp, ${chgWord} over the past 30 days, `
-    + `within a 30-day range of ${fmtGp(stats.lo)}–${fmtGp(stats.hi)} gp`
-    + (vol > 0 ? ` on about ${abbreviateNumber(vol)} traded a day` : '')
-    + `. It's currently ${zone}.` + marginSentence;
-  document.getElementById('insText').textContent = text;
+  const bits = [];
+  bits.push(`<b class="it-px">${fmtGp(price)} gp</b>`);
+  bits.push(`<span class="it-zone"${zone.col ? ` style="color:${zone.col}"` : ''}>${zone.txt}</span>`
+    + ` <span class="it-rng">(${fmtGp(stats.lo)}–${fmtGp(stats.hi)})</span>`);
+  if (vol > 0) bits.push(`${abbreviateNumber(vol)}/day`);
+  bits.push((margin != null && margin > 0)
+    ? `<b class="it-mg">+${fmtGp(margin)} gp</b> after tax`
+    : `<span class="it-mg-none">no margin after tax</span>`);
+  document.getElementById('insText').innerHTML = bits.join('<span class="it-sep">·</span>');
   box.style.display = '';
   applyInsightCollapsed();
 }
