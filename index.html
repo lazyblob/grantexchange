@@ -8165,10 +8165,13 @@ function fitPriceRange(vals) {
    is the one you're about to trade against, the oldest is context. A flat
    0.62 for everything went too far the other way from the original wall of
    confetti — the prints ended up about as quiet as the volume bars, which
-   are two tiers below them. Recent trades now read at full strength and the
-   left edge of the window sits at 0.80, so the scatter is legible again
-   while still fading into the past rather than shouting uniformly. */
-const DOT_ALPHA_OLD = 0.80;
+   are two tiers below them. Recent trades read at full strength and the
+   window's left edge sits at 0.40 — the first attempt used 0.80, and a
+   1.25x spread across a whole screen is invisible: it just read as "all the
+   same". 2.5x is a fade you can actually see, which is the point. The
+   oldest prints are a day (or five years) behind the price you're about to
+   trade at; they're context, and they now look like it. */
+const DOT_ALPHA_OLD = 0.40;
 const DOT_ALPHA_NEW = 1.0;
 const dotAlphaAt = (i, n) => n > 1
   ? DOT_ALPHA_OLD + (DOT_ALPHA_NEW - DOT_ALPHA_OLD) * (i / (n - 1))
@@ -8497,23 +8500,25 @@ function drawChart(series) {
        bump when heavily zoomed-in (stepX huge) is capped so it never
        balloons. */
     const dotR = Math.min(2.9, Math.max(2.4, stepX > 14 ? 2.9 : 2.5));
-    /* Alpha ramps with recency (see dotAlphaAt) rather than sitting flat, so
-       the busy left-hand history recedes without the tradeable right-hand
-       edge having to. The period extremes below opt out entirely: they're a
-       tier up the hierarchy. */
+    /* Alpha ramps with recency (see dotAlphaAt) so the busy left-hand history
+       recedes without the tradeable right-hand edge having to. */
     ctx.save();
     ctx.fillStyle = color;
-    for (let i = 0; i < arr.length; i++) {
+    const n = arr.length;
+    for (let i = 0; i < n; i++) {
       if (arr[i] == null) continue;
-      ctx.globalAlpha = dotAlphaAt(i, arr.length);
+      ctx.globalAlpha = dotAlphaAt(i, n);
       const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2); ctx.fill();
-      if ((isHigh && i === viewMaxIdx) || (!isHigh && i === viewMinIdx)) {
-        ctx.save();
-        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
-        ctx.restore();
-      }
+    }
+    /* Period extremes after the scatter and at full strength — a tier up the
+       hierarchy, so they opt out of the ramp entirely. Drawn here rather
+       than inside the loop so the loop stays one job. */
+    const extIdx = isHigh ? viewMaxIdx : viewMinIdx;
+    if (extIdx >= 0 && arr[extIdx] != null) {
+      const x = x0 + extIdx * stepX, y = ypx(arr[extIdx], vmin, vmax, y0, h_price);
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
     }
     ctx.restore();
   }
