@@ -891,20 +891,30 @@ button, input { touch-action: manipulation; }
    short-landscape breakpoint below, where the sidebar is a fixed compact
    width rather than the --wl-width variable this drags. */
 .wl-resize { display: none; }
-/* Height counterpart to .wl-resize. Gated to the desktop layout because
-   that's the only one where the chart's height is a negotiable budget: the
-   min/max below is derived from the viewport, and .user-sized replaces it
-   with whatever was dragged. Portrait and coarse landscape size the chart
-   from vh with no slack to trade, so a handle there would be a control that
-   can't do anything useful. */
+/* Height counterpart to .wl-resize, on the two layouts where the chart's
+   height is a fixed budget worth handing over: desktop (a viewport-derived
+   min/max) and portrait phones (a flat 52vh, and on a phone the chart is
+   exactly the thing you want more of). Coarse landscape is left out — the
+   whole viewport is ~390px tall there, so there is nothing to trade.
+   .user-sized replaces whichever rule that layout used.
+   touch-action:none is what stops a drag from scrolling the page instead of
+   resizing, which is the entire gesture on a phone. */
 .ch-resize { display: none; }
+.ch-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 2px; width: 38px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, width 0.15s; }
+.ch-resize:hover::before, .ch-resize.dragging::before { background: var(--border-active); width: 64px; }
+/* Only applied once the handle has actually been dragged, so the default
+   sizing keeps working untouched for everyone else. */
+.chart-container.user-sized { flex: 0 0 auto; height: var(--chart-h); min-height: 0; max-height: none; }
 @media (min-width: 1024px) {
   .ch-resize { display: block; flex: 0 0 10px; height: 10px; margin: -4px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
-  .ch-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 2px; width: 38px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, width 0.15s; }
-  .ch-resize:hover::before, .ch-resize.dragging::before { background: var(--border-active); width: 64px; }
-  /* Only applied once the handle has actually been dragged, so the default
-     viewport-derived sizing keeps working untouched for everyone else. */
-  .chart-container.user-sized { flex: 0 0 auto; height: var(--chart-h); min-height: 0; max-height: none; }
+}
+@media (max-width: 640px) {
+  /* Taller than the desktop handle: a 10px strip is a fine mouse target and
+     a poor thumb one. The pill inside stays 2px, so it costs 8px of layout
+     and reads the same. */
+  .ch-resize { display: block; flex: 0 0 20px; height: 20px; margin: -6px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
+  .ch-resize::before { width: 46px; height: 3px; }
+  .ch-resize.dragging::before { width: 72px; }
 }
 @media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
@@ -9642,27 +9652,49 @@ setItem._userPicked = false;
   const box = document.querySelector('.chart-container');
   if (!handle || !box) return;
   const MIN = 240;
-  /* Has to sit ABOVE the CSS default (100dvh - 248px) or dragging down would
-     shrink the chart — the first thing tried, and it would look broken.
-     Desktop .wrap is auto-height, so growing past the fold just scrolls the
-     quick-facts strip down, which is a legitimate thing to want from a
-     "make the chart bigger" handle. Bounded so the page can't become one
-     unscrollable chart. */
+  /* Has to sit ABOVE each layout's CSS default (desktop 100dvh - 248px,
+     portrait 52vh) or dragging down would shrink the chart — the first thing
+     tried, and it would look broken. Both layouts scroll, so growing past
+     the fold just pushes what's underneath down, which is a legitimate thing
+     to want from a "make the chart bigger" handle. Bounded so the page can't
+     become one unscrollable chart. */
   const maxH = () => Math.max(MIN + 80, window.innerHeight - 120);
+  /* Whether the handle is live is decided by the CSS, not repeated here —
+     one breakpoint list to keep in sync instead of two. */
+  const enabled = () => getComputedStyle(handle).display !== 'none';
+  /* A height chosen on a phone must not follow you to the desktop layout,
+     and vice versa: 700px is a reasonable chart on a monitor and most of a
+     phone screen. Desktop keeps the original key so heights already saved
+     there survive this change. */
+  const portraitMQ = window.matchMedia('(max-width: 640px)');
+  const heightKey = () => portraitMQ.matches ? 'ge_chartHeight_p' : 'ge_chartHeight';
 
   const setH = (h) => {
     box.style.setProperty('--chart-h', Math.round(h) + 'px');
     box.classList.add('user-sized');
   };
-  const clear = () => {
+  const unset = () => {
     box.classList.remove('user-sized');
     box.style.removeProperty('--chart-h');
-    try { localStorage.removeItem('ge_chartHeight'); } catch (e) {}
+  };
+  const clear = () => {
+    unset();
+    try { localStorage.removeItem(heightKey()); } catch (e) {}
     if (typeof resizeCanvas === 'function') resizeCanvas();
   };
-
-  const saved = parseInt(localStorage.getItem('ge_chartHeight') || '', 10);
-  if (saved >= MIN) setH(Math.min(saved, maxH()));
+  /* Re-read on every breakpoint change (rotate, resize, desktop <-> phone):
+     the stored height belongs to the layout, so crossing the boundary has to
+     load that layout's value or drop back to its default. */
+  const applyStored = () => {
+    let v = NaN;
+    try { v = parseInt(localStorage.getItem(heightKey()) || '', 10); } catch (e) {}
+    if (enabled() && v >= MIN) setH(Math.min(v, maxH())); else unset();
+  };
+  applyStored();
+  if (portraitMQ.addEventListener) portraitMQ.addEventListener('change', () => {
+    applyStored();
+    if (typeof resizeCanvas === 'function') resizeCanvas();
+  });
 
   let startY = 0, startH = 0, dragging = false, raf = 0;
   const apply = (clientY) => {
@@ -9671,7 +9703,7 @@ setItem._userPicked = false;
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (typeof resizeCanvas === 'function') resizeCanvas(); });
   };
   const begin = (clientY) => {
-    if (!matchMedia('(min-width: 1024px)').matches) return;
+    if (!enabled()) return;
     dragging = true; startY = clientY; startH = box.getBoundingClientRect().height;
     handle.classList.add('dragging');
     document.body.style.userSelect = 'none'; document.body.style.cursor = 'row-resize';
@@ -9681,7 +9713,7 @@ setItem._userPicked = false;
     dragging = false; handle.classList.remove('dragging');
     document.body.style.userSelect = ''; document.body.style.cursor = '';
     const h = Math.round(box.getBoundingClientRect().height);
-    if (h) { try { localStorage.setItem('ge_chartHeight', String(h)); } catch (e) {} }
+    if (h) { try { localStorage.setItem(heightKey(), String(h)); } catch (e) {} }
     if (typeof resizeCanvas === 'function') resizeCanvas();
   };
   handle.addEventListener('mousedown', (e) => { begin(e.clientY); e.preventDefault(); });
