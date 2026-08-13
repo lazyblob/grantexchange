@@ -2245,23 +2245,18 @@ button, input { touch-action: manipulation; }
    expander on the page ends up hard against the right edge. */
 .rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:6px; }
 .rg-toggle:hover { background:rgba(201,166,77,0.22); }
+/* Collapsing hides the SUPPORTING detail — the BUY/SELL scale row and the
+   four-row breakdown — and nothing else. The header row stays exactly where
+   it is, so "ANALYST RATING" is on screen in both states and the block is
+   never an unlabelled verdict floating above a bar.
+   This used to yank .rg-top out of flow and pin it top-right, which hid the
+   eyebrow and the help "?" as a side effect and pulled the meter up under
+   the buttons — where, on a Strong Buy/Sell with the needle pinned to an
+   end, the needle's 2px overhang collided with them. Keeping the row in
+   flow removes the collision along with the workarounds it needed (trimmed
+   buttons, a 2px right offset, extra margin under the verdict). */
 .rg-wrap.is-collapsed .rg-scale { display:none; }
 .rg-wrap.is-collapsed .rg-why { display:none; }
-.rg-wrap.is-collapsed .rg-eyebrow, .rg-wrap.is-collapsed .rg-top .pg-help { display:none; }
-/* Collapsed, the meter rides directly under this cluster and the needle
-   overhangs the track by 2px — so on a Strong Buy/Sell (needle pinned to an
-   end) it collided with the Share and collapse buttons. The clearance comes
-   from pushing the meter down rather than from jamming the buttons upward:
-   lifting them alone put them hard against the panel's top border. So they
-   sit a comfortable 5px below that border, are trimmed slightly, pulled 2px
-   off the right edge, and the verdict line carries the extra bottom margin
-   that opens the gap. */
-.rg-wrap.is-collapsed .rg-top { position:absolute; top:5px; right:2px; margin:0; gap:4px; z-index:2; }
-.rg-wrap.is-collapsed .rg-top .fav-btn { padding:2px 5px; }
-/* margin-left:auto is what right-aligns Share in the normal flow row; once
-   .rg-top is absolute there's no row left to push against. */
-.rg-wrap.is-collapsed .rg-top .fav-btn { margin-left:0; }
-.rg-wrap.is-collapsed .rg-label { margin-bottom:11px; }
 .rg-label { font-size:15px; font-weight:900; letter-spacing:-.2px; line-height:1.1; margin-bottom:6px; }
 .rg-label.is-strong { text-shadow:0 0 14px currentColor; }
 .rg-meter { position:relative; padding-bottom:9px; }
@@ -2885,7 +2880,7 @@ button, input { touch-action: manipulation; }
       <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and green for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
 
       <div class="glossary-section">Analyst Rating (sidebar gauge — the one opinion on the page)</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell; mid-range reads Neutral. Underneath, the item is graded twice — once as a buy, once as a sell — and how far apart those two scores land is what decides how strong the word is. A near-tie means the item flips about as well in either direction, so it reads Neutral rather than picking a side. Expand the gauge to see both scores and the four things that produced them. Because each timeframe has its own price range, the same price can rate differently on 1D and 6M — that's the window changing, not the item. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell. Mid-range gets no word at all — the meter's needle sits centred and that is the whole answer, so nothing is put on the line above it pretending to be a call. Underneath, the item is graded twice — once as a buy, once as a sell — and how far apart those two scores land is what decides how strong the word is. A near-tie means the item flips about as well in either direction, so it shows the centred needle rather than picking a side. Expand the gauge to see both scores and the four things that produced them. Because each timeframe has its own price range, the same price can rate differently on 1D and 6M — that's the window changing, not the item. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
 
       <!-- The Recommended Flip card shows a 0-100 score and a band word;
            neither was explained anywhere. The numbers here mirror REC_BANDS
@@ -3903,7 +3898,11 @@ function shareCardGaugeInfo() {
   const meter = document.querySelector('#ratingGauge .rg-meter');
   const label = document.querySelector('#ratingGauge .rg-label');
   const needle = document.querySelector('#ratingGauge .rg-needle');
-  if (!meter || !label || !needle || !label.textContent.trim()) return null;
+  /* Deliberately NOT requiring label text: the middle band renders no
+     verdict word, and bailing here would drop the whole gauge — bar, needle
+     and all — off the card for exactly the items whose position is the only
+     thing worth showing. */
+  if (!meter || !label || !needle) return null;
   const sub = document.querySelector('#ratingGauge .rg-sub');
   const segs = Array.from(document.querySelectorAll('#ratingGauge .rg-seg'));
   return {
@@ -4236,11 +4235,17 @@ async function buildShareCardCanvas() {
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText('ANALYST RATING', 48, labelY);
-    g.fillStyle = gaugeInfo.color;
-    g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(gaugeInfo.text, 48, labelY + 36);
+    /* No verdict word in the middle band (see renderRatingGauge), so the
+       bar closes up under the eyebrow instead of leaving a hole where the
+       word would have been. Everything below starts at a fixed y, so this
+       spends the reclaimed 28px as air rather than shifting the card. */
+    if (gaugeInfo.text) {
+      g.fillStyle = gaugeInfo.color;
+      g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillText(gaugeInfo.text, 48, labelY + 36);
+    }
 
-    const barX = 48, barY = labelY + 56, barW = W - 96, barH = 14, gap = 3;
+    const barX = 48, barY = labelY + (gaugeInfo.text ? 56 : 28), barW = W - 96, barH = 14, gap = 3;
     const segW = (barW - gap * 4) / 5;
     /* Left-to-right = STRONG BUY -> BUY -> NEUTRAL -> SELL -> STRONG SELL,
        i.e. gold on the BUY end, green on the SELL end, matching both the
@@ -7246,7 +7251,7 @@ function ratingWhyHtml(gBuy, gSell, tf) {
     ? 'One side wins by ' + gap + ' points, so this is a firm call.'
     : gap >= 12
       ? 'One side leads by ' + gap + ' points — a lean, not a firm call.'
-      : 'The two sides are within ' + gap + ' points, so this reads Neutral: at this price the item flips about as well either way.';
+      : 'The two sides are within ' + gap + ' points, so there is no call to make: at this price the item flips about as well either way.';
 
   return '<div class="rg-why">'
     + '<div class="rg-why-head"><span class="rw-t">Why this rating · ' + tf + '</span>'
@@ -7298,15 +7303,15 @@ function renderRatingGauge(item, mountEl, opts = {}) {
          to Strong Buy or Strong Sell on whichever side led, however
          narrowly. Measured: at 70% through the range the two grades tied at
          86/86 and it still read "Strong Buy"; three gp higher, at a 7-point
-         deficit, it read "Strong Sell". Buy / Neutral / Sell were
+         deficit, it read "Strong Sell". Buy / no-call / Sell were
          unreachable, and switching timeframe re-rolled the near-tie, which
          is why one item read Strong Sell on 1D, Strong Buy on 5D, Strong
          Sell on 1M and Strong Buy on 6M at one unchanged price.
          Now: quality asks "is the better side any good", conviction asks
          "does it win clearly", and BOTH have to hold for a strong call. A
-         genuine tie is Neutral — which for a mid-range item with a healthy
-         spread is the honest answer, since it flips fine in either
-         direction. */
+         genuine tie produces no verdict word at all — which for a
+         mid-range item with a healthy spread is the honest answer, since it
+         flips fine in either direction. */
       const dir = (b >= s) ? 1 : -1, dom = Math.max(b, s);
       const quality = Math.max(0, Math.min(1, (dom - 40) / 60));
       const conviction = Math.max(0, Math.min(1, Math.abs(b - s) / 30));
@@ -7324,7 +7329,15 @@ function renderRatingGauge(item, mountEl, opts = {}) {
         signed = dir * mag;
         if      (signed >=  0.60) { label = 'Strong Buy';  hue = 'var(--buy-color)';  liveIdx = 4; strong = true; }
         else if (signed >=  0.20) { label = 'Buy';         hue = 'var(--buy-color)';  liveIdx = 3; }
-        else if (signed >  -0.20) { label = 'Neutral';     hue = 'var(--text-muted)'; liveIdx = 2; }
+        /* No word at all in the middle band. "Neutral" was a non-answer
+           dressed as an answer: it occupied the line where Strong Buy or
+           Sell would sit, in the same size and weight, while telling a
+           reader nothing they could act on. The meter directly below shows
+           the needle sitting mid-scale, which says the same thing without
+           claiming to be a call — and since the "ANALYST RATING" eyebrow is
+           now permanent, dropping the word leaves the block labelled rather
+           than blank. */
+        else if (signed >  -0.20) { label = '';             hue = 'var(--text-muted)'; liveIdx = 2; }
         else if (signed >  -0.60) { label = 'Sell';        hue = 'var(--sell-color)'; liveIdx = 1; }
         else                      { label = 'Strong Sell'; hue = 'var(--sell-color)'; liveIdx = 0; strong = true; }
         sub = `${dir > 0 ? 'Entry' : 'Exit'} score ${dom} · ${tf}`;
