@@ -277,9 +277,10 @@
   --rs-gold: #FFD24D;
   --rs-gold-deep: #C8841C;
   --rs-parchment: #F2D49B;
-  /* ONE sidebar section-header recipe. Potential Profit, Analyst Rating,
-     Recommended Flip, Favorites and Find Opportunities are peers — five
-     sections of equal rank — but they had drifted to four different sizes
+  /* ONE section-header recipe. Potential Profit, Analyst Rating,
+     Recommended Flip, Favorites, Find Opportunities and the 30-Day Range
+     meter are peers — sections of equal rank — but they had drifted to
+     four different sizes
      (9 / 10.5 / 11 / 13px), two colours, two weights and three tracking
      values, with icons on only three of the five. Read top to bottom that
      looked like a hierarchy nobody designed. These tokens are the single
@@ -2391,6 +2392,25 @@ button, input { touch-action: manipulation; }
 @media (max-width: 640px) {
 }
 .ins-meter { max-width:440px; margin:0 auto; }
+/* The one block on the page that had no name. Every other section says what
+   it is — Potential Profit, Analyst Rating, Recommended Flip, Favorites,
+   Find Opportunities — and this one had only an aria-label, so it read to
+   sighted users as two loose numbers under the chart. It got away with that
+   while a written summary sat beneath it; once that was deleted there was
+   nothing left naming the thing.
+   Same recipe as those five headers, left-aligned so it sits directly over
+   the "30-Day Low" end label rather than floating centred above a bar whose
+   ends are the actual content. */
+.ins-title {
+  /* PADDING, not margin. The live-price bubble floats above the track on a
+     26px reserve and overhangs the top of it by 5px, so the title needs
+     clearance — but a margin-bottom here just collapses into that 26px
+     margin-top and buys nothing (max(12, 26) is still 26). Padding does not
+     collapse, so this is the version that actually moves the track down. */
+  text-align:left; margin-bottom:0; padding-bottom:10px;
+  font-size:var(--hdr-size); font-weight:var(--hdr-weight); letter-spacing:var(--hdr-track);
+  text-transform:uppercase; color:var(--text-structural);
+}
 /* The track reserves clear space ABOVE for the floating price bubble (there's
    no caption in that lane anymore, so the bubble can never cover it). */
 .ins-track { position:relative; height:10px; border-radius:6px; margin-top:26px;
@@ -2801,6 +2821,7 @@ button, input { touch-action: manipulation; }
            was doubling as this bar's only screen-reader form. -->
       <div class="item-insight" id="itemInsight" style="display:none">
         <div class="ins-meter" id="insMeter" role="img" aria-label="30-day price range">
+          <div class="ins-title">30-Day Range</div>
           <div class="ins-track">
             <span class="ins-fill" id="insFill"></span>
             <span class="ins-marker" id="insMarker"><span class="ins-price" id="insPrice"></span></span>
