@@ -80,7 +80,7 @@
     {
       "@type": "Question",
       "name": "Is PocketGE useful if I am new to OSRS flipping?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every item comes with a plain-English summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling, and an analyst rating on the current price. The flipping guide covers buy limits, the 2% tax and margins if you're starting from zero." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every item comes with a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its recent range, and an analyst rating on the current price that shows its own working - the two scores behind it and the four things that produced them. The flipping guide covers buy limits, the 2% tax and margins if you're starting from zero." }
     },
     {
       "@type": "Question",
@@ -1456,8 +1456,8 @@ button, input { touch-action: manipulation; }
   .content-area { flex-direction: column; gap: 3px; }
   /* Portrait stacking order. Everything below the chart collapses into one
      column, and the default DOM order buried the watchlist under the range
-     meter, the written summary AND the Recommended Flip — roughly a full
-     screen of scrolling before the list you actually came back for.
+     meter AND the Recommended Flip — roughly a full screen of scrolling
+     before the list you actually came back for.
      Reordered to: the verdict on the item you're looking at (Potential
      Profit + Analyst Rating), then your other items, then the supporting
      detail, then discovery. Navigation you use constantly outranks reference
@@ -2158,7 +2158,7 @@ button, input { touch-action: manipulation; }
    deliberately NOT the gold/teal buy-sell language — it shows "where in the
    range", not a recommendation, so it can't be confused with the Analyst
    Rating gauge below it. The champagne marker is the only accent. */
-/* Collapse the written summary down to just the range bar. Portrait stacks
+/* 30-day range bar. Portrait stacks
    every module into one column, and this paragraph is the longest thing
    between the watchlist and the flip finder — useful the first few times you
    look at an item, dead weight once you can read the bar itself. The bar
@@ -2168,13 +2168,8 @@ button, input { touch-action: manipulation; }
    Stored per layout via collapseKey, so folding it on a phone never reaches
    desktop. */
 .item-insight { margin:8px 2px 0; padding-top:8px; border-top:1px solid var(--border-main); text-align:center; position:relative; }
-.ins-collapse { display:none; border:none; padding:0; cursor:pointer; }
+
 @media (max-width: 640px) {
-  .ins-collapse { display:flex; position:absolute; top:6px; right:8px; z-index:2; }
-  /* keeps the track and its end labels clear of the button */
-  .item-insight .ins-meter { padding-right:34px; }
-  .item-insight.is-collapsed .ins-divider,
-  .item-insight.is-collapsed .ins-text { display:none; }
 }
 .ins-meter { max-width:440px; margin:0 auto; }
 /* The track reserves clear space ABOVE for the floating price bubble (there's
@@ -2207,31 +2202,16 @@ button, input { touch-action: manipulation; }
 .ins-end-hi { align-items:flex-end; text-align:right; }
 .ins-val { color:var(--text-main); font-weight:800; font-size:12.5px; }
 .ins-elabel { color:var(--text-muted); font-size:8px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:1px; }
-/* A facts line, not a paragraph: wraps as a unit, keeps its figures on one
-   line each, and lets the numbers carry the weight while the connective
-   words stay muted. */
-.ins-text { margin:12px auto 2px; font-size:11.5px; line-height:1.7; color:var(--text-muted); max-width:560px;
-  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:0 2px;
-  font-variant-numeric:tabular-nums; }
-.ins-text .it-px { color:var(--text-main); font-weight:800; }
-.ins-text .it-zone { font-weight:700; }
-.ins-text .it-rng { color:var(--text-muted); }
-.ins-text .it-mg { color:var(--positive); font-weight:800; }
-.ins-text .it-mg-none { color:var(--text-muted); }
-.ins-text .it-sep { color:var(--border-light); padding:0 7px; }
-.ins-divider { display:none; }   /* only shown in the desktop side-by-side band */
 /* Desktop: a full-width "market context" band spanning the chart width. The
    meter and the summary sit SIDE BY SIDE so the width is actually used,
    instead of a narrow left-aligned box floating under a wide chart. Placed
    after the base .ins-* rules so these overrides win on source order. */
 @media (min-width: 1024px) {
-  .item-insight {
-    display: flex; align-items: center; gap: 30px; text-align: left;
-    margin: 0; padding: 16px 2px 0; border-top: 1px solid var(--border-main);
-  }
-  .ins-meter { flex: 1 1 52%; max-width: none; margin: 0; }
-  .ins-divider { display: block; flex: 0 0 1px; align-self: stretch; background: var(--border-main); }
-  .ins-text { flex: 1 1 48%; margin: 0; max-width: none; font-size: 12.5px; text-align: left; }
+  /* Was a two-column band (meter | divider | summary). With the summary gone
+     the bar keeps the row to itself, capped so it doesn't stretch to a
+     hairline across a wide monitor. */
+  .item-insight { margin: 0; padding: 16px 2px 0; border-top: 1px solid var(--border-main); }
+  .ins-meter { max-width: 620px; margin: 0 auto; }
 }
 /* Landscape mobile: the app is pinned to one screen (100dvh), so the card
    can't live inside it without squeezing the chart. JS relocates it to a
@@ -2243,13 +2223,10 @@ button, input { touch-action: manipulation; }
    a short, wide DESKTOP window keeps the normal under-chart placement. */
 @media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .item-insight {
-    display: flex; align-items: center; gap: 22px; text-align: left;
     max-width: 880px; margin: 14px auto; padding: 13px 20px 0;
     border-top: 1px solid var(--border-main);
   }
-  .ins-meter { flex: 1 1 52%; max-width: none; margin: 0; }
-  .ins-divider { display: block; flex: 0 0 1px; align-self: stretch; background: var(--border-main); }
-  .ins-text { flex: 1 1 48%; margin: 0; max-width: none; font-size: 12px; text-align: left; }
+  .ins-meter { max-width: 560px; margin: 0 auto; }
 }
 /* Timeframe row: stays on the SAME line as the name/Save whenever there's
    room — that's the common case. Only when the header genuinely can't fit
@@ -2594,13 +2571,17 @@ button, input { touch-action: manipulation; }
              refresh arrow already reads as "put it back" anyway. -->
         <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
       </div>
-      <!-- Auto-generated per-item market summary — unique crawlable text on
-           every item page (SEO), plus a 30-day price-position meter so a
-           flipper sees at a glance whether the price sits near its floor
-           (buy zone) or ceiling (sell zone). -->
+      <!-- 30-day price-position meter: where the live price sits between its
+           30-day floor and ceiling. The one fact on this row that nothing
+           else on the page shows — the summary sentence that used to sit
+           beside it said the same things the bar draws (price, low, high,
+           position) plus volume and after-tax margin, both of which the
+           quick-facts strip above already prints.
+           role="img" + a label built in renderItemInsight, because the
+           position is expressed purely as a CSS offset: the deleted text
+           was doubling as this bar's only screen-reader form. -->
       <div class="item-insight" id="itemInsight" style="display:none">
-        <button type="button" class="ins-collapse calc-caret" id="btnInsCollapse" aria-label="Collapse market summary" aria-expanded="true" title="Collapse / expand"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="ins-meter" aria-hidden="true">
+        <div class="ins-meter" id="insMeter" role="img" aria-label="30-day price range">
           <div class="ins-track">
             <span class="ins-fill" id="insFill"></span>
             <span class="ins-marker" id="insMarker"><span class="ins-price" id="insPrice"></span></span>
@@ -2610,8 +2591,6 @@ button, input { touch-action: manipulation; }
             <span class="ins-end ins-end-hi"><span class="ins-val" id="insHi">—</span><span class="ins-elabel">30-Day High</span></span>
           </div>
         </div>
-        <div class="ins-divider" aria-hidden="true"></div>
-        <p class="ins-text" id="insText"></p>
       </div>
     </div>
 
@@ -4176,8 +4155,7 @@ async function buildShareCardCanvas() {
    same already-computed live state the card itself draws (rating, 5D
    flag, 30-day position, targets, volume) so the words can never
    disagree with the picture, and kept tight enough to paste into a
-   280-char tweet without editing — a full paragraph like #insText reads
-   fine under a chart on the site but is too long as a social caption. */
+   280-char tweet without editing. */
 function buildShareText() {
   if (!selected) return '';
   const node = latest && latest.data ? latest.data[String(selected.id)] : null;
@@ -6971,31 +6949,6 @@ const collapseKey = (base) => isRoomyLayout() ? base + '_wide' : base;
 function ratingCollapsed() {
   try { return localStorage.getItem(collapseKey('ge_ratingCollapsed')) === '1'; } catch (e) { return false; }
 }
-/* Market-summary collapse. Delegated for the same reason the rating gauge's
-   toggle is: renderItemInsight repaints this block on every price refresh,
-   and a handler bound to the button would be re-bound (or lost) each time. */
-function insightCollapsed() {
-  try { return localStorage.getItem(collapseKey('ge_insCollapsed')) === '1'; } catch (e) { return false; }
-}
-function applyInsightCollapsed() {
-  const box = document.getElementById('itemInsight');
-  if (!box) return;
-  const c = insightCollapsed();
-  box.classList.toggle('is-collapsed', c);
-  const btn = document.getElementById('btnInsCollapse');
-  if (btn) {
-    btn.classList.toggle('closed', c);
-    btn.setAttribute('aria-expanded', c ? 'false' : 'true');
-    btn.setAttribute('aria-label', c ? 'Expand market summary' : 'Collapse market summary');
-  }
-}
-document.addEventListener('click', (ev) => {
-  const btn = ev.target.closest && ev.target.closest('#btnInsCollapse');
-  if (!btn) return;
-  ev.stopPropagation();
-  try { localStorage.setItem(collapseKey('ge_insCollapsed'), insightCollapsed() ? '0' : '1'); } catch (e) {}
-  applyInsightCollapsed();
-});
 document.addEventListener('click', (ev) => {
   const btn = ev.target.closest && ev.target.closest('.rg-toggle');
   if (!btn) return;
@@ -7224,38 +7177,16 @@ function renderItemInsight(m, node) {
   document.getElementById('insLo').textContent = fmtGp(stats.lo);
   document.getElementById('insHi').textContent = fmtGp(stats.hi);
 
-  /* One scannable line of facts, not a paragraph. The prose version opened
-     with "<Item> is trading around..." and then restated, in words, what the
-     bar directly above already draws — where the price sits between its
-     30-day low and high, both of which are printed on the bar's own end
-     labels. For a supporting element under the chart that was a lot of
-     reading for information the eye had already taken in.
-     The 30-day change is dropped rather than shortened: the 1M timeframe
-     button prints that same figure a few hundred pixels up, and the header
-     lost its duplicate of it for the same reason.
-     Zone keeps the app's colour language — gold near the floor (buy side),
-     teal near the ceiling (sell side), muted in between — so the one word
-     worth acting on is also the one that stands out. */
-  const zone = pos <= 0.25 ? { txt: 'near 30-day low', col: 'var(--buy-color)' }
-    : pos >= 0.75 ? { txt: 'near 30-day high', col: 'var(--sell-color)' }
-    : { txt: 'mid 30-day range', col: '' };
-  const vol = dailyVolume(m.id);
-  // flip margin after tax — prefer the app's recommended targets, else live spread
-  let margin = null;
-  if (recommendedSell > 0 && recommendedBuy > 0) margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, m.id);
-  else if (high > 0 && low > 0) margin = high - low - calculateTax(high, m.id);
-
-  const bits = [];
-  bits.push(`<b class="it-px">${fmtGp(price)} gp</b>`);
-  bits.push(`<span class="it-zone"${zone.col ? ` style="color:${zone.col}"` : ''}>${zone.txt}</span>`
-    + ` <span class="it-rng">(${fmtGp(stats.lo)}–${fmtGp(stats.hi)})</span>`);
-  if (vol > 0) bits.push(`${abbreviateNumber(vol)}/day`);
-  bits.push((margin != null && margin > 0)
-    ? `<b class="it-mg">+${fmtGp(margin)} gp</b> after tax`
-    : `<span class="it-mg-none">no margin after tax</span>`);
-  document.getElementById('insText').innerHTML = bits.join('<span class="it-sep">·</span>');
+  /* The bar's screen-reader form. Its position is a CSS offset and its
+     zone is a colour, so without this the whole 30-day read is invisible to
+     assistive tech — the summary sentence used to be carrying that job. */
+  const zone = pos <= 0.25 ? 'near its 30-day low'
+    : pos >= 0.75 ? 'near its 30-day high'
+    : 'mid 30-day range';
+  const meter = document.getElementById('insMeter');
+  if (meter) meter.setAttribute('aria-label',
+    `${fmtGp(price)} gp, ${zone}. 30-day range ${fmtGp(stats.lo)} to ${fmtGp(stats.hi)} gp.`);
   box.style.display = '';
-  applyInsightCollapsed();
 }
 
 function refreshItemInsights(m, node) {
@@ -9998,7 +9929,7 @@ if ('serviceWorker' in navigator) {
     <li><b>Where do I buy and sell?</b> Target Buy and Target Sell levels, anchored to real recent trades.</li>
     <li><b>How much could I make?</b> Potential profit after GE tax, based on the item's 4-hour buy limit.</li>
     <li><b>What's the risk?</b> The recent range, how much it swings, how fast it fills, and what it did before now.</li>
-    <li><b>How has it been moving?</b> Charts from one day to five years, plus a plain-English summary.</li>
+    <li><b>How has it been moving?</b> Charts from one day to five years, and a 30-day range meter.</li>
   </ul>
 
   <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too, usually around the GE on World 301/302. I'm actively building and improving this based on my own flipping and your feedback. Bug, feature idea, or just want to talk flipping? Add me in-game.</p>
@@ -10024,7 +9955,7 @@ if ('serviceWorker' in navigator) {
   <h2>Charts: see where an item has actually traded</h2>
   <p>Knowing where a price has been is what tells you whether today's number is cheap. Every item charts 1D through 5Y, with insta-buy and insta-sell prints kept apart, a trend line through the noise, volume underneath, and period and recent highs and lows marked.</p>
   <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume. On a desktop you can also hold <b>Shift</b> and drag a box around any region to zoom straight to it — double-click the chart to go back. Whenever you've zoomed, panned, or nudged a target price with the &minus; / + buttons, the refresh button under the chart turns gold — it puts all of that back and pulls fresh prices in one press.</p>
-  <p>If you'd rather not read it yourself, a 30-day range meter shows whether the price sits nearer the floor or the ceiling of its recent range, and a written summary says how the item has been moving.</p>
+  <p>Underneath, a 30-day range meter shows whether the price sits nearer the floor or the ceiling of its recent range — the one read the chart itself doesn't give you at a glance.</p>
 
   <h2>Margins: a good spread that survives the tax</h2>
   <p>A margin that looks good before tax often isn't one. Every profit figure here already has the Grand Exchange's 2% sales tax (capped at 5,000,000 gp) taken out, and potential profit is scaled to the 4-hour buy limit — what one realistic cycle clears, not an unbounded per-item number.</p>
@@ -10107,7 +10038,7 @@ if ('serviceWorker' in navigator) {
     </details>
     <details>
       <summary>Is PocketGE useful if I'm new to OSRS flipping?</summary>
-      <p>Yes. Every item comes with a plain-English summary of how it's been moving, a 30-day range meter showing whether the price sits nearer the floor or the ceiling, and an analyst rating on the current price. The <a href="/flipping-guide.html">flipping guide</a> covers buy limits, the 2% tax and margins if you're starting from zero.</p>
+      <p>Yes. Every item comes with a 30-day range meter showing whether the price sits nearer the floor or the ceiling of its recent range, and an analyst rating on the current price that shows its own working - the two scores behind it and the four things that produced them. The <a href="/flipping-guide.html">flipping guide</a> covers buy limits, the 2% tax and margins if you're starting from zero.</p>
     </details>
     <details>
       <summary>How does the 2% Grand Exchange tax work in OSRS?</summary>
