@@ -2130,15 +2130,20 @@ button, input { touch-action: manipulation; }
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
   background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .qf-refresh:hover { color:#fff; border-color:var(--border-active); }
-/* Same 26px shell as Refresh, but gold-outlined and text-labelled — it only
-   appears when there IS a zoom to undo, so it should be findable at a
-   glance rather than blending into the strip. */
-.qf-reset { flex:0 0 auto; height:26px; padding:0 10px; border-radius:6px; cursor:pointer;
-  border:1px solid var(--border-active); background:transparent; color:var(--border-active);
-  font:700 10.5px/1 inherit; letter-spacing:.2px; white-space:nowrap;
-  transition:background .15s ease, color .15s ease; }
-.qf-reset:hover { background:var(--border-active); color:var(--accent-ink); }
-.qf-reset[hidden] { display:none; }
+/* Armed state: something is off-default (chart zoomed or panned, or a target
+   price hand-nudged), so the button now also resets. Gold because that's the
+   app's "this is actionable" colour everywhere else; the slow pulse is what
+   catches the eye on a phone, where the button sits in a dense strip of
+   numbers. */
+.qf-refresh.is-dirty { color:var(--border-active); border-color:var(--border-active); animation:qf-armed 2.4s ease-in-out infinite; }
+.qf-refresh.is-dirty:hover { background:var(--border-active); color:var(--accent-ink); animation:none; }
+@keyframes qf-armed {
+  0%, 100% { box-shadow:0 0 0 0 rgba(201,166,77,0); }
+  50%      { box-shadow:0 0 0 3px rgba(201,166,77,0.16); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qf-refresh.is-dirty { animation:none; box-shadow:0 0 0 2px rgba(201,166,77,0.18); }
+}
 .qf-refresh .ui-ic { width:13px; height:13px; display:block; }
 /* Per-item auto-summary: a 30-day POSITION meter + one crawlable sentence of
    live market context. Neutral single-hue track (warm obsidian → champagne)
@@ -2563,15 +2568,11 @@ button, input { touch-action: manipulation; }
            every price tick and would destroy the button with it. -->
       <div class="qf-row" id="quickFactsRow" style="display:none">
         <div class="quick-facts" id="quickFacts" aria-label="Last traded snapshot"></div>
-        <!-- Reset zoom sits with Refresh rather than over the plot. Floated
-             top-left it collided with the Target price label, which is drawn
-             at the left edge on the target line and therefore lands anywhere
-             vertically depending on the price; no fixed corner of a chart is
-             reliably free. Out here it can never cover data, and it pairs
-             with the other control that acts on what the chart shows. Kept
-             OUTSIDE #quickFacts for the same reason Refresh is:
-             renderQuickFacts rewrites that node every price tick. -->
-        <button type="button" id="chartReset" class="qf-reset" hidden>Reset zoom</button>
+        <!-- One button, two jobs. It refreshes live prices; when the view has
+             been zoomed/panned or a target price hand-nudged it also puts
+             those back, and turns gold to say so. A separate "Reset zoom"
+             chip cost a chunk of a phone's quick-facts row, and the circular
+             refresh arrow already reads as "put it back" anyway. -->
         <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
       </div>
       <!-- Auto-generated per-item market summary — unique crawlable text on
@@ -8945,11 +8946,37 @@ function resetChartView() {
   queueDraw();
   syncChartReset();
 }
-function syncChartReset() {
-  const b = document.getElementById('chartReset');
-  if (b) b.hidden = !chartViewDirty();
+/* Anything the user has moved off its default and might want back: the chart
+   view, and a target price nudged with the - / + buttons. Both are "you have
+   changed the picture", which is what arms the refresh button. */
+function viewIsDirty() {
+  return chartViewDirty() || buyOverridden || sellOverridden;
 }
-document.getElementById('chartReset').onclick = (ev) => { ev.stopPropagation(); resetChartView(); };
+function syncChartReset() {
+  const b = document.getElementById('btnRefreshPrices');
+  if (!b) return;
+  const dirty = viewIsDirty();
+  b.classList.toggle('is-dirty', dirty);
+  const t = dirty
+    ? 'Reset the chart view and target prices, and refresh'
+    : 'Refresh live prices now';
+  b.setAttribute('title', t);
+  b.setAttribute('aria-label', t);
+}
+/* Put the hand-nudged targets back on the engine's own numbers. Done from
+   the CURRENT latest snapshot so the boxes correct the instant you click,
+   rather than after the network round trip. */
+function restoreEngineTargets() {
+  if (!selected || overMaxData[String(selected.id)]) return;
+  buyOverridden = false; sellOverridden = false;
+  const node = latest?.data?.[String(selected.id)];
+  if (!node) return;
+  const targets = computeViewTargets(node, selected.id);
+  if (targets) {
+    recommendedBuy = targets.buy; recommendedSell = targets.sell;
+    applyTargetPriceChange();
+  }
+}
 
 let isDragging = false, startXMouse = 0, startYMouse = 0, mouseMoved = false;
 let axisDragging = false, axisLastY = 0;
@@ -9595,6 +9622,13 @@ setItem._userPicked = false;
     $('#btnRefreshPrices').onclick = async () => {
       const btn = $('#btnRefreshPrices');
       if (btn.disabled) return;
+      /* Reset first and synchronously: the button is gold precisely because
+         there's something to put back, and that should land on the next
+         frame rather than waiting on the price fetch (which can be slow, or
+         fail entirely). Clearing the overrides before refreshLivePrices()
+         also lets its own "leave a nudged side alone" guard fall through, so
+         the fresh quote repopulates both targets. */
+      if (viewIsDirty()) { resetChartView(); restoreEngineTargets(); syncChartReset(); }
       btn.disabled = true;
       const icon = btn.querySelector('.ui-ic');
       if (icon) icon.classList.add('ic-spin');
@@ -9915,7 +9949,7 @@ if ('serviceWorker' in navigator) {
 
   <h2>Charts: see where an item has actually traded</h2>
   <p>Knowing where a price has been is what tells you whether today's number is cheap. Every item charts 1D through 5Y, with insta-buy and insta-sell prints kept apart, a trend line through the noise, volume underneath, and period and recent highs and lows marked.</p>
-  <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume. On a desktop you can also hold <b>Shift</b> and drag a box around any region to zoom straight to it — double-click the chart, or hit Reset zoom, to go back.</p>
+  <p>Pinch or scroll to zoom, drag to pan in any direction, tap any point for its price and volume. On a desktop you can also hold <b>Shift</b> and drag a box around any region to zoom straight to it — double-click the chart to go back. Whenever you've zoomed, panned, or nudged a target price with the &minus; / + buttons, the refresh button under the chart turns gold — it puts all of that back and pulls fresh prices in one press.</p>
   <p>If you'd rather not read it yourself, a 30-day range meter shows whether the price sits nearer the floor or the ceiling of its recent range, and a written summary says how the item has been moving.</p>
 
   <h2>Margins: a good spread that survives the tax</h2>
