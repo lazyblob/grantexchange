@@ -8161,7 +8161,18 @@ function fitPriceRange(vals) {
 
 /* Scatter opacity. Sits here rather than inline so the "prints are level 4
    of the hierarchy" decision has one place to live. */
-const DOT_ALPHA = 0.62;
+/* Scatter opacity, ramped by age across the visible window: the newest print
+   is the one you're about to trade against, the oldest is context. A flat
+   0.62 for everything went too far the other way from the original wall of
+   confetti — the prints ended up about as quiet as the volume bars, which
+   are two tiers below them. Recent trades now read at full strength and the
+   left edge of the window sits at 0.80, so the scatter is legible again
+   while still fading into the past rather than shouting uniformly. */
+const DOT_ALPHA_OLD = 0.80;
+const DOT_ALPHA_NEW = 1.0;
+const dotAlphaAt = (i, n) => n > 1
+  ? DOT_ALPHA_OLD + (DOT_ALPHA_NEW - DOT_ALPHA_OLD) * (i / (n - 1))
+  : DOT_ALPHA_NEW;
 
 function drawChart(series) {
   /* Draw in the exact space the bitmap was sized for (see resizeCanvas) —
@@ -8485,17 +8496,16 @@ function drawChart(series) {
        radius keeps the scatter visually identical everywhere; the tiny
        bump when heavily zoomed-in (stepX huge) is capped so it never
        balloons. */
-    const dotR = Math.min(2.2, Math.max(1.8, stepX > 14 ? 2.2 : 1.9));
-    /* Drawn under DOT_ALPHA: at full strength a dense 1D view is a wall of
-       confetti and the trend line has to fight through it. Every print is
-       still plotted and still legible — they just stop being the loudest
-       thing on the chart, which is the trend's job. The period extremes
-       below opt back out of the fade: they're a tier up the hierarchy. */
+    const dotR = Math.min(2.9, Math.max(2.4, stepX > 14 ? 2.9 : 2.5));
+    /* Alpha ramps with recency (see dotAlphaAt) rather than sitting flat, so
+       the busy left-hand history recedes without the tradeable right-hand
+       edge having to. The period extremes below opt out entirely: they're a
+       tier up the hierarchy. */
     ctx.save();
-    ctx.globalAlpha = DOT_ALPHA;
     ctx.fillStyle = color;
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] == null) continue;
+      ctx.globalAlpha = dotAlphaAt(i, arr.length);
       const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
       ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2); ctx.fill();
       if ((isHigh && i === viewMaxIdx) || (!isHigh && i === viewMinIdx)) {
@@ -8550,14 +8560,14 @@ function drawChart(series) {
     }
     ctx.stroke();
     /* Dots at the familiar size/color, one per ~4.5 px of track — and the
-       same DOT_ALPHA as the intraday scatter, so 1Y/5Y don't read louder
-       than the timeframes either side of them. */
+       same recency ramp as the intraday scatter, so 1Y/5Y don't read louder
+       or quieter than the timeframes either side of them. */
     const idxStep = Math.max(1, Math.round(4.5 / Math.max(0.1, stepX)));
-    ctx.globalAlpha = DOT_ALPHA;
     ctx.fillStyle = sellColor;
     for (let i = 0; i < HI.length; i += idxStep) {
       if (HI[i] == null) continue;
-      ctx.beginPath(); ctx.arc(xs(i), ypx(HI[i], vmin, vmax, y0, h_price), 1.9, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = dotAlphaAt(i, HI.length);
+      ctx.beginPath(); ctx.arc(xs(i), ypx(HI[i], vmin, vmax, y0, h_price), 2.5, 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
     ctx.restore();
@@ -8644,7 +8654,10 @@ function drawChart(series) {
     /* Paned mode only — in overlay mode these were already painted underneath
        the price series, before the clip opened. */
     if (!volOverlay) {
-      drawVolumeBars(0.42);
+      /* Dropped again alongside the dots' brightening: bars carry far more
+         area than a 2.5px dot, so matching alpha would leave volume reading
+         as the heavier layer even though it sits two tiers lower. */
+      drawVolumeBars(0.34);
       /* Hairline between the price plot and the volume strip. Without it the
          two panes share an edge and the tallest bars read as part of the
          price area. */
