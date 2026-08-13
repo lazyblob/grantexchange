@@ -243,6 +243,14 @@
   --accent-ink: #1C1300;
   --text-main: #D9D3C7;
   --text-muted: #8A8274;
+  /* Structural chrome — section headers and the like. Deliberately NOT an
+     accent: a header's job is to name a region, and when every one of them
+     was gold the colour stopped meaning "signal" anywhere on the page. The
+     section's identity still shows, in the 3px accent stripe beside it.
+     Note this is a cool slate against an otherwise warm palette; swap it for
+     --text-muted (#8A8274) if the temperature clash bothers you, it's the
+     only place this hue is used. */
+  --text-structural: #8A8D9B;
   --buy-color: #E6C35C;
   --sell-color: #26A69A;
   --vol-buy: rgba(230, 195, 92, 0.35);
@@ -1022,7 +1030,9 @@ button, input { touch-action: manipulation; }
 .calc-headline:hover { background: rgba(255,255,255,0.04); }
 .calc-headline:active { background: rgba(201,166,77,0.12); }
 .calc-headline-left { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
-.calc-headline-label { font-size: 11px; font-weight: bold; color: var(--border-active); text-transform: uppercase; letter-spacing: 0.5px; }
+/* Structural, same as the other section labels — it names the block, the
+   green figure beside it carries the signal. */
+.calc-headline-label { font-size: 11px; font-weight: bold; color: var(--text-structural); text-transform: uppercase; letter-spacing: 0.5px; }
 .calc-headline-sub { font-size: 9px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .calc-headline-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .calc-headline .res-profit { font-size: 16px; font-weight: bold; white-space: nowrap; }
@@ -1055,7 +1065,7 @@ button, input { touch-action: manipulation; }
   position: sticky; top: 0; z-index: 4;
   padding: 6px 12px 6px 13px;
   font-size: 11px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
-  color: #F0EBDF;
+  color: var(--text-structural);
   /* Soft top-lit gradient (raised panel) instead of a flat fill, a thin inner
      highlight for a beveled edge, and a faint wash of the section's accent
      colour bleeding in from the left stripe — modern depth, still on-brand. */
@@ -1145,11 +1155,11 @@ button, input { touch-action: manipulation; }
 .fls-current {
   display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 200px;
   background: none; border: none; padding: 0; margin: 0;
-  color: var(--fav-gold, #FFB300); font-size: 11px; font-weight: 800;
+  color: var(--text-structural); font-size: 11px; font-weight: 800;
   letter-spacing: 0.7px; text-transform: uppercase;
   cursor: pointer; transition: color 0.12s ease;
 }
-.fls-current:hover, .fls-current.open { color: #FFE0A0; }
+.fls-current:hover, .fls-current.open { color: #E4E6EE; }
 .fls-current .fls-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fls-current .fls-caret { display: flex; flex-shrink: 0; }
 .fls-current .fls-caret .ui-ic { width: 15px; height: 15px; transition: transform 0.15s ease; }
@@ -1228,16 +1238,21 @@ button, input { touch-action: manipulation; }
    the numbers on top of it harder to read than the ones on a plain row —
    the opposite of what a highlight is for. The accent bar carries the
    signal; the tint just says "this row". */
+/* Tint is neutral glass on every tier — the ACCENT BAR is the whole signal.
+   A coloured wash meant two rows flagged for different reasons rendered as
+   two different-coloured blocks, and the numbers printed on top of them
+   inherited that cast; a 3px bar says the same thing without touching the
+   data beside it. */
 .wl-item.at-high {
-  background: rgba(79,255,142,0.07);
+  background: rgba(255,255,255,0.03);
   border-left: 3px solid rgba(79,255,142,0.55);
 }
-.wl-item.at-high .wl-item-name { color: #B7F2C9; font-weight: 700; }
+.wl-item.at-high .wl-item-name { font-weight: 700; }
 .wl-item.at-low {
-  background: rgba(255,210,77,0.07);
+  background: rgba(255,255,255,0.03);
   border-left: 3px solid rgba(255,210,77,0.55);
 }
-.wl-item.at-low .wl-item-name { color: #E8D599; font-weight: 700; }
+.wl-item.at-low .wl-item-name { font-weight: 700; }
 /* Selected at-high / at-low rows keep their green/gold gradient + the white
    .active outline (painted on top) carries the "selected" cue. */
 /* Trimmed: at 8px/5px padding this chip was eating enough of the row that
@@ -1256,18 +1271,22 @@ button, input { touch-action: manipulation; }
    accent bar at full signal colour and a slightly stronger tint. The pulse
    moved off the row background and onto the bar's glow, so the "this is
    live" motion survives without the whole row breathing. */
+/* 5D tier: same neutral glass, same 3px bar — but the bar runs at FULL
+   signal colour where the day tier's is 55% alpha, and only this tier
+   pulses. Tier is read off the bar's intensity, not off how much of the row
+   is stained. */
 .wl-item.at-high5d {
-  background: rgba(0,255,122,0.10);
+  background: rgba(255,255,255,0.03);
   border-left: 3px solid #00FF7A;
   animation: rs-pulse-green-bright 2.6s ease-in-out infinite;
 }
-.wl-item.at-high5d .wl-item-name { color: #00FF7A; font-weight: 800; }
+.wl-item.at-high5d .wl-item-name { font-weight: 800; }
 .wl-item.at-low5d {
-  background: rgba(255,179,0,0.10);
+  background: rgba(255,255,255,0.03);
   border-left: 3px solid #FFB300;
   animation: rs-pulse-gold-bright 2.6s ease-in-out infinite;
 }
-.wl-item.at-low5d .wl-item-name { color: #FFB300; font-weight: 800; }
+.wl-item.at-low5d .wl-item-name { font-weight: 800; }
 /* Glow hugs the LEFT accent bar (a short inset shadow) instead of washing
    the whole row, so the row's own numbers never sit inside the animation. */
 @keyframes rs-pulse-green-bright {
@@ -1311,7 +1330,12 @@ button, input { touch-action: manipulation; }
 }
 .wl-item-left { display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1 1 auto; min-width: 0; }
 .wl-item-left img { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
-.wl-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; min-width: 0; flex: 0 1 auto; }
+/* One colour for every item name, flagged or not. Names used to shift to
+   green / gold / pale-mint depending on why a row was highlighted, which
+   made the list's most-scanned column the least consistent thing in it —
+   and put the item's identity in the same colour language as its signal.
+   Weight still steps up on a flagged row; that reads without recolouring. */
+.wl-item-name { color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; min-width: 0; flex: 0 1 auto; }
 .wl-item-left .hl-badge { margin-left: 2px; }
 /* Fixed-width, right-aligned data columns so values stack into clean
    columns across every row (TradingView style). Tabular figures keep digits
@@ -1942,7 +1966,7 @@ button, input { touch-action: manipulation; }
    (name+score, edge line, buy/sell, stats) with barely a hairline between
    them. */
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
-.fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--buy-color); text-transform:uppercase; }
+.fc-kicker { font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--text-structural); text-transform:uppercase; }
 .fc-head-ctrls { display:flex; align-items:center; gap:6px; flex:0 0 auto; }
 .fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer;
   color:var(--text-main); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); }
