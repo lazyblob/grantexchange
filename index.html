@@ -85,7 +85,7 @@
     {
       "@type": "Question",
       "name": "How does the 2% Grand Exchange tax work in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few others like the bond. PocketGE takes it out of every margin, so what you see is what you keep." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as is a short list of tools. Old school bonds skip the 2% but carry their own 10% fee instead: a bond bought on the Grand Exchange arrives untradeable, and making it sellable again costs 10% of its value - which is why PocketGE charges bonds 10%, and why they almost never show up as a viable flip. Every margin here already has the right fee taken out, so what you see is what you keep." }
     },
     {
       "@type": "Question",
@@ -3424,12 +3424,23 @@ function itemIconUrl(id) { return `https://static.runelite.net/cache/item/icon/$
 /* Grand Exchange 2% sales tax, done EXACTLY. 2% == 1/50, so floor(price/50)
    is integer-exact at every 50-gp step and hits the 5,000,000-gp cap precisely
    at 250,000,000 gp — floor(price*0.02) drifts on non-representable 0.02.
-   Items under 50 gp pay no tax, and a short list of items (the bond and the
-   classic tradeable tools) are fully exempt. `exempt` DEFAULTS to false so a
-   missing flag can only ever OVER-charge tax (safe: it over-flags a flip as
-   thin, it never hides a real after-tax loss). */
+   Items under 50 gp pay no tax, and a short list of items (the classic
+   tradeable tools) is fully exempt. A missing/unknown id can only ever
+   OVER-charge (safe: it over-flags a flip as thin, it never hides a real
+   after-tax loss). The bond is handled separately below — it is exempt from
+   this tax but not from a fee. */
+/* Old school bond is the one item where "exempt from the 2% tax" is not the
+   same as "free to flip". It IS tax-exempt — but only because it carries its
+   own, much larger fee: buying a bond on the Grand Exchange leaves you
+   holding an UNTRADEABLE bond, and making it tradeable again costs 10% of
+   its GE value. That 10% is unavoidable on any GE-to-GE flip, so for flip
+   maths it is the fee, and it dwarfs the 2% it replaces. Modelled here
+   rather than special-cased in the finder: with a real 10% cost, netKept()
+   turns negative on a ~1% bond spread and the flip finder stops offering
+   bonds on its own, which is the correct outcome rather than an exception. */
+const BOND_ID = 13190;
+const BOND_UNLOCK_FEE = 0.10;
 const TAX_EXEMPT_IDS = new Set([
-  13190, // Old school bond
   1755,  // Chisel
   5325,  // Gardening trowel
   11364, // Glassblowing pipe
@@ -3445,13 +3456,22 @@ const TAX_EXEMPT_IDS = new Set([
   5331   // Watering can
 ]);
 function isTaxExempt(id) { return id != null && TAX_EXEMPT_IDS.has(Number(id)); }
-function taxOf(s, exempt) {
-  if (exempt || s < 50) return 0;
+/* Everything the seller loses on the way out, per item — the 2% GE tax for
+   most things, the bond's 10% re-list fee for bonds, nothing for the exempt
+   list. Takes the item id, not a precomputed boolean, because "what does
+   selling cost" is no longer a yes/no question. */
+function feeLabelFor(id) {
+  return (id != null && Number(id) === BOND_ID) ? "the bond's 10% re-list fee" : 'the 2% tax';
+}
+function sellFeeOf(s, id) {
+  if (!(s > 0)) return 0;
+  if (id != null && Number(id) === BOND_ID) return Math.floor(s * BOND_UNLOCK_FEE);
+  if (isTaxExempt(id) || s < 50) return 0;
   return Math.min(5000000, Math.floor(s / 50));
 }
 /* gp KEPT per item if both legs fill at their targets. */
-function netKept(b, s, exempt) { return s - taxOf(s, exempt) - b; }
-function calculateTax(price, id) { return taxOf(price, isTaxExempt(id)); }
+function netKept(b, s, id) { return s - sellFeeOf(s, id) - b; }
+function calculateTax(price, id) { return sellFeeOf(price, id); }
 function emptySeries() { return { labels: [], low: [], high: [], lowVol: [], highVol: [] }; }
 
 /* Daily traded volume for an item — prefers the bulk /volumes endpoint,
@@ -6201,7 +6221,7 @@ function engMinEdge(b) { return Math.max(2, Math.ceil(ENGINE_CFG.kSafety * b)); 
    (never a stale-unreachable price) so the box shows honest live-ish numbers
    and the Grade's margin-health gate flags the thin/negative margin — we never
    blank the user out, and we never dress a loser or an unfillable ask green. */
-function computeTargets(node, series, exempt) {
+function computeTargets(node, series, itemId) {
   const C = ENGINE_CFG;
   const NO = (reason, buy, sell, lowConf) =>
     ({ buy: buy || 0, sell: sell || 0, viable: false, reason, edge: 0, lowConf: !!lowConf });
@@ -6471,7 +6491,7 @@ function computeTargets(node, series, exempt) {
     if (!reachable(c, side)) return -1;                 // recency gate
     const p0 = Pfill(c, side);
     if (p0 < C.pMin) return -1;
-    const margin = side === 'buy' ? netKept(c, otherTarget, exempt) : netKept(otherTarget, c, exempt);
+    const margin = side === 'buy' ? netKept(c, otherTarget, itemId) : netKept(otherTarget, c, itemId);
     if (margin <= 0) return -1;
     let p = p0;
     if (strongDrift) {
@@ -6513,10 +6533,10 @@ function computeTargets(node, series, exempt) {
     ? Math.max(engMinEdge(b || rawLow), Math.ceil(2 * C.kSafety * (b || rawLow)))
     : engMinEdge(b || rawLow);
 
-  if (b != null && s != null && netKept(b, s, exempt) >= edgeReq) {
+  if (b != null && s != null && netKept(b, s, itemId) >= edgeReq) {
     // gated queue-jump — a mutation may never cross the guarantee
-    if (netKept(b, s - 1, exempt) >= edgeReq && reachable(s - 1, 'sell')) s -= 1;
-    return { buy: b, sell: s, viable: true, reason: '', edge: netKept(b, s, exempt), lowConf };
+    if (netKept(b, s - 1, itemId) >= edgeReq && reachable(s - 1, 'sell')) s -= 1;
+    return { buy: b, sell: s, viable: true, reason: '', edge: netKept(b, s, itemId), lowConf };
   }
 
   // widen minimally, staying inside the RECENT fillable band + recency gate
@@ -6529,7 +6549,7 @@ function computeTargets(node, series, exempt) {
   while (s > (rawHigh || 1) && !reachable(s, 'sell') && ++seedGuard < 20000) s--;
   if (rawHigh > 0 && s < rawHigh) s = rawHigh;
   let guard = 0;
-  while (netKept(b, s, exempt) < edgeReq) {
+  while (netKept(b, s, itemId) < edgeReq) {
     const canLower = (b - 1) >= buyFloor && (b - 1) >= 1 && reachable(b - 1, 'buy');
     const canRaise = (s + 1) <= sellCap && reachable(s + 1, 'sell');
     if (canLower && (!canRaise || qTouch(b - 1, 'buy') >= qTouch(s + 1, 'sell'))) b -= 1;
@@ -6537,8 +6557,8 @@ function computeTargets(node, series, exempt) {
     else break; // can't reach a tax-clearing pair without leaving the fillable band
     if (++guard > 20000) break;
   }
-  if (netKept(b, s, exempt) >= edgeReq)
-    return { buy: b, sell: s, viable: true, reason: '', edge: netKept(b, s, exempt), lowConf };
+  if (netKept(b, s, itemId) >= edgeReq)
+    return { buy: b, sell: s, viable: true, reason: '', edge: netKept(b, s, itemId), lowConf };
 
   // No clean flip. Return the tightest CURRENTLY-FILLABLE honest pair (never a
   // stale-unreachable price); the Grade surfaces the thin/negative margin.
@@ -6546,7 +6566,7 @@ function computeTargets(node, series, exempt) {
   let honestSell = Math.max(Math.round(aSell.price), rawHigh || 0);
   if (aSell.t < 0.5) honestSell = Math.round(aSell.price); // don't pin to a stale live spike
   else if (sellEndangered && rawHigh > 0) honestSell = rawHigh; // falling market: live is the honest ask
-  return NO('spread does not clear the 2% tax right now', honestBuy, honestSell, lowConf);
+  return NO('spread does not clear ' + feeLabelFor(itemId) + ' right now', honestBuy, honestSell, lowConf);
 }
 
 /* Back-compat entry point. Existing callers pass (rawLow, rawHigh, series);
@@ -6559,7 +6579,7 @@ function runTradeEngine(rawLow, rawHigh, series, node, id) {
   if (n.high == null) n.high = rawHigh;
   if (!n.low || !n.high)
     return { buy: n.low || 0, sell: n.high || 0, viable: false, reason: 'no live quote', edge: 0, lowConf: true };
-  return computeTargets(n, series, isTaxExempt(id));
+  return computeTargets(n, series, id);
 }
 
 /* ── Timeframe-aware targets: day trade vs swing trade ───────────────────
@@ -6979,7 +6999,7 @@ function ratingWhyHtml(gBuy, gSell, tf) {
     : (p.trendPct > 0.005 ? 'Rising ' : p.trendPct < -0.005 ? 'Falling ' : 'Flat ')
       + (Math.abs(p.trendPct) > 0.005 ? Math.abs(pct(p.trendPct)) + '% ' : '') + 'over ' + tf;
   const marginTxt = p.marginPct == null ? 'No workable spread'
-    : (p.marginPct * 100).toFixed(1) + '% after the 2% tax';
+    : (p.marginPct * 100).toFixed(1) + '% after ' + feeLabelFor(selected && selected.id);
 
   /* The gap between the two sides is what decides how strong the call is,
      so it gets said out loud rather than left as an unexplained jump. */
@@ -10027,7 +10047,7 @@ if ('serviceWorker' in navigator) {
     </details>
     <details>
       <summary>How does the 2% Grand Exchange tax work in OSRS?</summary>
-      <p>Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as are a few others like the bond. PocketGE takes it out of every margin, so what you see is what you keep.</p>
+      <p>Selling costs 2% of the sale price, rounded down, capped at 5,000,000 gp per item. Items under 50 gp are exempt, as is a short list of tools. Old school bonds skip the 2% but carry their own 10% fee instead: a bond bought on the Grand Exchange arrives untradeable, and making it sellable again costs 10% of its value - which is why PocketGE charges bonds 10%, and why they almost never show up as a viable flip. Every margin here already has the right fee taken out, so what you see is what you keep.</p>
     </details>
     <details>
       <summary>What are the best items to flip in OSRS?</summary>
