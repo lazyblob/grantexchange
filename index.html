@@ -3894,15 +3894,44 @@ async function buildShareCardCanvas() {
   };
   col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5C158');
   col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A69A');
-  // Potential Profit at a full 4h buy-limit cycle — same figure the
-  // sidebar's own "Potential Profit" headline shows (limit x margin after
-  // tax), not the calculator's current inputs, which might be a manual
-  // "what if" edit that shouldn't leak into a shared public image.
+  /* Potential Profit at a full 4h buy-limit cycle — same figure the
+     sidebar's own "Potential Profit" headline shows (limit x margin after
+     tax), not the calculator's current inputs, which might be a manual
+     "what if" edit that shouldn't leak into a shared public image.
+     On its own that number was unexplained on a card someone meets cold in
+     a feed: "+756K" reads like free money until you know it assumes buying
+     out a whole 4-hour limit, which for a 575 gp item is 5.75M of capital
+     you have to put up first. Capital Needed now sits beside it as an equal
+     column, and the line underneath spells out the arithmetic — quantity x
+     per-item margin — so the headline can be checked rather than taken on
+     faith. */
+  let hasCapitalRow = false;
   if (recommendedBuy > 0 && recommendedSell > 0 && selected.limit > 0) {
+    hasCapitalRow = true;
     const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
     const potentialProfit = marginPerItem * selected.limit;
-    col(632, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
-      potentialProfit >= 0 ? '#1FB85C' : '#EF5350');
+    const capitalNeeded = recommendedBuy * selected.limit;
+    const profitColor = potentialProfit >= 0 ? '#1FB85C' : '#EF5350';
+    // Buy -> Sell -> what it costs -> what it makes: the order you'd ask in.
+    col(632, 'Capital Needed', abbreviateNumber(capitalNeeded) + ' gp', '#D9D3C7');
+    col(924, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
+      profitColor);
+
+    /* Mixed-weight run: the two figures that produce the headline are white
+       and green against muted connective text, so the sum reads at a glance
+       even after a feed has downscaled the card. */
+    let rx = 48;
+    const run = (txt, color, weight, size) => {
+      g.font = weight + ' ' + size + 'px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillStyle = color;
+      g.fillText(txt, rx, rowY + 74);
+      rx += g.measureText(txt).width;
+    };
+    run(fmtGp(selected.limit) + ' items', '#FFFFFF', '800', 21);
+    run(' at the 4h buy limit', '#8A8274', '600', 21);
+    run('   ·   ', '#8A8274', '600', 21);
+    run((marginPerItem >= 0 ? '+' : '') + fmtGp(marginPerItem) + ' gp/ea', profitColor, '800', 21);
+    run(' after tax', '#8A8274', '600', 21);
   }
 
   /* The 30-day range bar was here. It answered "where in its recent range
@@ -3916,7 +3945,12 @@ async function buildShareCardCanvas() {
   // its CSS: teal = sell side, gold = buy side, brighter = live segment).
   const gaugeInfo = shareCardGaugeInfo();
   if (gaugeInfo) {
-    const labelY = 468;
+    /* 468 before the Capital Needed row's explainer line landed at 454 —
+       moved down by exactly its height so the gap above the gauge is
+       unchanged and nothing below has to shift. Items with no buy limit
+       draw neither, so they keep the original position rather than an
+       empty band where the explainer would have been. */
+    const labelY = hasCapitalRow ? 490 : 468;
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText('ANALYST RATING', 48, labelY);
