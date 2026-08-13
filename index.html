@@ -2206,10 +2206,20 @@ button, input { touch-action: manipulation; }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
 .qf-row { display:flex; align-items:center; gap:8px; min-width:0; }
 .qf-row .quick-facts { flex:1 1 auto; min-width:0; }
-.qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+.qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
   background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .qf-refresh:hover { color:#fff; border-color:var(--border-active); }
+/* Icon-only by default: on a phone the quick-facts strip already scrolls
+   sideways, so a word here would push VOL and LIMIT off the end. The roomy
+   layout has the space, and this button now does two different jobs — the
+   label is what tells you which one is armed without hovering for the
+   tooltip. */
+.qf-rlabel { display:none; }
+@media (min-width: 1024px) {
+  .qf-refresh { width:auto; padding:0 10px; }
+  .qf-rlabel { display:inline; font-size:10.5px; font-weight:700; letter-spacing:.2px; white-space:nowrap; }
+}
 /* Armed state: something is off-default (chart zoomed or panned, or a target
    price hand-nudged), so the button now also resets. Gold because that's the
    app's "this is actionable" colour everywhere else; the slow pulse is what
@@ -2641,7 +2651,7 @@ button, input { touch-action: manipulation; }
              those back, and turns gold to say so. A separate "Reset zoom"
              chip cost a chunk of a phone's quick-facts row, and the circular
              refresh arrow already reads as "put it back" anyway. -->
-        <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+        <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="qf-rlabel" id="refreshLabel">Refresh</span></button>
       </div>
       <!-- 30-day price-position meter: where the live price sits between its
            30-day floor and ceiling. The one fact on this row that nothing
@@ -9040,6 +9050,11 @@ function syncChartReset() {
     : 'Refresh live prices now';
   b.setAttribute('title', t);
   b.setAttribute('aria-label', t);
+  /* The word follows the job. Leaving it on "Refresh" while the button is
+     gold and about to undo a zoom would make the label the least accurate
+     thing on the row. */
+  const lbl = document.getElementById('refreshLabel');
+  if (lbl) lbl.textContent = dirty ? 'Reset view' : 'Refresh';
 }
 /* Put the hand-nudged targets back on the engine's own numbers. Done from
    the CURRENT latest snapshot so the boxes correct the instant you click,
