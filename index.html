@@ -8492,14 +8492,19 @@ function drawChart(series) {
      charts). The volume needles above carry the "where did big trades happen"
      signal; here we just plot every print clean and small. */
   function drawSeries(arr, color, isHigh) {
-    /* Fixed dot radius across every timeframe. Previously it scaled with
-       stepX (point spacing), so dense views like 1D rendered tiny ~1.8px
-       dots while sparse views like 6M rendered fat ~3.5px dots — the
-       inconsistency looked sloppy when switching timeframes. A constant
-       radius keeps the scatter visually identical everywhere; the tiny
-       bump when heavily zoomed-in (stepX huge) is capped so it never
-       balloons. */
-    const dotR = Math.min(2.9, Math.max(2.4, stepX > 14 ? 2.9 : 2.5));
+    /* Radius is tied to the SPACING between prints, tightly clamped.
+       Blobbing is a density problem and a fixed radius cannot solve it: at
+       1D the points sit ~3.3px apart, so a 2.5px radius draws 5px-wide dots
+       that overlap by 1.7px each and fuse into one solid ribbon — worst on
+       the teal highs, which cluster tighter than the lows. Sizing at 0.42x
+       the spacing keeps the diameter just inside the gap, so dense stretches
+       read as separate prints again.
+       The clamp is what keeps this honest: an earlier version scaled freely
+       and ran 1.8px on 1D against 3.5px on 6M, which looked like a different
+       chart per timeframe. 1.5-2.4 is a narrow enough band that switching
+       timeframes doesn't read as a style change, while still giving zoomed-in
+       views the bigger, easier targets they have room for. */
+    const dotR = Math.max(1.5, Math.min(2.4, stepX * 0.42));
     /* Alpha ramps with recency (see dotAlphaAt) so the busy left-hand history
        recedes without the tradeable right-hand edge having to. */
     ctx.save();
