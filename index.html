@@ -196,6 +196,37 @@
 <link rel="dns-prefetch" href="https://api.weirdgloop.org">
 
 <script>
+  /* Self-exclusion from analytics. On a site this size the maintainer's own
+     browsing is a real share of traffic, and it skews everything that
+     matters — sessions, bounce rate, which items look popular, whether a
+     change moved a number. GA4's built-in "internal traffic" filter keys off
+     IP, which is useless for a phone on mobile data, so the switch lives in
+     the browser instead.
+
+     Visit /?ga=off once per browser (phone included) and it sticks;
+     /?ga=on undoes it. Both log to the console so there is a confirmation
+     rather than a guess.
+
+     Two mechanisms on purpose. window['ga-disable-<ID>'] is the flag GA4
+     itself honours, and it is set BEFORE any gtag() call so nothing queued
+     early can slip through; skipping the library load means the request is
+     never made at all. Either would do — together the tag can neither fire
+     nor arrive. */
+  var GA_ID = 'G-43YM2RCX1R';
+  var gaOptOut = false;
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search).get('ga');
+      if (q === 'off') localStorage.setItem('pge_ga_optout', '1');
+      else if (q === 'on') localStorage.removeItem('pge_ga_optout');
+      gaOptOut = localStorage.getItem('pge_ga_optout') === '1';
+      if (q === 'off' || q === 'on') {
+        console.info('[PocketGE] analytics ' + (gaOptOut ? 'DISABLED' : 'ENABLED') +
+          ' for this browser (saved). Use /?ga=' + (gaOptOut ? 'on' : 'off') + ' to undo.');
+      }
+    } catch (e) {}
+    window['ga-disable-' + GA_ID] = gaOptOut;
+  })();
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -203,14 +234,18 @@
      page_view from setItem() once the selected item is known, so every visit
      (including deep links like /?q=Cake) reports the actual item title/path
      instead of collapsing into a single "home /" pageview. */
-  gtag('config', 'G-43YM2RCX1R', { send_page_view: false });
+  gtag('config', GA_ID, { send_page_view: false });
   /* Load the GA library OFF the critical path: it was the biggest chunk of
      "unused JS" on mobile and competes with first paint. gtag() calls made
-     before it arrives just queue in dataLayer, so nothing is lost. */
+     before it arrives just queue in dataLayer, so nothing is lost.
+     Opted out = never loaded. gtag() stays defined either way, so the
+     `typeof gtag === 'function'` call sites further down keep working and
+     just push into a dataLayer nothing ever reads. */
   (function () {
+    if (gaOptOut) return;
     var load = function () {
       var s = document.createElement('script');
-      s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=G-43YM2RCX1R';
+      s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
       document.head.appendChild(s);
     };
     if ('requestIdleCallback' in window) requestIdleCallback(load, { timeout: 4000 });
@@ -351,93 +386,6 @@ button, input { touch-action: manipulation; }
    Used for the page H1 so the app keeps its dense dashboard layout without
    sacrificing semantic structure. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-/* ─── Landing screen ─────────────────────────────────────────────────
-   Full-viewport brand intro shown on first visit to "/" with no ?q=
-   deep link. Hides the app behind it until the visitor taps "Launch".
-   Returning visitors and deep-link arrivals see the app directly. */
-.landing-page {
-  position: fixed; inset: 0; z-index: 200;
-  background: radial-gradient(circle at 50% 20%, #161B2A 0%, var(--bg-base) 60%);
-  overflow-y: auto;
-  padding: 24px 20px 48px;
-  -webkit-overflow-scrolling: touch;
-}
-.landing-inner { max-width: 760px; margin: 0 auto; }
-.landing-brand { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 28px; }
-.landing-brand img { width: 28px; height: 28px; image-rendering: pixelated; }
-.landing-brand-text { font-weight: 800; font-size: 18px; color: var(--text-main); letter-spacing: -0.3px; }
-.landing-brand-text span { color: var(--border-active); }
-.landing-hero {
-  font-size: 38px; font-weight: 900; line-height: 1.12; letter-spacing: -1px;
-  color: #fff; margin: 0 0 14px;
-}
-.landing-sub {
-  font-size: 16px; line-height: 1.5; color: var(--text-main);
-  margin: 0 0 24px; max-width: 580px;
-}
-.landing-sub strong { color: var(--positive); }
-.landing-cta {
-  background: var(--border-active); color: var(--accent-ink); border: none;
-  font-size: 16px; font-weight: 800; letter-spacing: 0.2px;
-  padding: 14px 28px; border-radius: 6px; cursor: pointer;
-  box-shadow: 0 8px 24px rgba(201,166,77,0.35);
-  transition: background 0.15s ease, transform 0.05s ease;
-}
-.landing-cta:hover { background: var(--accent-bright); }
-.landing-cta:active { transform: translateY(1px); }
-.landing-features {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
-  margin: 36px 0 24px;
-}
-.lf-card {
-  background: var(--bg-panel); border: 1px solid var(--border-main);
-  border-radius: 8px; padding: 16px 16px 14px;
-}
-.lf-emoji { font-size: 22px; line-height: 1; display: inline-block; margin-bottom: 6px; }
-.lf-card h3 { color: #fff; font-size: 14px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.1px; }
-.lf-card p { color: var(--text-main); font-size: 12.5px; line-height: 1.5; margin: 0; opacity: 0.85; }
-.landing-footnote { color: var(--text-muted); font-size: 12px; margin-top: 18px; line-height: 1.6; }
-.landing-footnote a { color: var(--border-active); text-decoration: none; font-weight: 700; }
-.landing-footnote a:hover { text-decoration: underline; }
-/* Annotated demo mock — looks like a mini-version of the dashboard with
-   numbered callouts to the right. Two-column on desktop, stacked on mobile. */
-.landing-demo {
-  display: grid; grid-template-columns: minmax(260px, 1.2fr) 1fr; gap: 28px;
-  align-items: center; margin: 28px 0 24px;
-}
-.landing-demo-mock {
-  background: var(--bg-panel); border: 1px solid var(--border-main);
-  border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
-  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
-}
-.ld-ticker { display: flex; align-items: center; gap: 8px; padding: 4px 4px 6px; border-bottom: 1px solid var(--border-main); }
-.ld-icon { width: 22px; height: 22px; image-rendering: pixelated; }
-.ld-info { flex: 1; min-width: 0; }
-.ld-name { color: #fff; font-weight: 800; font-size: 14px; }
-.ld-wiki { font-size: 8.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border: 1px solid var(--border-light); border-radius: 3px; margin-left: 5px; vertical-align: 1px; }
-.ld-live { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.ld-tf { background: var(--bg-input); border: 1px solid var(--border-active); color: #fff; font-size: 10px; font-weight: 800; padding: 5px 8px; border-radius: 4px; text-align: center; }
-.ld-tf span { display: block; font-size: 9px; color: var(--positive); font-weight: 700; margin-top: 1px; }
-/* Numbered callout badge — sits on the real .price-strip / .rg-wrap (both
-   reused as-is below, not a hand-copied lookalike) via an inline
-   position:relative on those wrappers. */
-.ld-cnum { position: absolute; top: -8px; left: -8px; width: 18px; height: 18px; background: var(--border-active); color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; z-index: 1; }
-.landing-demo-callouts { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
-.landing-demo-callouts li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-main); line-height: 1.5; }
-.landing-demo-callouts li strong { color: #fff; }
-.ld-num { flex-shrink: 0; width: 22px; height: 22px; background: var(--border-active); color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-.ld-num.gn { background: var(--positive); color: #001a0e; font-size: 10px; }
-@media (max-width: 700px) {
-  .landing-demo { grid-template-columns: 1fr; gap: 18px; }
-}
-@media (max-width: 600px) {
-  .landing-page { padding: 18px 16px 36px; }
-  .landing-hero { font-size: 28px; letter-spacing: -0.7px; }
-  .landing-sub { font-size: 14px; }
-  .landing-cta { width: 100%; padding: 14px 22px; }
-  .landing-features { grid-template-columns: 1fr; gap: 10px; margin: 28px 0 18px; }
-  .lf-card { padding: 14px; }
-}
 /* About-PocketGE section — sits below the app viewport. Visible to anyone who
    scrolls past the dashboard, and crawler-indexable for organic search. */
 .about-section { max-width: 880px; margin: 32px auto 64px; padding: 0 20px; color: var(--text-muted); font-size: 13px; line-height: 1.65; }
@@ -577,7 +525,13 @@ button, input { touch-action: manipulation; }
 }
 .fav-btn.active:hover { color: #FFD98A; border-color: var(--fav-gold); }
 .fav-btn .fav-star { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.fav-btn.active .fav-star { fill: currentColor; }
+/* Outline, not filled. The gold already says "saved" — it is on the star,
+   the label, the border and the fill tint — so filling the glyph as well
+   was a fourth statement of the same fact, and a solid star is a heavier
+   mark than anything else in that header. The outline keeps the button's
+   silhouette identical between states, which is what makes the colour
+   change read as a state rather than a different control. */
+.fav-btn.active .fav-star { fill: none; }
 .fav-btn .fav-label-active { display: none; }
 .fav-btn.active .fav-label { display: none; }
 .fav-btn.active .fav-label-active { display: inline; }
@@ -1160,8 +1114,41 @@ button, input { touch-action: manipulation; }
 .calc-container input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; outline: none; font-family: inherit; }
 .calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
 .calc-container input:focus { border-color: var(--border-active); }
-.calc-breakdown { margin-top: 8px; font-size: 10px; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-main); }
-.calc-breakdown .row { display: flex; justify-content: space-between; }
+/* Compact breakdown, not a block of body text.
+   Every row used to be 10px/400 in the same muted colour — measured
+   identical, 11px tall each — so label and number carried exactly the same
+   weight and the whole thing read as four lines of prose you had to parse
+   end to end to find the one number you came for. Three tiers now:
+
+     labels    9px, muted, letterspaced — row keys, not sentences
+     numbers   11px, --text-main, tabular — the thing you actually read
+     asides    the repeated "gp" and the "2%, cap 5M" / "x10,000"
+               qualifiers, dimmer than either, because they say the same
+               thing on every row and carry no value on their own
+
+   Row gaps drop 3px -> 1px so the three working rows sit as a tight block,
+   and that reclaimed space goes to Net profit instead: a hairline above it
+   plus a size step, so it terminates the breakdown rather than being the
+   fourth of four identical lines distinguished only by colour.
+   Rows carry an explicit 13px line box so mixing 9px and 11px inside one
+   row doesn't let the taller glyph push the row height around. */
+.calc-breakdown { margin-top: 8px; color: var(--text-muted); display: flex; flex-direction: column; gap: 1px; background: rgba(0,0,0,0.25); padding: 6px 10px 7px; border-radius: 4px; border: 1px solid var(--border-main); }
+/* align-items:center, not baseline: the label span needs overflow:hidden for
+   its ellipsis on narrow phones, and an overflow-clipped flex item
+   synthesises its baseline from the bottom margin edge instead of its text,
+   which would drop the label below the number. Both spans share the row's
+   explicit line box, so centring the equal-height boxes is stable. */
+.calc-breakdown .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; line-height: 12px; }
+.calc-breakdown .row > span:first-child { font-size: 9px; letter-spacing: 0.2px; color: var(--text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calc-breakdown .row > span:last-child { font-size: 11px; color: var(--text-main); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+/* Qualifier inside a label, and the unit after a number. Both are dimmer
+   than the muted label tint — decorative repetition, present for the
+   reader who wants it and invisible to the one who doesn't. */
+.calc-breakdown .bd-q { color: rgba(217,211,199,0.34); letter-spacing: 0; }
+.calc-breakdown .bd-u { font-size: 9px; color: rgba(217,211,199,0.34); margin-left: 3px; font-weight: 400; }
+.calc-breakdown .bd-net { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-light); line-height: 15px; }
+.calc-breakdown .bd-net > span:first-child { font-size: 10px; letter-spacing: 0.3px; color: var(--text-main); }
+.calc-breakdown .bd-net > span:last-child { font-size: 13px; font-weight: 700; }
 .watchlist-content { flex: 1; overflow-y: auto; }
 .category-group { border-bottom: 1px solid var(--border-main); }
 /* Category title — sticky at top of the scroll container AND visually
@@ -1330,7 +1317,13 @@ button, input { touch-action: manipulation; }
 /* Selected row uses a white OUTLINE (not a border) so it paints on top of the
    at-high / at-low green/gold borders + pulse box-shadow and reads identically
    on every list. outline-offset pulls it just inside the row edge. */
-.wl-item.active { background: rgba(255,255,255,0.05); outline: 2px solid #fff; outline-offset: -2px; }
+/* "You are here", not an alarm. A 2px pure-white outline was the highest
+   contrast object in the sidebar — brighter than the 5D badges, the row
+   accents and the prices — for a row whose only news is that you are
+   already looking at it. A 1px hairline at 42% plus a slightly stronger
+   glass fill still reads as selected at a glance without competing with
+   the signals around it. */
+.wl-item.active { background: rgba(255,255,255,0.07); outline: 1px solid rgba(255,255,255,0.42); outline-offset: -1px; }
 /* Drag-to-reorder: the dragged row dims in place, and a thin gold line on
    whichever edge the cursor is nearer shows exactly where it'll land — no
    extra DOM element between rows, just an inset box-shadow on the row
@@ -2525,20 +2518,24 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
 }
-/* ── Phone: the same three toggles behind a floating puck ────────────────
+/* ── Below 1024px: the same three toggles behind a floating puck ─────────
    The quick-facts strip has no room for them — it already scrolls sideways
-   to fit numbers that are not optional — so on a phone they move INTO the
-   chart, the way a charting app puts its view controls on the canvas
-   rather than in the chrome. placeChartTools() relocates the real nodes,
-   so the click handlers wired at startup keep working untouched.
-   Stacked upward from the puck, which itself sits directly above the
-   refresh button in the same right-hand column: one column of round
-   controls rather than two things floating independently. */
+   to fit numbers that are not optional — so they move INTO the chart, the
+   way a charting app puts its view controls on the canvas rather than in
+   the chrome. placeChartTools() relocates the real nodes, so the click
+   handlers wired at startup keep working untouched.
+
+   The band matters: this used to stop at 640px while the inline toolbar
+   above starts at 1024px, which left 641-1023px with NEITHER — and that
+   band is exactly a phone held sideways, where the quick-facts row is
+   MORE crowded than in portrait, not less. The puck now covers the whole
+   range the inline toolbar doesn't, so the two are complementary rather
+   than leaving a hole between them. */
 .ct-puck { display: none; }
-@media (max-width: 640px) {
+@media (max-width: 1023.98px) {
   .ct-puck {
     display: inline-flex; align-items: center; justify-content: center;
-    position: absolute; right: 5px; bottom: 60px; z-index: 5;
+    position: absolute; right: 5px; bottom: 10px; z-index: 5;
     width: 26px; height: 26px; padding: 0;
     border: 1px solid var(--border-main); border-radius: 6px;
     background: rgba(12,11,9,0.86); backdrop-filter: blur(3px);
@@ -2554,12 +2551,21 @@ button, input { touch-action: manipulation; }
   .chart-tools.is-float { display: none; }
   .chart-tools.is-float.open {
     display: flex; flex-direction: column; align-items: stretch; gap: 4px;
-    position: absolute; right: 5px; bottom: 92px; z-index: 6;
+    position: absolute; right: 5px; bottom: 42px; z-index: 6;
     padding: 5px; border-radius: 8px;
     background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
     border: 1px solid var(--border-main);
   }
   .chart-tools.is-float .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
+}
+/* Portrait only: the refresh button floats into the chart's bottom-right
+   corner too, so the puck steps up to sit directly above it — one column
+   of round controls rather than two things floating independently. Above
+   640px refresh stays in the quick-facts row, so that corner is empty and
+   the puck drops back down into it. */
+@media (max-width: 640px) {
+  .ct-puck { bottom: 60px; }
+  .chart-tools.is-float.open { bottom: 92px; }
 }
 .ct-btn {
   height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
@@ -2758,123 +2764,15 @@ button, input { touch-action: manipulation; }
 
 <h1 class="sr-only">PocketGE: The OSRS Trading Terminal — Grand Exchange Prices, Watchlists &amp; Flip Finder</h1>
 
-<!-- Landing screen — shown on first visit to "/" with no ?q= deep link.
-     Gives organic visitors a real brand/education page instead of dumping
-     them onto a Diamond chart (which previously muddied both SERP intent
-     and GA per-page metrics). Hidden by default; boot logic decides. -->
-<section id="landingPage" class="landing-page" style="display:none" aria-label="Welcome to PocketGE">
-  <div class="landing-inner">
-    <div class="landing-brand">
-      <img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon">
-      <span class="landing-brand-text">Pocket<span>GE</span></span>
-    </div>
-    <h2 class="landing-hero">Watch the market. Find opportunities.</h2>
-    <p class="landing-sub">The OSRS trading terminal — watchlists, price charts, and margins with the <strong>2% GE tax already applied</strong>. No login, mobile-first.</p>
-
-    <!-- Annotated mock — actual UI components styled to match what the
-         visitor will see, with numbered callouts. Beats a generic emoji
-         feature grid because it SHOWS the value instead of describing it. -->
-    <div class="landing-demo">
-      <div class="landing-demo-mock" aria-hidden="true">
-        <div class="ld-ticker">
-          <img class="ld-icon" src="https://static.runelite.net/cache/item/icon/1601.png" alt="">
-          <div class="ld-info">
-            <div class="ld-name">Diamond <span class="ld-wiki">Wiki ↗</span></div>
-            <div class="ld-live">2,750 gp · live</div>
-          </div>
-          <div class="ld-tf">1D <span>+0.4%</span></div>
-        </div>
-        <!-- These reuse the SAME classes the real chart renders with
-             (.price-box / .price-label / .rg-*), not a bespoke lookalike,
-             so this preview can't visually drift from the live product the
-             way a hand-copied mock did. -->
-        <div class="price-strip" style="position:relative">
-          <span class="ld-cnum">1</span>
-          <div class="price-box low">
-            <div class="price-label">Target Buy <span class="live-val">Insta-sell: 2,749</span></div>
-            <div class="price-val"><span>2,735</span></div>
-          </div>
-          <span class="ld-cnum" style="left:auto;right:calc(50% - 8px)">2</span>
-          <div class="price-box high">
-            <div class="price-label">Target Sell <span class="live-val">Insta-buy: 2,784</span></div>
-            <div class="price-val"><span>2,831</span></div>
-          </div>
-        </div>
-        <div class="rg-wrap" style="position:relative;margin:0">
-          <span class="ld-cnum">3</span>
-          <div class="rg-top"><span class="rg-eyebrow">Analyst Rating</span></div>
-          <div class="rg-label is-strong" style="color:var(--buy-color)">Strong Buy</div>
-          <div class="rg-meter">
-            <div class="rg-track">
-              <span class="rg-seg rg-sb is-live"></span>
-              <span class="rg-seg rg-b"></span>
-              <span class="rg-seg rg-n"></span>
-              <span class="rg-seg rg-s"></span>
-              <span class="rg-seg rg-ss"></span>
-            </div>
-            <span class="rg-needle" style="left:15%;--rg-hue:var(--buy-color)"></span>
-          </div>
-          <div class="rg-scale"><span class="rg-end rg-end-buy">Buy</span><span class="rg-sub">Entry score 92 · 1D</span><span class="rg-end rg-end-sell">Sell</span></div>
-        </div>
-      </div>
-      <ol class="landing-demo-callouts">
-        <li><span class="ld-num">1</span> <strong>Target Buy</strong> — the day-flip bid, anchored to recent competitive trades rather than the mid-spread. Switches to a swing bid on 5D+ timeframes.</li>
-        <li><span class="ld-num">2</span> <strong>Target Sell</strong> — already after the 2% GE tax. The profit you see is the profit you keep.</li>
-        <li><span class="ld-num">3</span> <strong>Analyst Rating</strong> — one Strong Buy → Strong Sell call per item, re-scored against whichever chart timeframe you're viewing.</li>
-      </ol>
-    </div>
-
-    <button class="landing-cta" id="landingLaunch" type="button">
-      Launch the app <span aria-hidden="true">→</span>
-    </button>
-
-    <!-- These four lead with what the app is actually built around now:
-         watchlists and charts first, then the numbers you act on. Alerts and
-         the Bank tracker are still in the product and still described in the
-         about section — they just aren't the headline any more. -->
-    <div class="landing-features">
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-        <h3>Watchlists you build</h3>
-        <p>Star the items you actually trade and watch them in one place — live price, change, margin and volume side by side.</p>
-      </div>
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
-        <h3>Charts for OSRS price action</h3>
-        <p>TradingView-inspired charts from 1 day to 5 years, with buy and sell prints, volume, and marked highs and lows.</p>
-      </div>
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></span>
-        <h3>Margins with the tax applied</h3>
-        <p>Target buy and sell levels, buy limits and potential profit with the 2% GE tax already deducted from every figure.</p>
-      </div>
-      <div class="lf-card">
-        <span class="lf-emoji" aria-hidden="true"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
-        <h3>Ratings &amp; flip finder</h3>
-        <p>An analyst rating on where the price sits in its range, plus scored flip recommendations with a buy and sell level.</p>
-      </div>
-    </div>
-
-    <p class="landing-footnote">
-      4,500+ items tracked · Live Grand Exchange prices · No account required ·
-      <a href="/flipping-guide.html">Read the flipping guide →</a>
-    </p>
-  </div>
-</section>
-<script>
-  /* Paint the landing hero IMMEDIATELY for first-time "/" visitors, before
-     the main app script parses — the mobile LCP was waiting ~4s for the
-     whole bundle just to flip one display:none. Boot re-runs the exact same
-     gate later (idempotent), and deep-link / returning visitors skip it. */
-  (function () {
-    try {
-      var q = new URLSearchParams(location.search).get('q');
-      var visited = localStorage.getItem('ge_visited') === '1';
-      if (!q && !visited) {
-        document.getElementById('landingPage').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-      }
-    } catch (e) {}
+<!-- The landing/interstitial screen used to live here: a brand page shown
+     on first visit to "/" with a "Continue to app" button. Removed. Someone
+     who searched "OSRS flipping" or "ruby price" wants the terminal, and an
+     extra tap between them and it is a bounce, not an introduction. The
+     brand and education copy it carried is not lost — the about-section
+     further down the page says the same things to a crawler and to anyone
+     who scrolls, without standing in front of the app.
+     What replaced it: the app itself, opened on an item that is actually
+     moving (see pickLandingItem). -->
   })();
 </script>
 
@@ -3065,8 +2963,14 @@ button, input { touch-action: manipulation; }
           </svg>
         </button>
         <div class="chart-tools" id="chartTools" role="group" aria-label="Chart view options">
-          <button type="button" class="ct-btn" id="ctDots" aria-pressed="true"
-            title="Scatter dots — off draws the highs and lows as lines instead">Dots</button>
+          <!-- There was a "Dots" toggle here that switched the highs and lows
+               to connected lines. Removed: connecting raw insta-buy/insta-sell
+               prints draws a scribble of vertical spikes, because consecutive
+               prints are independent offers rather than a continuous price.
+               That is the same reason the old connecting line was replaced by
+               the EMA trend years back, and re-adding it as an option just
+               made the bad version reachable in two taps. The scatter plus the
+               EMA is the chart; there is no second view worth keeping. -->
           <button type="button" class="ct-btn" id="ctFill" aria-pressed="true"
             title="Shade the band between the buy and sell prices">Fill</button>
           <button type="button" class="ct-btn" id="ctVol" aria-pressed="false"
@@ -3316,8 +3220,60 @@ function pickLandingId() {
   return LANDING_POOL[Math.floor(Math.random() * LANDING_POOL.length)];
 }
 const LANDING_ID = '1617'; // fallback if random pick fails to resolve in mapping
+/* Now that the landing interstitial is gone, the first thing a new visitor
+   sees IS an item chart — so which item it is stopped being cosmetic. A
+   blind random pick from the pool lands on a flat tape about as often as
+   not, and "nothing is happening here" is a poor first frame for a tool
+   whose whole pitch is watching the market.
+   So: rank the pool by how much it has actually moved in the last 24h and
+   open on one of the movers. Movement, not margin — the margin is what the
+   Recommended Flip panel is for, and it computes asynchronously after the
+   first paint, so keying the opening chart to it would either delay the
+   paint or swap the item out from under the visitor a second later. The
+   24h numbers are already in hand by the time this runs (boot awaits
+   loadLatest / load24h before choosing), so this costs nothing.
+   Top FIVE then random among them, not the single biggest mover: a repeat
+   visitor should not get the same chart every time, and the difference
+   between the 1st and 5th mover is not something anyone can perceive. */
+const LANDING_TOP_N = 5;
+function pickLandingItem(isEligible) {
+  try {
+    if (!Array.isArray(mapping) || !mapping.length || !latest || !past24h) return null;
+    const scored = [];
+    for (const id of LANDING_POOL) {
+      const m = mapping.find(x => String(x.id) === id);
+      if (!m || !isEligible(m)) continue;
+      const L = latest.data && latest.data[id];
+      const H = past24h.data && past24h.data[id];
+      if (!L || !H) continue;
+      const now = (Number(L.high) + Number(L.low)) / 2;
+      const then = (Number(H.avgHighPrice) + Number(H.avgLowPrice)) / 2;
+      if (!(now > 0) || !(then > 0)) continue;
+      /* Volume floor: on a thin item a couple of odd offers swing the
+         percentage wildly, and opening on that reads as a broken chart
+         rather than an active one. The pool is all high-volume staples, so
+         this only rejects an item whose feed is having a bad moment. */
+      const vol = (H.highPriceVolume || 0) + (H.lowPriceVolume || 0);
+      if (vol < 1000) continue;
+      scored.push({ m, move: Math.abs((now - then) / then) });
+    }
+    if (!scored.length) return null;
+    scored.sort((a, b) => b.move - a.move);
+    const top = scored.slice(0, LANDING_TOP_N);
+    return top[Math.floor(Math.random() * top.length)].m;
+  } catch (e) { return null; }
+}
 
 let mapping = [], latest = null, past24h = null, volumes = null, selected = null;
+/* Captured HERE, at parse time, before boot writes the flag — the value has
+   to mean "had been here before this page load", not "has been here by now".
+   applyTitleBadge uses it to keep the "(2)" breakout badge out of the title
+   on a first render, which is what stops a crawler indexing
+   "(2) Ruby Price OSRS...". Read live from localStorage it would flip to
+   true mid-session and defeat that. */
+const isReturningVisitor = (() => {
+  try { return localStorage.getItem('ge_visited') === '1'; } catch (e) { return false; }
+})();
 let currentSeries = null, view = "1d", zoom = 1.0, offset = 0;
 /* The timeframe the USER last clicked. `view` can get bumped wider per-item
    when the preferred view is too sparse to draw (see setItem); switching to
@@ -3418,14 +3374,22 @@ function placeRefreshBtn() {
 }
 /* Same re-parenting trick as placeRefreshBtn, for the same reason: moving
    the real #chartTools node keeps the toggles wired by wireChartTools()
-   working, where a clone would silently stop responding. */
+   working, where a clone would silently stop responding.
+
+   Deliberately NOT _refreshPortraitMQ: refresh flips at 640px, but the
+   inline chart toolbar is hidden all the way up to 1024px, so keying the
+   float to the refresh query left 641-1023px — a phone in landscape —
+   with the toolbar hidden by CSS and the puck never floated by JS, i.e.
+   no chart settings at all. This query is the exact complement of the
+   `min-width: 1024px` rule that shows the inline toolbar. */
+const _chartToolsFloatMQ = window.matchMedia('(max-width: 1023.98px)');
 function placeChartTools() {
   const tools = document.getElementById('chartTools');
   const puck = document.getElementById('ctPuck');
   const chart = document.querySelector('.chart-container');
   const row = document.getElementById('quickFactsRow');
   if (!tools || !puck || !chart || !row) return;
-  const float = _refreshPortraitMQ.matches;
+  const float = _chartToolsFloatMQ.matches;
   const host = float ? chart : row;
   if (tools.parentElement !== host) host.appendChild(tools);
   if (puck.parentElement !== host) host.appendChild(puck);
@@ -3455,9 +3419,14 @@ placeRefreshBtn();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => {
   placeChartTools(); wireChartPuck(); placeRefreshBtn();
 });
+/* Both queries have to be watched now that they differ: crossing 640px
+   moves refresh (and restacks the puck above it via CSS), crossing 1024px
+   moves the toolbar between the quick-facts row and the chart. */
 const _onRefreshMQ = () => { placeRefreshBtn(); placeChartTools(); };
-if (_refreshPortraitMQ.addEventListener) _refreshPortraitMQ.addEventListener('change', _onRefreshMQ);
-else if (_refreshPortraitMQ.addListener) _refreshPortraitMQ.addListener(_onRefreshMQ);
+[_refreshPortraitMQ, _chartToolsFloatMQ].forEach(mq => {
+  if (mq.addEventListener) mq.addEventListener('change', _onRefreshMQ);
+  else if (mq.addListener) mq.addListener(_onRefreshMQ);
+});
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
@@ -3482,36 +3451,47 @@ let fullHistorical = null;
    what the list DOES — you cannot see sorting, the column toggles, the 5D
    badges or the row accents on a list you can take in at a glance, and a
    near-empty panel reads as a feature that has not loaded rather than one
-   waiting to be filled. A dozen liquid staples gives every one of those
-   something to act on immediately, and gives a new user something to prune,
-   which is the fastest way to learn that the list is theirs to edit.
-   Chosen for LIQUIDITY, not value: gems, jewellery and bars all fill in
-   minutes, so their numbers move while you watch and the badges actually
-   fire. All are F2P except Zulrah's scales, which is deliberately the one
-   members item — it stays hidden until someone flips the P2P switch, which
-   is the cheapest possible demonstration that the switch does something.
-   IDs verified against items-json/ rather than recalled: 1619 is Uncut ruby
-   here, not the Uncut emerald a from-memory guess would have used.
+   waiting to be filled. Ten gives every one of those something to act on
+   immediately, and gives a new user something to prune, which is the
+   fastest way to learn that the list is theirs to edit.
+
+   The COMPOSITION is the point, not the count. This list started as fifteen
+   entries of which eleven were gems and jewellery — uncut and cut versions
+   of the same four stones, plus three necklaces and two rings — which made
+   a market tracker open looking like a jewellery box, and taught a new user
+   nothing that the first two rows had not already shown. Every one of those
+   is gone. What is here is the stuff that actually turns over: darts and
+   splinters that get burned by the thousand, runes, bones, a herb, logs,
+   one bar, and the scimitar the site is named after.
+
+   Chosen for LIQUIDITY, not value — everything here fills in minutes, so
+   the numbers move while you watch and the 5D badges actually fire.
    ONLY applied when no saved list exists — see favoriteLists below, which
    returns early on any stored ge_favoriteLists (including a deliberately
    emptied one) and falls back to the legacy ge_favorites before ever
    reaching these. A returning user's list is never touched. */
 const FAVORITES_DEFAULTS = [
-  '1639',  // Emerald ring
-  '1619',  // Uncut ruby
-  '1605',  // Emerald
-  '1637',  // Sapphire ring
-  '1662',  // Diamond necklace
-  '1660',  // Ruby necklace
-  '1658',  // Emerald necklace
-  '1603',  // Ruby
-  '1621',  // Uncut emerald
-  '1617',  // Uncut diamond
-  '1601',  // Diamond
+  /* Members items FIRST. The watchlist filters them out entirely in F2P, so
+     ordering them at the top costs an F2P user nothing — their list simply
+     starts at Nature rune — while a P2P user opens on six consumables they
+     actually recognise instead of scrolling past gem jewellery to find one.
+     IDs verified against items-json/, not recalled. Adamant dart is 810:
+     there is a second "Adamant dart" at 14523 which is the BANK PLACEHOLDER
+     (placeholder: true, tradeable_on_ge: false) and would have seeded a row
+     that can never have a price. */
+  '28924', // Sunfire splinters — limit 30,000, burned by the thousand
+  '810',   // Adamant dart      — limit 11,000
+  '565',   // Blood rune
+  '12934', // Zulrah's scales
+  '536',   // Dragon bones
+  '207',   // Grimy ranarr weed
+  /* F2P. Four, and not one of them a gem or a piece of jewellery — that
+     category was the whole complaint. A rune, a log, a bar and the mascot:
+     four different markets rather than four cuts of the same stone. */
+  '561',   // Nature rune
+  '1515',  // Yew logs
   '2359',  // Mithril bar
-  '2361',  // Adamantite bar
-  '12389', // Gilded scimitar — the site mascot, and the landing item
-  '12934', // Zulrah's scales — the lone members item, hidden until P2P
+  '12389', // Gilded scimitar — the site mascot
 ];
 /* Multiple named favorites lists (TradingView-watchlist style) instead of
    one flat list. `favorites` (read/written pervasively below — sorting,
@@ -4121,10 +4101,10 @@ function updateCalculator() {
   const bd = $('#calcBreakdown');
   if (bd) {
     bd.innerHTML = `
-      <div class="row"><span>Margin / item</span><span>${profitPerItem > 0 ? '+' : ''}${fmtGp(profitPerItem)} gp</span></div>
-      <div class="row"><span>GE tax / item (2%, cap 5M)</span><span>-${fmtGp(taxPerItem)} gp</span></div>
-      <div class="row"><span>Total tax (${qty.toLocaleString()})</span><span>-${fmtGp(totalTax)} gp</span></div>
-      <div class="row" style="color:${color};font-weight:bold;"><span>Net profit</span><span>${sign}${fmtGp(totalProfit)} gp</span></div>`;
+      <div class="row"><span>Margin / item</span><span>${profitPerItem > 0 ? '+' : ''}${fmtGp(profitPerItem)}<span class="bd-u">gp</span></span></div>
+      <div class="row"><span>GE tax / item <span class="bd-q">2%, cap 5M</span></span><span>-${fmtGp(taxPerItem)}<span class="bd-u">gp</span></span></div>
+      <div class="row"><span>Total tax <span class="bd-q">&times;${qty.toLocaleString()}</span></span><span>-${fmtGp(totalTax)}<span class="bd-u">gp</span></span></div>
+      <div class="row bd-net"><span>Net profit</span><span style="color:${color};">${sign}${fmtGp(totalProfit)}<span class="bd-u">gp</span></span></div>`;
   }
 }
 
@@ -4137,9 +4117,15 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
      starting batch (user can edit), and label the sub-text honestly. */
   const hasLimit = itemLimit != null && itemLimit > 0;
   const defaultQty = hasLimit ? itemLimit : 1000;
-  const subText = hasLimit
-    ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
-    : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
+  /* One quiet line, same shape either way: quantity, then where that
+     quantity came from. It used to carry a "· tap to expand" hint that
+     changed to "· tap to collapse" on every toggle — three jobs in one
+     line, and the two that weren't the number were the longer half of it.
+     The hint is redundant: the row already has a caret, a hover state, a
+     press state and aria-expanded, so the affordance is stated four ways
+     without spending the only supporting line on it. Dropping it also
+     makes the line STATIC, which is why toggleCalc no longer rewrites it. */
+  const subText = `${defaultQty.toLocaleString()} units · ${hasLimit ? '4h limit' : 'no GE limit'}`;
   const qtyLabel = hasLimit ? 'Qty (4H)' : 'Qty (any)';
   // placeShareButton() may have moved the real #btnShare node into the
   // OLD #ratingGauge/.rg-top (a descendant of #sideModule) — replacing
@@ -4181,11 +4167,10 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
     $('#calcInputs').style.display = isCalcOpen ? 'block' : 'none';
     $('#calcToggleIcon').classList.toggle('closed', !isCalcOpen);
     const hl = $('#calcToggle');
+    /* aria-expanded is now the ONLY thing that changes here — the sub line
+       states the buy limit, which does not depend on whether the panel is
+       open, so it is written once by restoreCalculator and left alone. */
     if (hl) hl.setAttribute('aria-expanded', isCalcOpen);
-    const sub = hl && hl.querySelector('.calc-headline-sub');
-    if (sub) sub.textContent = hasLimit
-      ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
-      : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
   };
   $('#calcToggle').onclick = toggleCalc;
   $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
@@ -5496,7 +5481,7 @@ function applyTitleBadge() {
      Gate it to returning visitors: a crawler (or any first render) must
      never index "(2) Ruby Price OSRS…" as the page title. */
   let n = 0;
-  try { if (localStorage.getItem('ge_visited') === '1') n = countFavoriteBreakouts(); } catch (e) {}
+  if (isReturningVisitor) n = countFavoriteBreakouts();
   document.title = n > 0 ? `(${n}) ${base}` : base;
 }
 
@@ -8918,18 +8903,21 @@ function fitPriceRange(vals) {
    and without it the scatter and the trend line both read sharper on a
    first look. The profile starts on because it is the part nobody would
    think to go looking for. */
-let chartDotsOn = true, chartFillOn = false, chartVProfOn = true;
+let chartFillOn = false, chartVProfOn = true;
 (function loadChartPrefs() {
   try {
     const g = (k, d) => { const v = localStorage.getItem(k); return v === null ? d : v === '1'; };
-    chartDotsOn  = g('ge_chartDots', true);
     chartFillOn  = g('ge_chartFill', false);
     chartVProfOn = g('ge_chartVProf', true);
+    /* The line view is gone (see the removed #ctDots button). Anyone who
+       turned dots OFF has ge_chartDots='0' saved and would otherwise be
+       stuck staring at a chart with no price series at all, so clear the
+       key rather than leave a dead preference behind. */
+    localStorage.removeItem('ge_chartDots');
   } catch (e) {}
 })();
 function wireChartTools() {
   const defs = [
-    ['ctDots',  () => chartDotsOn,  v => { chartDotsOn  = v; }, 'ge_chartDots'],
     ['ctFill',  () => chartFillOn,  v => { chartFillOn  = v; }, 'ge_chartFill'],
     ['ctVol',   () => chartVProfOn, v => { chartVProfOn = v; }, 'ge_chartVProf'],
   ];
@@ -9287,7 +9275,12 @@ function drawChart(series) {
         const yTop = y0 + h_price - (k + 1) * bandH;
         const bx = yRight ? (x0 + w - len) : x0;
         const by = yTop + (bandH - barH) / 2;
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        /* The busiest level keeps the 0.08 fill; every other bar drops to
+           0.05, so the profile reads as one lit rung against a field of
+           context rather than a uniform comb. The edges below still give
+           every bar a definite end, which is what stops the lighter fill
+           reading as unfinished. */
+        ctx.fillStyle = k === poc ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)';
         ctx.fillRect(bx, by, len, barH);
         ctx.fillStyle = k === poc ? EDGE_POC : EDGE;
         ctx.fillRect(yRight ? bx : bx + len - 1, by, 1, barH);
@@ -9347,29 +9340,9 @@ function drawChart(series) {
   /* Dots-only scatter (no connecting line — that was scribbling on dense 1D
      charts). The volume needles above carry the "where did big trades happen"
      signal; here we just plot every print clean and small. */
-  /* Line view of a price series — see the drawDots/line toggle. Lifts the
-     pen over gaps rather than bridging them, so a data hole reads as a hole
-     instead of a straight run between two distant prints. */
-  function drawLineSeries(arr, color, isHigh) {
-    ctx.save();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.6;
-    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    ctx.beginPath();
-    let started = false;
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] == null) { started = false; continue; }
-      const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
-      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-    const extIdx = isHigh ? viewMaxIdx : viewMinIdx;
-    if (extIdx >= 0 && arr[extIdx] != null) {
-      const x = x0 + extIdx * stepX, y = ypx(arr[extIdx], vmin, vmax, y0, h_price);
-      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
-    }
-    ctx.restore();
-  }
+  /* drawLineSeries lived here — the line view's renderer. Deleted with the
+     toggle rather than left dead: nothing else called it, and keeping a
+     working implementation of a view we removed on purpose invites it back. */
   function drawSeries(arr, color, isHigh) {
     /* Radius is tied to the SPACING between prints, tightly clamped.
        Blobbing is a density problem and a fixed radius cannot solve it: at
@@ -9457,9 +9430,7 @@ function drawChart(series) {
        or quieter than the timeframes either side of them. */
     const idxStep = Math.max(1, Math.round(4.5 / Math.max(0.1, stepX)));
     ctx.fillStyle = sellColor;
-    /* Same toggle as the intraday view: with dots off this branch is already
-       a line, so it just drops the sampled scatter riding on top of it. */
-    for (let i = 0; chartDotsOn && i < HI.length; i += idxStep) {
+    for (let i = 0; i < HI.length; i += idxStep) {
       if (HI[i] == null) continue;
       ctx.globalAlpha = dotAlphaAt(i, HI.length);
       ctx.beginPath(); ctx.arc(xs(i), ypx(HI[i], vmin, vmax, y0, h_price), 2.5, 0, Math.PI * 2); ctx.fill();
@@ -9479,16 +9450,9 @@ function drawChart(series) {
     };
     drawHalo(viewMaxIdx, sellColor);
     drawHalo(viewMinIdx, buyColor);
-  } else if (chartDotsOn) {
+  } else {
     drawSeries(HI, sellColor, true);
     drawSeries(LO, buyColor, false);
-  } else {
-    /* Dots off = the line view. The faint thread that already runs under the
-       scatter is the same path, so this just draws it at full strength and
-       skips the scatter — one code path, not a second chart. The period
-       extremes stay, because they are markers rather than scatter. */
-    drawLineSeries(HI, sellColor, true);
-    drawLineSeries(LO, buyColor, false);
   }
 
   /* Smoothed mid-price trend line (EMA over (buy+sell)/2). Replaces the old
@@ -10654,15 +10618,21 @@ setItem._userPicked = false;
     }
     const lastId = (() => { try { return localStorage.getItem('ge_lastItem'); } catch (e) { return null; } })();
     const last = lastId ? mapping.find(x => String(x.id) === lastId) : null;
-    /* When falling back to a default (no ?q=, no remembered last item),
-       roll a random pick from LANDING_POOL each visit instead of always
-       loading the same item. Makes the dashboard feel live and gives
-       organic visitors variety. Pre-resolved Uncut diamond is the hard
-       fallback if the random ID somehow isn't in the mapping. */
+    /* No ?q=, no remembered last item = a brand-new visitor, and since the
+       landing interstitial is gone this chart is now the first thing they
+       ever see. Open on something that has actually moved in the last 24h
+       (pickLandingItem) rather than a blind roll of the pool, so the first
+       frame shows a market doing something.
+       The old random pick stays as the rung below it: if the 24h feed is
+       missing or every candidate fails the volume floor, a random staple is
+       still a better chart than a fixed one. Pre-resolved Uncut diamond,
+       then Ruby, remain the hard fallbacks. */
+    const mover = pickLandingItem(eligible);
     const randomId = pickLandingId();
     const randomLanding = mapping.find(x => String(x.id) === randomId);
     const landing = eligible(urlItem) ? urlItem
                   : eligible(last) ? last
+                  : mover ? mover
                   : eligible(randomLanding) ? randomLanding
                   : eligible(mapping.find(x => String(x.id) === LANDING_ID)) ? mapping.find(x => String(x.id) === LANDING_ID)
                   : mapping.find(x => x.name.toLowerCase() === "ruby");
@@ -10712,40 +10682,14 @@ setItem._userPicked = false;
     updateFootUpdated();
     syncBuildInfo();
 
-    /* Landing-screen gate — first-time visitors arriving at "/" (no ?q= deep
-       link, no ge_visited flag) see a real brand/education page instead of
-       being dumped onto a Diamond chart. Returning visitors and anyone with
-       a ?q= deep link skip it entirely so they land where they expect. The
-       app boots in the background regardless, so when the user taps Launch
-       the dashboard is already warm. */
-    const landingEl = document.getElementById('landingPage');
-    const launchBtn = document.getElementById('landingLaunch');
-    const hasVisited = (() => { try { return localStorage.getItem('ge_visited') === '1'; } catch (e) { return false; } })();
-    /* ANY ?q= in the URL means the visitor came for an item (Google SERP
-       click, shared link) — never block them with the brand/education page,
-       even if the name failed to resolve (typo, renamed item): they still
-       land on the app with a fallback item, which is closer to what they
-       wanted than a marketing page. The landing is ONLY for bare "/" first
-       visits. Bouncing a "steel bar price" searcher into an explainer they
-       didn't ask for is how you earn a high bounce rate. */
-    const showLanding = !urlQ && !hasVisited;
-    if (showLanding && landingEl) {
-      landingEl.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    }
-    /* A deep-link visitor has already "used" the app — never show them the
-       landing page later if they return via plain "/". */
-    if (urlQ && !hasVisited) { try { localStorage.setItem('ge_visited', '1'); } catch (e) {} }
-    if (launchBtn) {
-      launchBtn.onclick = () => {
-        if (landingEl) landingEl.style.display = 'none';
-        document.body.style.overflow = '';
-        try { localStorage.setItem('ge_visited', '1'); } catch (e) {}
-        try {
-          if (typeof gtag === 'function') gtag('event', 'landing_launch', { event_category: 'engagement' });
-        } catch (e) {}
-      };
-    }
+    /* The landing-screen gate lived here. Removed with the screen itself —
+       there is nothing left to gate. ge_visited survives because it has a
+       SECOND job that has nothing to do with the landing page: it is how
+       applyTitleBadge tells a returning human from a first render, so a
+       crawler never indexes "(2) Ruby Price OSRS...". That check reads
+       isReturningVisitor, captured before this line runs, so setting the
+       flag here cannot make the current render look like a return visit. */
+    try { localStorage.setItem('ge_visited', '1'); } catch (e) {}
   } catch (e) {
     console.error(e);
   }
