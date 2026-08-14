@@ -3751,6 +3751,12 @@ function isTaxExempt(id) { return id != null && TAX_EXEMPT_IDS.has(Number(id)); 
 function feeLabelFor(id) {
   return (id != null && Number(id) === BOND_ID) ? "the bond's 10% re-list fee" : 'the 2% tax';
 }
+/* Same fact without the article, for tables and score rows where the label
+   is a fragment rather than part of a sentence. The rate stays in — bonds
+   pay 10%, not 2%, so "after tax" alone would be wrong for them. */
+function feeLabelShort(id) {
+  return (id != null && Number(id) === BOND_ID) ? '10% bond fee' : '2% tax';
+}
 function sellFeeOf(s, id) {
   if (!(s > 0)) return 0;
   if (id != null && Number(id) === BOND_ID) return Math.floor(s * BOND_UNLOCK_FEE);
@@ -7306,29 +7312,52 @@ function ratingWhyHtml(gBuy, gSell, tf) {
     '<div class="rg-why-row"><span class="rw-k">' + k + '</span>'
     + '<span class="rw-v">' + v + '</span>' + bar(score, max) + '</div>';
 
-  const trendTxt = p.trendPct == null ? 'Flat over ' + tf
-    : (p.trendPct > 0.005 ? 'Rising ' : p.trendPct < -0.005 ? 'Falling ' : 'Flat ')
-      + (Math.abs(p.trendPct) > 0.005 ? Math.abs(pct(p.trendPct)) + '% ' : '') + 'over ' + tf;
+  /* Every row used to restate the timeframe — "…over 1D", "…1D's usual
+     range" — even though the head says "· 1D" directly above them. Said
+     once, the rows get shorter without losing anything.
+     Range in particular read as arithmetic to decode: "0% up 1D's usual
+     range (2,440–2,500)". Where the price SITS is the answer, so it says
+     that in words and keeps the bounds as the supporting parenthetical. */
+  const posTxt = p.pos == null ? 'Range unknown'
+    : p.pos < 0.15 ? 'Bottom of range'
+    : p.pos < 0.35 ? 'Low in range'
+    : p.pos < 0.65 ? 'Mid range'
+    : p.pos < 0.85 ? 'High in range'
+    : 'Top of range';
+  const rangeTxt = (p.minV == null || p.maxV == null) ? posTxt
+    : posTxt + ' (' + fmtGp(Math.round(p.minV)) + '–' + fmtGp(Math.round(p.maxV)) + ')';
+  const trendTxt = p.trendPct == null ? 'Flat'
+    : Math.abs(p.trendPct) <= 0.005 ? 'Flat'
+      : (p.trendPct > 0 ? 'Rising ' : 'Falling ') + Math.abs(pct(p.trendPct)) + '%';
   const marginTxt = p.marginPct == null ? 'No workable spread'
-    : (p.marginPct * 100).toFixed(1) + '% after ' + feeLabelFor(selected && selected.id);
+    : (p.marginPct * 100).toFixed(1) + '% after ' + feeLabelShort(selected && selected.id);
+  const liqTxt = p.gpVol > 0 ? abbreviateNumber(p.gpVol) + ' gp/day' : 'Barely traded';
 
-  /* The gap between the two sides is what decides how strong the call is,
-     so it gets said out loud rather than left as an unexplained jump. */
+  /* The gap between the two sides decides how strong the call is, so it is
+     said out loud rather than left as an unexplained jump — but in ONE
+     line. This was two sentences ("Scored from the buy side, the better
+     graded of the two. One side wins by 32 points, so this is a firm
+     call."), which turned a scorecard into a write-up at exactly the point
+     a reader has already got their answer. Naming the winning side covers
+     what the dropped first sentence was for: it IS the side the four rows
+     are scored from. The tie case has no winner to name, so that one says
+     it outright. */
   const gap = Math.abs(b - s);
+  const sideWord = p.side === 'buy' ? 'Buy' : 'Sell';
   const verdictNote = gap >= 30
-    ? 'One side wins by ' + gap + ' points, so this is a firm call.'
+    ? sideWord + ' side wins by ' + gap + ' — firm call.'
     : gap >= 12
-      ? 'One side leads by ' + gap + ' points — a lean, not a firm call.'
-      : 'The two sides are within ' + gap + ' points, so there is no call to make: at this price the item flips about as well either way.';
+      ? sideWord + ' side leads by ' + gap + ' — a lean.'
+      : 'Buy and Sell within ' + gap + ' — rows show the ' + sideWord.toLowerCase() + ' side.';
 
   return '<div class="rg-why">'
     + '<div class="rg-why-head"><span class="rw-t">Why this rating · ' + tf + '</span>'
     + '<span class="rw-sides"><b class="rw-buy">Buy ' + b + '</b><i>vs</i><b class="rw-sell">Sell ' + s + '</b></span></div>'
-    + row('Range', pct(p.pos) + "% up " + tf + "'s usual range (" + fmtGp(Math.round(p.minV)) + '–' + fmtGp(Math.round(p.maxV)) + ')', p.rangeScore, 45)
+    + row('Range', rangeTxt, p.rangeScore, 45)
     + row('Trend', trendTxt, p.trendScore, 25)
     + row('Margin', marginTxt, p.marginScore, 25)
-    + row('Liquidity', p.gpVol > 0 ? abbreviateNumber(p.gpVol) + ' gp traded a day' : 'Barely traded', p.liqScore, 15)
-    + '<div class="rg-why-foot">Scored from the ' + (p.side === 'buy' ? 'buy' : 'sell') + ' side, the better graded of the two. ' + verdictNote + '</div>'
+    + row('Liquidity', liqTxt, p.liqScore, 15)
+    + '<div class="rg-why-foot">' + verdictNote + '</div>'
     + '</div>';
 }
 
