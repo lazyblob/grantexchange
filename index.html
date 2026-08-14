@@ -256,9 +256,9 @@
      token is that headers sit under the data they label. */
   --text-structural: #948A78;
   --buy-color: #E5B842;
-  --sell-color: #22A5B8;
+  --sell-color: #26A9AB;
   --vol-buy: rgba(229, 184, 66, 0.35);
-  --vol-sell: rgba(34, 165, 184, 0.35);
+  --vol-sell: rgba(38, 169, 171, 0.35);
   --positive: #10B981;
   --negative: #EF5350;
   --fav-gold: #FFB300;
@@ -273,16 +273,29 @@
      all green, "green" stopped saying which of those it meant, and Target
      Buy vs Target Sell no longer separated at a glance. Teal earns its keep
      by being the one colour that only ever means "sell side".
-     The teal is pulled COOL for exactly that reason. At #26A69A it sat at
-     hue 174 against the profit green's 160 — fourteen degrees apart, which
-     is not enough for two colours that regularly appear in the same glance
-     (a green profit figure beside a teal Target Sell, teal high dots over a
-     green +change). #22A5B8 sits at 188, so the gap is 28 degrees and the
-     two stop being versions of each other. Luminance moved 2.3%, which is
-     deliberate: the chart repaints ~289 high dots a frame in this colour
-     and their intensity has been tuned three separate times, so the hue can
-     travel but the brightness cannot. If this is ever retuned, keep it
-     BLUER than 180 — drifting back toward green is the failure mode.
+     The teal is pulled COOL, but only just past neutral. Three points on
+     that axis got tested and the middle one won:
+
+       #26A69A  hue 174  green-leaning teal   dE 27 from the profit green
+       #26A9AB  hue 181  green == blue        dE 35   <- this one
+       #22A5B8  hue 188  blue-leaning cyan    dE 45
+
+     174 is too close: fourteen degrees is not enough separation for two
+     colours that land in the same glance (a green profit figure beside a
+     teal Target Sell, teal high dots over a green +change). 188 separates
+     cleanly but goes dim and cold on this background — blue carries almost
+     no luminance, so a bluer teal at the same computed brightness reads
+     weaker, and it stops feeling native beside the gold. 181 sits where the
+     green and blue channels are within two points of each other: still
+     unmistakably not the profit green, still warm enough to hold up on
+     obsidian.
+     Luminance is +5.7% on the original, and that is the one number that had
+     to move UP rather than stay put — it buys back the crispness the bluer
+     version lost. The chart repaints ~289 high dots a frame in this colour
+     and their intensity has been tuned three separate times, so treat that
+     figure as a ceiling, not a starting point.
+     If this is ever retuned: stay inside hue 178-184. Below is the
+     too-close-to-green failure, above is the cold-and-dim one.
      The two greens left are split by JOB, not taste: --rs-green is the
      bright signal green for things that are shouting (a 5-day-high badge, a
      row accent, a Prime Flip band), and --rs-green-deep is the same emerald
@@ -893,15 +906,15 @@ button, input { touch-action: manipulation; }
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .price-box.low  { border-left-color: var(--buy-color);  background: linear-gradient(90deg, rgba(255,184,0,0.10), rgba(32,28,22,0.85) 35%); }
-.price-box.high { border-left-color: var(--sell-color); background: linear-gradient(90deg, rgba(34, 165, 184,0.12), rgba(32,28,22,0.85) 35%); }
+.price-box.high { border-left-color: var(--sell-color); background: linear-gradient(90deg, rgba(38, 169, 171,0.12), rgba(32,28,22,0.85) 35%); }
 .price-box.selected { border-color: #fff; border-left-width: 3px; }
 .price-box.low.selected  { border-left-color: var(--buy-color);  box-shadow: 0 0 0 1px rgba(255,184,0,0.25), 0 4px 12px rgba(255,184,0,0.10); }
-.price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(34, 165, 184,0.30), 0 4px 12px rgba(34, 165, 184,0.12); }
+.price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(38, 169, 171,0.30), 0 4px 12px rgba(38, 169, 171,0.12); }
 .price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; letter-spacing: 0.4px; }
 .live-val { font-weight: normal; color: #E0D9CB; font-size: 10px; text-transform: none; letter-spacing: 0; }
 .live-age { color: var(--text-muted); }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
-.price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(34, 165, 184,0.30); }
+.price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38, 169, 171,0.30); }
 .price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
 /* Nudge the target price gp-by-gp without opening the Potential Profit
    breakdown. These used to be two 16x11 arrows stacked in the corner of a
@@ -922,14 +935,14 @@ button, input { touch-action: manipulation; }
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 .price-box.low  .price-step { color: rgba(229, 184, 66,0.75); }
-.price-box.high .price-step { color: rgba(34, 165, 184,0.85); }
+.price-box.high .price-step { color: rgba(38, 169, 171,0.85); }
 .price-box.low .price-step:hover {
   background: rgba(255,184,0,0.18); border-color: rgba(255,184,0,0.5);
   color: var(--buy-color); box-shadow: 0 0 10px rgba(255,184,0,0.22);
 }
 .price-box.high .price-step:hover {
-  background: rgba(34, 165, 184,0.18); border-color: rgba(34, 165, 184,0.5);
-  color: var(--sell-color); box-shadow: 0 0 10px rgba(34, 165, 184,0.22);
+  background: rgba(38, 169, 171,0.18); border-color: rgba(38, 169, 171,0.5);
+  color: var(--sell-color); box-shadow: 0 0 10px rgba(38, 169, 171,0.22);
 }
 .price-step:active { transform: translateY(1px); }
 .price-step:focus-visible { outline: 2px solid var(--border-active); outline-offset: 1px; }
@@ -2184,12 +2197,12 @@ button, input { touch-action: manipulation; }
    treatment (white rim + tinted glow) as those boxes. */
 .fc-price { flex:1; padding:5px 6px; border-radius:8px; text-align:center; font:inherit; color:inherit; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease; }
 .fc-price.buy  { background:rgba(229, 184, 66,.10); border:1px solid rgba(229, 184, 66,.30); }
-.fc-price.sell { background:rgba(34, 165, 184,.10); border:1px solid rgba(34, 165, 184,.30); }
+.fc-price.sell { background:rgba(38, 169, 171,.10); border:1px solid rgba(38, 169, 171,.30); }
 .fc-price.buy:hover  { border-color:rgba(229, 184, 66,.65); }
-.fc-price.sell:hover { border-color:rgba(34, 165, 184,.65); }
+.fc-price.sell:hover { border-color:rgba(38, 169, 171,.65); }
 .fc-price.selected { border-color:#fff; }
 .fc-price.buy.selected  { box-shadow:0 0 0 1px rgba(255,184,0,.25), 0 4px 12px rgba(255,184,0,.10); }
-.fc-price.sell.selected { box-shadow:0 0 0 1px rgba(34, 165, 184,.30), 0 4px 12px rgba(34, 165, 184,.12); }
+.fc-price.sell.selected { box-shadow:0 0 0 1px rgba(38, 169, 171,.30), 0 4px 12px rgba(38, 169, 171,.12); }
 .fc-price:focus-visible { outline:2px solid var(--border-active); outline-offset:2px; }
 .fc-plabel { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
 .fc-price.buy .fc-plabel { color:var(--buy-color); }
@@ -2293,7 +2306,7 @@ button, input { touch-action: manipulation; }
 .rg-meter { position:relative; padding-bottom:9px; }
 .rg-track { display:flex; gap:2px; height:9px; border-radius:5px; overflow:hidden; }
 .rg-seg { flex:1; transition:filter .2s ease, opacity .2s ease; }
-.rg-ss { background:rgba(34, 165, 184,.34); } .rg-s { background:rgba(34, 165, 184,.17); }
+.rg-ss { background:rgba(38, 169, 171,.34); } .rg-s { background:rgba(38, 169, 171,.17); }
 .rg-n  { background:rgba(120,123,134,.16); }
 .rg-b  { background:rgba(229, 184, 66,.17); } .rg-sb { background:rgba(229, 184, 66,.34); }
 .rg-seg.is-live { filter:brightness(1.9) saturate(1.3); box-shadow:inset 0 0 0 1px rgba(255,255,255,.28); }
@@ -4272,7 +4285,7 @@ async function buildShareCardCanvas() {
     g.fillText(value, x, rowY + 38);
   };
   col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5B842');
-  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#22A5B8');
+  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A9AB');
   /* Potential Profit at a full 4h buy-limit cycle — same figure the
      sidebar's own "Potential Profit" headline shows (limit x margin after
      tax), not the calculator's current inputs, which might be a manual
@@ -4354,8 +4367,8 @@ async function buildShareCardCanvas() {
        draws index 0 leftmost, so it needs the already-reversed order —
        gaugeInfo.liveIdx is likewise a DOM position, not a rating enum, so
        it lines up with this array as written. */
-    const SEG = ['rgba(229, 184, 66,0.34)', 'rgba(229, 184, 66,0.17)', 'rgba(120,123,134,0.16)', 'rgba(34, 165, 184,0.17)', 'rgba(34, 165, 184,0.34)'];
-    const SEG_LIVE = ['rgba(229, 184, 66,0.9)', 'rgba(229, 184, 66,0.65)', 'rgba(160,163,174,0.55)', 'rgba(34, 165, 184,0.65)', 'rgba(34, 165, 184,0.9)'];
+    const SEG = ['rgba(229, 184, 66,0.34)', 'rgba(229, 184, 66,0.17)', 'rgba(120,123,134,0.16)', 'rgba(38, 169, 171,0.17)', 'rgba(38, 169, 171,0.34)'];
+    const SEG_LIVE = ['rgba(229, 184, 66,0.9)', 'rgba(229, 184, 66,0.65)', 'rgba(160,163,174,0.55)', 'rgba(38, 169, 171,0.65)', 'rgba(38, 169, 171,0.9)'];
     for (let i = 0; i < 5; i++) {
       const sx = barX + i * (segW + gap);
       roundRectPath(g, sx, barY, segW, barH, 4);
@@ -8757,7 +8770,7 @@ function drawChart(series) {
     const groupPx = groupSize * stepX;
     const barWidth = Math.max(2, groupPx * 0.72);
     const gapPx = 1; // hairline gap between the two-side stack, so they read as separate
-    const gold = `rgba(229, 184, 66, ${alpha})`, teal = `rgba(34, 165, 184, ${alpha})`;
+    const gold = `rgba(229, 184, 66, ${alpha})`, teal = `rgba(38, 169, 171, ${alpha})`;
     for (const g of groups) {
       const totalH = ((g.sumLow + g.sumHigh) / maxGroupVol) * h_vol;
       if (totalH < 0.5) continue;
@@ -8806,7 +8819,7 @@ function drawChart(series) {
     /* The band between buy-low and sell-high IS the margin, drawn over time —
        the app's hero metric. Kept subtle but actually visible now (was 0.07,
        basically invisible). */
-    ctx.fillStyle = "rgba(34, 165, 184, 0.13)";
+    ctx.fillStyle = "rgba(38, 169, 171, 0.13)";
     let segStart = -1;
     for (let i = 0; i <= L.length; i++) {
       const valid = i < L.length && LO[i] != null && HI[i] != null;
@@ -8892,8 +8905,8 @@ function drawChart(series) {
        at 0.13 that column read as a solid teal wall that swallowed the dots
        and gridlines behind it — the fill is meant to say "this is the traded
        band", not to hide what's inside it. */
-    grad.addColorStop(0, 'rgba(34, 165, 184, 0.065)');
-    grad.addColorStop(1, 'rgba(34, 165, 184, 0.005)');
+    grad.addColorStop(0, 'rgba(38, 169, 171, 0.065)');
+    grad.addColorStop(1, 'rgba(38, 169, 171, 0.005)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     let started = false, firstX = 0, lastX = 0;
@@ -8912,7 +8925,7 @@ function drawChart(series) {
     }
     /* Faint thread through every print — keeps spikes honest between the
        sampled dots without reading as a bold "line chart" line. */
-    ctx.strokeStyle = 'rgba(34, 165, 184, 0.35)'; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(38, 169, 171, 0.35)'; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     started = false;
     for (let i = 0; i < HI.length; i++) {
