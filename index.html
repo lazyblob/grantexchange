@@ -9725,9 +9725,37 @@ function drawChart(series) {
     const k = 2 / (period + 1);
     let ema = null;
     const smooth = new Array(L.length).fill(null);
+    /* Why 1D looked chopped into pieces: a bucket needed BOTH an insta-buy
+       and an insta-sell print to contribute, and on a 5-minute grid most
+       buckets have one side or neither. Every one-sided bucket produced a
+       null, the drawn path lifts the pen at nulls, and the "trend line" came
+       out as a few dozen disconnected strokes. The data was not gappy — the
+       requirement was.
+
+       Each side is carried forward instead. A bucket with only a low keeps
+       the last known high, so the mid moves by half the change rather than
+       collapsing onto whichever side happened to print, which is what taking
+       the available side alone would have done: that trades pen-lifts for
+       vertical steps and looks worse.
+
+       Genuinely dead stretches must still break the line — bridging four
+       hours of no trading with a straight run is a lie about the data — so
+       the carry expires after a run of missing buckets proportional to the
+       window (2%, floor 3). Past that the pen lifts, which is the behaviour
+       the gap rule was always meant to have. */
+    const CARRY_MAX = Math.max(3, Math.round(L.length * 0.02));
+    let lastLo = null, lastHi = null, missRun = 0;
     for (let i = 0; i < L.length; i++) {
-      if (LO[i] == null || HI[i] == null) continue;
-      const mid = (LO[i] + HI[i]) / 2;
+      const hasLo = LO[i] != null, hasHi = HI[i] != null;
+      if (hasLo) lastLo = LO[i];
+      if (hasHi) lastHi = HI[i];
+      if (!hasLo && !hasHi) {
+        if (++missRun > CARRY_MAX) { lastLo = lastHi = null; ema = null; }
+        continue;
+      }
+      missRun = 0;
+      if (lastLo == null || lastHi == null) continue;  // nothing to average yet
+      const mid = (lastLo + lastHi) / 2;
       ema = ema == null ? mid : mid * k + ema * (1 - k);
       smooth[i] = ema;
     }
