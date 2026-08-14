@@ -1052,7 +1052,25 @@ button, input { touch-action: manipulation; }
      screen; the insight/description card then starts just past the fold.
      min-height is a short-viewport safety floor only. (The card's own desktop
      styling lives after the base .ins-* rules so source order wins.) */
-  .chart-container { min-height: calc(100dvh - 320px); max-height: calc(100dvh - 248px); }
+  /* The 248/320 pair left the 30-Day Range bar 80px below the fold at every
+     desktop size measured — 1280x720 through 2560x1440, the same 80 every
+     time, because the chart is the only elastic element and it was sized to
+     end exactly at the fold with the range bar following it. That bar is the
+     one thing on the page answering "is this cheap right now", and a new
+     visitor had to scroll to discover it existed. 88px more (80 plus a little
+     air) buys it back out of the chart, which has the most pixels to spare.
+     Both numbers move together: min-height is a short-viewport safety floor
+     and would win over max-height if it were left above it. */
+  .chart-container { min-height: calc(100dvh - 408px); max-height: calc(100dvh - 336px); }
+}
+/* Just above the desktop breakpoint the quick-facts strip runs out of width
+   and wraps, which costs another ~40px that the 336 above does not know
+   about — measured at 1024x768, where the range bar still sat 38px under the
+   fold while every wider size cleared it by 8. Narrower band, deeper cut. */
+@media (min-width: 1024px) and (max-width: 1200px) {
+  .chart-container { min-height: calc(100dvh - 456px); max-height: calc(100dvh - 384px); }
+}
+@media (min-width: 1024px) {
   /* Without this, a long favorites list had nothing to bound it against —
      .wrap's height is auto (that's what lets the insight card sit just past
      the fold above), so align-items:stretch just grew the WHOLE page to fit
@@ -2986,8 +3004,11 @@ button, input { touch-action: manipulation; }
                EMA is the chart; there is no second view worth keeping. -->
           <button type="button" class="ct-btn" id="ctFill" aria-pressed="true"
             title="Shade the band between the buy and sell prices">Fill</button>
+          <!-- "VP", not "Vol": the chart already has volume BARS along the
+               bottom, and a button labelled Vol sitting a few pixels from
+               them reads as their switch rather than the profile's. -->
           <button type="button" class="ct-btn" id="ctVol" aria-pressed="false"
-            title="Volume profile — how much traded at each price level">Vol</button>
+            title="Volume profile — how much traded at each price level">VP</button>
         </div>
         <!-- One button, two jobs. It refreshes live prices; when the view has
              been zoomed/panned or a target price hand-nudged it also puts
@@ -4508,10 +4529,14 @@ async function buildShareCardCanvas() {
     }
   }
 
-  // 1D / 5D change chips.
-  const chg1d = viewChanges && viewChanges['1d'];
-  const chg5d = viewChanges && viewChanges['5d'];
+  /* Change chip for the timeframe ON SCREEN, and only that one.
+     This used to draw 1D and 5D side by side no matter what the sharer was
+     looking at, so a card built from a 1Y chart led with two day-trader
+     percentages that had nothing to do with the picture underneath it. The
+     card is a screenshot of a decision — it should carry the window that
+     decision was made in, not a fixed pair. */
   const chipY = 290;
+  const chgView = viewChanges && viewChanges[view];
   const drawChangeChip = (x, label, val) => {
     if (val == null) return x;
     const color = val > 0 ? '#10B981' : val < 0 ? '#EF5350' : '#8A8274';
@@ -4526,8 +4551,7 @@ async function buildShareCardCanvas() {
     return x + w + 12;
   };
   let cx = 168;
-  cx = drawChangeChip(cx, '1D', chg1d);
-  cx = drawChangeChip(cx, '5D', chg5d);
+  cx = drawChangeChip(cx, String(view).toUpperCase(), chgView);
   // Volume gets its own chip, not buried as a small aside — "is this a
   // real move or thin-volume noise" is usually the first skeptical
   // question on a shared economy post.
@@ -4553,8 +4577,17 @@ async function buildShareCardCanvas() {
     g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillText(value, x, rowY + 38);
   };
-  col(48, 'Target Buy', recommendedBuy > 0 ? fmtGp(recommendedBuy) + ' gp' : '—', '#E5B842');
-  col(340, 'Target Sell', recommendedSell > 0 ? fmtGp(recommendedSell) + ' gp' : '—', '#26A9AB');
+  /* ONE target — the side actually selected on the page. Showing both made
+     the card state a plan and its opposite at the same time: "sell Sapphire
+     necklace at 446" is a recommendation, "buy at 432 / sell at 446" is a
+     spreadsheet, and the reader has to work out which half was the point.
+     The selected box is the sharer's actual call, so it is the one that
+     travels, and the chart below draws its line at that level. */
+  const shareIsBuy = activePriceBox === 'buy';
+  const shareTgt = shareIsBuy ? recommendedBuy : recommendedSell;
+  const shareTgtColor = shareIsBuy ? '#E5B842' : '#26A9AB';
+  const shareTgtLabel = (view === '1d' ? 'Target ' : 'Swing ') + (shareIsBuy ? 'Buy' : 'Sell');
+  col(48, shareTgtLabel, shareTgt > 0 ? fmtGp(shareTgt) + ' gp' : '—', shareTgtColor);
   /* Potential Profit at a full 4h buy-limit cycle — same figure the
      sidebar's own "Potential Profit" headline shows (limit x margin after
      tax), not the calculator's current inputs, which might be a manual
@@ -4705,8 +4738,31 @@ async function buildShareCardCanvas() {
 
       const minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
       const minT = pts[0].t, maxT = pts[pts.length - 1].t;
+      /* The target has to fit inside the plotted range or its line lands
+         outside the chart box and is simply not drawn — the same silent
+         failure the on-page chart had. Scale bounds therefore include the
+         target; the min/max CAPTIONS below stay on the data, because those
+         two numbers label the price range the item actually traded in and
+         a target is not a trade. Bounded the same way as the live chart so
+         a far-off level cannot flatten the shape into a line. */
+      let sMin = minV, sMax = maxV;
+      if (shareTgt > 0 && isFinite(shareTgt)) {
+        const slack = targetFitSlack(minV, maxV);
+        if (shareTgt >= minV - slack && shareTgt <= maxV + slack) {
+          sMin = Math.min(sMin, shareTgt); sMax = Math.max(sMax, shareTgt);
+          /* When the target IS the new extreme it lands exactly on the top or
+             bottom edge of the chart box, where a dashed level is
+             indistinguishable from a frame. Give it a little room on that
+             side only, so the line reads as sitting in the chart rather than
+             bounding it. A Swing Buy is below every print by construction,
+             so this is the normal case for a buy, not an edge case. */
+          const span = (sMax - sMin) || 1;
+          if (shareTgt <= sMin) sMin -= span * 0.08;
+          if (shareTgt >= sMax) sMax += span * 0.08;
+        }
+      }
       const xOf = t => x + (maxT > minT ? (t - minT) / (maxT - minT) : 0) * w;
-      const yOf = v => chartY + chartH - (maxV > minV ? (v - minV) / (maxV - minV) : 0.5) * chartH;
+      const yOf = v => chartY + chartH - (sMax > sMin ? (v - sMin) / (sMax - sMin) : 0.5) * chartH;
 
       g.beginPath();
       g.moveTo(xOf(pts[0].t), chartY + chartH);
@@ -4729,6 +4785,37 @@ async function buildShareCardCanvas() {
       g.lineJoin = 'round';
       g.stroke();
 
+      /* The target line, drawn ON the shared chart. This is what makes the
+         card an argument rather than a screenshot: "sell at 446" means
+         something the moment you can see 446 sitting on the day's high.
+         Dashed and in the buy/sell colour so it reads as a level rather
+         than as more price data, with the price on a plate at the left so
+         it survives a feed downscaling the image. */
+      if (shareTgt > 0 && shareTgt >= sMin && shareTgt <= sMax) {
+        const ty = yOf(shareTgt);
+        g.save();
+        g.setLineDash([7, 6]);
+        g.strokeStyle = shareTgtColor;
+        g.lineWidth = 2;
+        g.beginPath(); g.moveTo(x, ty); g.lineTo(x + w, ty); g.stroke();
+        g.setLineDash([]);
+        const tText = (shareIsBuy ? 'BUY ' : 'SELL ') + fmtGp(shareTgt);
+        g.font = '800 17px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+        const tw = g.measureText(tText).width + 20, th = 26;
+        /* Flip above/below the line so the plate never hangs off the top or
+           bottom edge of the chart box. */
+        let tby = ty - th - 5;
+        if (tby < chartY) tby = ty + 5;
+        if (tby + th > chartY + chartH) tby = ty - th - 5;
+        roundRectPath(g, x + 8, tby, tw, th, 5);
+        g.fillStyle = 'rgba(10,9,8,0.88)'; g.fill();
+        g.fillStyle = shareTgtColor;
+        g.textAlign = 'left'; g.textBaseline = 'middle';
+        g.fillText(tText, x + 18, tby + th / 2 + 1);
+        g.textBaseline = 'alphabetic';
+        g.restore();
+      }
+
       g.font = '700 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       /* Values only — the 10px "30D LOW"/"30D HIGH" captions under them were
          the smallest type on the card and rendered at under 3px once a feed
@@ -4744,13 +4831,17 @@ async function buildShareCardCanvas() {
       g.textAlign = 'left';
     };
 
-    /* One chart, full width, instead of two half-width ones. The pair made
-       the card read as a dashboard screenshot rather than a trading card, and
-       at half width neither was legible once a feed had downscaled it. The
-       30-day window is the one that matches the range meter and the summary
-       above it, so it's the one that survives. */
+    /* One chart, full width, at the timeframe the sharer is actually looking
+       at. It was hardcoded to 30 days on the reasoning that a fixed window
+       makes cards comparable — but nobody compares two cards, and a fixed
+       window means someone who spotted a move on the 1D chart shares a
+       month-long picture in which that move is a wiggle. The card should
+       show the thing that made them press the button. */
+    const TF_LABEL = { '1d': '24-HOUR', '5d': '5-DAY', '1m': '30-DAY',
+                       '6m': '6-MONTH', '1y': '1-YEAR', '5y': '5-YEAR' };
+    const tfKey = TF_LABEL[view] ? view : '1m';
     const chartY = 640, chartH = 198;
-    drawMiniTrend('1m', '30-DAY PRICE TREND', '30D', 48, W - 96, chartY, chartH);
+    drawMiniTrend(tfKey, TF_LABEL[tfKey] + ' PRICE TREND', TF_LABEL[tfKey], 48, W - 96, chartY, chartH);
   }
 
   /* The market summary paragraph was here. It restated the numbers already
@@ -4818,7 +4909,17 @@ function buildShareText() {
   if (recommendedBuy > 0 && recommendedSell > 0) {
     const margin = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
     lines.push('');
-    lines.push(`Buy ${fmtGp(recommendedBuy)} → Sell ${fmtGp(recommendedSell)}`);
+    /* The SELECTED side only, matching the card and the target line drawn on
+       its chart. "Buy 432 → Sell 446" states a plan and its opposite at once
+       and leaves the reader to work out which half was the point; someone
+       sharing a 24h high is making one call, and the caption should be that
+       call. The other side still contributes to the margin figure on the next
+       line — it has to, the margin is the difference — it just stops being
+       presented as an equal recommendation. */
+    const capIsBuy = activePriceBox === 'buy';
+    const capWord = (view === '1d' ? '' : 'Swing ') + (capIsBuy ? 'Buy' : 'Sell');
+    const capPrice = fmtGp(capIsBuy ? recommendedBuy : recommendedSell);
+    lines.push(`${capWord} ${capPrice} gp${view && view !== '1d' ? ` (${String(view).toUpperCase()})` : ''}`);
     const money = [`${margin >= 0 ? '+' : ''}${fmtGp(margin)} gp/ea after tax`];
     if (selected.limit > 0) {
       const total = margin * selected.limit;
@@ -8946,6 +9047,24 @@ function renderNotifCenter() {
    window in order to solve for the scale/offset that frame the dragged
    rectangle — if the two ever computed the buffer differently, a box zoom
    would land slightly off the box you drew. */
+/* How far outside the plotted data a target may sit and still pull the y-range
+   out to meet it. One definition, used by both the live chart and the share
+   card, so a card can never draw a level the page refused to.
+
+   The first cut of this was half the data span or 2% of price. Measured on a
+   real 5D window it was 17.5 gp against a Swing Buy sitting 18 gp under the
+   floor — a completely ordinary target, rejected by half a gp, and rejection
+   means the line silently is not drawn. A swing buy is anchored BELOW every
+   visible print by construction, so "just outside the data" is its normal
+   position, not an anomaly.
+
+   A full data span (or 8% of price, whichever is larger) covers that with
+   room to spare while still rejecting what the bound is actually for: a
+   stale or hand-typed level far from anything trading, which would squash
+   the whole window into a sliver to reach. */
+function targetFitSlack(dMin, dMax) {
+  return Math.max((dMax - dMin) * 1.0, dMax * 0.08);
+}
 function fitPriceRange(vals) {
   let vmin = Math.min(...vals), vmax = Math.max(...vals);
   if (vmin === vmax) { vmin -= 1; vmax += 1; }
@@ -9081,7 +9200,7 @@ function drawChart(series) {
   const _tgt = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
   if (_tgt != null && isFinite(_tgt)) {
     const dMin = Math.min(...vals), dMax = Math.max(...vals);
-    const slack = Math.max((dMax - dMin) * 0.5, dMax * 0.02);
+    const slack = targetFitSlack(dMin, dMax);
     if (_tgt >= dMin - slack && _tgt <= dMax + slack) vals.push(_tgt);
   }
   let [vmin, vmax] = fitPriceRange(vals);
@@ -9388,14 +9507,12 @@ function drawChart(series) {
            which at this alpha reads as a smudge instead of a level. */
         ctx.fillStyle = 'rgba(255,255,255,0.20)';
         ctx.fillRect(x0, pocMid, w, 1);
-        /* Named, because an unexplained grey line across a price chart is a
-           question rather than an answer. Parked at the far edge from the
-           profile so it never lands on top of the bars it describes. */
-        ctx.font = `600 9px BlinkMacSystemFont, -apple-system, sans-serif`;
-        ctx.fillStyle = 'rgba(255,255,255,0.38)';
-        ctx.textBaseline = 'bottom';
-        if (yRight) { ctx.textAlign = 'left'; ctx.fillText('POC', x0 + 4, pocMid - 2); }
-        else { ctx.textAlign = 'right'; ctx.fillText('POC', x0 + w - 4, pocMid - 2); }
+        /* Deliberately unlabelled. A "POC" tag was the one piece of jargon on
+           a chart that otherwise names things in plain words, and it sat in
+           the plot as a fourth text object competing with the Target badge,
+           the axis and the legend. The line already reads as a level, and it
+           visibly meets the longest bar in the profile — which is the
+           explanation, drawn rather than written. */
       }
       /* One fill weight for every bar, including the busiest. The POC used
          to be a heavier BLOCK (0.16 against 0.06), which is what made the
@@ -9608,9 +9725,37 @@ function drawChart(series) {
     const k = 2 / (period + 1);
     let ema = null;
     const smooth = new Array(L.length).fill(null);
+    /* Why 1D looked chopped into pieces: a bucket needed BOTH an insta-buy
+       and an insta-sell print to contribute, and on a 5-minute grid most
+       buckets have one side or neither. Every one-sided bucket produced a
+       null, the drawn path lifts the pen at nulls, and the "trend line" came
+       out as a few dozen disconnected strokes. The data was not gappy — the
+       requirement was.
+
+       Each side is carried forward instead. A bucket with only a low keeps
+       the last known high, so the mid moves by half the change rather than
+       collapsing onto whichever side happened to print, which is what taking
+       the available side alone would have done: that trades pen-lifts for
+       vertical steps and looks worse.
+
+       Genuinely dead stretches must still break the line — bridging four
+       hours of no trading with a straight run is a lie about the data — so
+       the carry expires after a run of missing buckets proportional to the
+       window (2%, floor 3). Past that the pen lifts, which is the behaviour
+       the gap rule was always meant to have. */
+    const CARRY_MAX = Math.max(3, Math.round(L.length * 0.02));
+    let lastLo = null, lastHi = null, missRun = 0;
     for (let i = 0; i < L.length; i++) {
-      if (LO[i] == null || HI[i] == null) continue;
-      const mid = (LO[i] + HI[i]) / 2;
+      const hasLo = LO[i] != null, hasHi = HI[i] != null;
+      if (hasLo) lastLo = LO[i];
+      if (hasHi) lastHi = HI[i];
+      if (!hasLo && !hasHi) {
+        if (++missRun > CARRY_MAX) { lastLo = lastHi = null; ema = null; }
+        continue;
+      }
+      missRun = 0;
+      if (lastLo == null || lastHi == null) continue;  // nothing to average yet
+      const mid = (lastLo + lastHi) / 2;
       ema = ema == null ? mid : mid * k + ema * (1 - k);
       smooth[i] = ema;
     }
