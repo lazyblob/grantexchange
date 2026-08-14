@@ -550,7 +550,19 @@ button, input { touch-action: manipulation; }
 }
 .fav-btn:hover { background: rgba(255, 179, 0, 0.16); border-color: var(--fav-gold); box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.12); }
 .fav-btn:active { transform: translateY(1px); }
-.fav-btn.active { background: linear-gradient(180deg, rgba(255,179,0,0.28) 0%, rgba(255,179,0,0.12) 100%); border-color: var(--fav-gold); color: #FFE0A0; box-shadow: 0 0 0 3px rgba(255,179,0,0.18), 0 6px 20px rgba(255,179,0,0.18); }
+/* Saved is a STATE, not an action. A high-brightness glow and a thick lit
+   border belong to primary actions — the thing you are being urged to press
+   — and once this button has been pressed it is a passive indicator that
+   should sit quietly while you read the chart.
+   The saved state used to stack four escalations on top of the unsaved one:
+   a 3.5x stronger gradient background, the border going to full gold, paler
+   text, AND two shadows (a hard 3px ring plus a 20px bloom). Every one of
+   them shouted, and none of them was the actual signal.
+   It now keeps the same card and changes only the two things that mean
+   "on": the star fills, and the label reads Saved. The border firms up a
+   step because that is a state change you can see without it being a light
+   source. */
+.fav-btn.active { border-color: rgba(255, 179, 0, 0.72); }
 .fav-btn .fav-star { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .fav-btn.active .fav-star { fill: currentColor; }
 .fav-btn .fav-label-active { display: none; }
@@ -1724,14 +1736,15 @@ button, input { touch-action: manipulation; }
      glow, which is the cue worth having; unsaved shows a bare outline star.
      border-color (not border-width) does the hiding, so the 1.5px box stays
      reserved and the star doesn't shift when you toggle it.
-     The glow is the SOFT 0 6px 20px shadow only — the 0 0 0 3px half of the
-     original is a hard-edged ring, which is what read as a second box. */
+     No glow on either state here — the fill of the star is the signal. */
   .ticker-header .fav-btn,
   .ticker-header .fav-btn:hover,
   .ticker-header .fav-btn.active { background: transparent; }
   .ticker-header .fav-btn { border-color: transparent; box-shadow: none; }
   .ticker-header .fav-btn:hover { border-color: rgba(255,179,0,0.45); color: #FFE0A0; box-shadow: none; }
-  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: 0 0 12px rgba(255,179,0,0.4); }
+  /* Same reasoning as the base rule: the filled star carries the state, so
+     this keeps the border cue and drops the 12px bloom. */
+  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: none; }
   .toolbar { flex: 1 1 auto; min-width: 0; justify-content: space-between; padding: 2px; align-items: center; }
   .toolbar button { flex: 1; padding: 5px 2px; font-size: 12px; min-width: 0; line-height: 1; }
   .pct-chg { display: none !important; }
