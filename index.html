@@ -2570,20 +2570,24 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
 }
-/* ── Phone: the same three toggles behind a floating puck ────────────────
+/* ── Below 1024px: the same three toggles behind a floating puck ─────────
    The quick-facts strip has no room for them — it already scrolls sideways
-   to fit numbers that are not optional — so on a phone they move INTO the
-   chart, the way a charting app puts its view controls on the canvas
-   rather than in the chrome. placeChartTools() relocates the real nodes,
-   so the click handlers wired at startup keep working untouched.
-   Stacked upward from the puck, which itself sits directly above the
-   refresh button in the same right-hand column: one column of round
-   controls rather than two things floating independently. */
+   to fit numbers that are not optional — so they move INTO the chart, the
+   way a charting app puts its view controls on the canvas rather than in
+   the chrome. placeChartTools() relocates the real nodes, so the click
+   handlers wired at startup keep working untouched.
+
+   The band matters: this used to stop at 640px while the inline toolbar
+   above starts at 1024px, which left 641-1023px with NEITHER — and that
+   band is exactly a phone held sideways, where the quick-facts row is
+   MORE crowded than in portrait, not less. The puck now covers the whole
+   range the inline toolbar doesn't, so the two are complementary rather
+   than leaving a hole between them. */
 .ct-puck { display: none; }
-@media (max-width: 640px) {
+@media (max-width: 1023.98px) {
   .ct-puck {
     display: inline-flex; align-items: center; justify-content: center;
-    position: absolute; right: 5px; bottom: 60px; z-index: 5;
+    position: absolute; right: 5px; bottom: 10px; z-index: 5;
     width: 26px; height: 26px; padding: 0;
     border: 1px solid var(--border-main); border-radius: 6px;
     background: rgba(12,11,9,0.86); backdrop-filter: blur(3px);
@@ -2599,12 +2603,21 @@ button, input { touch-action: manipulation; }
   .chart-tools.is-float { display: none; }
   .chart-tools.is-float.open {
     display: flex; flex-direction: column; align-items: stretch; gap: 4px;
-    position: absolute; right: 5px; bottom: 92px; z-index: 6;
+    position: absolute; right: 5px; bottom: 42px; z-index: 6;
     padding: 5px; border-radius: 8px;
     background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
     border: 1px solid var(--border-main);
   }
   .chart-tools.is-float .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
+}
+/* Portrait only: the refresh button floats into the chart's bottom-right
+   corner too, so the puck steps up to sit directly above it — one column
+   of round controls rather than two things floating independently. Above
+   640px refresh stays in the quick-facts row, so that corner is empty and
+   the puck drops back down into it. */
+@media (max-width: 640px) {
+  .ct-puck { bottom: 60px; }
+  .chart-tools.is-float.open { bottom: 92px; }
 }
 .ct-btn {
   height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
@@ -3463,14 +3476,22 @@ function placeRefreshBtn() {
 }
 /* Same re-parenting trick as placeRefreshBtn, for the same reason: moving
    the real #chartTools node keeps the toggles wired by wireChartTools()
-   working, where a clone would silently stop responding. */
+   working, where a clone would silently stop responding.
+
+   Deliberately NOT _refreshPortraitMQ: refresh flips at 640px, but the
+   inline chart toolbar is hidden all the way up to 1024px, so keying the
+   float to the refresh query left 641-1023px — a phone in landscape —
+   with the toolbar hidden by CSS and the puck never floated by JS, i.e.
+   no chart settings at all. This query is the exact complement of the
+   `min-width: 1024px` rule that shows the inline toolbar. */
+const _chartToolsFloatMQ = window.matchMedia('(max-width: 1023.98px)');
 function placeChartTools() {
   const tools = document.getElementById('chartTools');
   const puck = document.getElementById('ctPuck');
   const chart = document.querySelector('.chart-container');
   const row = document.getElementById('quickFactsRow');
   if (!tools || !puck || !chart || !row) return;
-  const float = _refreshPortraitMQ.matches;
+  const float = _chartToolsFloatMQ.matches;
   const host = float ? chart : row;
   if (tools.parentElement !== host) host.appendChild(tools);
   if (puck.parentElement !== host) host.appendChild(puck);
@@ -3500,9 +3521,14 @@ placeRefreshBtn();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => {
   placeChartTools(); wireChartPuck(); placeRefreshBtn();
 });
+/* Both queries have to be watched now that they differ: crossing 640px
+   moves refresh (and restacks the puck above it via CSS), crossing 1024px
+   moves the toolbar between the quick-facts row and the chart. */
 const _onRefreshMQ = () => { placeRefreshBtn(); placeChartTools(); };
-if (_refreshPortraitMQ.addEventListener) _refreshPortraitMQ.addEventListener('change', _onRefreshMQ);
-else if (_refreshPortraitMQ.addListener) _refreshPortraitMQ.addListener(_onRefreshMQ);
+[_refreshPortraitMQ, _chartToolsFloatMQ].forEach(mq => {
+  if (mq.addEventListener) mq.addEventListener('change', _onRefreshMQ);
+  else if (mq.addListener) mq.addListener(_onRefreshMQ);
+});
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
