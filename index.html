@@ -9026,6 +9026,18 @@ function drawChart(series) {
       const barH = Math.max(1, bandH - 1);
       const poc = buckets.indexOf(maxV);
       ctx.save();
+      /* One fill weight for every bar, including the busiest. The POC used
+         to be a heavier BLOCK (0.16 against 0.06), which is what made the
+         profile read as slabs sitting on the chart instead of a layer behind
+         it — a filled rectangle gains weight with its whole area, so the
+         moment you raise its alpha to mark it you have also made it the
+         densest object in the plot. The mark moved to the bar's leading
+         EDGE, which is one pixel wide: it can run bright enough to find at a
+         glance without adding any mass.
+         The leading edge is the end pointing INTO the plot, which flips with
+         the y-axis. On portrait the axis is on the right and bars grow
+         leftward, so the sharp end is their left one. */
+      const EDGE = 'rgba(255,255,255,0.22)', EDGE_POC = 'rgba(255,255,255,0.55)';
       for (let k = 0; k < NB; k++) {
         if (buckets[k] <= 0) continue;
         const len = (buckets[k] / maxV) * maxLen;
@@ -9033,8 +9045,18 @@ function drawChart(series) {
         /* Bucket 0 is the BOTTOM of the price range, and y grows downward. */
         const yTop = y0 + h_price - (k + 1) * bandH;
         const bx = yRight ? (x0 + w - len) : x0;
-        ctx.fillStyle = k === poc ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.06)';
-        ctx.fillRect(bx, yTop + (bandH - barH) / 2, len, barH);
+        const by = yTop + (bandH - barH) / 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillRect(bx, by, len, barH);
+        ctx.fillStyle = k === poc ? EDGE_POC : EDGE;
+        ctx.fillRect(yRight ? bx : bx + len - 1, by, 1, barH);
+        /* The point of control gets closed off top and bottom too, so it
+           reads as one outlined level rather than just a brighter tip. */
+        if (k === poc) {
+          ctx.fillStyle = 'rgba(255,255,255,0.30)';
+          ctx.fillRect(bx, by, len, 1);
+          ctx.fillRect(bx, by + barH - 1, len, 1);
+        }
       }
       ctx.restore();
     }
