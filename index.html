@@ -9061,6 +9061,29 @@ function drawChart(series) {
   const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) return;
 
+  /* The active target has to be INSIDE the y-range, because the target line
+     is clipped to the plot and simply vanishes when it is not — which is a
+     silent failure in the one place the chart cannot afford one. A Swing Buy
+     sits near the window's floor by construction, so on a falling item it
+     lands just under the lowest visible print: at 5D on a -5% day the axis
+     ran 386-420 with the target at 381, and the user saw a highlighted
+     SWING BUY 381 box with no line anywhere on the chart and nothing saying
+     why. The number the whole page is built around was the one thing not
+     drawn.
+
+     Bounded on purpose. The target joins the data in setting the range only
+     while it is within half the data's own span of it; past that the chart
+     would squash several days of price into a sliver to reach a level that
+     is nowhere near trading, so the range stays put and the line gets an
+     edge marker instead (see the activePrice block further down). Nudging a
+     target with the +/- buttons moves it a gp at a time and will never
+     approach that limit; a stale or hand-typed outlier can. */
+  const _tgt = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
+  if (_tgt != null && isFinite(_tgt)) {
+    const dMin = Math.min(...vals), dMax = Math.max(...vals);
+    const slack = Math.max((dMax - dMin) * 0.5, dMax * 0.02);
+    if (_tgt >= dMin - slack && _tgt <= dMax + slack) vals.push(_tgt);
+  }
   let [vmin, vmax] = fitPriceRange(vals);
   /* Manual axis scale (drag the price axis): stretch/squash the visible
      range around its midpoint. yScale > 1 flattens, < 1 amplifies. */
@@ -9704,6 +9727,33 @@ function drawChart(series) {
          faintly and the badge never looks punched out. */
       ctx.fillStyle = "rgba(19,17,16,0.92)";
       roundRectPath(ctx, bx, by, bw, bh, 3); ctx.fill();
+      const tx = Math.round(bx + padX), tyc = Math.round(cy);
+      ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
+      ctx.fillText(word, tx, tyc); ctx.globalAlpha = 1;
+      ctx.font = priceFont; ctx.fillStyle = col;
+      ctx.fillText(price, Math.round(tx + wordW + gapW), tyc);
+      ctx.restore();
+    } else {
+      /* Target is off-scale — only reachable when it sits further from the
+         data than the range-fit above is willing to stretch. Previously this
+         branch did not exist and the line simply was not drawn, so the chart
+         said nothing at all about the number in the highlighted box. Say
+         which way it went instead: a badge pinned to the edge it went past,
+         with an arrow, so "no line" never again means "no information". */
+      const col = activePriceBox === 'buy' ? buyColor : sellColor;
+      const below = py > y0 + h_price;
+      ctx.save();
+      const word = below ? 'Target ↓' : 'Target ↑', price = fmtGp(activePrice);
+      const wordFont = "9px BlinkMacSystemFont, sans-serif";
+      const priceFont = "bold 10.5px BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = wordFont; const wordW = ctx.measureText(word).width;
+      ctx.font = priceFont; const priceW = ctx.measureText(price).width;
+      const padX = 5.5, gapW = 4, bh = 15, bx = x0 + 4;
+      const bw = padX * 2 + wordW + gapW + priceW;
+      const cy = below ? (y0 + h_price - bh / 2 - 2) : (y0 + bh / 2 + 2);
+      ctx.fillStyle = "rgba(19,17,16,0.92)";
+      roundRectPath(ctx, bx, cy - bh / 2, bw, bh, 3); ctx.fill();
       const tx = Math.round(bx + padX), tyc = Math.round(cy);
       ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
       ctx.fillText(word, tx, tyc); ctx.globalAlpha = 1;
