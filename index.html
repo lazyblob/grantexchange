@@ -2176,17 +2176,27 @@ button, input { touch-action: manipulation; }
 
 .fc-mini { display:none; align-items:center; gap:8px; min-width:0; }
 .fc-mini-icon { width:22px; height:22px; flex:0 0 22px; image-rendering:pixelated; }
-/* Packed LEFT, not spread. Pinned right, the score sat directly beneath the
-   Next button with nothing between them, so the two read as one cluster and
-   it wasn't obvious which control the number belonged to. The name shrinks
-   (0 1 auto + ellipsis) instead of pushing the score across, and the score
-   claims the leftover space so the right-hand column under Next stays
-   empty. */
+/* Pushed RIGHT, with the controls column reserved beneath it.
+   This has been both ways. Pinned right with nothing reserved, the score sat
+   directly under the Next button and the two read as one cluster; the fix
+   was to pack it left, which then parked it a few px from the item name and
+   made a phone read "Steel bar SCORE 83" as one run-on string while the
+   whole right half of the row sat empty.
+   Neither end is the problem — the collision is. margin-left:auto pushes the
+   score to the end of the row, and the 92px padding on the collapsed row
+   (see below) stops "the end of the row" from meaning "under Next". The
+   name still shrinks first (0 1 auto + ellipsis) rather than shoving the
+   score anywhere. */
 .fc-mini-name { flex:0 1 auto; min-width:0; font-weight:800; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.fc-mini-score { flex:0 0 auto; margin-right:auto; font-weight:900; font-size:14px; line-height:1; }
-/* A bare number needed a noun. Keeps the figure in its verdict colour while
-   the label stays muted, so the colour still carries the verdict. */
-.fc-mini-score-k { font-size:9px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--text-muted); }
+.fc-mini-score { flex:0 0 auto; margin-left:auto; font-weight:900; font-size:14px; line-height:1; }
+/* A bare number needed a noun, and "SCORE" was a poor one — it named the
+   field instead of saying anything, on the one line where space is scarcest.
+   The verdict word says what the number means, so it replaces the label and
+   follows the figure: "83 STRONG". It inherits the verdict colour rather
+   than sitting muted, because the word and the number are now one reading
+   rather than a label and its value. "Flip" is trimmed off upstream — the
+   header six pixels above already says Recommended flip. */
+.fc-mini-score-k { font-size:9px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:inherit; opacity:.85; }
 .flip-card.collapsed { padding:0; }
 .flip-card.collapsed .fc-head { margin-bottom:0; }
 .flip-card.collapsed .fc-collapsible { display:none; }
@@ -2208,8 +2218,13 @@ button, input { touch-action: manipulation; }
 /* The name and the score are two separate readings, not one phrase, so the
    score gets more room than the 8px that ties the icon to the name it
    belongs to. Same reason the kicker steps away from its own number. */
-.flip-card.collapsed .fc-mini-score { margin-left:6px; }
-.flip-card.collapsed .fc-mini-score-k { margin-right:3px; }
+/* PADDING, not margin. This rule outranks the base `.fc-mini-score` on
+   specificity, so setting margin-left here would overwrite the `auto` that
+   does the pushing and silently drop the score back beside the name —
+   which is the bug this change exists to fix. */
+.flip-card.collapsed .fc-mini-score { padding-left:10px; }
+/* The word trails the number now, so the gap moves to the other side. */
+.flip-card.collapsed .fc-mini-score-k { margin-left:4px; }
 .flip-card.collapsed .fc-mini-icon { width:18px; height:18px; flex-basis:18px; }
 .flip-card.collapsed .fc-mini-name { font-size:12px; }
 .flip-card.collapsed .fc-mini-score { font-size:13px; }
@@ -2773,8 +2788,6 @@ button, input { touch-action: manipulation; }
      who scrolls, without standing in front of the app.
      What replaced it: the app itself, opened on an item that is actually
      moving (see pickLandingItem). -->
-  })();
-</script>
 
 <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
 
@@ -8059,7 +8072,12 @@ function buildRec(c, eng){
     id: String(item.id), item, node, buy: eng.buy, sell: eng.sell, edge, edgePct, lowConf: eng.lowConf,
     hasLimit, limit, qtyEff, hrsToLimit,
     realizable: edge * qtyEff, perLimit: edge * limit,
-    vol: c.vol, flipScore, parts, verdict: v.word, color: v.color,
+    /* verdictShort drops the trailing "Flip" — the collapsed summary sits
+       directly under a header that already says "Recommended flip", so the
+       full "Strong Flip" repeats the word twice in ~40px. The expanded card
+       keeps the full phrase, where it stands alone under the score. */
+    vol: c.vol, flipScore, parts, verdict: v.word,
+    verdictShort: v.word.replace(/\s*Flip$/, ''), color: v.color,
     rankValue: edge * qtyEff * recLiqMult(c.vol) * (eng.lowConf ? 0.8 : 1),
     why: recWhy(edgePct, qtyEff, eng.lowConf), series: null
   };
@@ -8151,7 +8169,7 @@ function renderFlipCard(rec){
       <div class="fc-mini">
         <img class="fc-mini-icon" src="${itemIconUrl(rec.id)}" alt="" loading="lazy">
         <span class="fc-mini-name">${rec.item.name}</span>
-        <span class="fc-mini-score" style="color:${rec.color}" title="${rec.verdict} — ${rec.flipScore}/100. Expand the card for the breakdown."><span class="fc-mini-score-k">Score</span> ${rec.flipScore}</span>
+        <span class="fc-mini-score" style="color:${rec.color}" title="${rec.verdict} — ${rec.flipScore}/100. Expand the card for the breakdown.">${rec.flipScore}<span class="fc-mini-score-k">${rec.verdictShort}</span></span>
       </div>
       <div class="fc-collapsible">
         <div class="fc-body">
