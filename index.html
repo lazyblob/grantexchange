@@ -2778,7 +2778,7 @@ button, input { touch-action: manipulation; }
                 <a class="drawer-link drawer-rsn" href="#meet-the-dev">Add me in game — <b>pocketge</b></a>
               </div>
             </div>
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" title="PocketGE — tap to refresh"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
+            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" role="button" tabindex="0" aria-label="Refresh the page"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
               <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
@@ -5310,7 +5310,10 @@ function updateFootUpdated() {
 /* In-game name shown as the byline on the deploy card. Empty string hides
    the whole block, so the card degrades to just the deploy facts. */
 const OWNER_RSN = 'pocketge';
-const OWNER_NOTE = 'Usually around the GE on W301/302 — add me to talk flips, bugs or ideas.';
+/* Split out so the logo hover and the deploy card cannot drift apart on the
+   one detail someone would actually act on. */
+const OWNER_WORLDS = 'W301/302';
+const OWNER_NOTE = `Usually around the GE on ${OWNER_WORLDS} — add me to talk flips, bugs or ideas.`;
 const REPO_URL = 'https://github.com/lazyblob/pocketge.com';
 /* "Updated today" is a rounded label, which is exactly what a passer-by
    wants — but it can't answer "did my fix actually ship?". This card gives
@@ -5440,6 +5443,56 @@ function syncBuildInfo() {
     document.addEventListener('scroll', close, true);
     window.addEventListener('resize', close);
   });
+})();
+
+/* ── Logo hover: what the click does, plus who to find in-game ──────────
+   The logo has always reloaded the page; that was buried in a native
+   title= tooltip, which arrives late, renders as an OS box and cannot show
+   the second half of this. Reuses .share-tip rather than inventing a
+   second popover, so both hovers on this page look and behave alike.
+   The in-game name lives here now because the top-bar deploy pill used to
+   be the one path to it from above the fold, and removing that pill took
+   the path with it. The footer card still carries the full version — this
+   is the short form, on the element people are most likely to poke at.
+   Hover only, and only on real pointer devices: on touch the tap has to
+   stay a plain reload rather than being swallowed by a tooltip. */
+(function logoHint() {
+  const el = document.getElementById('logoBtn');
+  if (!el || !OWNER_RSN) return;
+  const tip = document.createElement('div');
+  tip.className = 'share-tip';
+  tip.setAttribute('role', 'tooltip');
+  tip.id = 'logoTip';
+  tip.innerHTML = `<div class="st-title">Tap to <b>refresh</b></div>
+    <div class="st-sub">Reloads the page for fresh prices and a reset chart view.</div>
+    <ul class="st-list">
+      <li>Add me in-game: <b style="color:var(--fav-gold)">${escapeHtml(OWNER_RSN)}</b></li>
+      <li>Usually around the GE on ${escapeHtml(OWNER_WORLDS)}</li>
+    </ul>`;
+  document.body.appendChild(tip);
+
+  const place = () => {
+    const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+    let top = r.bottom + 8;
+    if (top + h > window.innerHeight - 8) top = r.top - h - 8;
+    tip.style.left = left + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+  };
+  const open = () => { place(); tip.classList.add('open'); };
+  const close = () => tip.classList.remove('open');
+
+  el.addEventListener('mouseenter', () => { if (matchMedia('(hover: hover)').matches) open(); });
+  el.addEventListener('mouseleave', close);
+  el.addEventListener('focus', open);
+  el.addEventListener('blur', close);
+  /* role=button without this is a lie to a keyboard user — the element is a
+     span, so Enter and Space do not fire its onclick on their own. */
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.reload(); }
+  });
+  document.addEventListener('scroll', close, true);
+  window.addEventListener('resize', close);
 })();
 
 /* Per-item meta refresh. Updates description / OG / Twitter / canonical so a
