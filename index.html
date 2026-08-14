@@ -1731,20 +1731,32 @@ button, input { touch-action: manipulation; }
   .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
   .ticker-header .fav-btn .fav-star { width: 16px; height: 16px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
-  /* Icon-only here, so no background fill in any state — that fill was the
-     "box behind the border". The saved state keeps its gold border and a
-     glow, which is the cue worth having; unsaved shows a bare outline star.
-     border-color (not border-width) does the hiding, so the 1.5px box stays
-     reserved and the star doesn't shift when you toggle it.
-     No glow on either state here — the fill of the star is the signal. */
+  /* ── Mobile Save button ──────────────────────────────────────────────
+     One container, two star states. The container is identical whether or
+     not the item is saved — a 10% gold wash and a clean 1px #E5B842 hairline
+     — so toggling never makes a box appear, grow or light up. The ONLY
+     thing that changes is the star: hollow and muted when unsaved, solid
+     warm gold when saved.
+     No box-shadow in any state. An outer glow is the language of a primary
+     action; a favourite toggle is a passive indicator, and at phone size a
+     12px bloom on a 30px button is most of the button.
+     #E5B842 rather than --fav-gold (#FFB300): the amber is the loudest gold
+     on the page and it is doing real work in the watchlist's 5D badges. The
+     warm gold is the same one Target Buy uses, which is the right weight for
+     a control sitting in the header.
+     NOTE: this rule is duplicated across the two mobile breakpoints below
+     (narrow-portrait and short-landscape). They drifted apart once already —
+     one kept a 12px glow the other had lost — so change them together. */
   .ticker-header .fav-btn,
   .ticker-header .fav-btn:hover,
-  .ticker-header .fav-btn.active { background: transparent; }
-  .ticker-header .fav-btn { border-color: transparent; box-shadow: none; }
-  .ticker-header .fav-btn:hover { border-color: rgba(255,179,0,0.45); color: #FFE0A0; box-shadow: none; }
-  /* Same reasoning as the base rule: the filled star carries the state, so
-     this keeps the border cue and drops the 12px bloom. */
-  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: none; }
+  .ticker-header .fav-btn.active {
+    background: rgba(229, 184, 66, 0.10);
+    border: 1px solid #E5B842;
+    box-shadow: none;
+  }
+  .ticker-header .fav-btn { color: rgba(229, 184, 66, 0.70); }
+  .ticker-header .fav-btn.active,
+  .ticker-header .fav-btn:hover { color: #E5B842; }
   .toolbar { flex: 1 1 auto; min-width: 0; justify-content: space-between; padding: 2px; align-items: center; }
   .toolbar button { flex: 1; padding: 5px 2px; font-size: 12px; min-width: 0; line-height: 1; }
   .pct-chg { display: none !important; }
@@ -1827,19 +1839,32 @@ button, input { touch-action: manipulation; }
   .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
   .ticker-header .fav-btn .fav-star { width: 17px; height: 17px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
-  /* Icon-only here, so no background fill in any state — that fill was the
-     "box behind the border". The saved state keeps its gold border and a
-     glow, which is the cue worth having; unsaved shows a bare outline star.
-     border-color (not border-width) does the hiding, so the 1.5px box stays
-     reserved and the star doesn't shift when you toggle it.
-     The glow is the SOFT 0 6px 20px shadow only — the 0 0 0 3px half of the
-     original is a hard-edged ring, which is what read as a second box. */
+  /* ── Mobile Save button ──────────────────────────────────────────────
+     One container, two star states. The container is identical whether or
+     not the item is saved — a 10% gold wash and a clean 1px #E5B842 hairline
+     — so toggling never makes a box appear, grow or light up. The ONLY
+     thing that changes is the star: hollow and muted when unsaved, solid
+     warm gold when saved.
+     No box-shadow in any state. An outer glow is the language of a primary
+     action; a favourite toggle is a passive indicator, and at phone size a
+     12px bloom on a 30px button is most of the button.
+     #E5B842 rather than --fav-gold (#FFB300): the amber is the loudest gold
+     on the page and it is doing real work in the watchlist's 5D badges. The
+     warm gold is the same one Target Buy uses, which is the right weight for
+     a control sitting in the header.
+     NOTE: this rule is duplicated across the two mobile breakpoints below
+     (narrow-portrait and short-landscape). They drifted apart once already —
+     one kept a 12px glow the other had lost — so change them together. */
   .ticker-header .fav-btn,
   .ticker-header .fav-btn:hover,
-  .ticker-header .fav-btn.active { background: transparent; }
-  .ticker-header .fav-btn { border-color: transparent; box-shadow: none; }
-  .ticker-header .fav-btn:hover { border-color: rgba(255,179,0,0.45); color: #FFE0A0; box-shadow: none; }
-  .ticker-header .fav-btn.active { border-color: var(--fav-gold); color: #FFE0A0; box-shadow: 0 0 12px rgba(255,179,0,0.4); }
+  .ticker-header .fav-btn.active {
+    background: rgba(229, 184, 66, 0.10);
+    border: 1px solid #E5B842;
+    box-shadow: none;
+  }
+  .ticker-header .fav-btn { color: rgba(229, 184, 66, 0.70); }
+  .ticker-header .fav-btn.active,
+  .ticker-header .fav-btn:hover { color: #E5B842; }
   .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 5px; align-items: center; }
   /* line-height:1 so each label's box is the glyph itself. Inherited
      leading otherwise pads the text box unevenly against the 30px
