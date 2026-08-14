@@ -9071,7 +9071,15 @@ function drawChart(series) {
       let cy = py - bh / 2 - 3;
       if (cy - bh / 2 < y0 + 1) cy = py + bh / 2 + 3;
       const by = cy - bh / 2;
-      ctx.fillStyle = "rgba(8,10,14,0.90)";
+      /* The chart's OWN surface colour (--bg-chart #131110), not the darker
+         #080A0E this was. A plate darker than the background it sits on is
+         an object laid over the chart; a plate that matches it is a clearing
+         in the data. Against empty plot area its edges now disappear
+         entirely — it only becomes visible where it actually has a job,
+         covering dots and gridlines so the label stays readable. 0.92 rather
+         than fully opaque so the densest scatter still ghosts through
+         faintly and the badge never looks punched out. */
+      ctx.fillStyle = "rgba(19,17,16,0.92)";
       roundRectPath(ctx, bx, by, bw, bh, 3); ctx.fill();
       const tx = Math.round(bx + padX), tyc = Math.round(cy);
       ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
