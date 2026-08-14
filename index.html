@@ -6237,13 +6237,24 @@ function renderWatchlist() {
      knows when the in-cell trash exists (see .wl-fav-remove-row rules). */
   container.classList.toggle('has-vol', !!columnPrefs.volume);
 
-  container.querySelectorAll('.scan-row[data-scan="fived"]').forEach(el => {
+  /* Rows live in TWO hosts. The favorites groups are appended to
+     #watchlistContent, but Find Opportunities is moved into its own
+     #findOppsHost sibling above, so it can be reordered independently in
+     landscape. Anything binding row behaviour therefore has to walk both —
+     container.querySelectorAll() alone silently skips every row under Find
+     Opportunities, which is how those rows ended up rendering with data-id
+     and cursor:pointer and then doing nothing at all when clicked. The
+     scanner trigger rows nested in there were dead for the same reason. */
+  const rowHosts = [container, $("#findOppsHost")].filter(Boolean);
+  const eachRow = (sel, fn) => rowHosts.forEach(h => h.querySelectorAll(sel).forEach(fn));
+
+  eachRow('.scan-row[data-scan="fived"]', el => {
     el.onclick = () => runFiveDayScan();
   });
-  container.querySelectorAll('.scan-row[data-scan="steady"]').forEach(el => {
+  eachRow('.scan-row[data-scan="steady"]', el => {
     el.onclick = () => runSteadyFlipsScan();
   });
-  container.querySelectorAll('.wl-item[data-id]').forEach(el => {
+  eachRow('.wl-item[data-id]', el => {
     el.onclick = (ev) => {
       /* Don't navigate when the user clicks the per-row × / drag handle,
          just finished dragging the row to reorder it (suppressClick, set by
@@ -6270,7 +6281,7 @@ function renderWatchlist() {
     updateFavoriteBtn();
     renderWatchlist();
   }
-  container.querySelectorAll('.wl-fav-remove').forEach(b => {
+  eachRow('.wl-fav-remove', b => {
     b.onclick = (ev) => {
       ev.stopPropagation();
       unfavorite(String(b.getAttribute('data-fav-id')));
