@@ -1112,8 +1112,19 @@ button, input { touch-action: manipulation; }
 }
 .calc-container { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 .calc-headline { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; border-radius: 4px; padding: 2px; margin: -2px; transition: background 0.15s ease; -webkit-tap-highlight-color: rgba(201,166,77,0.2); }
-.calc-headline:hover { background: rgba(255,255,255,0.04); }
-.calc-headline:active { background: rgba(201,166,77,0.12); }
+/* Row-level hover/press, shared by all three section headers. Only
+   Potential Profit had this, because only its row was clickable — so
+   hovering near its chevron lit the whole row while the identical-looking
+   Analyst Rating and Recommended Flip headers did nothing. The other two
+   are click targets now (see wireHeaderToggle), which makes the highlight
+   honest as well as consistent, and turns two 22px chevrons into
+   full-width targets on a phone. */
+.calc-headline:hover, .rg-top.is-toggle:hover, .fc-head.is-toggle:hover { background: rgba(255,255,255,0.04); }
+.calc-headline:active, .rg-top.is-toggle:active, .fc-head.is-toggle:active { background: rgba(201,166,77,0.12); }
+.rg-top.is-toggle, .fc-head.is-toggle {
+  cursor: pointer; border-radius: 4px; padding: 2px; margin: -2px;
+  transition: background 0.15s ease; -webkit-tap-highlight-color: rgba(201,166,77,0.2);
+}
 .calc-headline-left { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
 /* Structural, same as the other section labels — it names the block, the
    green figure beside it carries the signal.
@@ -2514,6 +2525,42 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
 }
+/* ── Phone: the same three toggles behind a floating puck ────────────────
+   The quick-facts strip has no room for them — it already scrolls sideways
+   to fit numbers that are not optional — so on a phone they move INTO the
+   chart, the way a charting app puts its view controls on the canvas
+   rather than in the chrome. placeChartTools() relocates the real nodes,
+   so the click handlers wired at startup keep working untouched.
+   Stacked upward from the puck, which itself sits directly above the
+   refresh button in the same right-hand column: one column of round
+   controls rather than two things floating independently. */
+.ct-puck { display: none; }
+@media (max-width: 640px) {
+  .ct-puck {
+    display: inline-flex; align-items: center; justify-content: center;
+    position: absolute; right: 5px; bottom: 60px; z-index: 5;
+    width: 26px; height: 26px; padding: 0;
+    border: 1px solid var(--border-main); border-radius: 6px;
+    background: rgba(12,11,9,0.86); backdrop-filter: blur(3px);
+    color: var(--text-muted); cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, transform .12s ease;
+  }
+  .ct-puck:hover { color: #fff; border-color: var(--border-active); }
+  .ct-puck:active { transform: translateY(1px); }
+  .ct-puck[aria-expanded="true"] { color: var(--buy-color); border-color: rgba(229,184,66,0.55); }
+  .ct-puck .ui-ic { width: 14px; height: 14px; display: block; }
+  /* Closed by default — the puck is the affordance, and a phone chart
+     cannot spare three permanent chips on top of the data. */
+  .chart-tools.is-float { display: none; }
+  .chart-tools.is-float.open {
+    display: flex; flex-direction: column; align-items: stretch; gap: 4px;
+    position: absolute; right: 5px; bottom: 92px; z-index: 6;
+    padding: 5px; border-radius: 8px;
+    background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
+    border: 1px solid var(--border-main);
+  }
+  .chart-tools.is-float .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
+}
 .ct-btn {
   height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
   background: transparent; color: var(--text-muted); cursor: pointer;
@@ -3009,6 +3056,14 @@ button, input { touch-action: manipulation; }
              numbers, which are not optional. Each one is a plain visibility
              switch rather than an indicator setting — nothing here changes
              what the data says, only how much of it is drawn at once. -->
+        <button type="button" class="ct-puck" id="ctPuck" aria-expanded="false"
+          aria-controls="chartTools" aria-label="Chart view options" title="Chart view options">
+          <svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" aria-hidden="true">
+            <line x1="4" y1="8" x2="20" y2="8"/><circle cx="10" cy="8" r="2.2" fill="currentColor"/>
+            <line x1="4" y1="16" x2="20" y2="16"/><circle cx="16" cy="16" r="2.2" fill="currentColor"/>
+          </svg>
+        </button>
         <div class="chart-tools" id="chartTools" role="group" aria-label="Chart view options">
           <button type="button" class="ct-btn" id="ctDots" aria-pressed="true"
             title="Scatter dots — off draws the highs and lows as lines instead">Dots</button>
@@ -3361,10 +3416,48 @@ function placeRefreshBtn() {
   if (btn.parentElement !== host) host.appendChild(btn);
   btn.classList.toggle('is-float', float);
 }
+/* Same re-parenting trick as placeRefreshBtn, for the same reason: moving
+   the real #chartTools node keeps the toggles wired by wireChartTools()
+   working, where a clone would silently stop responding. */
+function placeChartTools() {
+  const tools = document.getElementById('chartTools');
+  const puck = document.getElementById('ctPuck');
+  const chart = document.querySelector('.chart-container');
+  const row = document.getElementById('quickFactsRow');
+  if (!tools || !puck || !chart || !row) return;
+  const float = _refreshPortraitMQ.matches;
+  const host = float ? chart : row;
+  if (tools.parentElement !== host) host.appendChild(tools);
+  if (puck.parentElement !== host) host.appendChild(puck);
+  tools.classList.toggle('is-float', float);
+  if (!float) { tools.classList.remove('open'); puck.setAttribute('aria-expanded', 'false'); }
+}
+function wireChartPuck() {
+  const puck = document.getElementById('ctPuck');
+  const tools = document.getElementById('chartTools');
+  if (!puck || !tools || puck.dataset.wired) return;
+  puck.dataset.wired = '1';
+  puck.onclick = (ev) => {
+    ev.stopPropagation();
+    const open = tools.classList.toggle('open');
+    puck.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  /* Tapping the chart to read a price should not leave the panel hanging
+     over it. */
+  document.addEventListener('click', (ev) => {
+    if (ev.target.closest('#ctPuck, #chartTools')) return;
+    tools.classList.remove('open');
+    puck.setAttribute('aria-expanded', 'false');
+  });
+}
+placeChartTools(); wireChartPuck();
 placeRefreshBtn();
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeRefreshBtn);
-if (_refreshPortraitMQ.addEventListener) _refreshPortraitMQ.addEventListener('change', placeRefreshBtn);
-else if (_refreshPortraitMQ.addListener) _refreshPortraitMQ.addListener(placeRefreshBtn);
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => {
+  placeChartTools(); wireChartPuck(); placeRefreshBtn();
+});
+const _onRefreshMQ = () => { placeRefreshBtn(); placeChartTools(); };
+if (_refreshPortraitMQ.addEventListener) _refreshPortraitMQ.addEventListener('change', _onRefreshMQ);
+else if (_refreshPortraitMQ.addListener) _refreshPortraitMQ.addListener(_onRefreshMQ);
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
@@ -7777,6 +7870,13 @@ function renderRatingGauge(item, mountEl, opts = {}) {
   // Rebuilding the mount wipes any child moved into .rg-top — re-place the
   // Share button (landscape only; see placeShareButton) every render.
   placeShareButton();
+  /* Same widened target as the other two section headers. Re-wired here
+     because the innerHTML above throws the previous row away. Share, the
+     help chip and the chevron are all skipped — only the row's own space
+     and the "Analyst Rating" label toggle it. */
+  wireHeaderToggle(mountEl.querySelector('.rg-top'),
+                   mountEl.querySelector('.rg-toggle'),
+                   '#btnShare, .pg-help, .rg-toggle, button, a');
 }
 
 /* Quick-facts strip below the chart: live insta-buy/insta-sell with "…ago"
@@ -8118,6 +8218,20 @@ function renderFlipCard(rec){
   document.addEventListener('scroll', close, true);
   window.addEventListener('resize', close);
 })();
+/* Makes a section header row toggle its section, without swallowing the
+   controls that live inside it. Everything interactive in these rows —
+   Share, the help chip, Next, the chevron itself — is skipped, so the row
+   only reacts to a click on its own dead space and its label. The chevron
+   keeps its own handler; this just widens the target around it. */
+function wireHeaderToggle(row, chevron, skipSel) {
+  if (!row || !chevron || row.dataset.toggleWired) return;
+  row.dataset.toggleWired = '1';
+  row.classList.add('is-toggle');
+  row.addEventListener('click', (ev) => {
+    if (ev.target.closest(skipSel)) return;
+    chevron.click();
+  });
+}
 function wireFlipButtons(){
   const h = flipHost(); if (!h) return;
   const next = h.querySelector('#btnNextFlip');
@@ -8135,6 +8249,7 @@ function wireFlipButtons(){
       col.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
       setFlipCollapsed(isCollapsed);
     };
+    wireHeaderToggle(h.querySelector('.fc-head'), col, '#btnNextFlip, .fc-collapse, button, a');
   }
   /* Score explainer. Hover opens it on a mouse; click/tap toggles it, which is
      the only way in on touch. Every handler stops propagation because the whole
