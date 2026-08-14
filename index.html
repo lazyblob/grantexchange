@@ -2448,8 +2448,15 @@ button, input { touch-action: manipulation; }
    width, and the price-axis gutter runs out below its last label. Given a
    plate of its own so it reads as a control floating over the chart rather
    than a hole punched in it. */
+/* Lifted clear of the time axis. At bottom:5px the 26px button spanned 5 to
+   31px off the chart's bottom edge, and the x-axis label band measures 21px
+   — so it sat squarely on the last timestamp, which on a 1D chart is the
+   most-read label on the axis. 28px puts its lower edge 7px above that band
+   and lands it in the volume strip (which runs 21 to 85px up), where it
+   covers bars rather than text. Not higher: the price pane starts at 85px
+   and that is the part nobody wants a button parked on. */
 .qf-refresh.is-float {
-  position:absolute; right:5px; bottom:5px; z-index:5;
+  position:absolute; right:5px; bottom:28px; z-index:5;
   background:rgba(12,11,9,0.86); backdrop-filter:blur(3px);
   border-color:var(--border-light);
 }
