@@ -2450,7 +2450,29 @@ button, input { touch-action: manipulation; }
      the bar keeps the row to itself, capped so it doesn't stretch to a
      hairline across a wide monitor. */
   .item-insight { margin: 0; padding: 16px 2px 0; border-top: 1px solid var(--border-main); }
-  .ins-meter { max-width: 620px; margin: 0 auto; }
+  /* Title BESIDE the bar here, not above it. Stacked, it costs the block a
+     whole line of height — and this row sits directly under the chart, so
+     every pixel it takes is a pixel the chart gives up. There is nothing to
+     the bar's left but empty column, so the title goes there and the block
+     gets its line back. Left, not right: the right end carries the live
+     price bubble and the 30-Day High figure, which is the busy end.
+     Grid rather than flex so the two right-hand rows (track, then the
+     lo/hi ends) stay stacked against a single full-height title cell,
+     without wrapping them in an extra div.
+     620 -> 740 so the BAR keeps its length; the title spends the width the
+     block was not using rather than taking it from the scale. */
+  .ins-meter {
+    max-width: 740px; margin: 0 auto;
+    display: grid; grid-template-columns: auto 1fr; column-gap: 18px;
+  }
+  .ins-title {
+    grid-column: 1; grid-row: 1 / span 2; align-self: center;
+    padding-bottom: 0; white-space: nowrap;
+  }
+  /* The bubble-clearance padding above is for the stacked layout only —
+     side by side, the title and the bubble are in different columns. */
+  .ins-track { grid-column: 2; grid-row: 1; }
+  .ins-ends  { grid-column: 2; grid-row: 2; }
 }
 /* Landscape mobile: the app is pinned to one screen (100dvh), so the card
    can't live inside it without squeezing the chart. JS relocates it to a
