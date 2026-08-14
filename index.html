@@ -7243,10 +7243,22 @@ function computeGrade(item, side) {
    using the app on a phone for weeks. */
 const isRoomyLayout = () => window.matchMedia('(min-width: 1024px)').matches;
 const collapseKey = (base) => isRoomyLayout() ? base + '_wide' : base;
-/* Collapsed hides the eyebrow and the Buy/grade/Sell scale, leaving the
-   verdict, the bar and Share — everything a repeat user still reads. */
+/* Collapsed hides the Buy/grade/Sell scale and the four-row breakdown,
+   leaving the label, the verdict, the bar and Share — everything a repeat
+   user still reads.
+   Collapsed is the FIRST-LOAD default, matching every other sidebar
+   section: Potential Profit, Find Opportunities and all six scanners
+   already start shut, so this one starting open made the sidebar's opening
+   state look arbitrary rather than chosen. An explicit preference still
+   wins in both directions — '1' and '0' are both stored, so a user who
+   opens it keeps it open. Only the untouched case changed. */
 function ratingCollapsed() {
-  try { return localStorage.getItem(collapseKey('ge_ratingCollapsed')) === '1'; } catch (e) { return false; }
+  try {
+    const v = localStorage.getItem(collapseKey('ge_ratingCollapsed'));
+    if (v === '1') return true;
+    if (v === '0') return false;
+    return true;
+  } catch (e) { return true; }
 }
 document.addEventListener('click', (ev) => {
   const btn = ev.target.closest && ev.target.closest('.rg-toggle');
@@ -7681,12 +7693,14 @@ function flipCollapsed(){
     const v = localStorage.getItem(collapseKey('ge_flipCollapsed'));
     if (v === '1') return true;
     if (v === '0') return false;
-    // No explicit user preference yet — default to collapsed in the cramped
-    // mobile-landscape column so Favorites isn't scrolled off-screen below
-    // the fully-expanded card. (pointer: coarse) so a short desktop window
-    // doesn't get defaulted to collapsed too.
-    return window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)').matches;
-  } catch (e) { return false; }
+    /* No explicit preference yet — collapsed, on every layout. This used to
+       default open everywhere except the cramped mobile-landscape column;
+       it is the tallest block in the sidebar when expanded, so starting it
+       open pushed the favorites list down on exactly the first visit where
+       a reader has no idea what any of it is yet. Collapsed still shows the
+       pick and its score, which is the part worth glancing at. */
+    return true;
+  } catch (e) { return true; }
 }
 function setFlipCollapsed(v){ try { localStorage.setItem(collapseKey('ge_flipCollapsed'), v ? '1' : '0'); } catch (e) {} }
 function renderFlipCard(rec){
