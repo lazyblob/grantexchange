@@ -1605,6 +1605,19 @@ button, input { touch-action: manipulation; }
 .col-menu-section { font-size: 9px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); padding: 4px 6px 6px; }
 .col-menu-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; font-size: 12px; color: var(--text-main); cursor: pointer; border-radius: 4px; }
 .col-menu-row:hover { background: var(--bg-input); }
+.col-menu-sep { height: 1px; background: var(--border-main); margin: 5px 2px; }
+/* Destructive, so it is the one row in this menu that is not neutral — but
+   quiet until it is armed, because a permanently red button in a settings
+   menu reads as an error state rather than an action. */
+.col-menu-danger {
+  display: block; width: 100%; text-align: left;
+  padding: 6px; border: none; border-radius: 4px; background: transparent;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.col-menu-danger:hover { background: rgba(239,83,80,0.12); color: var(--negative); }
+.col-menu-danger.is-armed { background: rgba(239,83,80,0.16); color: var(--negative); font-weight: 800; }
 .col-menu-row input { margin: 0; accent-color: var(--border-active); cursor: pointer; }
 /* Each row leads with the exact header token that column shows, because the
    descriptive names didn't connect: "Margin (after tax)" and the "EA" column
@@ -3337,12 +3350,41 @@ let hoverY = null; // raw cursor Y (CSS px, canvas-relative) for the crosshair's
 let selectedAbsIdx = null;
 let membersOn = localStorage.getItem('ge_members') === 'true';
 let fullHistorical = null;
-/* Default favorites seeded for first-time users — a high-value rare (Zulrah's
-   scales), a staple flip (Diamond), and the site mascot (Gilded scimitar).
-   Only applied when the localStorage key is genuinely empty / missing, so
-   existing users with an empty favorites list don't get their state stomped
-   when they reload. */
-const FAVORITES_DEFAULTS = ['12934', '1601', '12389'];
+/* Starter watchlist for first-time users. Three items was too thin to show
+   what the list DOES — you cannot see sorting, the column toggles, the 5D
+   badges or the row accents on a list you can take in at a glance, and a
+   near-empty panel reads as a feature that has not loaded rather than one
+   waiting to be filled. A dozen liquid staples gives every one of those
+   something to act on immediately, and gives a new user something to prune,
+   which is the fastest way to learn that the list is theirs to edit.
+   Chosen for LIQUIDITY, not value: gems, jewellery and bars all fill in
+   minutes, so their numbers move while you watch and the badges actually
+   fire. All are F2P except Zulrah's scales, which is deliberately the one
+   members item — it stays hidden until someone flips the P2P switch, which
+   is the cheapest possible demonstration that the switch does something.
+   IDs verified against items-json/ rather than recalled: 1619 is Uncut ruby
+   here, not the Uncut emerald a from-memory guess would have used.
+   ONLY applied when no saved list exists — see favoriteLists below, which
+   returns early on any stored ge_favoriteLists (including a deliberately
+   emptied one) and falls back to the legacy ge_favorites before ever
+   reaching these. A returning user's list is never touched. */
+const FAVORITES_DEFAULTS = [
+  '1639',  // Emerald ring
+  '1619',  // Uncut ruby
+  '1605',  // Emerald
+  '1637',  // Sapphire ring
+  '1662',  // Diamond necklace
+  '1660',  // Ruby necklace
+  '1658',  // Emerald necklace
+  '1603',  // Ruby
+  '1621',  // Uncut emerald
+  '1617',  // Uncut diamond
+  '1601',  // Diamond
+  '2359',  // Mithril bar
+  '2361',  // Adamantite bar
+  '12389', // Gilded scimitar — the site mascot, and the landing item
+  '12934', // Zulrah's scales — the lone members item, hidden until P2P
+];
 /* Multiple named favorites lists (TradingView-watchlist style) instead of
    one flat list. `favorites` (read/written pervasively below — sorting,
    the star button, reorder, the bridge sync, …) always mirrors whichever
@@ -5727,12 +5769,46 @@ function buildColHeader(host) {
       <label class="col-menu-row"><input type="checkbox" data-col="change"><span><b class="col-menu-tag">Chg%</b> 24h change</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="margin"><span><b class="col-menu-tag">Ea</b> Margin (after tax)</span></label>
       <label class="col-menu-row"><input type="checkbox" data-col="volume"><span><b class="col-menu-tag">Vol</b> Daily volume</span></label>
+      <div class="col-menu-sep"></div>
+      <button type="button" class="col-menu-danger" id="btnClearFavs">Clear this list</button>
     </div>`;
   menuHost.appendChild(menuWrap);
 
   const btn = menuWrap.querySelector('#btnCols');
   const menu = menuWrap.querySelector('#colMenu');
   const closeMenu = () => { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+  /* Empty the ACTIVE list in one go. New users land on a seeded watchlist
+     (see FAVORITES_DEFAULTS) and removing a dozen rows one swipe at a time
+     to make room for their own is a chore that reads as the app fighting
+     them. Two-step rather than a confirm() dialog: the button asks once,
+     and reverts on its own after four seconds if the answer is nothing —
+     a native confirm is a modal for something that takes one tap to redo
+     by re-favouriting, and this keeps the interaction inside the menu.
+     Clearing writes an empty list, which the loader treats as a real saved
+     state, so the defaults do NOT come back on the next reload. */
+  const clearBtn = menuWrap.querySelector('#btnClearFavs');
+  if (clearBtn) {
+    let armed = null;
+    const disarm = () => { clearTimeout(armed); armed = null;
+      clearBtn.classList.remove('is-armed'); clearBtn.textContent = 'Clear this list'; };
+    clearBtn.onclick = (ev) => {
+      ev.stopPropagation();
+      if (!armed) {
+        if (!favorites.length) return;
+        clearBtn.classList.add('is-armed');
+        clearBtn.textContent = 'Tap again to clear ' + favorites.length;
+        armed = setTimeout(disarm, 4000);
+        return;
+      }
+      disarm();
+      for (const id of favorites.slice()) rlPostFavorite(id, '', true);
+      favorites = [];
+      persistFavoriteLists();
+      updateFavoriteBtn();
+      closeMenu();
+      renderWatchlist();
+    };
+  }
   btn.onclick = (ev) => {
     ev.stopPropagation();
     const open = menu.classList.toggle('open');
@@ -8686,14 +8762,19 @@ function fitPriceRange(vals) {
    strength IS the line chart, with no second rendering path to keep in sync.
    Stored globally rather than per layout (unlike the collapse prefs): this
    is a reading preference about the data, and it does not change meaning
-   between a phone and a monitor. */
-let chartDotsOn = true, chartFillOn = true, chartVProfOn = false;
+   between a phone and a monitor.
+   First-load config is dots ON, fill OFF, profile ON. The fill is the one
+   that starts off: it is the biggest single block of colour on the chart,
+   and without it the scatter and the trend line both read sharper on a
+   first look. The profile starts on because it is the part nobody would
+   think to go looking for. */
+let chartDotsOn = true, chartFillOn = false, chartVProfOn = true;
 (function loadChartPrefs() {
   try {
     const g = (k, d) => { const v = localStorage.getItem(k); return v === null ? d : v === '1'; };
     chartDotsOn  = g('ge_chartDots', true);
-    chartFillOn  = g('ge_chartFill', true);
-    chartVProfOn = g('ge_chartVProf', false);
+    chartFillOn  = g('ge_chartFill', false);
+    chartVProfOn = g('ge_chartVProf', true);
   } catch (e) {}
 })();
 function wireChartTools() {
