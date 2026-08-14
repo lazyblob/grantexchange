@@ -1166,8 +1166,41 @@ button, input { touch-action: manipulation; }
 .calc-container input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; outline: none; font-family: inherit; }
 .calc-input label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
 .calc-container input:focus { border-color: var(--border-active); }
-.calc-breakdown { margin-top: 8px; font-size: 10px; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-main); }
-.calc-breakdown .row { display: flex; justify-content: space-between; }
+/* Compact breakdown, not a block of body text.
+   Every row used to be 10px/400 in the same muted colour — measured
+   identical, 11px tall each — so label and number carried exactly the same
+   weight and the whole thing read as four lines of prose you had to parse
+   end to end to find the one number you came for. Three tiers now:
+
+     labels    9px, muted, letterspaced — row keys, not sentences
+     numbers   11px, --text-main, tabular — the thing you actually read
+     asides    the repeated "gp" and the "2%, cap 5M" / "x10,000"
+               qualifiers, dimmer than either, because they say the same
+               thing on every row and carry no value on their own
+
+   Row gaps drop 3px -> 1px so the three working rows sit as a tight block,
+   and that reclaimed space goes to Net profit instead: a hairline above it
+   plus a size step, so it terminates the breakdown rather than being the
+   fourth of four identical lines distinguished only by colour.
+   Rows carry an explicit 13px line box so mixing 9px and 11px inside one
+   row doesn't let the taller glyph push the row height around. */
+.calc-breakdown { margin-top: 8px; color: var(--text-muted); display: flex; flex-direction: column; gap: 1px; background: rgba(0,0,0,0.25); padding: 6px 10px 7px; border-radius: 4px; border: 1px solid var(--border-main); }
+/* align-items:center, not baseline: the label span needs overflow:hidden for
+   its ellipsis on narrow phones, and an overflow-clipped flex item
+   synthesises its baseline from the bottom margin edge instead of its text,
+   which would drop the label below the number. Both spans share the row's
+   explicit line box, so centring the equal-height boxes is stable. */
+.calc-breakdown .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; line-height: 12px; }
+.calc-breakdown .row > span:first-child { font-size: 9px; letter-spacing: 0.2px; color: var(--text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calc-breakdown .row > span:last-child { font-size: 11px; color: var(--text-main); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+/* Qualifier inside a label, and the unit after a number. Both are dimmer
+   than the muted label tint — decorative repetition, present for the
+   reader who wants it and invisible to the one who doesn't. */
+.calc-breakdown .bd-q { color: rgba(217,211,199,0.34); letter-spacing: 0; }
+.calc-breakdown .bd-u { font-size: 9px; color: rgba(217,211,199,0.34); margin-left: 3px; font-weight: 400; }
+.calc-breakdown .bd-net { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-light); line-height: 15px; }
+.calc-breakdown .bd-net > span:first-child { font-size: 10px; letter-spacing: 0.3px; color: var(--text-main); }
+.calc-breakdown .bd-net > span:last-child { font-size: 13px; font-weight: 700; }
 .watchlist-content { flex: 1; overflow-y: auto; }
 .category-group { border-bottom: 1px solid var(--border-main); }
 /* Category title — sticky at top of the scroll container AND visually
@@ -4139,10 +4172,10 @@ function updateCalculator() {
   const bd = $('#calcBreakdown');
   if (bd) {
     bd.innerHTML = `
-      <div class="row"><span>Margin / item</span><span>${profitPerItem > 0 ? '+' : ''}${fmtGp(profitPerItem)} gp</span></div>
-      <div class="row"><span>GE tax / item (2%, cap 5M)</span><span>-${fmtGp(taxPerItem)} gp</span></div>
-      <div class="row"><span>Total tax (${qty.toLocaleString()})</span><span>-${fmtGp(totalTax)} gp</span></div>
-      <div class="row" style="color:${color};font-weight:bold;"><span>Net profit</span><span>${sign}${fmtGp(totalProfit)} gp</span></div>`;
+      <div class="row"><span>Margin / item</span><span>${profitPerItem > 0 ? '+' : ''}${fmtGp(profitPerItem)}<span class="bd-u">gp</span></span></div>
+      <div class="row"><span>GE tax / item <span class="bd-q">2%, cap 5M</span></span><span>-${fmtGp(taxPerItem)}<span class="bd-u">gp</span></span></div>
+      <div class="row"><span>Total tax <span class="bd-q">&times;${qty.toLocaleString()}</span></span><span>-${fmtGp(totalTax)}<span class="bd-u">gp</span></span></div>
+      <div class="row bd-net"><span>Net profit</span><span style="color:${color};">${sign}${fmtGp(totalProfit)}<span class="bd-u">gp</span></span></div>`;
   }
 }
 
