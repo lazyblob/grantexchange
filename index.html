@@ -8965,22 +8965,41 @@ function drawChart(series) {
       ctx.setLineDash([4, 4]); ctx.strokeStyle = col; ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x0 + w, py); ctx.stroke();
       ctx.setLineDash([]);
-      /* Near-opaque plate so the label never reads through the scatter, a
-         solid colour-coded spine on the leading edge tying it to its line,
-         and white text — the colour is carried by the spine and the border,
-         so the words themselves get the full contrast of the plate. */
-      const label = `Target: ${fmtGp(activePrice)}`;
-      ctx.font = "bold 10.5px BlinkMacSystemFont, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      const padX = 6, bh = 17, spineW = 2.5, bx = x0 + 4, tw = ctx.measureText(label).width;
-      const bw = tw + padX * 2 + spineW;
+      /* The badge used to stack three devices to say one thing: a
+         near-opaque plate, a full-perimeter stroke in the accent colour AND
+         a colour-coded spine down the leading edge, with the text left white
+         because the colour was already spoken for twice. Together they made
+         the heaviest object on a chart whose whole hierarchy is built out of
+         hairlines and 2px dots.
+         One device now. The plate stays — it has a real job, keeping the
+         label legible over the scatter — but it loses the stroke and the
+         spine, softens its corners, and drops from 0.96 to 0.90 so it sits
+         INTO the chart rather than on top of it. The tie back to the dashed
+         line is carried by colouring the price itself, which is what the
+         spine and the stroke were both standing in for.
+         "Target" also stops competing with its own number: 9px in the
+         accent at 62% against the price at bold 10.5px, so the label reads
+         as an annotation rather than a UI chip. Net footprint is smaller in
+         both directions — 17px tall to 15, and narrower despite the same
+         words, since the spine and both strokes are gone. */
+      const word = 'Target', price = fmtGp(activePrice);
+      const wordFont = "9px BlinkMacSystemFont, sans-serif";
+      const priceFont = "bold 10.5px BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = wordFont; const wordW = ctx.measureText(word).width;
+      ctx.font = priceFont; const priceW = ctx.measureText(price).width;
+      const padX = 5.5, gapW = 4, bh = 15, bx = x0 + 4;
+      const bw = padX * 2 + wordW + gapW + priceW;
       let cy = py - bh / 2 - 3;
       if (cy - bh / 2 < y0 + 1) cy = py + bh / 2 + 3;
       const by = cy - bh / 2;
-      ctx.fillStyle = "rgba(8,10,14,0.96)"; ctx.fillRect(bx, by, bw, bh);
-      ctx.fillStyle = col; ctx.fillRect(bx, by, spineW, bh);
-      ctx.strokeStyle = col; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
-      ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1); ctx.globalAlpha = 1;
-      ctx.fillStyle = "#F4F1E8"; ctx.fillText(label, Math.round(bx + spineW + padX), Math.round(cy));
+      ctx.fillStyle = "rgba(8,10,14,0.90)";
+      roundRectPath(ctx, bx, by, bw, bh, 3); ctx.fill();
+      const tx = Math.round(bx + padX), tyc = Math.round(cy);
+      ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
+      ctx.fillText(word, tx, tyc); ctx.globalAlpha = 1;
+      ctx.font = priceFont; ctx.fillStyle = col;
+      ctx.fillText(price, Math.round(tx + wordW + gapW), tyc);
       ctx.restore();
     }
   }
