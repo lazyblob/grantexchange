@@ -1936,19 +1936,18 @@ button, input { touch-action: manipulation; }
 .site-footer .foot-version { color: var(--text-muted); font-size: 10.5px; padding: 1px 7px; border: 1px solid var(--border-light); border-radius: 4px; letter-spacing: 0.4px; font-weight: 700; }
 .site-footer .foot-fresh { color: var(--positive); }
 .site-footer .foot-updated { color: var(--text-muted); }
-/* Build stamp in the top panel — quiet by default (it's a trust signal,
-   not a control), and hidden below 1024px where that row is already
-   competing for width with the search box and mode pill. Empty until
-   syncBuildInfo fills it, so it takes no space if that lookup fails. */
-.top-build { display: none; }
-@media (min-width: 1024px) {
-  .top-build:not(:empty) {
-    display: inline-flex; align-items: center; flex: 0 0 auto;
-    color: var(--text-muted); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.3px; padding: 2px 8px; margin-left: 2px;
-    border: 1px solid var(--border-main); border-radius: 999px; white-space: nowrap;
-  }
-}
+/* The top bar carried a second copy of the footer's deploy stamp — a
+   rounded "Updated today" pill beside the logo. It was removed, and the
+   reason is worth keeping: sitting inches from live price readings that say
+   "just now" and "5m ago", a coarse day-grained label reads as a claim
+   about the PRICES rather than about the site's code. It is the vaguest
+   timestamp on a page whose whole job is precise ones, and vagueness there
+   costs trust rather than building it — a flipper who thinks the quote
+   might be fourteen hours old will not act on it.
+   Nothing was lost: the footer stamp is the same element with the same
+   class, and wireBuildInfoCard binds the deploy card to every
+   .js-build-updated, so the exact timestamp, SHA and commit link are still
+   one click away down there. */
 /* Deploy-detail card behind the "Updated …" stamp (see wireBuildInfoCard).
    Both stamps get a pointer cursor so the rounded label reads as openable. */
 .js-build-updated { cursor: help; }
@@ -2767,13 +2766,6 @@ button, input { touch-action: manipulation; }
               </div>
             </div>
             <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" title="PocketGE — tap to refresh"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
-            <!-- Same live build stamp the footer carries (synced from the
-                 repo's latest commit, see syncBuildInfo) — surfaced up here
-                 too so "actively maintained" is visible without scrolling.
-                 Desktop only: the narrow breakpoints already fight for room
-                 on this row. -->
-            <span class="top-build js-build-updated" title="Latest deploy of pocketge.com"></span>
-
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
               <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
@@ -5374,11 +5366,11 @@ function syncBuildInfo() {
     })
     .catch(() => {});
 }
-/* Lives on <body>, not inside the stamp: .top-build is shown by a
-   :not(:empty) rule (so a failed lookup takes no space), and any child node
-   would defeat that. Fixed positioning also keeps it clear of the header's
-   clipping. Bound once — the stamp text is rewritten by syncBuildInfo but the
-   elements themselves persist. */
+/* Lives on <body>, not inside the stamp. Fixed positioning keeps it clear
+   of any clipping on the stamp's own container, and appending to the stamp
+   would put a child node inside an element other rules may test for
+   emptiness. Bound once — the stamp text is rewritten by syncBuildInfo but
+   the elements themselves persist. */
 (function wireBuildInfoCard(){
   const ready = (fn) => document.readyState === 'loading'
     ? document.addEventListener('DOMContentLoaded', fn) : fn();
