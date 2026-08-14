@@ -577,7 +577,13 @@ button, input { touch-action: manipulation; }
 }
 .fav-btn.active:hover { color: #FFD98A; border-color: var(--fav-gold); }
 .fav-btn .fav-star { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.fav-btn.active .fav-star { fill: currentColor; }
+/* Outline, not filled. The gold already says "saved" — it is on the star,
+   the label, the border and the fill tint — so filling the glyph as well
+   was a fourth statement of the same fact, and a solid star is a heavier
+   mark than anything else in that header. The outline keeps the button's
+   silhouette identical between states, which is what makes the colour
+   change read as a state rather than a different control. */
+.fav-btn.active .fav-star { fill: none; }
 .fav-btn .fav-label-active { display: none; }
 .fav-btn.active .fav-label { display: none; }
 .fav-btn.active .fav-label-active { display: inline; }
@@ -1330,7 +1336,13 @@ button, input { touch-action: manipulation; }
 /* Selected row uses a white OUTLINE (not a border) so it paints on top of the
    at-high / at-low green/gold borders + pulse box-shadow and reads identically
    on every list. outline-offset pulls it just inside the row edge. */
-.wl-item.active { background: rgba(255,255,255,0.05); outline: 2px solid #fff; outline-offset: -2px; }
+/* "You are here", not an alarm. A 2px pure-white outline was the highest
+   contrast object in the sidebar — brighter than the 5D badges, the row
+   accents and the prices — for a row whose only news is that you are
+   already looking at it. A 1px hairline at 42% plus a slightly stronger
+   glass fill still reads as selected at a glance without competing with
+   the signals around it. */
+.wl-item.active { background: rgba(255,255,255,0.07); outline: 1px solid rgba(255,255,255,0.42); outline-offset: -1px; }
 /* Drag-to-reorder: the dragged row dims in place, and a thin gold line on
    whichever edge the cursor is nearer shows exactly where it'll land — no
    extra DOM element between rows, just an inset box-shadow on the row
@@ -3485,11 +3497,9 @@ let fullHistorical = null;
    waiting to be filled. A dozen liquid staples gives every one of those
    something to act on immediately, and gives a new user something to prune,
    which is the fastest way to learn that the list is theirs to edit.
-   Chosen for LIQUIDITY, not value: gems, jewellery and bars all fill in
-   minutes, so their numbers move while you watch and the badges actually
-   fire. All are F2P except Zulrah's scales, which is deliberately the one
-   members item — it stays hidden until someone flips the P2P switch, which
-   is the cheapest possible demonstration that the switch does something.
+   Chosen for LIQUIDITY, not value: gems, jewellery, bars, runes and bones
+   all fill in minutes, so their numbers move while you watch and the badges
+   actually fire.
    IDs verified against items-json/ rather than recalled: 1619 is Uncut ruby
    here, not the Uncut emerald a from-memory guess would have used.
    ONLY applied when no saved list exists — see favoriteLists below, which
@@ -3497,21 +3507,29 @@ let fullHistorical = null;
    emptied one) and falls back to the legacy ge_favorites before ever
    reaching these. A returning user's list is never touched. */
 const FAVORITES_DEFAULTS = [
+  /* Members items FIRST. The watchlist filters them out entirely in F2P, so
+     ordering them at the top costs an F2P user nothing — the list simply
+     starts at Emerald ring — while a P2P user opens on three of the game's
+     most-traded members staples instead of having to scroll past gem
+     jewellery to find anything they recognise. One deliberately from each
+     class (secondary, rune, bone) so the list does not read as a category. */
+  '12934', // Zulrah's scales   — limit 30,000
+  '565',   // Blood rune        — limit 25,000
+  '536',   // Dragon bones      — limit 7,500
+  /* F2P staples. Trimmed from fourteen: the cuts were all duplicates of a
+     shape already present — three necklaces became one, three uncut gems
+     became one, two cut gems became one — because a second Uncut demonstrates
+     nothing the first did not, and the point of the seed is to show the list
+     working, not to fill it. */
   '1639',  // Emerald ring
   '1619',  // Uncut ruby
   '1605',  // Emerald
   '1637',  // Sapphire ring
   '1662',  // Diamond necklace
-  '1660',  // Ruby necklace
-  '1658',  // Emerald necklace
   '1603',  // Ruby
-  '1621',  // Uncut emerald
-  '1617',  // Uncut diamond
-  '1601',  // Diamond
   '2359',  // Mithril bar
   '2361',  // Adamantite bar
   '12389', // Gilded scimitar — the site mascot, and the landing item
-  '12934', // Zulrah's scales — the lone members item, hidden until P2P
 ];
 /* Multiple named favorites lists (TradingView-watchlist style) instead of
    one flat list. `favorites` (read/written pervasively below — sorting,
@@ -9287,7 +9305,12 @@ function drawChart(series) {
         const yTop = y0 + h_price - (k + 1) * bandH;
         const bx = yRight ? (x0 + w - len) : x0;
         const by = yTop + (bandH - barH) / 2;
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        /* The busiest level keeps the 0.08 fill; every other bar drops to
+           0.05, so the profile reads as one lit rung against a field of
+           context rather than a uniform comb. The edges below still give
+           every bar a definite end, which is what stops the lighter fill
+           reading as unfinished. */
+        ctx.fillStyle = k === poc ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)';
         ctx.fillRect(bx, by, len, barH);
         ctx.fillStyle = k === poc ? EDGE_POC : EDGE;
         ctx.fillRect(yRight ? bx : bx + len - 1, by, 1, barH);
@@ -9352,7 +9375,29 @@ function drawChart(series) {
      instead of a straight run between two distant prints. */
   function drawLineSeries(arr, color, isHigh) {
     ctx.save();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.6;
+    /* Same left-to-right recency ramp the scatter uses (see dotAlphaAt): the
+       oldest prints fade to 40% and the tradeable right-hand edge runs at
+       full strength. A flat-alpha stroke put a whole screen of history at
+       the same weight as the last hour, which is both wrong and — across an
+       unbroken line rather than separated dots — considerably louder than
+       the scatter it replaced.
+       One gradient rather than a stroke per segment: the ramp is horizontal,
+       so it maps exactly onto a linear gradient across the plot, and the
+       line stays a single path. 8-digit hex is how the alpha gets in, which
+       needs the token to be a plain #rrggbb — it always is, but fall back to
+       a flat stroke rather than emit an invalid colour if that ever changes. */
+    const hex6 = /^#[0-9a-f]{6}$/i.test(color);
+    if (hex6) {
+      const a2 = (a) => color + Math.round(Math.max(0, Math.min(1, a)) * 255)
+        .toString(16).padStart(2, '0');
+      const g = ctx.createLinearGradient(x0, 0, x0 + dataW, 0);
+      g.addColorStop(0, a2(DOT_ALPHA_OLD));
+      g.addColorStop(1, a2(DOT_ALPHA_NEW));
+      ctx.strokeStyle = g;
+    } else {
+      ctx.strokeStyle = color;
+    }
+    ctx.lineWidth = 1.6;
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     let started = false;
