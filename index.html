@@ -3451,40 +3451,46 @@ let fullHistorical = null;
    what the list DOES — you cannot see sorting, the column toggles, the 5D
    badges or the row accents on a list you can take in at a glance, and a
    near-empty panel reads as a feature that has not loaded rather than one
-   waiting to be filled. Nine liquid staples gives every one of those
-   something to act on immediately, and gives a new user something to prune,
-   which is the fastest way to learn that the list is theirs to edit.
-   Chosen for LIQUIDITY, not value: gems, jewellery, bars, runes, bones,
-   herbs and food all fill in minutes, so their numbers move while you watch
-   and the badges actually fire.
+   waiting to be filled. Ten gives every one of those something to act on
+   immediately, and gives a new user something to prune, which is the
+   fastest way to learn that the list is theirs to edit.
+
+   The COMPOSITION is the point, not the count. This list started as fifteen
+   entries of which eleven were gems and jewellery — uncut and cut versions
+   of the same four stones, plus three necklaces and two rings — which made
+   a market tracker open looking like a jewellery box, and taught a new user
+   nothing that the first two rows had not already shown. Every one of those
+   is gone. What is here is the stuff that actually turns over: darts and
+   splinters that get burned by the thousand, runes, bones, a herb, logs,
+   one bar, and the scimitar the site is named after.
+
+   Chosen for LIQUIDITY, not value — everything here fills in minutes, so
+   the numbers move while you watch and the 5D badges actually fire.
    ONLY applied when no saved list exists — see favoriteLists below, which
    returns early on any stored ge_favoriteLists (including a deliberately
    emptied one) and falls back to the legacy ge_favorites before ever
    reaching these. A returning user's list is never touched. */
 const FAVORITES_DEFAULTS = [
   /* Members items FIRST. The watchlist filters them out entirely in F2P, so
-     ordering them at the top costs an F2P user nothing — the list simply
-     starts at Emerald ring — while a P2P user opens on five of the game's
-     most-traded members staples instead of having to scroll past gem
-     jewellery to find anything they recognise. One deliberately from each
-     class (secondary, rune, bone, herb, food) so the list reads as a market
-     rather than a category.
-     IDs verified against items-json/, not recalled — 560 "Death rune" was
-     the obvious fifth pick and is actually F2P, which the file says and
-     memory did not. */
-  '12934', // Zulrah's scales     — secondary
-  '565',   // Blood rune          — rune
-  '536',   // Dragon bones        — bone
-  '207',   // Grimy ranarr weed   — herb
-  '385',   // Shark               — food
-  /* F2P staples, cut from nine to four. Every removal was a duplicate of a
-     shape already in the list — a second necklace, a second uncut gem, a
-     second cut gem, a second bar — so what is left still covers jewellery,
-     a gem, a bar and the scimitar without repeating a category to make up
-     numbers. The seed exists to show the list working, not to fill it. */
-  '1639',  // Emerald ring — jewellery
-  '1603',  // Ruby         — gem
-  '2359',  // Mithril bar  — bar
+     ordering them at the top costs an F2P user nothing — their list simply
+     starts at Nature rune — while a P2P user opens on six consumables they
+     actually recognise instead of scrolling past gem jewellery to find one.
+     IDs verified against items-json/, not recalled. Adamant dart is 810:
+     there is a second "Adamant dart" at 14523 which is the BANK PLACEHOLDER
+     (placeholder: true, tradeable_on_ge: false) and would have seeded a row
+     that can never have a price. */
+  '28924', // Sunfire splinters — limit 30,000, burned by the thousand
+  '810',   // Adamant dart      — limit 11,000
+  '565',   // Blood rune
+  '12934', // Zulrah's scales
+  '536',   // Dragon bones
+  '207',   // Grimy ranarr weed
+  /* F2P. Four, and not one of them a gem or a piece of jewellery — that
+     category was the whole complaint. A rune, a log, a bar and the mascot:
+     four different markets rather than four cuts of the same stone. */
+  '561',   // Nature rune
+  '1515',  // Yew logs
+  '2359',  // Mithril bar
   '12389', // Gilded scimitar — the site mascot
 ];
 /* Multiple named favorites lists (TradingView-watchlist style) instead of
