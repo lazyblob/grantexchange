@@ -539,16 +539,25 @@ button, input { touch-action: manipulation; }
    item name, so it reads as "save THIS item". Bigger than the old top-panel
    pill, with a filled gold star + "Saved" label once active so state reads
    at a glance. The .fav-label / .fav-label-active spans swap via .active. */
+/* Quiet by default, exactly like .qf-refresh beside it — transparent fill,
+   hairline border, muted text. Gold is a STATE here, not a decoration: an
+   unsaved item has nothing to report, so the button has no business being
+   the brightest thing in the header. It was gold at rest, which spent the
+   colour before it meant anything and left the saved state with nowhere
+   louder to go.
+   #btnShare wears this class too and never gets .active, so it is
+   permanently in the quiet look — which is the right weight for a control
+   that is always available and never a status. */
 .fav-btn {
-  background: rgba(255, 179, 0, 0.08); border: 1.5px solid rgba(255, 179, 0, 0.42);
+  background: transparent; border: 1px solid var(--border-main);
   border-radius: 6px; padding: 7px 14px 7px 11px; cursor: pointer;
-  color: var(--fav-gold);
+  color: var(--text-muted);
   display: inline-flex; align-items: center; gap: 7px;
   font-family: inherit; font-weight: 800; font-size: 13px; letter-spacing: 0.35px;
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
   flex-shrink: 0;
 }
-.fav-btn:hover { background: rgba(255, 179, 0, 0.16); border-color: var(--fav-gold); box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.12); }
+.fav-btn:hover { color: #fff; border-color: var(--border-active); }
 .fav-btn:active { transform: translateY(1px); }
 /* Saved is a STATE, not an action. A high-brightness glow and a thick lit
    border belong to primary actions — the thing you are being urged to press
@@ -562,7 +571,11 @@ button, input { touch-action: manipulation; }
    "on": the star fills, and the label reads Saved. The border firms up a
    step because that is a state change you can see without it being a light
    source. */
-.fav-btn.active { border-color: rgba(255, 179, 0, 0.72); }
+.fav-btn.active {
+  color: var(--fav-gold); border-color: rgba(255, 179, 0, 0.72);
+  background: rgba(255, 179, 0, 0.10);
+}
+.fav-btn.active:hover { color: #FFD98A; border-color: var(--fav-gold); }
 .fav-btn .fav-star { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .fav-btn.active .fav-star { fill: currentColor; }
 .fav-btn .fav-label-active { display: none; }
@@ -1122,7 +1135,15 @@ button, input { touch-action: manipulation; }
   .calc-headline-sub { font-size: 10px; }
   .calc-headline .res-profit { font-size: 22px; letter-spacing: -0.5px; }
 }
-.calc-caret { font-size: 13px; color: var(--border-active); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(201,166,77,0.12); flex-shrink: 0; }
+/* The three section expanders — Potential Profit, Analyst Rating and
+   Recommended Flip — all wear this class, so the hover and press live HERE
+   rather than on each one. They had drifted to three different behaviours:
+   Analyst Rating had its own :hover, Potential Profit only lit up because
+   its whole header row does, and the flip card's chevron had nothing at
+   all, which is what made it feel broken rather than merely quiet. */
+.calc-caret { font-size: 13px; color: var(--border-active); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(201,166,77,0.12); flex-shrink: 0; cursor: pointer; transition: background .15s ease, color .15s ease, transform .12s ease; }
+.calc-caret:hover { background: rgba(201,166,77,0.26); color: #FFD98A; }
+.calc-caret:active { transform: translateY(1px); }
 .calc-body { margin-top: 10px; }
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .calc-container input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 8px; font-size: 12px; outline: none; font-family: inherit; }
@@ -1760,16 +1781,19 @@ button, input { touch-action: manipulation; }
      NOTE: this rule is duplicated across the two mobile breakpoints below
      (narrow-portrait and short-landscape). They drifted apart once already —
      one kept a 12px glow the other had lost — so change them together. */
-  .ticker-header .fav-btn,
-  .ticker-header .fav-btn:hover,
+  .ticker-header .fav-btn {
+    background: transparent; border: 1px solid var(--border-main);
+    color: var(--text-muted); box-shadow: none;
+  }
+  .ticker-header .fav-btn:hover { border-color: var(--border-active); color: #fff; box-shadow: none; }
+  /* Gold only once SAVED, matching the desktop button and the Refresh
+     control beside it. The container used to be gold in both states, which
+     answered the flashbang but left nothing to mark the state with except
+     the star's fill — and spent the accent on an item nobody had saved. */
   .ticker-header .fav-btn.active {
     background: rgba(229, 184, 66, 0.10);
-    border: 1px solid #E5B842;
-    box-shadow: none;
+    border-color: #E5B842; color: #E5B842; box-shadow: none;
   }
-  .ticker-header .fav-btn { color: rgba(229, 184, 66, 0.70); }
-  .ticker-header .fav-btn.active,
-  .ticker-header .fav-btn:hover { color: #E5B842; }
   .toolbar { flex: 1 1 auto; min-width: 0; justify-content: space-between; padding: 2px; align-items: center; }
   .toolbar button { flex: 1; padding: 5px 2px; font-size: 12px; min-width: 0; line-height: 1; }
   .pct-chg { display: none !important; }
@@ -1868,16 +1892,19 @@ button, input { touch-action: manipulation; }
      NOTE: this rule is duplicated across the two mobile breakpoints below
      (narrow-portrait and short-landscape). They drifted apart once already —
      one kept a 12px glow the other had lost — so change them together. */
-  .ticker-header .fav-btn,
-  .ticker-header .fav-btn:hover,
+  .ticker-header .fav-btn {
+    background: transparent; border: 1px solid var(--border-main);
+    color: var(--text-muted); box-shadow: none;
+  }
+  .ticker-header .fav-btn:hover { border-color: var(--border-active); color: #fff; box-shadow: none; }
+  /* Gold only once SAVED, matching the desktop button and the Refresh
+     control beside it. The container used to be gold in both states, which
+     answered the flashbang but left nothing to mark the state with except
+     the star's fill — and spent the accent on an item nobody had saved. */
   .ticker-header .fav-btn.active {
     background: rgba(229, 184, 66, 0.10);
-    border: 1px solid #E5B842;
-    box-shadow: none;
+    border-color: #E5B842; color: #E5B842; box-shadow: none;
   }
-  .ticker-header .fav-btn { color: rgba(229, 184, 66, 0.70); }
-  .ticker-header .fav-btn.active,
-  .ticker-header .fav-btn:hover { color: #E5B842; }
   .toolbar { flex: 1 1 auto; width: auto; min-width: 0; padding: 0; gap: 5px; align-items: center; }
   /* line-height:1 so each label's box is the glyph itself. Inherited
      leading otherwise pads the text box unevenly against the 30px
@@ -2124,8 +2151,14 @@ button, input { touch-action: manipulation; }
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
 .fc-kicker { font-size:var(--hdr-size); font-weight:var(--hdr-weight); letter-spacing:var(--hdr-track); color:var(--text-structural); text-transform:uppercase; }
 .fc-head-ctrls { display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+/* Same quiet control as Refresh and Save: transparent, hairline, muted,
+   brightening on hover. It was a filled chip, which made the one button in
+   this card that only cycles a suggestion look heavier than the buy/sell
+   prices underneath it. */
 .fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer;
-  color:var(--text-main); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); }
+  color:var(--text-muted); background:transparent; border:1px solid var(--border-main);
+  transition:color .15s ease, border-color .15s ease, transform .12s ease; }
+.fc-next:hover:not(:disabled) { color:#fff; border-color:var(--border-active); }
 .fc-next:active { transform:translateY(1px); }
 .fc-next:disabled { opacity:.5; cursor:default; }
 /* Collapse toggle + collapsed one-line summary. Collapsing hides everything
@@ -2179,13 +2212,13 @@ button, input { touch-action: manipulation; }
 /* Secondary while collapsed: no fill, quieter text, tighter box — so Next
    reads as a control beside the label rather than a second headline
    competing with the score below it. Lights up on hover/focus. */
+/* Collapsed only changes the SIZE. It used to restate the colours too, with
+   its own white-ish border and text — and since collapsed is the default
+   state now, that override was the version everyone actually saw, which is
+   why Next was the one control that hovered differently from Refresh and
+   Save sitting inches away. */
 .flip-card.collapsed .fc-next {
-  background:transparent; border-color:rgba(255,255,255,.10);
-  color:var(--text-muted); font-size:10.5px; font-weight:700;
-  min-height:26px; padding:4px 10px;
-}
-.flip-card.collapsed .fc-next:hover:not(:disabled) {
-  background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); color:var(--text-main);
+  font-size:10.5px; min-height:26px; padding:4px 10px;
 }
 /* Keep "Next" available while collapsed so recs can be cycled without
    expanding. Header layout when collapsed: kicker takes what's left after
@@ -2349,7 +2382,8 @@ button, input { touch-action: manipulation; }
    order:3 puts it AFTER Share (which carries margin-left:auto), so every
    expander on the page ends up hard against the right edge. */
 .rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:6px; }
-.rg-toggle:hover { background:rgba(201,166,77,0.22); }
+/* Hover/press come from .calc-caret above — this used to redeclare its own
+   and was the reason the three chevrons behaved differently. */
 /* Collapsing hides the SUPPORTING detail — the BUY/SELL scale row and the
    four-row breakdown — and nothing else. The header row stays exactly where
    it is, so "ANALYST RATING" is on screen in both states and the block is
@@ -2456,8 +2490,9 @@ button, input { touch-action: manipulation; }
 }
 .qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
-  background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+  background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease, transform .12s ease; }
 .qf-refresh:hover { color:#fff; border-color:var(--border-active); }
+.qf-refresh:active { transform:translateY(1px); }
 /* Icon-only by default: on a phone the quick-facts strip already scrolls
    sideways, so a word here would push VOL and LIMIT off the end. The roomy
    layout has the space, and this button now does two different jobs — the
