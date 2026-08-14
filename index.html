@@ -2343,7 +2343,26 @@ button, input { touch-action: manipulation; }
 .qf-fresh { color:var(--rs-green-deep); } .qf-ok { color:var(--text-muted); } .qf-stale { color:var(--rs-gold-deep); }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
 .qf-row { display:flex; align-items:center; gap:8px; min-width:0; }
-.qf-row .quick-facts { flex:1 1 auto; min-width:0; }
+/* Content-sized, NOT stretched. At flex:1 1 auto the stats strip claimed
+   the whole row and shoved Refresh against the far edge — measured at 1440,
+   that left a 509px void between "LIMIT 13K" and the button, so the control
+   read as an orphan parked in empty space rather than the end of this line.
+   It shrank to 169px at 1100 and 86px in the landscape column, which is why
+   it only ever looked wrong on a wide screen.
+   min-width:0 stays: the strip still has to be allowed to shrink below its
+   content width and scroll sideways on a phone. */
+.qf-row .quick-facts { flex:0 1 auto; min-width:0; }
+/* A hairline, because "right after the stats" and "part of the stats" are
+   one gap apart. The strip separates its own figures with "·", so a button
+   sitting 8px past the last one would just read as another reading. The
+   rule says the data ends here and a control begins.
+   Scoped off .is-float — in portrait the button is absolutely positioned
+   inside the chart, where there is no row and nothing to divide. */
+.qf-row .qf-refresh:not(.is-float) { margin-left:6px; position:relative; }
+.qf-row .qf-refresh:not(.is-float)::before {
+  content:''; position:absolute; left:-8px; top:3px; bottom:3px;
+  width:1px; background:var(--border-main);
+}
 .qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
   background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
