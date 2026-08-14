@@ -3458,7 +3458,20 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 let hoverIdx = null;
 let hoverY = null; // raw cursor Y (CSS px, canvas-relative) for the crosshair's horizontal line + price label
 let selectedAbsIdx = null;
-let membersOn = localStorage.getItem('ge_members') === 'true';
+/* P2P by default, F2P only if the visitor has actually chosen it.
+   This used to read `=== 'true'`, which made an unset preference F2P — and
+   an unset preference is exactly a first-time visitor. That hid every
+   members item on the one visit where the app has to show what it does:
+   most of the game's liquid market is members-only, so a new arrival got a
+   deliberately narrowed view of the GE without being told it was narrowed.
+   The stored value is still authoritative in both directions, so anyone who
+   has ever tapped F2P keeps it — only `null` (never chosen) changes meaning. */
+let membersOn = (() => {
+  try {
+    const v = localStorage.getItem('ge_members');
+    return v === null ? true : v === 'true';
+  } catch (e) { return true; }
+})();
 let fullHistorical = null;
 /* Starter watchlist for first-time users. Three items was too thin to show
    what the list DOES — you cannot see sorting, the column toggles, the 5D
@@ -8355,6 +8368,44 @@ function revalidateRec(rec){
   fresh.series = rec.series;
   return fresh;
 }
+/* ── First-load hand-off to the top recommended flip ──────────────────────
+   A brand-new visitor now lands on a chart rather than an interstitial, and
+   the best chart to land them on is the item the app itself is recommending.
+   That number is not available in time to open on it: the top flip comes out
+   of scanFlips(), which fetches a shortlist of timeseries, so waiting for it
+   would hold the first paint hostage to several round trips. Instead the
+   opening chart is still the biggest 24h mover (instant, already-loaded
+   data), and this hands over to the flip the moment the scan lands.
+
+   The guard is "is the app still showing exactly what boot chose", not
+   setItem._userPicked — that flag is set to FALSE by nearly every navigation
+   in the file (watchlist rows, the flip card, the bank, notifications), so it
+   does not mean "the user has not interacted" and using it here would yank
+   the chart out from under someone who had already clicked a favourite.
+   Comparing the selected id to the one boot set catches every one of those
+   paths without depending on what any of them chose to flag.
+
+   Also one-shot and time-boxed: if the scan is slow enough that someone has
+   started reading the chart, changing it is worse than not doing it. */
+let _flipLandingFrom = null, _flipLandingUntil = 0;
+function armFlipLanding(id) {
+  _flipLandingFrom = id == null ? null : String(id);
+  _flipLandingUntil = Date.now() + 12000;
+}
+function maybeLandOnFlip(rec) {
+  const from = _flipLandingFrom;
+  if (!from) return;
+  _flipLandingFrom = null;                     // fires at most once, win or lose
+  if (Date.now() > _flipLandingUntil) return;  // too late to be a hand-off
+  if (!rec || !rec.item) return;
+  if (!selected || String(selected.id) !== from) return;  // they moved on
+  if (String(rec.id) === from) return;                    // already there
+  setItem._userPicked = false;
+  /* keepHomepage, same as the boot pick: this is still a bare "/" visit, so
+     a crawl of the homepage must keep indexing the brand page rather than
+     whichever flip happened to win this minute. */
+  setItem(rec.item, { keepHomepage: true });
+}
 async function findFlip({ advance = false } = {}){
   if (recBusy) return;
   if (advance) {
@@ -8377,6 +8428,7 @@ async function findFlip({ advance = false } = {}){
     recLastWasEmpty = !buf.length;
     if (!buf.length) { renderFlipState('empty'); return; }
     recBuffer = buf; recIdx = 0; markRecSeen(buf[0].id); renderFlipCard(buf[0]);
+    maybeLandOnFlip(buf[0]);
   } catch (e) { renderFlipState('offline'); }
   finally { recBusy = false; const n = flipHost()?.querySelector('#btnNextFlip'); if (n) n.disabled = false; }
 }
@@ -9009,6 +9061,29 @@ function drawChart(series) {
   const vals = [...LO, ...HI].filter(v => v != null);
   if (!vals.length) return;
 
+  /* The active target has to be INSIDE the y-range, because the target line
+     is clipped to the plot and simply vanishes when it is not — which is a
+     silent failure in the one place the chart cannot afford one. A Swing Buy
+     sits near the window's floor by construction, so on a falling item it
+     lands just under the lowest visible print: at 5D on a -5% day the axis
+     ran 386-420 with the target at 381, and the user saw a highlighted
+     SWING BUY 381 box with no line anywhere on the chart and nothing saying
+     why. The number the whole page is built around was the one thing not
+     drawn.
+
+     Bounded on purpose. The target joins the data in setting the range only
+     while it is within half the data's own span of it; past that the chart
+     would squash several days of price into a sliver to reach a level that
+     is nowhere near trading, so the range stays put and the line gets an
+     edge marker instead (see the activePrice block further down). Nudging a
+     target with the +/- buttons moves it a gp at a time and will never
+     approach that limit; a stale or hand-typed outlier can. */
+  const _tgt = activePriceBox === 'buy' ? recommendedBuy : recommendedSell;
+  if (_tgt != null && isFinite(_tgt)) {
+    const dMin = Math.min(...vals), dMax = Math.max(...vals);
+    const slack = Math.max((dMax - dMin) * 0.5, dMax * 0.02);
+    if (_tgt >= dMin - slack && _tgt <= dMax + slack) vals.push(_tgt);
+  }
   let [vmin, vmax] = fitPriceRange(vals);
   /* Manual axis scale (drag the price axis): stretch/squash the visible
      range around its midpoint. yScale > 1 flattens, < 1 amplifies. */
@@ -9279,6 +9354,49 @@ function drawChart(series) {
       const barH = Math.max(1, Math.min(bandH - 3, bandH * 0.72));
       const poc = buckets.indexOf(maxV);
       ctx.save();
+      /* ── Point of Control, extended across the plot ────────────────────
+         The busiest price level was already marked inside the profile, but
+         only inside it — the profile occupies the right-hand 15% of the
+         plot, so the one number people open a volume profile FOR was
+         readable in a strip and nowhere else. You could see that a level
+         was busiest without being able to see where the last three days of
+         price sat relative to it, which is the entire use of knowing.
+         Extending it turns it into what TradingView calls the POC line: a
+         reference the price is measured against rather than a fact about
+         the profile.
+
+         Drawn as a BAND, not a hairline, because that is what the number
+         honestly is. The profile buckets prices — the POC is a range one
+         bucket tall, not an exact gp value — so a 1px line would claim a
+         precision the calculation does not have. The band is the bucket,
+         at the same height as its own bar so the two read as one object.
+
+         Neutral grey at very low alpha, for the same reason the profile is
+         white: gold means buy, teal means sell, green means profit, and
+         this is volume counted from both sides, so it must not borrow any
+         of them. It sits behind everything inside the price clip — the
+         hairline centre is the only part with enough contrast to find, and
+         at 0.20 it is still below the gridline-to-data step, so scanning
+         the dots never has to compete with it. */
+      {
+        const pocTop = y0 + h_price - (poc + 1) * bandH + (bandH - barH) / 2;
+        const pocMid = Math.round(y0 + h_price - (poc + 0.5) * bandH);
+        ctx.fillStyle = 'rgba(255,255,255,0.045)';
+        ctx.fillRect(x0, pocTop, w, barH);
+        /* Integer y and a 1px fillRect rather than a stroke: a stroked line
+           at a half-pixel offset renders as two grey rows on a HiDPI canvas,
+           which at this alpha reads as a smudge instead of a level. */
+        ctx.fillStyle = 'rgba(255,255,255,0.20)';
+        ctx.fillRect(x0, pocMid, w, 1);
+        /* Named, because an unexplained grey line across a price chart is a
+           question rather than an answer. Parked at the far edge from the
+           profile so it never lands on top of the bars it describes. */
+        ctx.font = `600 9px BlinkMacSystemFont, -apple-system, sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.38)';
+        ctx.textBaseline = 'bottom';
+        if (yRight) { ctx.textAlign = 'left'; ctx.fillText('POC', x0 + 4, pocMid - 2); }
+        else { ctx.textAlign = 'right'; ctx.fillText('POC', x0 + w - 4, pocMid - 2); }
+      }
       /* One fill weight for every bar, including the busiest. The POC used
          to be a heavier BLOCK (0.16 against 0.06), which is what made the
          profile read as slabs sitting on the chart instead of a layer behind
@@ -9609,6 +9727,33 @@ function drawChart(series) {
          faintly and the badge never looks punched out. */
       ctx.fillStyle = "rgba(19,17,16,0.92)";
       roundRectPath(ctx, bx, by, bw, bh, 3); ctx.fill();
+      const tx = Math.round(bx + padX), tyc = Math.round(cy);
+      ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
+      ctx.fillText(word, tx, tyc); ctx.globalAlpha = 1;
+      ctx.font = priceFont; ctx.fillStyle = col;
+      ctx.fillText(price, Math.round(tx + wordW + gapW), tyc);
+      ctx.restore();
+    } else {
+      /* Target is off-scale — only reachable when it sits further from the
+         data than the range-fit above is willing to stretch. Previously this
+         branch did not exist and the line simply was not drawn, so the chart
+         said nothing at all about the number in the highlighted box. Say
+         which way it went instead: a badge pinned to the edge it went past,
+         with an arrow, so "no line" never again means "no information". */
+      const col = activePriceBox === 'buy' ? buyColor : sellColor;
+      const below = py > y0 + h_price;
+      ctx.save();
+      const word = below ? 'Target ↓' : 'Target ↑', price = fmtGp(activePrice);
+      const wordFont = "9px BlinkMacSystemFont, sans-serif";
+      const priceFont = "bold 10.5px BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = wordFont; const wordW = ctx.measureText(word).width;
+      ctx.font = priceFont; const priceW = ctx.measureText(price).width;
+      const padX = 5.5, gapW = 4, bh = 15, bx = x0 + 4;
+      const bw = padX * 2 + wordW + gapW + priceW;
+      const cy = below ? (y0 + h_price - bh / 2 - 2) : (y0 + bh / 2 + 2);
+      ctx.fillStyle = "rgba(19,17,16,0.92)";
+      roundRectPath(ctx, bx, cy - bh / 2, bw, bh, 3); ctx.fill();
       const tx = Math.round(bx + padX), tyc = Math.round(cy);
       ctx.font = wordFont; ctx.globalAlpha = 0.62; ctx.fillStyle = col;
       ctx.fillText(word, tx, tyc); ctx.globalAlpha = 1;
@@ -10667,6 +10812,13 @@ setItem._userPicked = false;
          explicit ?q= deep link. Otherwise the homepage stays clean brand
          metadata so a Google crawl of "/" indexes the BRAND page. */
       setItem(landing, { keepHomepage: !eligible(urlItem) });
+      /* Hand over to the top recommended flip when the scan lands — but ONLY
+         for a genuinely new arrival. A ?q= deep link came for a named item
+         and a returning visitor has a remembered one; moving either of them
+         off it would be taking the page away from someone who asked for it.
+         Both cases are excluded by requiring that `landing` was the fallback
+         pick rather than urlItem or last. See maybeLandOnFlip. */
+      if (!eligible(urlItem) && !eligible(last)) armFlipLanding(landing.id);
     }
 
     /* Deep links (RuneLite's right-click "Search PocketGE for X", shared
