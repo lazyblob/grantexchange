@@ -9102,9 +9102,19 @@ function drawChart(series) {
     for (let i = 0; i < L.length; i++) { put(HI[i], HIGHVOL[i]); put(LO[i], LOWVOL[i]); }
     const maxV = Math.max(...buckets);
     if (maxV > 0) {
-      const maxLen = w * 0.20;
+      /* 15% of the plot, down from 20%. The profile is context for the
+         price data, and at a fifth of the width the longest bars were
+         reaching far enough in to look like a second chart. */
+      const maxLen = w * 0.15;
       const bandH = h_price / NB;
-      const barH = Math.max(1, bandH - 1);
+      /* The real reason this read as a solid wedge rather than a profile,
+         and it was not the fill alpha. At bandH-1 the bars covered ~93% of
+         their band vertically — on a 440px pane that is 30 bars of ~14px
+         separated by a single pixel, which the eye merges into one mass no
+         matter how translucent each one is. At 72% they read as separate
+         rungs, and the gaps let the gridlines through, which is most of
+         what makes it feel like a layer behind the chart. */
+      const barH = Math.max(1, Math.min(bandH - 3, bandH * 0.72));
       const poc = buckets.indexOf(maxV);
       ctx.save();
       /* One fill weight for every bar, including the busiest. The POC used
