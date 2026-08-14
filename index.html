@@ -4214,9 +4214,15 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
      starting batch (user can edit), and label the sub-text honestly. */
   const hasLimit = itemLimit != null && itemLimit > 0;
   const defaultQty = hasLimit ? itemLimit : 1000;
-  const subText = hasLimit
-    ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
-    : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
+  /* One quiet line, same shape either way: quantity, then where that
+     quantity came from. It used to carry a "· tap to expand" hint that
+     changed to "· tap to collapse" on every toggle — three jobs in one
+     line, and the two that weren't the number were the longer half of it.
+     The hint is redundant: the row already has a caret, a hover state, a
+     press state and aria-expanded, so the affordance is stated four ways
+     without spending the only supporting line on it. Dropping it also
+     makes the line STATIC, which is why toggleCalc no longer rewrites it. */
+  const subText = `${defaultQty.toLocaleString()} units · ${hasLimit ? '4h limit' : 'no GE limit'}`;
   const qtyLabel = hasLimit ? 'Qty (4H)' : 'Qty (any)';
   // placeShareButton() may have moved the real #btnShare node into the
   // OLD #ratingGauge/.rg-top (a descendant of #sideModule) — replacing
@@ -4258,11 +4264,10 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
     $('#calcInputs').style.display = isCalcOpen ? 'block' : 'none';
     $('#calcToggleIcon').classList.toggle('closed', !isCalcOpen);
     const hl = $('#calcToggle');
+    /* aria-expanded is now the ONLY thing that changes here — the sub line
+       states the buy limit, which does not depend on whether the panel is
+       open, so it is written once by restoreCalculator and left alone. */
     if (hl) hl.setAttribute('aria-expanded', isCalcOpen);
-    const sub = hl && hl.querySelector('.calc-headline-sub');
-    if (sub) sub.textContent = hasLimit
-      ? `${itemLimit.toLocaleString()} units @ 4h limit · tap to ${isCalcOpen ? 'collapse' : 'expand'}`
-      : `No GE buy limit · default 1,000 units · tap to ${isCalcOpen ? 'collapse' : 'expand'}`;
   };
   $('#calcToggle').onclick = toggleCalc;
   $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
