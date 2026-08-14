@@ -2448,6 +2448,27 @@ button, input { touch-action: manipulation; }
    width, and the price-axis gutter runs out below its last label. Given a
    plate of its own so it reads as a control floating over the chart rather
    than a hole punched in it. */
+/* Chart view toggles. Same 26px height and hairline border as .qf-refresh
+   beside them so the group reads as one control cluster, not two designs.
+   Hidden below 1024px — see the markup comment. */
+.chart-tools { display: none; }
+@media (min-width: 1024px) {
+  .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
+}
+.ct-btn {
+  height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: .2px;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.ct-btn:hover { color: var(--text-main); border-color: var(--border-light); }
+/* On == the layer is being drawn. Gold, because that is this page's
+   "you chose this" colour everywhere else (favourites, active timeframe),
+   and deliberately a fill rather than a glow — see the Save button. */
+.ct-btn[aria-pressed="true"] {
+  color: var(--buy-color); border-color: rgba(229, 184, 66, 0.55);
+  background: rgba(229, 184, 66, 0.10);
+}
 /* Lifted clear of the time axis. At bottom:5px the 26px button spanned 5 to
    31px off the chart's bottom edge, and the x-axis label band measures 21px
    — so it sat squarely on the last timestamp, which on a 1D chart is the
@@ -2924,6 +2945,19 @@ button, input { touch-action: manipulation; }
            every price tick and would destroy the button with it. -->
       <div class="qf-row" id="quickFactsRow" style="display:none">
         <div class="quick-facts" id="quickFacts" aria-label="Last traded snapshot"></div>
+        <!-- Chart view toggles. Desktop only: these are conveniences, and the
+             phone's quick-facts strip already scrolls sideways to fit the
+             numbers, which are not optional. Each one is a plain visibility
+             switch rather than an indicator setting — nothing here changes
+             what the data says, only how much of it is drawn at once. -->
+        <div class="chart-tools" id="chartTools" role="group" aria-label="Chart view options">
+          <button type="button" class="ct-btn" id="ctDots" aria-pressed="true"
+            title="Scatter dots — off draws the highs and lows as lines instead">Dots</button>
+          <button type="button" class="ct-btn" id="ctFill" aria-pressed="true"
+            title="Shade the band between the buy and sell prices">Fill</button>
+          <button type="button" class="ct-btn" id="ctVol" aria-pressed="false"
+            title="Volume profile — how much traded at each price level">Vol</button>
+        </div>
         <!-- One button, two jobs. It refreshes live prices; when the view has
              been zoomed/panned or a target price hand-nudged it also puts
              those back, and turns gold to say so. A separate "Reset zoom"
@@ -8633,6 +8667,46 @@ function fitPriceRange(vals) {
    same". 2.5x is a fade you can actually see, which is the point. The
    oldest prints are a day (or five years) behind the price you're about to
    trade at; they're context, and they now look like it. */
+/* ── Chart view toggles ──────────────────────────────────────────────────
+   Three independent visibility switches, not a mode enum: every one of them
+   only decides whether a layer gets drawn. "Dots off" is what produces the
+   line view — the connecting thread is already drawn faintly under the
+   scatter, so turning the dots off and bringing that thread up to full
+   strength IS the line chart, with no second rendering path to keep in sync.
+   Stored globally rather than per layout (unlike the collapse prefs): this
+   is a reading preference about the data, and it does not change meaning
+   between a phone and a monitor. */
+let chartDotsOn = true, chartFillOn = true, chartVProfOn = false;
+(function loadChartPrefs() {
+  try {
+    const g = (k, d) => { const v = localStorage.getItem(k); return v === null ? d : v === '1'; };
+    chartDotsOn  = g('ge_chartDots', true);
+    chartFillOn  = g('ge_chartFill', true);
+    chartVProfOn = g('ge_chartVProf', false);
+  } catch (e) {}
+})();
+function wireChartTools() {
+  const defs = [
+    ['ctDots',  () => chartDotsOn,  v => { chartDotsOn  = v; }, 'ge_chartDots'],
+    ['ctFill',  () => chartFillOn,  v => { chartFillOn  = v; }, 'ge_chartFill'],
+    ['ctVol',   () => chartVProfOn, v => { chartVProfOn = v; }, 'ge_chartVProf'],
+  ];
+  for (const [id, get, set, key] of defs) {
+    const btn = document.getElementById(id);
+    if (!btn) continue;
+    btn.setAttribute('aria-pressed', get() ? 'true' : 'false');
+    btn.onclick = () => {
+      const next = !get();
+      set(next);
+      btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+      try { localStorage.setItem(key, next ? '1' : '0'); } catch (e) {}
+      queueDraw();
+    };
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireChartTools);
+else wireChartTools();
+
 const DOT_ALPHA_OLD = 0.40;
 const DOT_ALPHA_NEW = 1.0;
 const dotAlphaAt = (i, n) => n > 1
@@ -8910,16 +8984,62 @@ function drawChart(series) {
      volume strip or the axis labels. */
   ctx.save();
   ctx.beginPath(); ctx.rect(x0 - 1, y0 - 9, w + 2, h_price + 12); ctx.clip();
+
+  /* ── Volume profile ────────────────────────────────────────────────────
+     How much volume traded at each PRICE, rather than at each moment — the
+     volume strip below already answers "when". Buckets the visible window by
+     price level and draws one horizontal bar per bucket, anchored to
+     whichever edge the y-axis is on so it reads as an extension of the price
+     scale rather than a second chart floating in the plot.
+     Deliberately neutral white, not gold or teal. Every other colour on this
+     chart means buy-side, sell-side or profit, and this bar means none of
+     those — it is the same volume counted from both sides. Capped at a fifth
+     of the plot width and drawn before everything else inside the clip, so
+     it stays behind the price data rather than competing with it.
+     The one bar that gets extra weight is the busiest level, which is the
+     question people actually open this for: where did the trading happen. */
+  if (chartVProfOn && vmax > vmin) {
+    const NB = Math.max(12, Math.min(30, Math.round(h_price / 12)));
+    const buckets = new Array(NB).fill(0);
+    const put = (price, vol) => {
+      if (price == null || !(vol > 0)) return;
+      const t = (price - vmin) / (vmax - vmin);
+      if (t < 0 || t > 1) return;
+      buckets[Math.min(NB - 1, Math.floor(t * NB))] += vol;
+    };
+    for (let i = 0; i < L.length; i++) { put(HI[i], HIGHVOL[i]); put(LO[i], LOWVOL[i]); }
+    const maxV = Math.max(...buckets);
+    if (maxV > 0) {
+      const maxLen = w * 0.20;
+      const bandH = h_price / NB;
+      const barH = Math.max(1, bandH - 1);
+      const poc = buckets.indexOf(maxV);
+      ctx.save();
+      for (let k = 0; k < NB; k++) {
+        if (buckets[k] <= 0) continue;
+        const len = (buckets[k] / maxV) * maxLen;
+        if (len < 0.5) continue;
+        /* Bucket 0 is the BOTTOM of the price range, and y grows downward. */
+        const yTop = y0 + h_price - (k + 1) * bandH;
+        const bx = yRight ? (x0 + w - len) : x0;
+        ctx.fillStyle = k === poc ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.06)';
+        ctx.fillRect(bx, yTop + (bandH - barH) / 2, len, barH);
+      }
+      ctx.restore();
+    }
+  }
   /* Spread band — a soft translucent fill between the buy-low envelope and
      the sell-high envelope, giving the chart a modern "channel" feel without
      adding noise. Each consecutive pair of points contributes a slim
      quadrilateral; gaps in the data cleanly skip. Drawn first so dots and
      markers paint on top. */
-  {
+  if (chartFillOn) {
     ctx.save();
     /* The band between buy-low and sell-high IS the margin, drawn over time —
        the app's hero metric. Kept subtle but actually visible now (was 0.07,
-       basically invisible). */
+       basically invisible). Switchable from the toolbar because on a sharp
+       move this column gets tall, and some readers would rather see the
+       gridlines through it. */
     ctx.fillStyle = "rgba(38, 169, 171, 0.13)";
     let segStart = -1;
     for (let i = 0; i <= L.length; i++) {
@@ -8953,6 +9073,29 @@ function drawChart(series) {
   /* Dots-only scatter (no connecting line — that was scribbling on dense 1D
      charts). The volume needles above carry the "where did big trades happen"
      signal; here we just plot every print clean and small. */
+  /* Line view of a price series — see the drawDots/line toggle. Lifts the
+     pen over gaps rather than bridging them, so a data hole reads as a hole
+     instead of a straight run between two distant prints. */
+  function drawLineSeries(arr, color, isHigh) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] == null) { started = false; continue; }
+      const x = x0 + i * stepX, y = ypx(arr[i], vmin, vmax, y0, h_price);
+      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    const extIdx = isHigh ? viewMaxIdx : viewMinIdx;
+    if (extIdx >= 0 && arr[extIdx] != null) {
+      const x = x0 + extIdx * stepX, y = ypx(arr[extIdx], vmin, vmax, y0, h_price);
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = 1; ctx.fill();
+    }
+    ctx.restore();
+  }
   function drawSeries(arr, color, isHigh) {
     /* Radius is tied to the SPACING between prints, tightly clamped.
        Blobbing is a density problem and a fixed radius cannot solve it: at
@@ -9006,8 +9149,8 @@ function drawChart(series) {
        at 0.13 that column read as a solid teal wall that swallowed the dots
        and gridlines behind it — the fill is meant to say "this is the traded
        band", not to hide what's inside it. */
-    grad.addColorStop(0, 'rgba(38, 169, 171, 0.065)');
-    grad.addColorStop(1, 'rgba(38, 169, 171, 0.005)');
+    grad.addColorStop(0, chartFillOn ? 'rgba(38, 169, 171, 0.065)' : 'rgba(0,0,0,0)');
+    grad.addColorStop(1, chartFillOn ? 'rgba(38, 169, 171, 0.005)' : 'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     let started = false, firstX = 0, lastX = 0;
@@ -9040,7 +9183,9 @@ function drawChart(series) {
        or quieter than the timeframes either side of them. */
     const idxStep = Math.max(1, Math.round(4.5 / Math.max(0.1, stepX)));
     ctx.fillStyle = sellColor;
-    for (let i = 0; i < HI.length; i += idxStep) {
+    /* Same toggle as the intraday view: with dots off this branch is already
+       a line, so it just drops the sampled scatter riding on top of it. */
+    for (let i = 0; chartDotsOn && i < HI.length; i += idxStep) {
       if (HI[i] == null) continue;
       ctx.globalAlpha = dotAlphaAt(i, HI.length);
       ctx.beginPath(); ctx.arc(xs(i), ypx(HI[i], vmin, vmax, y0, h_price), 2.5, 0, Math.PI * 2); ctx.fill();
@@ -9060,9 +9205,16 @@ function drawChart(series) {
     };
     drawHalo(viewMaxIdx, sellColor);
     drawHalo(viewMinIdx, buyColor);
-  } else {
+  } else if (chartDotsOn) {
     drawSeries(HI, sellColor, true);
     drawSeries(LO, buyColor, false);
+  } else {
+    /* Dots off = the line view. The faint thread that already runs under the
+       scatter is the same path, so this just draws it at full strength and
+       skips the scatter — one code path, not a second chart. The period
+       extremes stay, because they are markers rather than scatter. */
+    drawLineSeries(HI, sellColor, true);
+    drawLineSeries(LO, buyColor, false);
   }
 
   /* Smoothed mid-price trend line (EMA over (buy+sell)/2). Replaces the old
