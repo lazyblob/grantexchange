@@ -2308,7 +2308,18 @@ button, input { touch-action: manipulation; }
 }
 .rg-top .pg-help { margin-left:0; }
 /* Share button (see placeShareButton) — icon-only, pushed to the far
-   right past the "?" glossary chip, on every layout. */
+   right past the "?" glossary chip, on every layout.
+   It is only ever VISIBLE inside .rg-top. Its markup home is the ticker
+   header next to the favourite star, because it has to exist somewhere for
+   placeShareButton() to move the real node (not a clone) into the gauge —
+   but that move cannot happen until the gauge has rendered, so on a cold
+   load it sat there in plain sight next to the star for the whole "Loading
+   live prices…" spell and then jumped. Scoping display to .rg-top means the
+   button shows up where it belongs and nowhere else, which also covers the
+   mid-render moment when renderRatingGauge parks it back in the header to
+   rescue it from an innerHTML rebuild. */
+#btnShare { display:none; }
+.rg-top #btnShare { display:inline-flex; }
 .rg-top .fav-btn { margin-left:auto; padding:3px 5px; gap:0; flex:0 0 auto; min-height:0; }
 .rg-top .fav-btn .fav-label { display:none; }
 .rg-top .fav-btn svg { width:13px; height:13px; }
