@@ -2549,7 +2549,12 @@ button, input { touch-action: manipulation; }
    and the placement are specific to this one.
    order:3 puts it AFTER Share (which carries margin-left:auto), so every
    expander on the page ends up hard against the right edge. */
-.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:6px; }
+/* 10px, not 6. Share and this chevron are the only two controls on the row
+   and they sat 6px apart, close enough on a phone to read as one cluster and
+   to make the wrong one easy to hit. Set here rather than in a landscape
+   override because it is the same pair at every width — the row is tightest
+   in landscape, which is where it shows, not where it differs. */
+.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:10px; }
 /* Hover/press come from .calc-caret above — this used to redeclare its own
    and was the reason the three chevrons behaved differently. */
 /* Collapsing hides the SUPPORTING detail — the BUY/SELL scale row and the
@@ -9992,7 +9997,19 @@ function drawChart(series) {
     };
     trendPath();
     ctx.strokeStyle = "rgba(8,10,14,0.55)"; ctx.lineWidth = 4; ctx.stroke();
-    ctx.strokeStyle = "rgba(250,248,243,0.96)"; ctx.lineWidth = 2;
+    /* The page's own text colour, not near-white. Measured against every
+       other near-opaque mark on the canvas, rgb(250,248,243) came to a
+       relative luminance of 0.94, against 0.513 for the gold prints and
+       0.317 for the teal — the trend line was not merely the brightest
+       thing on the chart, it was almost twice the brightest thing, which is
+       what makes it flare on an OLED in a dark room.
+       #D9D3C7 is --text-main, so the line now sits at the same weight as the
+       page's brightest TEXT rather than above it: luminance 0.657, still
+       comfortably clear of the gold prints it has to be read over, and no
+       longer the first thing the eye lands on. The dark casing underneath
+       stays — that is what separates it from the scatter, and it lets the
+       stroke itself be quieter without losing the path. */
+    ctx.strokeStyle = "rgba(217,211,199,0.90)"; ctx.lineWidth = 2;
     ctx.beginPath();
     let started = false;
     for (let i = 0; i < L.length; i++) {
@@ -11463,7 +11480,7 @@ if ('serviceWorker' in navigator) {
             <line x1="12" y1="26" x2="228" y2="26" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="57" x2="228" y2="57" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="88" x2="228" y2="88" stroke="rgba(255,255,255,0.10)"></line>
-            <polyline points="12,40 40,34 68,52 96,48 124,70 152,66 180,92 208,100 224,98" fill="none" stroke="rgba(250,248,243,0.9)" stroke-width="2" stroke-linejoin="round"></polyline>
+            <polyline points="12,40 40,34 68,52 96,48 124,70 152,66 180,92 208,100 224,98" fill="none" stroke="rgba(217,211,199,0.92)" stroke-width="2" stroke-linejoin="round"></polyline>
             <line x1="12" y1="108" x2="228" y2="108" stroke="var(--buy-color)" stroke-width="1.6" stroke-dasharray="5 4"></line>
             <circle cx="224" cy="98" r="4" fill="var(--buy-color)"></circle>
             <text x="16" y="104" font-size="9" font-weight="700" fill="var(--buy-color)">TARGET BUY</text>
@@ -11478,7 +11495,7 @@ if ('serviceWorker' in navigator) {
             <line x1="12" y1="26" x2="228" y2="26" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="57" x2="228" y2="57" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="88" x2="228" y2="88" stroke="rgba(255,255,255,0.10)"></line>
-            <polyline points="12,104 40,98 68,86 96,88 124,64 152,58 180,44 208,36 224,38" fill="none" stroke="rgba(250,248,243,0.9)" stroke-width="2" stroke-linejoin="round"></polyline>
+            <polyline points="12,104 40,98 68,86 96,88 124,64 152,58 180,44 208,36 224,38" fill="none" stroke="rgba(217,211,199,0.92)" stroke-width="2" stroke-linejoin="round"></polyline>
             <line x1="12" y1="28" x2="228" y2="28" stroke="var(--sell-color)" stroke-width="1.6" stroke-dasharray="5 4"></line>
             <circle cx="224" cy="38" r="4" fill="var(--sell-color)"></circle>
             <text x="16" y="42" font-size="9" font-weight="700" fill="var(--sell-color)">TARGET SELL</text>
@@ -11492,7 +11509,7 @@ if ('serviceWorker' in navigator) {
             <line x1="12" y1="26" x2="228" y2="26" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="57" x2="228" y2="57" stroke="rgba(255,255,255,0.10)"></line>
             <line x1="12" y1="88" x2="228" y2="88" stroke="rgba(255,255,255,0.10)"></line>
-            <polyline points="12,72 40,66 68,74 96,64 124,76 152,68 180,72 208,66 224,70" fill="none" stroke="rgba(250,248,243,0.85)" stroke-width="2" stroke-linejoin="round"></polyline>
+            <polyline points="12,72 40,66 68,74 96,64 124,76 152,68 180,72 208,66 224,70" fill="none" stroke="rgba(217,211,199,0.88)" stroke-width="2" stroke-linejoin="round"></polyline>
             <line x1="12" y1="62" x2="228" y2="62" stroke="rgba(255,255,255,0.30)" stroke-width="1.4" stroke-dasharray="5 4"></line>
             <line x1="12" y1="80" x2="228" y2="80" stroke="rgba(255,255,255,0.30)" stroke-width="1.4" stroke-dasharray="5 4"></line>
             <text x="16" y="58" font-size="9" font-weight="700" fill="rgba(255,255,255,0.5)">SELL</text>
@@ -11577,7 +11594,7 @@ if ('serviceWorker' in navigator) {
       <rect x="366" y="140" width="38" height="9" fill="rgba(255,255,255,0.05)"></rect>
       <rect x="14" y="99" width="432" height="6" fill="rgba(255,255,255,0.045)"></rect>
       <line x1="14" y1="102" x2="446" y2="102" stroke="rgba(255,255,255,0.42)" stroke-width="1.2"></line>
-      <polyline points="14,120 60,112 106,126 152,96 198,88 244,104 290,80 336,92 360,110" fill="none" stroke="rgba(250,248,243,0.9)" stroke-width="2" stroke-linejoin="round"></polyline>
+      <polyline points="14,120 60,112 106,126 152,96 198,88 244,104 290,80 336,92 360,110" fill="none" stroke="rgba(217,211,199,0.92)" stroke-width="2" stroke-linejoin="round"></polyline>
       <text x="20" y="96" font-size="9" font-weight="700" fill="rgba(255,255,255,0.55)">POINT OF CONTROL</text>
       <text x="366" y="168" font-size="9" font-weight="700" fill="rgba(255,255,255,0.45)">volume by price</text>
       <text x="14" y="182" font-size="9" fill="rgba(255,255,255,0.40)">time →</text>
@@ -11597,7 +11614,7 @@ if ('serviceWorker' in navigator) {
         <text x="16" y="49" font-size="7" font-weight="700" fill="var(--buy-color)">TARGET BUY</text>
         <text x="110" y="49" font-size="7" font-weight="700" fill="var(--sell-color)">TARGET SELL</text>
         <rect x="10" y="70" width="180" height="96" rx="5" fill="rgba(255,255,255,0.03)"></rect>
-        <polyline points="18,140 48,124 78,132 108,104 138,112 168,92 182,98" fill="none" stroke="rgba(250,248,243,0.85)" stroke-width="1.8" stroke-linejoin="round"></polyline>
+        <polyline points="18,140 48,124 78,132 108,104 138,112 168,92 182,98" fill="none" stroke="rgba(217,211,199,0.88)" stroke-width="1.8" stroke-linejoin="round"></polyline>
         <circle cx="176" cy="150" r="8" fill="rgba(12,11,9,0.9)" stroke="rgba(255,255,255,0.25)"></circle>
         <rect x="10" y="172" width="180" height="12" rx="3" fill="rgba(255,255,255,0.04)"></rect>
         <rect x="10" y="192" width="180" height="16" rx="4" fill="rgba(201,166,77,0.10)"></rect>
@@ -11617,7 +11634,7 @@ if ('serviceWorker' in navigator) {
         <rect x="10" y="30" width="98" height="18" rx="4" fill="rgba(229,184,66,0.10)" stroke="rgba(229,184,66,0.45)"></rect>
         <rect x="112" y="30" width="98" height="18" rx="4" fill="rgba(38,169,171,0.10)" stroke="rgba(38,169,171,0.45)"></rect>
         <rect x="10" y="54" width="200" height="112" rx="5" fill="rgba(255,255,255,0.03)"></rect>
-        <polyline points="18,132 52,112 86,126 120,92 154,104 188,76 202,84" fill="none" stroke="rgba(250,248,243,0.85)" stroke-width="1.8" stroke-linejoin="round"></polyline>
+        <polyline points="18,132 52,112 86,126 120,92 154,104 188,76 202,84" fill="none" stroke="rgba(217,211,199,0.88)" stroke-width="1.8" stroke-linejoin="round"></polyline>
         <circle cx="196" cy="150" r="8" fill="rgba(12,11,9,0.9)" stroke="rgba(255,255,255,0.25)"></circle>
         <rect x="10" y="172" width="200" height="10" rx="3" fill="rgba(255,255,255,0.04)"></rect>
         <rect x="220" y="10" width="100" height="16" rx="4" fill="rgba(255,255,255,0.04)"></rect>
