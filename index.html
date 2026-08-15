@@ -3548,6 +3548,11 @@ function placeRefreshBtn() {
    no chart settings at all. This query is the exact complement of the
    `min-width: 1024px` rule that shows the inline toolbar. */
 const _chartToolsFloatMQ = window.matchMedia('(max-width: 1023.98px)');
+/* Touch device — used by the chart draw to give the volume pane a smaller
+   share of a phone's plot. Hoisted rather than called per draw, and it is a
+   live MediaQueryList so plugging in a mouse re-evaluates on the next frame
+   without a listener. */
+const _coarseMQ = window.matchMedia('(pointer: coarse)');
 function placeChartTools() {
   const tools = document.getElementById('chartTools');
   const puck = document.getElementById('ctPuck');
@@ -9433,9 +9438,19 @@ function drawChart(series) {
      price as a translucent underlay instead: same information, none of the
      height cost, which is what TradingView does on compact layouts. Roomier
      plots keep the dedicated pane, where it reads better. */
+  /* On a touch device the dedicated pane keeps a smaller share. Measured on
+     a 390x844 phone the plot is 403px and the pane took 64 of them; the
+     volume strip's job is comparative — which bars are taller than their
+     neighbours — and that reads fine at 48px, while those 16px go to the
+     part people actually came for. Desktop keeps 16%: it has 508px of plot
+     and no reason to economise.
+     Phone LANDSCAPE needs nothing here — at 252px it is already under the
+     290px threshold and volume is drawn as an underlay, so the price pane
+     is at 100% either way. This only moves portrait. */
   const volOverlay = h < 290;
-  const h_price = volOverlay ? h : h * 0.84;
-  const h_vol   = volOverlay ? h * 0.28 : h * 0.16;
+  const volFrac = _coarseMQ.matches ? 0.12 : 0.16;
+  const h_price = volOverlay ? h : h * (1 - volFrac);
+  const h_vol   = volOverlay ? h * 0.28 : h * volFrac;
   const y0_vol  = volOverlay ? y0 + h - h_vol : y0 + h_price;
 
   chartData = { L, LO, HI, VO, vmin, vmax, stepX, dataW, x0, y0, h, H, W, win, n, h_price, axisW, yRight };
