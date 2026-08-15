@@ -2312,12 +2312,18 @@ button, input { touch-action: manipulation; }
 .flip-card.collapsed { padding:0; }
 .flip-card.collapsed .fc-head { margin-bottom:0; }
 .flip-card.collapsed .fc-collapsible { display:none; }
-/* Reserve the column the header controls occupy. margin-right:auto alone
-   only holds the score left while there IS slack — a long item name eats it
-   and slides the score right back under Next. The controls measure 84px
-   (56 Next + 6 gap + 22 caret) and 75px in coarse landscape, so 92px clears
-   both with a margin; the name simply ellipsizes sooner, which is the right
-   thing to sacrifice on a one-line summary. */
+/* The 92px right reservation that used to live here is GONE. It existed to
+   keep the score out from under the Next button — correct when the score was
+   packed left and could drift, and obsolete since the score was pinned right
+   with margin-left:auto. Measured at eight widths (740/844/932 landscape,
+   360/390 portrait, 1024/1440/1920 desktop) the header row and the mini row
+   are on separate lines in every one, and Next never overlaps the mini row
+   in any of them, so the reservation was protecting against a collision that
+   cannot occur.
+   It was not free. In landscape the mini row is 220px wide, so 92px of it —
+   42% — was blank space held for nothing, and the item name ellipsised down
+   to a single letter to pay for it. That is the bug: the name was not being
+   covered by anything, it was being squeezed by a gap. */
 /* 10px, matching the expanded card's .fc-head margin-bottom and the Analyst
    Rating block above it. An earlier pass lifted this section's internal
    rhythm from 6px to 10px to stop it reading tighter than its peers, but
@@ -2326,7 +2332,7 @@ button, input { touch-action: manipulation; }
    with nothing between them. The horizontal fix for that pair landed a
    while ago (the score packs left, out from under Next); this is the
    vertical half of the same problem. */
-.flip-card.collapsed .fc-mini { display:flex; margin-top:10px; padding-right:92px; }
+.flip-card.collapsed .fc-mini { display:flex; margin-top:10px; padding-right:2px; }
 /* The name and the score are two separate readings, not one phrase, so the
    score gets more room than the 8px that ties the icon to the name it
    belongs to. Same reason the kicker steps away from its own number. */
