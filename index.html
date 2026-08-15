@@ -492,11 +492,9 @@ button, input { touch-action: manipulation; }
    just takes the whole prose column, and at 840px wide the volume-profile
    diagram was bigger than the chart it describes. */
 .about-section .fig-svg { display: block; width: 100%; max-width: 460px; height: auto; border-radius: 10px; border: 1px solid var(--border-main); background: var(--bg-panel); }
-/* A drawn phone should be about the size of a phone, not half the column —
-   at 411px wide the portrait shell rendered 677px tall and read as a
-   diagram of a website rather than a picture of a handset. */
-.about-section .phones figure { max-width: 230px; }
-.about-section .phones .fig-svg { max-width: 100%; }
+/* The three buy / sell / skip setups sit side by side where there is room
+   and stack on a phone — they are meant to be COMPARED, which needs them in
+   one eyeful. */
 .about-section .scenarios { display: grid; gap: 16px; margin: 14px 0 22px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .about-section .scenarios figure { margin: 0; }
 .about-section .scenarios figcaption { font-size: 11.5px; color: var(--text-muted); margin-top: 7px; }
@@ -504,11 +502,6 @@ button, input { touch-action: manipulation; }
 .about-section .verdict.v-buy { color: var(--buy-color); }
 .about-section .verdict.v-sell { color: var(--sell-color); }
 .about-section .verdict.v-skip { color: var(--text-muted); }
-/* Two phone shells side by side — portrait and landscape are genuinely
-   different layouts, not one scaled, and that is the whole claim. */
-.about-section .phones { display: grid; gap: 18px; margin: 14px 0 22px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
-.about-section .phones figure { margin: 0; }
-.about-section .phones figcaption { font-size: 11.5px; color: var(--text-muted); margin-top: 7px; }
 .about-section .about-devnote { font-size: 12.5px; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border-active); margin-bottom: 24px; }
 .about-section .faq { margin-top: 4px; }
 .about-section .faq details { border: 1px solid var(--border-main); border-radius: 6px; margin-bottom: 8px; background: var(--bg-panel); overflow: hidden; }
@@ -11603,57 +11596,8 @@ if ('serviceWorker' in navigator) {
   </figure>
   <p><strong>Turning it off.</strong> On desktop the chart toolbar sits under the chart next to Refresh: <b>Fill</b> shades the band between buy and sell, <b>VP</b> toggles the volume profile. On a phone the same two live behind the small slider button in the chart's bottom-right corner — tap it and they stack above it. Both remember your choice on that device, and the profile starts on, because it is the part nobody would think to go looking for.</p>
 
-  <h2>On a phone, in two orientations</h2>
-  <p>Nothing here is a cut-down mobile version, and the two orientations are genuinely different layouts rather than one scaled. Hold it upright to work a list; turn it sideways to read a chart.</p>
-  <div class="phones">
-    <figure>
-      <svg class="fig-svg" viewBox="0 0 200 330" role="img" aria-label="Phone held upright: header, targets, chart, then the watchlist stacked below">
-        <rect x="10" y="12" width="180" height="20" rx="5" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="10" y="38" width="86" height="26" rx="5" fill="rgba(229,184,66,0.10)" stroke="rgba(229,184,66,0.45)"></rect>
-        <rect x="104" y="38" width="86" height="26" rx="5" fill="rgba(38,169,171,0.10)" stroke="rgba(38,169,171,0.45)"></rect>
-        <text x="16" y="49" font-size="7" font-weight="700" fill="var(--buy-color)">TARGET BUY</text>
-        <text x="110" y="49" font-size="7" font-weight="700" fill="var(--sell-color)">TARGET SELL</text>
-        <rect x="10" y="70" width="180" height="96" rx="5" fill="rgba(255,255,255,0.03)"></rect>
-        <polyline points="18,140 48,124 78,132 108,104 138,112 168,92 182,98" fill="none" stroke="rgba(217,211,199,0.88)" stroke-width="1.8" stroke-linejoin="round"></polyline>
-        <circle cx="176" cy="150" r="8" fill="rgba(12,11,9,0.9)" stroke="rgba(255,255,255,0.25)"></circle>
-        <rect x="10" y="172" width="180" height="12" rx="3" fill="rgba(255,255,255,0.04)"></rect>
-        <rect x="10" y="192" width="180" height="16" rx="4" fill="rgba(201,166,77,0.10)"></rect>
-        <text x="16" y="203" font-size="7" font-weight="800" fill="var(--text-structural)">FAVORITES</text>
-        <rect x="10" y="212" width="180" height="17" rx="3" fill="rgba(255,255,255,0.035)"></rect>
-        <rect x="10" y="233" width="180" height="17" rx="3" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="10" y="254" width="180" height="17" rx="3" fill="rgba(255,255,255,0.035)"></rect>
-        <rect x="10" y="275" width="180" height="17" rx="3" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="10" y="300" width="180" height="18" rx="4" fill="rgba(255,255,255,0.03)"></rect>
-        <text x="16" y="312" font-size="7" font-weight="700" fill="var(--text-structural)">30-DAY RANGE</text>
-      </svg>
-      <figcaption><b>Upright</b> — a vertical stack. Targets, chart, then the watchlist under it, so scrolling the list never costs you the chart.</figcaption>
-    </figure>
-    <figure>
-      <svg class="fig-svg" viewBox="0 0 330 190" role="img" aria-label="Phone turned sideways: chart on the left, sidebar of favourites on the right">
-        <rect x="10" y="10" width="200" height="16" rx="4" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="10" y="30" width="98" height="18" rx="4" fill="rgba(229,184,66,0.10)" stroke="rgba(229,184,66,0.45)"></rect>
-        <rect x="112" y="30" width="98" height="18" rx="4" fill="rgba(38,169,171,0.10)" stroke="rgba(38,169,171,0.45)"></rect>
-        <rect x="10" y="54" width="200" height="112" rx="5" fill="rgba(255,255,255,0.03)"></rect>
-        <polyline points="18,132 52,112 86,126 120,92 154,104 188,76 202,84" fill="none" stroke="rgba(217,211,199,0.88)" stroke-width="1.8" stroke-linejoin="round"></polyline>
-        <circle cx="196" cy="150" r="8" fill="rgba(12,11,9,0.9)" stroke="rgba(255,255,255,0.25)"></circle>
-        <rect x="10" y="172" width="200" height="10" rx="3" fill="rgba(255,255,255,0.04)"></rect>
-        <rect x="220" y="10" width="100" height="16" rx="4" fill="rgba(255,255,255,0.04)"></rect>
-        <text x="226" y="21" font-size="7" font-weight="800" fill="var(--text-structural)">POTENTIAL PROFIT</text>
-        <rect x="220" y="30" width="100" height="16" rx="4" fill="rgba(255,255,255,0.04)"></rect>
-        <text x="226" y="41" font-size="7" font-weight="800" fill="var(--text-structural)">ANALYST RATING</text>
-        <rect x="220" y="50" width="100" height="16" rx="4" fill="rgba(201,166,77,0.10)"></rect>
-        <text x="226" y="61" font-size="7" font-weight="800" fill="var(--text-structural)">FAVORITES</text>
-        <rect x="220" y="70" width="100" height="14" rx="3" fill="rgba(255,255,255,0.035)"></rect>
-        <rect x="220" y="88" width="100" height="14" rx="3" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="220" y="106" width="100" height="14" rx="3" fill="rgba(255,255,255,0.035)"></rect>
-        <rect x="220" y="124" width="100" height="14" rx="3" fill="rgba(255,255,255,0.05)"></rect>
-        <rect x="220" y="142" width="100" height="14" rx="3" fill="rgba(255,255,255,0.035)"></rect>
-        <rect x="220" y="164" width="100" height="18" rx="4" fill="rgba(255,255,255,0.03)"></rect>
-        <text x="226" y="176" font-size="7" font-weight="700" fill="var(--text-structural)">FIND OPPORTUNITIES</text>
-      </svg>
-      <figcaption><b>Sideways</b> — the desktop split. Chart on the left, watchlist and the rating panels on the right, both visible at once.</figcaption>
-    </figure>
-  </div>
+  <h2>On a phone</h2>
+  <p>Nothing here is a cut-down mobile version. Held upright you get a vertical stack — targets, chart, then the watchlist under it — so scrolling the list never costs you the chart. Turned sideways you get the desktop split, chart on the left and the watchlist and rating panels on the right, both visible at once. Two layouts, not one scaled.</p>
   <p>Add it to your home screen and a service worker loads the shell instantly with no URL bar. On iOS that step is also what enables notifications — the bell button walks you through it.</p>
 
   <h2>Scanners: a shortlist when you don't have one</h2>
