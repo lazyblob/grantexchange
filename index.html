@@ -2459,6 +2459,16 @@ button, input { touch-action: manipulation; }
   .rg-wrap.is-collapsed {
     display: grid; grid-template-columns: auto minmax(0, 1fr);
     align-items: center; column-gap: 10px;
+    /* row-gap, because without it the two rows TOUCH — measured, the meter's
+       top sat 2px ABOVE the controls' bottom, so the bar physically overlapped
+       Share and the chevron rather than sitting under them. The meter also
+       spans the full column width, which puts its right end directly beneath
+       both controls; portrait and desktop do the same thing harmlessly because
+       their stacked layout leaves 21-25px of vertical air. This grid had none.
+       8px is what buys that air back. It costs 8 of the 25px this layout
+       saved, which is the right trade: the saving was for the watchlist, not
+       for letting a bar run into a button. */
+    row-gap: 8px;
   }
   .rg-wrap.is-collapsed .rg-top { grid-column: 1 / -1; }
   .rg-wrap.is-collapsed .rg-label { margin-bottom: 0; font-size: 13px; }
