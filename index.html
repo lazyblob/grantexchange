@@ -887,12 +887,16 @@ button, input { touch-action: manipulation; }
    width roughly eight times faster, so it ellipsizes long before the pills
    start scrolling. The name is the cheapest thing on this row to lose — it's
    also in the search box, the tab title and the chart's own header.
-   The floor has to live HERE, on the flex item, not on .ticker-info inside it:
-   a flex item with min-width:0 collapses to zero width no matter what its
-   children declare, and the children then paint straight over the next item.
-   Measured at a 338px header, this group hit 0px wide and the name overlapped
-   the Save button. 120px keeps a few characters plus the live price. */
-.ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 120px; flex: 0 8 auto; }
+   The floor is min-width:AUTO, not a pixel number. A flex item with
+   min-width:0 collapses to zero no matter what its children declare, and the
+   children then paint straight over the next item — but a fixed floor is just
+   as wrong, because it can't know how wide the content is: 120px held a 650gp
+   price fine and let a 59,930,778 one spill 21px over the Save button.
+   auto resolves to the content-based minimum, which is exactly "as narrow as
+   this can get without overlapping". The name still ellipsizes inside it: an
+   element with overflow:hidden contributes zero to that minimum, so the floor
+   ends up being the price row's width and nothing more. */
+.ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: auto; flex: 0 8 auto; }
 /* min-width:0 is what lets a flex item shrink below its content size at all;
    without it the toolbar would refuse to shrink and push the row wide. The
    buttons themselves stay rigid (flex:0 0 auto) so shrinking scrolls the
@@ -928,7 +932,10 @@ button, input { touch-action: manipulation; }
 .ticker-title-group img { width: 34px; height: 34px; image-rendering: pixelated; }
 .ticker-wiki-link { display: inline-flex; color: inherit; text-decoration: none; line-height: 0; cursor: pointer; }
 .ticker-name-link { line-height: normal; min-width: 0; max-width: 100%; }
-.ticker-info { min-width: 0; }
+/* auto, so the live price sets the floor — see .ticker-title-group. The h2
+   above it has overflow:hidden and so still contributes zero, keeping its
+   ellipsis. */
+.ticker-info { min-width: auto; }
 .ticker-name-link:hover h2 { text-decoration: underline; text-decoration-color: var(--text-muted); text-underline-offset: 3px; }
 .ticker-wiki-link:focus-visible { outline: 2px solid var(--border-active); outline-offset: 2px; border-radius: 4px; }
 .ticker-info h2 { margin: 0; font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -1109,8 +1116,16 @@ button, input { touch-action: manipulation; }
    any width. Same horizontal single-row treatment here, just tuned tighter. */
 @media screen and (min-width: 641px) and (max-width: 1023px) {
   .price-box { display: flex; align-items: center; gap: 10px; padding: 6px 12px; overflow: hidden; }
-  .price-label { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex-shrink: 0; }
-  .price-val { font-size: 20px; margin-top: 0; flex-shrink: 1; white-space: nowrap; letter-spacing: -0.5px; margin-left: auto; overflow: hidden; text-overflow: ellipsis; }
+  /* Same inversion the phone block further down already fixes, which this band
+     never got: label flex-shrink:0 + value flex-shrink:1 means the caption
+     ("Insta-sell: 58,412,684 · 3m ago") takes what it wants and the number
+     absorbs every pixel of the shortfall. Measured in a 225px box it left the
+     target a clientWidth of ZERO — fitPriceNums had ground the font down to 9px
+     and it still clipped, because no font size can fit into no space.
+     The caption shrinks and ellipsises; the number never does. */
+  .price-label { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex-shrink: 1; min-width: 0; }
+  .price-label .live-val { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .price-val { font-size: 20px; margin-top: 0; flex-shrink: 0; white-space: nowrap; letter-spacing: -0.5px; margin-left: auto; }
 }
 /* Medium-desktop band: viewports between the mobile breakpoint (1024px)
    and a comfortable wide-desktop width were overflowing for items with
@@ -2990,17 +3005,32 @@ button, input { touch-action: manipulation; }
    drop the Save button's word (the filled gold star says it on its own) and
    shrink the item sprite. Worth ~60px, which is the difference between two
    pills visible and four.
-   480px is where it's actually needed, not sooner: name floor 120 + full Save
-   90 + the compact toolbar's 246 + three 12px gaps is 480. Above that the word
-   fits, so it stays — measured at a 538px header there were still 132px spare
-   and collapsing the button there was pure loss. */
-@container tickerhdr (max-width: 480px) {
+   620px, not the 480 this started at. 480 was derived from a 650gp item, where
+   the title group needs ~120px. It is the wrong number for the same header
+   showing a 59,930,778 price, where the group's content floor is ~250px and
+   there is no spare width at all — that item overlapped its own Save button.
+   Since the floor is content-driven now, the threshold has to assume the
+   expensive case, not the cheap one. The star alone is a familiar affordance
+   and both phone layouts already ship it wordless. */
+@container tickerhdr (max-width: 620px) {
   .ticker-header .fav-btn .fav-label,
   .ticker-header .fav-btn .fav-label-active { display: none; }
   .ticker-header .fav-btn { padding: 5px 7px; gap: 0; }
-  .ticker-title-group { min-width: 104px; gap: 7px; }
+  .ticker-title-group { gap: 7px; }
   #tickerHeaderIconLink { width: 30px; height: 30px; }
   #tickerHeaderIconLink img { width: 24px; height: 24px; max-width: 24px; max-height: 24px; }
+  /* The 24h change chip is the same number the 1D pill already shows, two
+     inches to the right. Dropping the duplicate is ~50px back to the pills at
+     exactly the width where they're starved. */
+  .ticker-header .ticker-price-row .change { display: none; }
+  /* "gp" was wrapping under a 10-digit price and pushing the row to two lines. */
+  .ticker-header .ticker-price-row { flex-wrap: nowrap; white-space: nowrap; }
+  /* The hero price sets the group's floor now, so its font size is directly
+     how much room the timeframe pills get. At 22px a 10-digit price claimed
+     227px of a 338px header and left the pills 47px — one pill. 17px is still
+     the largest thing on the row and hands ~60px back. The exact figure is
+     never lost: the insta-buy/insta-sell strip under the chart carries it. */
+  .ticker-header .ticker-price-row .price { font-size: 17px; }
 }
 /* The two compact layouts (phone portrait, phone landscape) want the OPPOSITE
    of the desktop overflow rule: there the item name is hidden entirely, so the
