@@ -4805,154 +4805,74 @@ async function buildShareCardCanvas() {
   g.fillStyle = hlColor || '#D9D3C7';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
-  /* The zone line only appears at a 5-day extreme, but the extreme is read
-     over 5 days while the Analyst Rating is read over the selected timeframe
-     — so they can genuinely disagree, and an item can sit at a 5-day low
-     while the rating says Sell. Printing "Potential buy zone" directly above
-     "Strong Sell" would put the card at odds with itself, so the line is
-     dropped whenever the rating leans the other way. */
-  if (hlColor) {
-    const rating = (shareCardGaugeInfo()?.text || '');
-    const saysBuy = /buy/i.test(rating), saysSell = /sell/i.test(rating);
-    const zone = isHigh5d
-      ? (saysBuy ? null : 'Potential sell zone')
-      : (saysSell ? null : 'Potential buy zone');
-    if (zone) {
-      g.font = '700 18px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillText(zone, 168, 266);
-    }
-  }
+  /* "Potential buy zone" used to print here, under the price. It said the
+     same thing as the ▼ 5-DAY LOW badge at the top right, in more words, and
+     a second phrasing of a fact already stated is exactly the kind of thing
+     that makes a card take two seconds to read instead of one. The badge
+     keeps the signal; the sentence goes. */
 
-  /* Change chip for the timeframe ON SCREEN, and only that one.
-     This used to draw 1D and 5D side by side no matter what the sharer was
-     looking at, so a card built from a 1Y chart led with two day-trader
-     percentages that had nothing to do with the picture underneath it. The
-     card is a screenshot of a decision — it should carry the window that
-     decision was made in, not a fixed pair. */
-  const chipY = 290;
-  const chgView = viewChanges && viewChanges[view];
-  const drawChangeChip = (x, label, val) => {
-    if (val == null) return x;
-    const color = val > 0 ? '#10B981' : val < 0 ? '#EF5350' : '#8A8274';
-    const text = label + ' ' + (val > 0 ? '+' : '') + val.toFixed(1) + '%';
-    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    const w = g.measureText(text).width + 28;
-    roundRectPath(g, x, chipY, w, 40, 8);
-    g.fillStyle = 'rgba(255,255,255,0.06)';
-    g.fill();
-    g.fillStyle = color;
-    g.fillText(text, x + 14, chipY + 27);
-    return x + w + 12;
-  };
-  let cx = 168;
-  cx = drawChangeChip(cx, String(view).toUpperCase(), chgView);
-  // Volume gets its own chip, not buried as a small aside — "is this a
-  // real move or thin-volume noise" is usually the first skeptical
-  // question on a shared economy post.
-  const shareVol = dailyVolume(selected.id);
-  if (shareVol > 0) {
-    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    const volText = 'VOL ' + abbreviateNumber(shareVol) + '/day';
-    const vw = g.measureText(volText).width + 28;
-    roundRectPath(g, cx, chipY, vw, 40, 8);
-    g.fillStyle = 'rgba(255,255,255,0.06)';
-    g.fill();
-    g.fillStyle = '#D9D3C7';
-    g.fillText(volText, cx + 14, chipY + 27);
-  }
+  /* The 1D/5D change chip and the VOL chip used to sit here.
+     Both were repeats. The chart's own header prints the selected period's
+     net change a few hundred pixels below, and liquidity now speaks up
+     through Market Read precisely when it matters instead of always. Two
+     fewer numbers competing for the first glance, and ~50px back. */
 
-  // Target Buy / Target Sell + Analyst Rating row.
-  const rowY = 380;
-  const col = (x, label, value, color) => {
-    g.fillStyle = '#8A8274';
-    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(label.toUpperCase(), x, rowY);
-    g.fillStyle = color || '#FFFFFF';
-    g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(value, x, rowY + 38);
-  };
-  /* ONE target — the side actually selected on the page. Showing both made
-     the card state a plan and its opposite at the same time: "sell Sapphire
-     necklace at 446" is a recommendation, "buy at 432 / sell at 446" is a
-     spreadsheet, and the reader has to work out which half was the point.
-     The selected box is the sharer's actual call, so it is the one that
-     travels, and the chart below draws its line at that level. */
+  /* ONE target line on the CHART — the side actually selected on the page —
+     even though both target numbers are printed as text above it. A reader
+     needs both prices to judge the edge, but two dashed levels on a small
+     preview is the "competing markers" problem: neither reads. The selected
+     box is the sharer's actual call, so it is the one that gets drawn. */
   const shareIsBuy = activePriceBox === 'buy';
   const shareTgt = shareIsBuy ? recommendedBuy : recommendedSell;
   const shareTgtColor = shareIsBuy ? '#E5B842' : '#26A9AB';
-  const shareTgtLabel = (view === '1d' ? 'Target ' : 'Swing ') + (shareIsBuy ? 'Buy' : 'Sell');
-  col(48, shareTgtLabel, shareTgt > 0 ? fmtGp(shareTgt) + ' gp' : '—', shareTgtColor);
-  /* Potential Profit at a full 4h buy-limit cycle — same figure the
-     sidebar's own "Potential Profit" headline shows (limit x margin after
-     tax), not the calculator's current inputs, which might be a manual
-     "what if" edit that shouldn't leak into a shared public image.
-     On its own that number was unexplained on a card someone meets cold in
-     a feed: "+756K" reads like free money until you know it assumes buying
-     out a whole 4-hour limit, which for a 575 gp item is 5.75M of capital
-     you have to put up first. Capital Needed now sits beside it as an equal
-     column, and the line underneath spells out the arithmetic — quantity x
-     per-item margin — so the headline can be checked rather than taken on
-     faith. */
-  let hasCapitalRow = false;
-  if (recommendedBuy > 0 && recommendedSell > 0 && selected.limit > 0) {
-    hasCapitalRow = true;
-    const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
-    const potentialProfit = marginPerItem * selected.limit;
-    const capitalNeeded = recommendedBuy * selected.limit;
-    const profitColor = potentialProfit >= 0 ? '#10B981' : '#EF5350';
-    // Buy -> Sell -> what it costs -> what it makes: the order you'd ask in.
-    col(632, 'Capital Needed', abbreviateNumber(capitalNeeded) + ' gp', '#D9D3C7');
-    col(924, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
-      profitColor);
 
-    /* Mixed-weight run: the two figures that produce the headline are white
-       and green against muted connective text, so the sum reads at a glance
-       even after a feed has downscaled the card. */
+  /* Shrink-to-fit, then ellipsise. Used for the Market Read line, which is a
+     fixed sentence but a variable width once the font is applied. */
+  const fitLine = (text, x, y, maxW, startSize, minSize, weight, color) => {
+    let size = startSize;
+    const setF = s2 => { g.font = weight + ' ' + s2 + 'px -apple-system, BlinkMacSystemFont, Roboto, sans-serif'; };
+    setF(size);
+    while (size > minSize && g.measureText(text).width > maxW) { size -= 1; setF(size); }
+    let out = text;
+    if (g.measureText(out).width > maxW) {
+      while (out.length > 4 && g.measureText(out + '…').width > maxW) out = out.slice(0, -1);
+      out += '…';
+    }
+    g.fillStyle = color;
+    g.fillText(out, x, y);
+    return size;
+  };
+  /* Mixed-weight run on one baseline: figures loud, connective text quiet, so
+     a downscaled preview still resolves the numbers. */
+  const runAt = (yy) => {
     let rx = 48;
-    const run = (txt, color, weight, size) => {
+    return (txt, color, weight, size) => {
       g.font = weight + ' ' + size + 'px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.fillStyle = color;
-      g.fillText(txt, rx, rowY + 74);
+      g.fillText(txt, rx, yy);
       rx += g.measureText(txt).width;
     };
-    run(fmtGp(selected.limit) + ' items', '#FFFFFF', '800', 21);
-    run(' at the 4h buy limit', '#8A8274', '600', 21);
-    run('   ·   ', '#8A8274', '600', 21);
-    run((marginPerItem >= 0 ? '+' : '') + fmtGp(marginPerItem) + ' gp/ea', profitColor, '800', 21);
-    run(' after tax', '#8A8274', '600', 21);
-  }
+  };
 
-  /* The 30-day range bar was here. It answered "where in its recent range
-     is this?" — but so does the chart below, which also shows the shape of
-     how it got there and stays legible when a feed downscales the card. Two
-     answers to one question was ~120px of the vertical the card could least
-     afford. The bar stays on the page itself, where there's room. */
-
-  // Analyst Rating — the actual 5-segment gauge bar + needle, not just the
-  // word, mirroring the on-page module exactly (colors pulled straight from
-  // its CSS: teal = sell side, gold = buy side, brighter = live segment).
+  /* ── 2. Analyst Rating ────────────────────────────────────────────────
+     Promoted above the targets. The hierarchy this card is built to is
+     "what is it / what's the call / what are the levels": the rating is the
+     call, so it outranks the numbers that execute it. It used to sit below
+     them, which made the card open with a spreadsheet. */
+  let flowY = 300;
   const gaugeInfo = shareCardGaugeInfo();
   if (gaugeInfo) {
-    /* 468 before the Capital Needed row's explainer line landed at 454 —
-       moved down by exactly its height so the gap above the gauge is
-       unchanged and nothing below has to shift. Items with no buy limit
-       draw neither, so they keep the original position rather than an
-       empty band where the explainer would have been. */
-    const labelY = hasCapitalRow ? 490 : 468;
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText('ANALYST RATING', 48, labelY);
-    /* No verdict word in the middle band (see renderRatingGauge), so the
-       bar closes up under the eyebrow instead of leaving a hole where the
-       word would have been. Everything below starts at a fixed y, so this
-       spends the reclaimed 28px as air rather than shifting the card. */
+    g.fillText('ANALYST RATING', 48, flowY);
+    /* No verdict word in the middle band (see renderRatingGauge), so the bar
+       closes up under the eyebrow rather than leaving a hole. */
     if (gaugeInfo.text) {
       g.fillStyle = gaugeInfo.color;
-      g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillText(gaugeInfo.text, 48, labelY + 36);
+      g.font = '700 34px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillText(gaugeInfo.text, 48, flowY + 38);
     }
-
-    const barX = 48, barY = labelY + (gaugeInfo.text ? 56 : 28), barW = W - 96, barH = 14, gap = 3;
+    const barX = 48, barY = flowY + (gaugeInfo.text ? 58 : 26), barW = W - 96, barH = 14, gap = 3;
     const segW = (barW - gap * 4) / 5;
     /* Left-to-right = STRONG BUY -> BUY -> NEUTRAL -> SELL -> STRONG SELL,
        i.e. gold on the BUY end, teal on the SELL end, matching both the
@@ -4981,7 +4901,6 @@ async function buildShareCardCanvas() {
     g.fillStyle = gaugeInfo.color;
     roundRectPath(g, needleX - 2, barY - 6, 4, barH + 12, 2);
     g.fill();
-
     g.font = '700 12px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillStyle = '#8A8274';
     g.textAlign = 'left';
@@ -4989,6 +4908,63 @@ async function buildShareCardCanvas() {
     g.textAlign = 'right';
     g.fillText('SELL', barX + barW, barY + barH + 24);
     g.textAlign = 'left';
+    flowY = barY + barH + 24;
+  }
+
+  /* ── 3. The two levels, on one line ───────────────────────────────────
+     Both numbers, because the edge underneath is a buy-to-sell figure and a
+     single price leaves it unexplained. They were three 30px columns
+     (target / capital needed / potential profit) plus a four-part explainer
+     sentence — four competing figures where the reader wanted two. */
+  const tgtY = flowY + 62;
+  const tgtPrefix = view === '1d' ? 'TARGET ' : 'SWING ';
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    const put = runAt(tgtY);
+    put(tgtPrefix + 'BUY  ', '#8A8274', '700', 17);
+    put(fmtGp(recommendedBuy), '#E5B842', '800', 34);
+    put('   →   ', '#8A8274', '700', 28);
+    put(tgtPrefix + 'SELL  ', '#8A8274', '700', 17);
+    put(fmtGp(recommendedSell), '#26A9AB', '800', 34);
+  }
+
+  /* ── 4. What the edge is worth, in one line ───────────────────────────
+     Capital Needed is gone. It was a fourth big figure answering a question
+     nobody asks of a card in a feed — you check what a trade costs when you
+     are about to place it, on the page, where the calculator lives. */
+  let edgeY = tgtY;
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    edgeY = tgtY + 42;
+    const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
+    const edgeColor = marginPerItem >= 0 ? '#10B981' : '#EF5350';
+    const put = runAt(edgeY);
+    put((marginPerItem >= 0 ? '+' : '') + fmtGp(marginPerItem) + ' gp/ea', edgeColor, '800', 22);
+    put(' after tax', '#8A8274', '600', 22);
+    if (selected.limit > 0) {
+      const potentialProfit = marginPerItem * selected.limit;
+      put('   ·   ', '#8A8274', '600', 22);
+      put((potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit), edgeColor, '800', 22);
+      put(' / 4h limit', '#8A8274', '600', 22);
+    }
+  }
+
+  /* ── 5. Market Read, only when a rule fires ───────────────────────────
+     Same deterministic engine as the rating card — no model, no network
+     call. Absent entirely when nothing fires, and the chart below moves up
+     into the space rather than leaving a labelled gap. */
+  let shareRead = null;
+  try {
+    const _gB = computeGrade(selected, 'buy'), _gS = computeGrade(selected, 'sell');
+    const _dom = (_gB && _gS) ? ((_gB.grade >= _gS.grade) ? _gB : _gS) : null;
+    shareRead = computeMarketRead(_dom ? _dom.parts : null);
+  } catch (e) { shareRead = null; }
+  let readY = edgeY;
+  if (shareRead) {
+    readY = edgeY + 46;
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText('MARKET READ', 48, readY);
+    fitLine(shareRead.text, 48, readY + 28, W - 96, 21, 15, '600', '#D9D3C7');
+    readY += 28;
   }
 
   // 1-year price trend — a compact version of the on-page chart's own white
@@ -5119,9 +5095,12 @@ async function buildShareCardCanvas() {
       g.fillStyle = '#D9D3C7';
       g.font = '700 20px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.textAlign = 'left';
-      g.fillText(fmtGp(minV) + ' gp', x, chartY + chartH + 28);
+      /* Rounded: these bounds come from the MID of each bucket's low/high, so
+         they are routinely fractional — the card was printing
+         "2,555,427.5 gp", half a coin, as a price. */
+      g.fillText(fmtGp(Math.round(minV)) + ' gp', x, chartY + chartH + 28);
       g.textAlign = 'right';
-      g.fillText(fmtGp(maxV) + ' gp', x + w, chartY + chartH + 28);
+      g.fillText(fmtGp(Math.round(maxV)) + ' gp', x + w, chartY + chartH + 28);
       g.textAlign = 'left';
     };
 
@@ -5134,7 +5113,15 @@ async function buildShareCardCanvas() {
     const TF_LABEL = { '1d': '24-HOUR', '5d': '5-DAY', '1m': '30-DAY',
                        '6m': '6-MONTH', '1y': '1-YEAR', '5y': '5-YEAR' };
     const tfKey = TF_LABEL[view] ? view : '1m';
-    const chartY = 640, chartH = 198;
+    /* Follows the flow rather than sitting at a fixed y: Market Read is
+       optional, so a hardcoded chartY either leaves a labelled gap when no
+       rule fires or collides when one does. The chart takes whatever is left
+       between the last text line and the footer rule at H-78, keeping room
+       for its own header (20px above) and its min/max captions (28px below).
+       Clamped so a short flow can't stretch it into a banner. */
+    const chartTop = readY + 62;
+    const chartBottom = (H - 78) - 46;
+    const chartY = chartTop, chartH = Math.max(150, Math.min(310, chartBottom - chartTop));
     drawMiniTrend(tfKey, TF_LABEL[tfKey] + ' PRICE TREND', TF_LABEL[tfKey], 48, W - 96, chartY, chartH);
   }
 
