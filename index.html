@@ -4025,9 +4025,18 @@ const fmtYAxis = (v, step) => {
   if (unit === 1) return (neg ? '-' : '') + Math.round(a).toLocaleString();
   let dec;
   if (step > 0) {
-    /* Enough decimals that one step is visible in the last digit, capped so a
-       pathologically fine step can't print a twelve-character label. */
-    dec = Math.min(4, Math.max(0, Math.ceil(-Math.log10(step / unit))));
+    /* Decimals must represent the STEP EXACTLY, not merely make neighbours
+       differ. An earlier version used ceil(-log10(step/unit)), which is the
+       count that separates them — for a 250M step in billions that is one
+       decimal, so a gridline at exactly 1.25B printed "1.3B". The labels were
+       all distinct and all wrong, which is worse than duplicates: a duplicate
+       looks broken, a rounded one looks authoritative.
+       So: the fewest decimals at which step/unit lands on a whole number.
+       0.25 -> 2 (1.25B), 0.002 -> 3 (1.174B), 0.0025 -> 4 (1.1825B), 250 -> 0
+       (250M). Capped at 5, which still covers a 250K step at billion scale. */
+    const su = step / unit;
+    dec = 0;
+    while (dec < 5 && Math.abs(su * Math.pow(10, dec) - Math.round(su * Math.pow(10, dec))) > 1e-9) dec++;
   } else {
     dec = (a / unit) < 100 ? 2 : 0;
   }
