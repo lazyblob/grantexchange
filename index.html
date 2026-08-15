@@ -502,31 +502,28 @@ button, input { touch-action: manipulation; }
 .about-section .verdict.v-buy { color: var(--buy-color); }
 .about-section .verdict.v-sell { color: var(--sell-color); }
 .about-section .verdict.v-skip { color: var(--text-muted); }
-/* ── Screenshots in a handset bezel ──────────────────────────────────────
+/* ── Screenshots ─────────────────────────────────────────────────────────
    Portrait and landscape are genuinely different layouts, so they are
-   genuinely different shapes on the page: a narrow column beside a wide
-   one, sized so both bezels finish at roughly the same height instead of
-   one towering over the other the way the drawn shells did.
-   Deliberately NO notch or dynamic island drawn on top. A real screenshot
-   already contains the status bar, and painting a fake island over a real
-   one is the kind of detail that reads as wrong without anyone being able
-   to say why. The bezel alone is enough to say "phone". */
+   genuinely different shapes on the page: a narrow column beside a wide one.
+   The PNGs already carry their own handset bezel and rounded corners, with
+   real transparency outside them — so there is deliberately no drawn shell
+   here. A CSS frame around an image that already has one reads as a phone
+   inside a phone. For the same reason the shadow is a drop-shadow FILTER
+   rather than a box-shadow: the filter follows the alpha silhouette, so it
+   hugs the rounded corners instead of casting a rectangle behind them. */
 .about-section .shots { display: grid; gap: 22px; margin: 16px 0 22px; align-items: start; }
 @media (min-width: 680px) {
-  .about-section .shots { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 26px; }
+  .about-section .shots { grid-template-columns: minmax(0, 210px) minmax(0, 1fr); gap: 26px; }
 }
 .about-section .shot { margin: 0; }
 .about-section .shot figcaption { font-size: 11.5px; color: var(--text-muted); margin-top: 9px; }
-.about-section .device {
-  position: relative; padding: 6px; background: #0a0a0c;
-  border: 1px solid rgba(255,255,255,0.16);
-  box-shadow: 0 12px 34px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.05);
+.about-section .device { position: relative; }
+.about-section .device img {
+  display: block; width: 100%; height: auto;
+  filter: drop-shadow(0 12px 26px rgba(0,0,0,0.55));
 }
-.about-section .device img { display: block; width: 100%; height: auto; }
-.about-section .device-portrait { border-radius: 26px; max-width: 190px; }
-.about-section .device-portrait img { border-radius: 20px; }
-.about-section .device-landscape { border-radius: 22px; max-width: 460px; }
-.about-section .device-landscape img { border-radius: 16px; }
+.about-section .device-portrait { max-width: 210px; }
+.about-section .device-landscape { max-width: 500px; }
 .about-section .about-devnote { font-size: 12.5px; color: var(--text-muted); padding-left: 12px; border-left: 2px solid var(--border-active); margin-bottom: 24px; }
 .about-section .faq { margin-top: 4px; }
 .about-section .faq details { border: 1px solid var(--border-main); border-radius: 6px; margin-bottom: 8px; background: var(--bg-panel); overflow: hidden; }
@@ -11644,14 +11641,16 @@ if ('serviceWorker' in navigator) {
 
   <h2>On a phone</h2>
   <p>Nothing here is a cut-down mobile version. Held upright you get a vertical stack — targets, chart, then the watchlist under it — so scrolling the list never costs you the chart. Turned sideways you get the desktop split, chart on the left and the watchlist and rating panels on the right, both visible at once. Two layouts, not one scaled.</p>
-  <!-- Real screenshots, framed as a handset. Each <img> removes its own
-       figure if the file is missing, so the section degrades to the prose
-       above rather than to a pair of broken-image icons — the page is safe
-       to ship whether or not the screenshots have been added yet. -->
+  <!-- Real screenshots, already framed as a handset in the PNG itself. Each
+       <img> removes its own figure if the file is missing, so the section
+       degrades to the prose above rather than to a pair of broken-image
+       icons. width/height are the PNGs' true pixel dimensions so the browser
+       reserves the right box before they load and the section doesn't jump. -->
   <div class="shots">
     <figure class="shot">
       <div class="device device-portrait">
-        <img src="/screens/phone-portrait.png" loading="lazy" decoding="async"
+        <img src="/screens/pocketge_portrait_framed.png" width="498" height="827"
+             loading="lazy" decoding="async"
              alt="PocketGE held upright: target buy and sell, the price chart, then the favourites list below it"
              onerror="this.closest('.shot').remove()">
       </div>
@@ -11659,7 +11658,8 @@ if ('serviceWorker' in navigator) {
     </figure>
     <figure class="shot">
       <div class="device device-landscape">
-        <img src="/screens/phone-landscape.png" loading="lazy" decoding="async"
+        <img src="/screens/pocketge_landscape_framed.png" width="1048" height="424"
+             loading="lazy" decoding="async"
              alt="PocketGE turned sideways: the price chart on the left, favourites and the rating panels on the right"
              onerror="this.closest('.shot').remove()">
       </div>
