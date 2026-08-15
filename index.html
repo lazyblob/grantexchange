@@ -895,6 +895,13 @@ button, input { touch-action: manipulation; }
 .price-box.low .price-val  { color: var(--buy-color);  text-shadow: 0 0 12px rgba(255,184,0,0.30); }
 .price-box.high .price-val { color: var(--sell-color); text-shadow: 0 0 12px rgba(38, 169, 171,0.30); }
 .price-val { font-size: 19px; font-weight: 900; margin-top: 2px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
+/* Long-price fit — see pvFit(). em, so one rule covers all six breakpoint
+   sizes of .price-val; min-width:0 lets the span actually shrink inside the
+   flex row rather than forcing the overflow it is trying to avoid. */
+.price-val .pv-num { min-width: 0; }
+.price-val .pv-num.pv-md { font-size: 0.86em; letter-spacing: -0.3px; }
+.price-val .pv-num.pv-sm { font-size: 0.70em; letter-spacing: -0.2px; }
+.price-val .pv-num.pv-xs { font-size: 0.58em; letter-spacing: 0; }
 /* Nudge the target price gp-by-gp without opening the Potential Profit
    breakdown. These used to be two 16x11 arrows stacked in the corner of a
    card with plenty of room to spare — a sniper shot for a 1 gp change, and
@@ -1830,9 +1837,15 @@ button, input { touch-action: manipulation; }
   .price-strip { flex-direction: row; gap: 4px; }
   .price-strip .price-box { flex: 1 1 0; width: auto; min-width: 0; }
   .price-box { display: flex; align-items: center; gap: 6px; padding: 3px 8px; min-width: 0; overflow: hidden; }
-  .price-label { flex-direction: column; align-items: flex-start; gap: 0; flex-shrink: 0; font-size: 8px; }
-  .live-val { font-size: 8px; }
-  .price-val { font-size: 17px; margin-top: 0; margin-left: auto; flex-shrink: 1; white-space: nowrap; line-height: 1.1; letter-spacing: -0.4px; overflow: hidden; text-overflow: ellipsis; }
+  /* The number outranks its own caption. These were the other way round —
+     label flex-shrink:0, value flex-shrink:1 — so in a 189px box the caption
+     ("Insta-sell: 1,181,199,999 · just now") claimed 124px and left the
+     target 39px, which is why a Scythe rendered as "1,18". No font size
+     fixes that; the space was already spent. The caption shrinks and
+     ellipsises now, the value never does. */
+  .price-label { flex-direction: column; align-items: flex-start; gap: 0; flex-shrink: 1; min-width: 0; font-size: 8px; }
+  .live-val { font-size: 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .price-val { font-size: 17px; margin-top: 0; margin-left: auto; flex-shrink: 0; white-space: nowrap; line-height: 1.1; letter-spacing: -0.4px; }
   .calc-container input { font-size: 16px; }
 }
 /* (pointer: coarse) keeps this "mobile landscape" restructure — logo
@@ -3986,27 +3999,41 @@ const abbreviateNumber = (num) => {
   return (neg ? '-' : '') + out;
 };
 
-/* Y-axis tick formatter with enough resolution to distinguish adjacent gridlines.
-   Below 10K we show full integers ("1,267" instead of "1.3K") so close prices
-   don't all collapse to the same label; M/B keep two decimals up to 100. */
-const fmtYAxis = (v) => {
+/* Y-axis tick formatter. Below 10K it shows full integers ("1,267" not "1.3K")
+   so close prices don't collapse onto the same label.
+
+   Above that, the decimal count is derived from the TICK STEP rather than
+   fixed. Two decimals was hardcoded for M and B, which is fine at most prices
+   and useless at the top of the market: a Scythe of vitur charts across
+   1.18B-1.20B, where two decimals of billions is a 10M resolution and the
+   step between gridlines is ~2.5M, so the axis rendered
+
+     1.2B  1.2B  1.2B  1.19B  1.19B  1.19B  1.19B  1.18B
+
+   — eight gridlines, three distinct labels, and no way to read the scale.
+   Deriving decimals from the step guarantees adjacent ticks differ: at a
+   2.5M step in billions that is three decimals (1.181B, 1.184B, 1.186B).
+
+   Trailing zeros are kept when a step is supplied, so every label on the axis
+   has the same shape and the column stays aligned; the no-step call (the
+   crosshair readout) keeps the old trimmed form. */
+const fmtYAxis = (v, step) => {
   if (v == null) return "—";
   const neg = v < 0; const a = Math.abs(v);
-  let out;
-  if (a >= 1e9) {
-    const b = a / 1e9;
-    out = (b < 100 ? b.toFixed(2) : b.toFixed(0)).replace(/\.?0+$/, '') + 'B';
-  } else if (a >= 1e6) {
-    const m = a / 1e6;
-    out = (m < 100 ? m.toFixed(2) : m.toFixed(0)).replace(/\.?0+$/, '') + 'M';
-  } else if (a >= 1e5) {
-    out = Math.round(a / 1e3) + 'K';
-  } else if (a >= 1e4) {
-    out = (a / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  const unit = a >= 1e9 ? 1e9 : a >= 1e6 ? 1e6 : a >= 1e4 ? 1e3 : 1;
+  const suffix = unit === 1e9 ? 'B' : unit === 1e6 ? 'M' : unit === 1e3 ? 'K' : '';
+  if (unit === 1) return (neg ? '-' : '') + Math.round(a).toLocaleString();
+  let dec;
+  if (step > 0) {
+    /* Enough decimals that one step is visible in the last digit, capped so a
+       pathologically fine step can't print a twelve-character label. */
+    dec = Math.min(4, Math.max(0, Math.ceil(-Math.log10(step / unit))));
   } else {
-    out = Math.round(a).toLocaleString();
+    dec = (a / unit) < 100 ? 2 : 0;
   }
-  return (neg ? '-' : '') + out;
+  let out = (a / unit).toFixed(dec);
+  if (!(step > 0) && out.indexOf('.') >= 0) out = out.replace(/0+$/, '').replace(/\.$/, '');
+  return (neg ? '-' : '') + out + suffix;
 };
 
 async function jget(url) {
@@ -5277,7 +5304,9 @@ let _resizeRAFPending = false;
 function scheduleResizeTight() {
   if (_resizeRAFPending) return;
   _resizeRAFPending = true;
-  requestAnimationFrame(() => { _resizeRAFPending = false; resizeCanvas(); });
+  /* Refit the target numbers too: the box width changes with the viewport, so
+     a price that fitted in landscape can overflow in portrait and vice versa. */
+  requestAnimationFrame(() => { _resizeRAFPending = false; resizeCanvas(); fitPriceNums(); });
 }
 window.addEventListener('resize', scheduleResizeTight);
 /* Orientation changes settle layout asynchronously on mobile; re-measure after
@@ -7499,6 +7528,28 @@ function computeViewTargets(node, id) {
 }
 /* Shared renderer for the two target boxes — labels say what the number
    IS for the active horizon ("Target Buy" on 1D, "Swing Buy · 1M" beyond). */
+/* Guarantee the target price fits its box.
+   pvFit() inside renderTargetBoxes picks a size tier from the string length,
+   which is all the information available while building the HTML and is
+   enough almost everywhere. It is not enough on a 390px phone, where a
+   13-digit price still overflowed at the smallest tier — a character count
+   cannot know how wide the box actually is.
+   So measure, and step down until it fits. Cheap (two elements, a handful of
+   half-pixel steps, and only when the number is long enough to overflow in
+   the first place), self-correcting on rotation and resize, and it cannot
+   clip by construction rather than by my having picked the right constants. */
+function fitPriceNums() {
+  document.querySelectorAll('.price-val .pv-num').forEach(el => {
+    el.style.fontSize = '';                       // back to the class tier
+    let size = parseFloat(getComputedStyle(el).fontSize) || 0;
+    let guard = 0;
+    while (size > 9 && el.scrollWidth > el.clientWidth + 1 && guard++ < 24) {
+      size -= 0.5;
+      el.style.fontSize = size + 'px';
+    }
+  });
+}
+
 function renderTargetBoxes() {
   const swing = view !== '1d';
   const tf = view.toUpperCase();
@@ -7516,14 +7567,33 @@ function renderTargetBoxes() {
      button would've given ("is this actually current?"), without a control
      that implies you have to press it to get fresh data. Ticked live by
      tickLiveAge() rather than re-rendered, so it stays cheap. */
+  /* Step the target number down when it is long enough to overflow its box.
+     A Scythe of vitur trades around 1,181,199,999 — thirteen characters — and
+     the box rendered it as "1,18" on a phone and "1,181,19" on desktop,
+     clipped mid-number by the ellipsis. A price cut off partway through is
+     worse than a small one: it looks like a complete number and it is wrong.
+
+     Deliberately NOT abbreviated to "1.18B". This is the price you type into
+     the Grand Exchange, and rounding it to three significant figures would be
+     off by up to a million gp. The digits stay; the type gets smaller.
+
+     Sized in em, on the inner span, on purpose: .price-val sets an explicit
+     px size in SIX different breakpoints, so any px value here would be right
+     in one layout and wrong in five. em on the child resolves against
+     whichever of those actually applied. */
+  const pvFit = (str) => {
+    const n = String(str).length;
+    return n >= 14 ? 'pv-xs' : n >= 11 ? 'pv-sm' : n >= 8 ? 'pv-md' : '';
+  };
   /* "Live:" alone never said WHICH live price. Under Target Buy it's
      liveBuyRaw = node.low, which the quick-facts strip calls Insta-sell;
      under Target Sell it's node.high, its Insta-buy. Same names in both
      places, so the two rows can be read against each other instead of
      leaving you to work out which side of the spread you're looking at. */
-  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('buy', -1)}<span>${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('sell', -1)}<span>${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('buy', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedBuy))}">${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('sell', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedSell))}">${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
   wireTargetPriceSteppers();
+  fitPriceNums();
   /* Re-sync the flip card's Buy @ / Sell @ highlight: it only lights while the
      card's item is the one on the chart, and that can change under it (opening
      the card's item, or ↻ Next landing on the one already shown) without any
@@ -9277,12 +9347,16 @@ function drawChart(series) {
   /* Target ~1 label per 40 px of plot height (was 60). Combined with the
      snap-down step, a 500-px tall desktop chart gets ~12 labels instead
      of 7, and a 300-px mobile chart still stays uncluttered at ~7. */
-  for (const v of niceTicks(vmin, vmax, Math.max(5, Math.min(14, Math.round(h_price / 40))))) {
+  const yTicks = niceTicks(vmin, vmax, Math.max(5, Math.min(14, Math.round(h_price / 40))));
+  /* The gap between gridlines is what decides how many decimals a label needs
+     to stay distinct from its neighbour — see fmtYAxis. */
+  const yTickStep = yTicks.length > 1 ? Math.abs(yTicks[1] - yTicks[0]) : 0;
+  for (const v of yTicks) {
     if (v < vmin || v > vmax) continue;
     const y = ypx(v, vmin, vmax, y0, h_price);
     ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
     ctx.fillStyle = mutedTickCol;
-    ctx.fillText(fmtYAxis(v), Math.round(yRight ? x0 + w + 6 : x0 - 6), Math.round(y));
+    ctx.fillText(fmtYAxis(v, yTickStep), Math.round(yRight ? x0 + w + 6 : x0 - 6), Math.round(y));
   }
 
   /* x-axis label granularity adapts to the visible time span: intraday → time,
