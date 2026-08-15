@@ -857,9 +857,19 @@ button, input { touch-action: manipulation; }
 }
 .mode-pill-side .mps-btn:hover { color: var(--text-main); }
 /* Keep this row lean — every px of chrome here is a px the chart loses.
-   flex-wrap is the no-clip guarantee: if a long item name + the toolbar
-   ever can't share the row, the toolbar drops below instead of running
-   off the right edge of the panel. */
+   nowrap, deliberately. This row used to wrap, on the theory that a long
+   item name plus the toolbar might not fit and dropping the timeframes to
+   their own line beat clipping them. In practice the wrap wasn't a
+   last-resort at all: the container query below set the toolbar to
+   flex-basis 100%, which FORCES a second line whenever the header is
+   narrow, whether or not the content would have fitted. Measured, the
+   toolbar rendered 653px wide at a 661px header and 266px at a 738px one —
+   same six buttons. So the "unavoidable" wrap was self-inflicted.
+   Now the row stays one row and the overflow story is explicit: the item
+   name truncates first (it has the most redundant width — it's also in the
+   search box and the tab title), and only if that isn't enough does the
+   toolbar scroll horizontally. A wrapped row costs ~48px of vertical space
+   that comes straight out of the chart. */
 /* No card here either (see .top-panel) — the item name/price is its own
    visual anchor and the timeframe pills carry their own selected-state
    highlight, so a wrapping box was just doubling up on both. */
@@ -872,9 +882,31 @@ button, input { touch-action: manipulation; }
    900w and 49px at 700w, versus a flat 12px above 1024. Packing left makes
    it the same 12px everywhere, so Save always reads as belonging to the
    item name it saves — TradingView-style symbol+star. */
-.ticker-header { padding: 6px 4px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
-.ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.ticker-header .toolbar { flex-shrink: 0; }
+.ticker-header { padding: 6px 4px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+/* Shrink factor 8 vs the toolbar's 1: both CAN shrink, but the name gives up
+   width roughly eight times faster, so it ellipsizes long before the pills
+   start scrolling. The name is the cheapest thing on this row to lose — it's
+   also in the search box, the tab title and the chart's own header.
+   The floor has to live HERE, on the flex item, not on .ticker-info inside it:
+   a flex item with min-width:0 collapses to zero width no matter what its
+   children declare, and the children then paint straight over the next item.
+   Measured at a 338px header, this group hit 0px wide and the name overlapped
+   the Save button. 120px keeps a few characters plus the live price. */
+.ticker-title-group { display: flex; align-items: center; gap: 10px; min-width: 120px; flex: 0 8 auto; }
+/* min-width:0 is what lets a flex item shrink below its content size at all;
+   without it the toolbar would refuse to shrink and push the row wide. The
+   buttons themselves stay rigid (flex:0 0 auto) so shrinking scrolls the
+   group rather than squashing six pills into unreadable slivers. */
+.ticker-header .toolbar { flex: 0 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-x: contain; }
+.ticker-header .toolbar::-webkit-scrollbar { display: none; }
+.ticker-header .toolbar button { flex: 0 0 auto; }
+/* A scroll strip with no scrollbar and no cut-off pill looks like a strip that
+   simply ends — 5Y would just appear not to exist. Fade the edge that still
+   has content behind it. Class-driven because CSS can't ask "am I overflowing";
+   JS toggles these (see keepActiveViewVisible) on load, resize and scroll. */
+.ticker-header .toolbar.tb-more-right { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%); }
+.ticker-header .toolbar.tb-more-left { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(to left, #000 calc(100% - 22px), transparent 100%); }
+.ticker-header .toolbar.tb-more-left.tb-more-right { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%); }
 @media (min-width: 1024px) {
   /* TradingView's company page gives the logo real presence — a sizeable
      mark in its own rounded chip beside the name, not a small inline icon.
@@ -1089,9 +1121,17 @@ button, input { touch-action: manipulation; }
 @media screen and (min-width: 1024px) and (max-width: 1279px) {
   .price-box { gap: 12px; padding: 8px 14px 8px 16px; }
   .price-val { font-size: 22px; letter-spacing: -0.4px; }
-  /* The timeframe row is full-width on its own line now, so buttons flex to
-     fill — keep them shrinkable (no min-width floor) so they never overflow a
-     narrow (maxed-sidebar) column. */
+}
+/* Compact timeframe pills, keyed to the HEADER's own width rather than the
+   viewport's. Same six buttons, ~266px instead of ~462px — enough that they
+   still share the name/Save row on a narrow window instead of needing a
+   second line. It has to be a container query, not a media query: the header
+   also gets narrow on a wide screen when the sidebar is dragged out, and a
+   viewport breakpoint can't see that. 860px is the threshold because the
+   widest measured title group (300px) plus Save, Share, gaps and the full-size
+   462px toolbar needs about that much; below it, shrink the pills rather than
+   the name. */
+@container tickerhdr (max-width: 860px) {
   .ticker-header .toolbar { padding: 3px; gap: 4px; }
   .ticker-header .toolbar button { padding: 4px 6px; font-size: 13px; min-width: 0; }
   .ticker-header .toolbar button .pct-chg { font-size: 9px; }
@@ -2933,35 +2973,49 @@ button, input { touch-action: manipulation; }
   }
   .ins-meter { max-width: 560px; margin: 0 auto; }
 }
-/* Timeframe row: stays on the SAME line as the name/Save whenever there's
-   room — that's the common case. Only when the header genuinely can't fit
-   everything (a dragged-wide sidebar squeezing the main column, or a very
-   long item name) does it drop to its own row, and ONLY then do we spread
-   the buttons full-width and add breathing room above — a plain flex-wrap
-   would do the "drop to its own row" part for free, but can't conditionally
-   change the row's own styling based on whether wrapping actually happened.
-   A container query on the header's rendered width can. 700px was picked
-   empirically: the narrowest natural wrap point across item names from
-   "Coal" to long members names, so this never forces an EARLIER wrap than
-   flex-wrap would have caused on its own — it only dresses up a wrap once
-   it's already unavoidable. */
+/* Timeframe row: stays on the SAME line as the name/Save at every width —
+   see the nowrap note on .ticker-header. This block used to be what pushed
+   it onto a second line (flex-basis:100% + margin-top), sold as "dressing up
+   a wrap that was already unavoidable". It wasn't: basis 100% forces the
+   wrap unconditionally, so the header took a second row at 1023px wide even
+   though the same six buttons fit in 266px one breakpoint later.
+   All that's left here is a slightly tighter gap once the header is narrow.
+   The real narrow-width work is the sizing block keyed to the same container
+   further up, plus the toolbar's own overflow-x. */
 @container tickerhdr (max-width: 700px) {
-  .ticker-header .toolbar { flex: 1 1 100%; margin-top: 8px; gap: 4px; }
+  .ticker-header .toolbar { gap: 3px; }
+}
+/* Tightest band — a narrow window with the sidebar out leaves the header only
+   ~340px. Buy the pill strip room the same way the phone layouts already do:
+   drop the Save button's word (the filled gold star says it on its own) and
+   shrink the item sprite. Worth ~60px, which is the difference between two
+   pills visible and four.
+   480px is where it's actually needed, not sooner: name floor 120 + full Save
+   90 + the compact toolbar's 246 + three 12px gaps is 480. Above that the word
+   fits, so it stays — measured at a 538px header there were still 132px spare
+   and collapsing the button there was pure loss. */
+@container tickerhdr (max-width: 480px) {
+  .ticker-header .fav-btn .fav-label,
+  .ticker-header .fav-btn .fav-label-active { display: none; }
+  .ticker-header .fav-btn { padding: 5px 7px; gap: 0; }
+  .ticker-title-group { min-width: 104px; gap: 7px; }
+  #tickerHeaderIconLink { width: 30px; height: 30px; }
+  #tickerHeaderIconLink img { width: 24px; height: 24px; max-width: 24px; max-height: 24px; }
+}
+/* The two compact layouts (phone portrait, phone landscape) want the OPPOSITE
+   of the desktop overflow rule: there the item name is hidden entirely, so the
+   six buttons own the row and should stretch to fill it — tap targets, not a
+   scroll strip. Their own blocks say `.toolbar button { flex: 1 }`, but the
+   desktop rule is `.ticker-header .toolbar button`, one class more specific,
+   so it would win everywhere and shrink the phone pills back to content width.
+   Re-asserted here at matching specificity, after it in source order. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ticker-header .toolbar { flex: 1 1 auto; gap: 5px; overflow: visible; }
   .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
 }
-/* Both compact layouts pin the toolbar to the SAME row (flex-wrap:nowrap), so
-   neither takes the wrapped-to-its-own-row shape the container query above is
-   dressing up — but that query matches on WIDTH alone, so its margin-top still
-   applied and pushed the timeframes 8px below the star, search box and mode
-   pill. Desktop still wraps, so the query itself has to stay.
-   These have to sit after that block and match its specificity to win.
-   Verified by measuring the rendered row: every control now shares one
-   centerY at both breakpoints. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
-  .ticker-header .toolbar { flex: 1 1 auto; margin-top: 0; gap: 5px; }
-}
 @media screen and (max-width: 640px) {
-  .ticker-header .toolbar { flex: 1 1 auto; margin-top: 0; }
+  .ticker-header .toolbar { flex: 1 1 auto; overflow: visible; }
+  .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
 }
 </style>
 </head>
@@ -5479,7 +5533,10 @@ function scheduleResizeTight() {
   _resizeRAFPending = true;
   /* Refit the target numbers too: the box width changes with the viewport, so
      a price that fitted in landscape can overflow in portrait and vice versa. */
-  requestAnimationFrame(() => { _resizeRAFPending = false; resizeCanvas(); fitPriceNums(); });
+  requestAnimationFrame(() => { _resizeRAFPending = false; resizeCanvas(); fitPriceNums();
+    /* The timeframe strip starts/stops overflowing as the header width changes,
+       so its edge fades have to be re-evaluated on the same beat. */
+    if (typeof keepActiveViewVisible === 'function') keepActiveViewVisible(); });
 }
 window.addEventListener('resize', scheduleResizeTight);
 /* Orientation changes settle layout asynchronously on mobile; re-measure after
@@ -10663,6 +10720,39 @@ canvas.addEventListener('touchend', ev => {
   if (ev.touches.length === 0) touchMode = null;
 }, { passive: true });
 
+/* The timeframe strip scrolls horizontally when the header is too narrow to
+   show all six pills (see .ticker-header .toolbar). Nothing else scrolls it,
+   so without this the selected timeframe can sit parked out of view — the one
+   button whose state the user most needs to see. Only ever scrolls the strip
+   itself, never the page: scrollIntoView() would drag the whole document. */
+function keepActiveViewVisible() {
+  const bar = document.getElementById('timeToolbar');
+  const btn = bar && bar.querySelector('.view-btn.active');
+  if (!bar) return;
+  if (btn && bar.scrollWidth > bar.clientWidth + 1) {
+    /* Rect deltas, NOT offsetLeft: offsetLeft is measured from the nearest
+       POSITIONED ancestor, and the toolbar isn't positioned, so it returns an
+       offset relative to something further up the tree. Using it here scrolled
+       the active pill out of view instead of into it. */
+    const bar_r = bar.getBoundingClientRect(), btn_r = btn.getBoundingClientRect();
+    const left = btn_r.left - bar_r.left + bar.scrollLeft;
+    const right = left + btn_r.width;
+    const pad = 8;                                      // let the neighbour peek
+    if (left - pad < bar.scrollLeft) bar.scrollLeft = Math.max(0, left - pad);
+    else if (right + pad > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = right + pad - bar.clientWidth;
+  }
+  updateToolbarFades();
+}
+/* Which edges have more pills behind them. 2px of slack because scrollLeft is
+   fractional under zoom/DPR and an exact comparison flickers the mask. */
+function updateToolbarFades() {
+  const bar = document.getElementById('timeToolbar');
+  if (!bar) return;
+  const over = bar.scrollWidth > bar.clientWidth + 1;
+  bar.classList.toggle('tb-more-left', over && bar.scrollLeft > 2);
+  bar.classList.toggle('tb-more-right', over && bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 2);
+}
+
 function renderOverMax(m) {
   const o = overMaxData[String(m.id)];
   document.querySelectorAll(".view-btn").forEach(b => {
@@ -10900,6 +10990,7 @@ async function setItem(m, opts = {}) {
     }
   }
   document.querySelectorAll(".view-btn").forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  keepActiveViewVisible();
 
   const changes = computeAllChanges(currentItemSrc, currentItemLowVol);
   viewChanges = changes;
@@ -11002,9 +11093,13 @@ setItem._userPicked = false;
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
         b.classList.add("active"); view = preferredView = b.dataset.view; zoom = 1.0; yScale = 1; yOffset = 0;
         setItem._userPicked = true;
+        keepActiveViewVisible();
         refreshChart();
       };
     });
+    /* Dragging/wheeling the strip changes which edge has hidden pills. */
+    const _tb = document.getElementById('timeToolbar');
+    if (_tb) _tb.addEventListener('scroll', updateToolbarFades, { passive: true });
 
     /* Class-based mode switch — there's a second, larger mode pill in the
        sidebar on desktop; both share the .mp-f2p / .mp-p2p classes so a
