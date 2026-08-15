@@ -2548,12 +2548,17 @@ button, input { touch-action: manipulation; }
    and the placement are specific to this one.
    order:3 puts it AFTER Share (which carries margin-left:auto), so every
    expander on the page ends up hard against the right edge. */
-/* 10px, not 6. Share and this chevron are the only two controls on the row
-   and they sat 6px apart, close enough on a phone to read as one cluster and
-   to make the wrong one easy to hit. Set here rather than in a landscape
-   override because it is the same pair at every width — the row is tightest
-   in landscape, which is where it shows, not where it differs. */
-.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:10px; }
+/* 18px. Share and this chevron are the only two controls on the row, they do
+   completely different things — one publishes, one folds a panel — and at
+   the original 6px they read as a single two-part widget. 10px was a first
+   pass and still too tight to separate them; with the flex gap that comes to
+   a 24px measured gap, which is wider than either control, so the eye stops
+   grouping them.
+   Set on the shared rule rather than a landscape override: it is the same
+   pair at every width. Landscape is where the tightness SHOWS, not where it
+   differs, and per-width values here are what produced three chevrons that
+   behaved differently before. */
+.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:18px; }
 /* Hover/press come from .calc-caret above — this used to redeclare its own
    and was the reason the three chevrons behaved differently. */
 /* Collapsing hides the SUPPORTING detail — the BUY/SELL scale row and the
