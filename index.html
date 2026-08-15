@@ -2444,6 +2444,36 @@ button, input { touch-action: manipulation; }
    Profit / Est-per-4h / Daily-vol on ONE inline line. (pointer: coarse)
    scopes this to real touch devices — see the matching block above. */
 @media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  /* ── Collapsed Analyst Rating: verdict and meter share a row ───────────
+     Measured on a 844x390 handset, the collapsed gauge was 74px of a 390px
+     viewport. The verdict word alone accounted for 23 of that (17px line +
+     6px margin) sitting on its own row above an 18px meter that says the
+     same thing a second way.
+     The fix is not to delete the word. The word is the unambiguous half —
+     "Strong Buy" needs no decoding, whereas a needle three-fifths along an
+     unlabelled bar needs the reader to know the scale. Dropping it would
+     leave the louder, vaguer element and call that an improvement. They go
+     on ONE row instead: word at its natural width, meter taking the rest.
+     Nothing is lost and the row count halves.
+     Grid rather than flex because .rg-top has to stay full-width above
+     them, and grid can say that in one line. */
+  .rg-wrap.is-collapsed {
+    display: grid; grid-template-columns: auto minmax(0, 1fr);
+    align-items: center; column-gap: 10px;
+  }
+  .rg-wrap.is-collapsed .rg-top { grid-column: 1 / -1; }
+  .rg-wrap.is-collapsed .rg-label { margin-bottom: 0; font-size: 13px; }
+  /* Some padding stays: the needle's pointer is an ::after at bottom:-6px
+     living in this padding, so zeroing it would clip the one part of the
+     meter that says where the price actually sits. */
+  .rg-wrap.is-collapsed .rg-meter { padding-bottom: 7px; }
+
+  /* ── Favorites header ──────────────────────────────────────────────────
+     It measured 35px against 28px data rows — the label was taller than the
+     things it labels, on the axis where this layout has least to give. The
+     padding does it: 6px top and bottom around a 22px switcher button. */
+  .fav-head-host .category-title { padding-top: 3px; padding-bottom: 3px; }
+  .fav-head-host .fls-current .fls-caret .ui-ic { width: 13px; height: 13px; }
   .flip-finder { padding: 4px 6px; }
   .flip-card { margin: 0; padding: 0; }
   .flip-card .fc-why { display: none; }
