@@ -2701,6 +2701,16 @@ button, input { touch-action: manipulation; }
 .rg-why .rw-p { font-size:9.5px; font-weight:800; color:var(--text-main); text-align:right; font-variant-numeric:tabular-nums; }
 .rg-why .rw-p em { font-style:normal; font-weight:600; color:var(--text-muted); }
 .rg-why-foot { margin-top:7px; font-size:9px; color:var(--text-muted); line-height:1.5; }
+/* Market Read — deliberately the quietest thing in the card. It sits below the
+   verdict line behind a hairline, in muted type, with the eyebrow at the same
+   weight as the other section labels but no colour of its own. It must read as
+   context for the rating, never as a second, competing call. */
+.rg-read { margin-top:8px; padding-top:7px; border-top:1px solid var(--border-hair); }
+.rg-read .rr-t { display:block; font-size:8.5px; font-weight:800; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-muted); opacity:0.8; }
+.rg-read .rr-b { margin:3px 0 0; font-size:10px; line-height:1.55; color:var(--text-muted); }
+@media (min-width:1024px){ .rg-read .rr-b { font-size:10.5px; } }
+/* No collapsed-state rule needed: this lives inside .rg-why, which the
+   collapsed state already hides. */
 /* The reason text is the first thing to wrap on a narrow column, so give it
    the room and let the bar go. Keyed off the SIDEBAR's width, not the
    viewport's: coarse landscape is an 844px-wide window with a 234px column,
@@ -3375,7 +3385,7 @@ button, input { touch-action: manipulation; }
       <div class="glossary-section">Target prices</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>Shown on the 1D timeframe — the day-flip bid. 15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>Shown on the 1D timeframe — the day-flip ask. -1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at live insta-buy so we never recommend selling below where buyers are paying right now. For high-volatility items the anchor blends toward 0.5% below the 24h high. If the live spread can't beat the 2% tax, both 1D boxes switch to the day's realized dip/peak (recency-weighted percentiles of the day's prints) — the levels worth placing patient orders at.</span></div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Swing Buy / Sell</span><span>On 5D and longer timeframes the boxes switch to swing anchors for THAT window — day trade vs swing trade. Swing Buy sits near the window's realised floor, Swing Sell near its ceiling, using recency-weighted percentiles: a high printed last week counts in full, one from months ago barely counts — so a downtrending item won't quote you a sell level the market left behind. Never the absolute min/max, so one freak spike can't set your target. Longer horizons never quote a worse level than shorter ones — the 1M ask is always at least the 5D and 1D ask, because more patience can always execute the shorter plan. The grade beside each number judges the same window.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Swing Buy / Sell</span><span>On 5D and longer timeframes the boxes switch to swing anchors for THAT window — day trade vs swing trade. Swing Buy sits near the window's realised floor, Swing Sell near its ceiling, using recency-weighted percentiles: a high printed last week counts in full, one from months ago barely counts — so a downtrending item won't quote you a sell level the market left behind. Never the absolute min/max, so one freak spike can't set your target. Longer horizons never quote a worse level than shorter ones — the 1M ask is always at least the 5D and 1D ask, because more patience can always execute the shorter plan. The ask is then held to what's actually placeable: it can't exceed the higher of local resistance (where sellers have been filling over the last ~30 days) and a sanity cap over the live price — 15% on items above 1M, 25% above 100k, uncapped on cheap items that genuinely swing that hard, and doubled when the window is clearly trending up. Without it a year-long slide quotes an ask from the top of the slide, a level the market has left behind. The bid gets no such ceiling: bidding low is always placeable, it just may not fill. Both are defaults — the −/+ buttons override them with no limit. The grade beside each number judges the same window.</span></div>
 
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--text-muted);font-size:10px;">GRADE 0–100</span><span>The score beside each target rates the current price against that same window, and carries a word with it: <strong>Steal Buy / Top Sell</strong> at 85+, <strong>Strong Entry / Strong Exit</strong> at 70+, <strong>OK</strong> at 50+, <strong>Weak</strong> at 30+, <strong>Avoid</strong> below that. You'll also see <strong>Wait for Dip / Wait for Peak</strong> when the setup is forming but the price hasn't arrived, <strong>Thin — Hold</strong> when the margin is too slim to be worth it, and <strong>No Margin</strong> when the spread can't beat the tax.</span></div>
       <div class="glossary-section">Headline numbers</div>
@@ -4795,154 +4805,74 @@ async function buildShareCardCanvas() {
   g.fillStyle = hlColor || '#D9D3C7';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
-  /* The zone line only appears at a 5-day extreme, but the extreme is read
-     over 5 days while the Analyst Rating is read over the selected timeframe
-     — so they can genuinely disagree, and an item can sit at a 5-day low
-     while the rating says Sell. Printing "Potential buy zone" directly above
-     "Strong Sell" would put the card at odds with itself, so the line is
-     dropped whenever the rating leans the other way. */
-  if (hlColor) {
-    const rating = (shareCardGaugeInfo()?.text || '');
-    const saysBuy = /buy/i.test(rating), saysSell = /sell/i.test(rating);
-    const zone = isHigh5d
-      ? (saysBuy ? null : 'Potential sell zone')
-      : (saysSell ? null : 'Potential buy zone');
-    if (zone) {
-      g.font = '700 18px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillText(zone, 168, 266);
-    }
-  }
+  /* "Potential buy zone" used to print here, under the price. It said the
+     same thing as the ▼ 5-DAY LOW badge at the top right, in more words, and
+     a second phrasing of a fact already stated is exactly the kind of thing
+     that makes a card take two seconds to read instead of one. The badge
+     keeps the signal; the sentence goes. */
 
-  /* Change chip for the timeframe ON SCREEN, and only that one.
-     This used to draw 1D and 5D side by side no matter what the sharer was
-     looking at, so a card built from a 1Y chart led with two day-trader
-     percentages that had nothing to do with the picture underneath it. The
-     card is a screenshot of a decision — it should carry the window that
-     decision was made in, not a fixed pair. */
-  const chipY = 290;
-  const chgView = viewChanges && viewChanges[view];
-  const drawChangeChip = (x, label, val) => {
-    if (val == null) return x;
-    const color = val > 0 ? '#10B981' : val < 0 ? '#EF5350' : '#8A8274';
-    const text = label + ' ' + (val > 0 ? '+' : '') + val.toFixed(1) + '%';
-    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    const w = g.measureText(text).width + 28;
-    roundRectPath(g, x, chipY, w, 40, 8);
-    g.fillStyle = 'rgba(255,255,255,0.06)';
-    g.fill();
-    g.fillStyle = color;
-    g.fillText(text, x + 14, chipY + 27);
-    return x + w + 12;
-  };
-  let cx = 168;
-  cx = drawChangeChip(cx, String(view).toUpperCase(), chgView);
-  // Volume gets its own chip, not buried as a small aside — "is this a
-  // real move or thin-volume noise" is usually the first skeptical
-  // question on a shared economy post.
-  const shareVol = dailyVolume(selected.id);
-  if (shareVol > 0) {
-    g.font = '700 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    const volText = 'VOL ' + abbreviateNumber(shareVol) + '/day';
-    const vw = g.measureText(volText).width + 28;
-    roundRectPath(g, cx, chipY, vw, 40, 8);
-    g.fillStyle = 'rgba(255,255,255,0.06)';
-    g.fill();
-    g.fillStyle = '#D9D3C7';
-    g.fillText(volText, cx + 14, chipY + 27);
-  }
+  /* The 1D/5D change chip and the VOL chip used to sit here.
+     Both were repeats. The chart's own header prints the selected period's
+     net change a few hundred pixels below, and liquidity now speaks up
+     through Market Read precisely when it matters instead of always. Two
+     fewer numbers competing for the first glance, and ~50px back. */
 
-  // Target Buy / Target Sell + Analyst Rating row.
-  const rowY = 380;
-  const col = (x, label, value, color) => {
-    g.fillStyle = '#8A8274';
-    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(label.toUpperCase(), x, rowY);
-    g.fillStyle = color || '#FFFFFF';
-    g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText(value, x, rowY + 38);
-  };
-  /* ONE target — the side actually selected on the page. Showing both made
-     the card state a plan and its opposite at the same time: "sell Sapphire
-     necklace at 446" is a recommendation, "buy at 432 / sell at 446" is a
-     spreadsheet, and the reader has to work out which half was the point.
-     The selected box is the sharer's actual call, so it is the one that
-     travels, and the chart below draws its line at that level. */
+  /* ONE target line on the CHART — the side actually selected on the page —
+     even though both target numbers are printed as text above it. A reader
+     needs both prices to judge the edge, but two dashed levels on a small
+     preview is the "competing markers" problem: neither reads. The selected
+     box is the sharer's actual call, so it is the one that gets drawn. */
   const shareIsBuy = activePriceBox === 'buy';
   const shareTgt = shareIsBuy ? recommendedBuy : recommendedSell;
   const shareTgtColor = shareIsBuy ? '#E5B842' : '#26A9AB';
-  const shareTgtLabel = (view === '1d' ? 'Target ' : 'Swing ') + (shareIsBuy ? 'Buy' : 'Sell');
-  col(48, shareTgtLabel, shareTgt > 0 ? fmtGp(shareTgt) + ' gp' : '—', shareTgtColor);
-  /* Potential Profit at a full 4h buy-limit cycle — same figure the
-     sidebar's own "Potential Profit" headline shows (limit x margin after
-     tax), not the calculator's current inputs, which might be a manual
-     "what if" edit that shouldn't leak into a shared public image.
-     On its own that number was unexplained on a card someone meets cold in
-     a feed: "+756K" reads like free money until you know it assumes buying
-     out a whole 4-hour limit, which for a 575 gp item is 5.75M of capital
-     you have to put up first. Capital Needed now sits beside it as an equal
-     column, and the line underneath spells out the arithmetic — quantity x
-     per-item margin — so the headline can be checked rather than taken on
-     faith. */
-  let hasCapitalRow = false;
-  if (recommendedBuy > 0 && recommendedSell > 0 && selected.limit > 0) {
-    hasCapitalRow = true;
-    const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
-    const potentialProfit = marginPerItem * selected.limit;
-    const capitalNeeded = recommendedBuy * selected.limit;
-    const profitColor = potentialProfit >= 0 ? '#10B981' : '#EF5350';
-    // Buy -> Sell -> what it costs -> what it makes: the order you'd ask in.
-    col(632, 'Capital Needed', abbreviateNumber(capitalNeeded) + ' gp', '#D9D3C7');
-    col(924, 'Potential Profit (4h)', (potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit) + ' gp',
-      profitColor);
 
-    /* Mixed-weight run: the two figures that produce the headline are white
-       and green against muted connective text, so the sum reads at a glance
-       even after a feed has downscaled the card. */
+  /* Shrink-to-fit, then ellipsise. Used for the Market Read line, which is a
+     fixed sentence but a variable width once the font is applied. */
+  const fitLine = (text, x, y, maxW, startSize, minSize, weight, color) => {
+    let size = startSize;
+    const setF = s2 => { g.font = weight + ' ' + s2 + 'px -apple-system, BlinkMacSystemFont, Roboto, sans-serif'; };
+    setF(size);
+    while (size > minSize && g.measureText(text).width > maxW) { size -= 1; setF(size); }
+    let out = text;
+    if (g.measureText(out).width > maxW) {
+      while (out.length > 4 && g.measureText(out + '…').width > maxW) out = out.slice(0, -1);
+      out += '…';
+    }
+    g.fillStyle = color;
+    g.fillText(out, x, y);
+    return size;
+  };
+  /* Mixed-weight run on one baseline: figures loud, connective text quiet, so
+     a downscaled preview still resolves the numbers. */
+  const runAt = (yy) => {
     let rx = 48;
-    const run = (txt, color, weight, size) => {
+    return (txt, color, weight, size) => {
       g.font = weight + ' ' + size + 'px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.fillStyle = color;
-      g.fillText(txt, rx, rowY + 74);
+      g.fillText(txt, rx, yy);
       rx += g.measureText(txt).width;
     };
-    run(fmtGp(selected.limit) + ' items', '#FFFFFF', '800', 21);
-    run(' at the 4h buy limit', '#8A8274', '600', 21);
-    run('   ·   ', '#8A8274', '600', 21);
-    run((marginPerItem >= 0 ? '+' : '') + fmtGp(marginPerItem) + ' gp/ea', profitColor, '800', 21);
-    run(' after tax', '#8A8274', '600', 21);
-  }
+  };
 
-  /* The 30-day range bar was here. It answered "where in its recent range
-     is this?" — but so does the chart below, which also shows the shape of
-     how it got there and stays legible when a feed downscales the card. Two
-     answers to one question was ~120px of the vertical the card could least
-     afford. The bar stays on the page itself, where there's room. */
-
-  // Analyst Rating — the actual 5-segment gauge bar + needle, not just the
-  // word, mirroring the on-page module exactly (colors pulled straight from
-  // its CSS: teal = sell side, gold = buy side, brighter = live segment).
+  /* ── 2. Analyst Rating ────────────────────────────────────────────────
+     Promoted above the targets. The hierarchy this card is built to is
+     "what is it / what's the call / what are the levels": the rating is the
+     call, so it outranks the numbers that execute it. It used to sit below
+     them, which made the card open with a spreadsheet. */
+  let flowY = 300;
   const gaugeInfo = shareCardGaugeInfo();
   if (gaugeInfo) {
-    /* 468 before the Capital Needed row's explainer line landed at 454 —
-       moved down by exactly its height so the gap above the gauge is
-       unchanged and nothing below has to shift. Items with no buy limit
-       draw neither, so they keep the original position rather than an
-       empty band where the explainer would have been. */
-    const labelY = hasCapitalRow ? 490 : 468;
     g.fillStyle = '#8A8274';
     g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-    g.fillText('ANALYST RATING', 48, labelY);
-    /* No verdict word in the middle band (see renderRatingGauge), so the
-       bar closes up under the eyebrow instead of leaving a hole where the
-       word would have been. Everything below starts at a fixed y, so this
-       spends the reclaimed 28px as air rather than shifting the card. */
+    g.fillText('ANALYST RATING', 48, flowY);
+    /* No verdict word in the middle band (see renderRatingGauge), so the bar
+       closes up under the eyebrow rather than leaving a hole. */
     if (gaugeInfo.text) {
       g.fillStyle = gaugeInfo.color;
-      g.font = '700 30px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
-      g.fillText(gaugeInfo.text, 48, labelY + 36);
+      g.font = '700 34px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+      g.fillText(gaugeInfo.text, 48, flowY + 38);
     }
-
-    const barX = 48, barY = labelY + (gaugeInfo.text ? 56 : 28), barW = W - 96, barH = 14, gap = 3;
+    const barX = 48, barY = flowY + (gaugeInfo.text ? 58 : 26), barW = W - 96, barH = 14, gap = 3;
     const segW = (barW - gap * 4) / 5;
     /* Left-to-right = STRONG BUY -> BUY -> NEUTRAL -> SELL -> STRONG SELL,
        i.e. gold on the BUY end, teal on the SELL end, matching both the
@@ -4971,7 +4901,6 @@ async function buildShareCardCanvas() {
     g.fillStyle = gaugeInfo.color;
     roundRectPath(g, needleX - 2, barY - 6, 4, barH + 12, 2);
     g.fill();
-
     g.font = '700 12px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     g.fillStyle = '#8A8274';
     g.textAlign = 'left';
@@ -4979,6 +4908,63 @@ async function buildShareCardCanvas() {
     g.textAlign = 'right';
     g.fillText('SELL', barX + barW, barY + barH + 24);
     g.textAlign = 'left';
+    flowY = barY + barH + 24;
+  }
+
+  /* ── 3. The two levels, on one line ───────────────────────────────────
+     Both numbers, because the edge underneath is a buy-to-sell figure and a
+     single price leaves it unexplained. They were three 30px columns
+     (target / capital needed / potential profit) plus a four-part explainer
+     sentence — four competing figures where the reader wanted two. */
+  const tgtY = flowY + 62;
+  const tgtPrefix = view === '1d' ? 'TARGET ' : 'SWING ';
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    const put = runAt(tgtY);
+    put(tgtPrefix + 'BUY  ', '#8A8274', '700', 17);
+    put(fmtGp(recommendedBuy), '#E5B842', '800', 34);
+    put('   →   ', '#8A8274', '700', 28);
+    put(tgtPrefix + 'SELL  ', '#8A8274', '700', 17);
+    put(fmtGp(recommendedSell), '#26A9AB', '800', 34);
+  }
+
+  /* ── 4. What the edge is worth, in one line ───────────────────────────
+     Capital Needed is gone. It was a fourth big figure answering a question
+     nobody asks of a card in a feed — you check what a trade costs when you
+     are about to place it, on the page, where the calculator lives. */
+  let edgeY = tgtY;
+  if (recommendedBuy > 0 && recommendedSell > 0) {
+    edgeY = tgtY + 42;
+    const marginPerItem = recommendedSell - recommendedBuy - calculateTax(recommendedSell, selected.id);
+    const edgeColor = marginPerItem >= 0 ? '#10B981' : '#EF5350';
+    const put = runAt(edgeY);
+    put((marginPerItem >= 0 ? '+' : '') + fmtGp(marginPerItem) + ' gp/ea', edgeColor, '800', 22);
+    put(' after tax', '#8A8274', '600', 22);
+    if (selected.limit > 0) {
+      const potentialProfit = marginPerItem * selected.limit;
+      put('   ·   ', '#8A8274', '600', 22);
+      put((potentialProfit >= 0 ? '+' : '') + abbreviateNumber(potentialProfit), edgeColor, '800', 22);
+      put(' / 4h limit', '#8A8274', '600', 22);
+    }
+  }
+
+  /* ── 5. Market Read, only when a rule fires ───────────────────────────
+     Same deterministic engine as the rating card — no model, no network
+     call. Absent entirely when nothing fires, and the chart below moves up
+     into the space rather than leaving a labelled gap. */
+  let shareRead = null;
+  try {
+    const _gB = computeGrade(selected, 'buy'), _gS = computeGrade(selected, 'sell');
+    const _dom = (_gB && _gS) ? ((_gB.grade >= _gS.grade) ? _gB : _gS) : null;
+    shareRead = computeMarketRead(_dom ? _dom.parts : null);
+  } catch (e) { shareRead = null; }
+  let readY = edgeY;
+  if (shareRead) {
+    readY = edgeY + 46;
+    g.fillStyle = '#8A8274';
+    g.font = '600 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
+    g.fillText('MARKET READ', 48, readY);
+    fitLine(shareRead.text, 48, readY + 28, W - 96, 21, 15, '600', '#D9D3C7');
+    readY += 28;
   }
 
   // 1-year price trend — a compact version of the on-page chart's own white
@@ -5109,9 +5095,12 @@ async function buildShareCardCanvas() {
       g.fillStyle = '#D9D3C7';
       g.font = '700 20px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
       g.textAlign = 'left';
-      g.fillText(fmtGp(minV) + ' gp', x, chartY + chartH + 28);
+      /* Rounded: these bounds come from the MID of each bucket's low/high, so
+         they are routinely fractional — the card was printing
+         "2,555,427.5 gp", half a coin, as a price. */
+      g.fillText(fmtGp(Math.round(minV)) + ' gp', x, chartY + chartH + 28);
       g.textAlign = 'right';
-      g.fillText(fmtGp(maxV) + ' gp', x + w, chartY + chartH + 28);
+      g.fillText(fmtGp(Math.round(maxV)) + ' gp', x + w, chartY + chartH + 28);
       g.textAlign = 'left';
     };
 
@@ -5124,7 +5113,15 @@ async function buildShareCardCanvas() {
     const TF_LABEL = { '1d': '24-HOUR', '5d': '5-DAY', '1m': '30-DAY',
                        '6m': '6-MONTH', '1y': '1-YEAR', '5y': '5-YEAR' };
     const tfKey = TF_LABEL[view] ? view : '1m';
-    const chartY = 640, chartH = 198;
+    /* Follows the flow rather than sitting at a fixed y: Market Read is
+       optional, so a hardcoded chartY either leaves a labelled gap when no
+       rule fires or collides when one does. The chart takes whatever is left
+       between the last text line and the footer rule at H-78, keeping room
+       for its own header (20px above) and its min/max captions (28px below).
+       Clamped so a short flow can't stretch it into a banner. */
+    const chartTop = readY + 62;
+    const chartBottom = (H - 78) - 46;
+    const chartY = chartTop, chartH = Math.max(150, Math.min(310, chartBottom - chartTop));
     drawMiniTrend(tfKey, TF_LABEL[tfKey] + ' PRICE TREND', TF_LABEL[tfKey], 48, W - 96, chartY, chartH);
   }
 
@@ -7731,6 +7728,64 @@ function computeSwingTargets(series) {
   const sell = Math.round(wpct(highs, 0.88));
   return sell > buy ? { buy, sell } : null;
 }
+/* Direction of the selected window, as a fraction: median of the last fifth
+   of the prints against the median of the first fifth. Medians, not endpoints,
+   so a single spike at either edge can't declare a trend. */
+function swingTrendPct(series) {
+  if (!series || !series.labels || series.labels.length < 10) return 0;
+  const mid = [];
+  for (let i = 0; i < series.labels.length; i++) {
+    const L = series.low[i], H = series.high[i];
+    if (L != null && H != null) mid.push((L + H) / 2);
+    else if (L != null) mid.push(L);
+    else if (H != null) mid.push(H);
+  }
+  if (mid.length < 10) return 0;
+  const n = Math.max(3, Math.round(mid.length * 0.2));
+  const med = a => { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+  const first = med(mid.slice(0, n)), last = med(mid.slice(-n));
+  return first > 0 ? (last - first) / first : 0;
+}
+/* How much default edge a swing ask may claim over the live price before it
+   stops looking executable. Only bites on higher-value items: a 300gp herb
+   genuinely swings 40% in a month, a 60M item does not, and quoting one like
+   the other is what produced a 100M+ ask on a 60M Virtus. */
+function defaultSwingEdgeCap(price) {
+  if (!(price > 0)) return Infinity;
+  if (price >= 1e6) return 0.15;
+  if (price >= 1e5) return 0.25;
+  return Infinity;
+}
+/* Ceiling for the swing ask on long windows.
+   The monotonic-horizon rule takes the MAX ask across every window up to the
+   one selected. That is right for execution logic — more patience can always
+   run the shorter plan — but on a year-long slide the 1Y window's own anchor
+   comes from the top of the slide, a level the market has left behind, and the
+   max locks it in. The result is an ask no experienced flipper would place.
+   So the ask is bounded by whichever is HIGHER of:
+     - local resistance: the ~30-day window's own recency-weighted ask, i.e.
+       where sellers have actually been filling lately, and
+     - a percentage cap over the live price (see defaultSwingEdgeCap).
+   Local structure wins when it is genuinely higher, which is how a real
+   breakout still gets an ambitious target. The ceiling never drops below the
+   live market or the day-flip engine, so this can only ever pull an ask DOWN
+   toward reality, never below where buyers are paying.
+   Deliberately computed from the 1M window rather than the selected one, so
+   the ceiling is the same number on 6M as on 1Y — a view-dependent ceiling
+   would let a longer horizon quote WORSE than a shorter one and break the
+   monotonic rule this sits inside. Defaults only: the -/+ buttons write
+   recommendedSell directly and are not clamped by any of this. */
+function swingSellCeiling(engineSell) {
+  const recent = computeSwingTargets(filterSeries(seriesForView('1m', currentItemSrc, currentItemLowVol), getPeriod('1m')));
+  const local = recent ? recent.sell : 0;
+  const ref = liveSellRaw > 0 ? liveSellRaw : (liveBuyRaw > 0 ? liveBuyRaw : 0);
+  let cap = defaultSwingEdgeCap(ref);
+  /* Clearly trending up — a more ambitious default is fair, the market is
+     still making new levels rather than leaving old ones behind. */
+  if (isFinite(cap) && swingTrendPct(currentSeries) >= 0.03) cap *= 2;
+  const pctCeil = (ref > 0 && isFinite(cap)) ? Math.round(ref * (1 + cap)) : Infinity;
+  return Math.max(local, pctCeil, engineSell > 0 ? engineSell : 0, liveSellRaw > 0 ? liveSellRaw : 0);
+}
 /* Two sanity clamps every recommended pair obeys: never ASK below what
    buyers pay right now (live insta-buy), never BID above what sellers
    accept right now (live insta-sell). */
@@ -7782,6 +7837,10 @@ function computeViewTargets(node, id) {
        quote a worse level than what the 1D boxes would display. */
     if (engine.sell > 0) best.sell = Math.max(best.sell, engine.sell);
     if (engine.buy > 0) best.buy = Math.min(best.buy, engine.buy);
+    /* ...then pull the ask back to something placeable. The bid needs no
+       equivalent: bidding LOW is always executable, it just may not fill, so
+       there is no realism problem to fix on that side. */
+    best.sell = Math.min(best.sell, swingSellCeiling(engine.sell));
   }
   best = clampToLive(best);
   return (best && best.sell > best.buy) ? best : engine;
@@ -8144,6 +8203,96 @@ document.addEventListener('click', (ev) => {
    just a number — and this one moves when you change timeframe, which reads
    as noise until you can see that it's the RANGE that changed underneath it.
    Every row here is checkable against the chart on screen. */
+/* ── Market Read ─────────────────────────────────────────────────────────
+   A deterministic rule engine over data the page already has: the selected
+   window's prints, its volumes, and the grade parts the rating was built
+   from. No model, no network call — the same inputs always produce the same
+   sentence, which is the only way a caption like this can be trusted.
+   Tone rules, deliberately enforced by having ONLY these strings: describe
+   what the tape is doing, never what it will do next. No "buy now", no
+   "confirmed bottom", no outcome language. Returns null when nothing fires,
+   and the caller renders nothing — an empty Market Read is worse than none,
+   because a section that's always there trains people to ignore it. */
+function computeMarketRead(parts) {
+  const s = currentSeries;
+  if (!s || !s.labels || s.labels.length < 12) return null;
+
+  const lows = [], highs = [], vols = [], mids = [];
+  for (let i = 0; i < s.labels.length; i++) {
+    const L = s.low[i], H = s.high[i];
+    if (L != null && L > 0) lows.push(L);
+    if (H != null && H > 0) highs.push(H);
+    if (L != null && H != null) mids.push((L + H) / 2);
+    else if (L != null) mids.push(L); else if (H != null) mids.push(H);
+    vols.push((s.lowVol[i] || 0) + (s.highVol[i] || 0));
+  }
+  if (lows.length < 6 || highs.length < 6) return null;
+  const lo = Math.min.apply(null, lows), hi = Math.max.apply(null, highs);
+  if (!(hi > lo)) return null;
+
+  const price = (liveBuyRaw > 0 && liveSellRaw > 0) ? (liveBuyRaw + liveSellRaw) / 2
+    : (liveSellRaw > 0 ? liveSellRaw : (liveBuyRaw > 0 ? liveBuyRaw : mids[mids.length - 1]));
+  if (!(price > 0)) return null;
+
+  const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  const tail = Math.max(3, Math.round(s.labels.length * 0.1));
+  const recentVol = mean(vols.slice(-tail)), allVol = mean(vols);
+  const volRatio = allVol > 0 ? recentVol / allVol : 0;
+
+  /* Volatility compression: how much of the window's full range the most
+     recent fifth of it actually covered. */
+  const rTail = Math.max(4, Math.round(mids.length * 0.2));
+  const recent = mids.slice(-rTail);
+  const recentRange = recent.length ? (Math.max.apply(null, recent) - Math.min.apply(null, recent)) : 0;
+  const compression = (hi - lo) > 0 ? recentRange / (hi - lo) : 1;
+
+  const nearLow = price <= lo * 1.03;
+  const nearHigh = price >= hi * 0.97;
+  const elevated = volRatio >= 2;
+  const pos = (price - lo) / (hi - lo);
+
+  /* 1. Volume at the lows. If the price is ALSO within 3% of the yearly low,
+        say so — a year-scale level is a stronger piece of context than the
+        selected window's own floor, and the caption should reflect that
+        without becoming a forecast. */
+  if (nearLow && elevated) {
+    let yearLow = 0;
+    try {
+      const ys = filterSeries(seriesForView('1y', currentItemSrc, currentItemLowVol), getPeriod('1y'));
+      const yl = (ys.low || []).filter(v => v != null && v > 0);
+      if (yl.length >= 12) yearLow = Math.min.apply(null, yl);
+    } catch (e) { yearLow = 0; }
+    if (yearLow > 0 && price <= yearLow * 1.03 && view !== '1y') {
+      return { text: 'Heavy volume near the 1-year low. Sustained interest at a level the market has held before — not a prediction.', key: 'lows-year' };
+    }
+    return { text: 'Heavy volume near the period low. Possible absorption / base forming — not a prediction.', key: 'lows' };
+  }
+  /* 2. Volume at the highs. */
+  if (nearHigh && elevated) {
+    return { text: 'Heavy volume near the period high. Watch for profit-taking / rejection.', key: 'highs' };
+  }
+  /* 3. Wide margin nobody is trading.
+        Measured in UNITS per day, not gp per day. The rating's own liqScore is
+        log10(gp/day) based, so "liqScore <= 5" means under ~178k gp/day and
+        almost nothing reaches it: a 2M item trading twice a day — days to fill
+        an order — scores 10.5/15, because two units of something expensive is
+        a lot of gp. The question this caption answers is "will my order fill",
+        and that is a unit question. Under one buy-limit's worth a day means you
+        cannot even complete a single limit in a session. */
+  if (parts && parts.gpVol > 0 && parts.marginPct != null && parts.marginPct >= 0.03) {
+    const unitsPerDay = parts.gpVol / price;
+    const limit = (selected && selected.limit > 0) ? selected.limit : 1;
+    if (unitsPerDay < limit) {
+      return { text: 'Wide margin, but low liquidity — fills may be slow.', key: 'illiquid' };
+    }
+  }
+  /* 4. Quiet and coiled in the lower third. */
+  if (pos <= 0.35 && compression <= 0.35) {
+    return { text: 'Quiet consolidation near support. Possible swing candidate if volume returns.', key: 'quiet' };
+  }
+  return null;
+}
+
 function ratingWhyHtml(gBuy, gSell, tf) {
   const b = gBuy.grade, s = gSell.grade;
   const dom = (b >= s) ? gBuy : gSell;
@@ -8205,6 +8354,15 @@ function ratingWhyHtml(gBuy, gSell, tf) {
     + row('Margin', marginTxt, p.marginScore, 25)
     + row('Liquidity', liqTxt, p.liqScore, 15)
     + '<div class="rg-why-foot">' + verdictNote + '</div>'
+    /* Secondary to the rating by construction: it comes last, after the
+       verdict line, behind a hairline, in muted type. Absent entirely when no
+       rule fires — see computeMarketRead. */
+    + (() => {
+        const mr = computeMarketRead(p);
+        if (!mr) return '';
+        return '<div class="rg-read"><span class="rr-t">Market Read</span>'
+          + '<p class="rr-b">' + mr.text + '</p></div>';
+      })()
     + '</div>';
 }
 
