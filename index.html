@@ -10481,6 +10481,23 @@ function refreshChart() {
 }
 
 async function setItem(m, opts = {}) {
+  /* Generation token. setItem awaits twice — the item's historical series and
+     the live price — and every line after those awaits writes into shared
+     globals (currentItemSrc, liveSellRaw, recommendedBuy/Sell) and straight
+     into the DOM. Two overlapping calls therefore interleave and the page ends
+     up assembled from two different items: the header price and chart from
+     whichever resolved last, the quick-facts strip from the other. That is
+     exactly what a first load looked like — "Steel cannonball / 1 gp" over a
+     chart scaled 1-2 while the strip underneath read insta-buy 252, spread 12,
+     vol 39.83M.
+     It was always possible (a fast double-click on two watchlist rows would do
+     it) but the flip hand-off made it routine: boot calls setItem for the
+     opening item and the scan can land mid-await, calling it again. Newest
+     call wins — which is the behaviour we want, the hand-off should take
+     precedence — and any superseded call stops writing at its next
+     checkpoint. */
+  const gen = ++setItem._gen;
+  const stale = () => gen !== setItem._gen;
   selected = m;
   yScale = 1; yOffset = 0; // manual axis scale is per-item — fresh item, auto-fit
 
@@ -10581,9 +10598,12 @@ async function setItem(m, opts = {}) {
   updateFavoriteBtn();
   renderWatchlist();
 
+  if (stale()) return;
   if (overMaxData[String(m.id)]) { currentItemSrc = null; renderOverMax(m); return; }
 
-  currentItemSrc = await buildSeriesForItem(m.id);
+  const _src = await buildSeriesForItem(m.id);
+  if (stale()) return;   // a newer setItem owns the page now
+  currentItemSrc = _src;
   currentItemLowVol = isLowVolume(m.id);
 
   /* The view-timeframe (1D / 5D / 1M / ...) is treated as a USER preference
@@ -10625,7 +10645,9 @@ async function setItem(m, opts = {}) {
   currentSeries = filterSeries(seriesForView(view, currentItemSrc, currentItemLowVol), getPeriod(view));
   selectedAbsIdx = null;
 
-  latest = await loadLatest();
+  const _latest = await loadLatest();
+  if (stale()) return;   // second checkpoint — this await is the longer one
+  latest = _latest;
   lastLiveFetchAt = Math.floor(Date.now() / 1000);
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
@@ -10645,6 +10667,9 @@ async function setItem(m, opts = {}) {
   refreshItemInsights(m, node);
   resizeCanvas();
 }
+/* Bumped on every call; a call whose token is no longer current stops writing.
+   Declared here rather than inside setItem so it survives across calls. */
+setItem._gen = 0;
 setItem._userPicked = false;
 
 (async function boot() {
