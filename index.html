@@ -10790,7 +10790,23 @@ function drawChart(series) {
        longer the first thing the eye lands on. The dark casing underneath
        stays — that is what separates it from the scatter, and it lets the
        stroke itself be quieter without losing the path. */
-    ctx.strokeStyle = "rgba(217,211,199,0.90)"; ctx.lineWidth = 2;
+    /* Same left-to-right recency ramp the scatter uses, so the line recedes
+       into the history exactly as the dots around it do instead of staying at
+       full strength across a field that is fading underneath it.
+       A canvas gradient across the plot's x-range, with the SAME
+       DOT_ALPHA_OLD -> DOT_ALPHA_NEW stops, multiplied by the stroke's own
+       0.90 so the right-hand edge lands where it did before rather than
+       getting brighter. Built from x0..x0+w, the plot area, not 0..W — keyed
+       to the full canvas the ramp would finish early and leave the newest
+       prints on a flat maximum. */
+    {
+      const _g = ctx.createLinearGradient(x0, 0, x0 + w, 0);
+      const _a = v => "rgba(217,211,199," + (v * 0.90).toFixed(3) + ")";
+      _g.addColorStop(0, _a(DOT_ALPHA_OLD));
+      _g.addColorStop(1, _a(DOT_ALPHA_NEW));
+      ctx.strokeStyle = _g;
+    }
+    ctx.lineWidth = 2;
     ctx.beginPath();
     let started = false;
     for (let i = 0; i < L.length; i++) {
