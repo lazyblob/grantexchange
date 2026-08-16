@@ -101,7 +101,7 @@
       "name": "How do I know if an item is worth flipping right now?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Four things, all on the item page. The Analyst Rating grades it as a buy and as a sell and shows both scores plus the four inputs behind them, so you can check its reasoning instead of trusting a word. The 30-day meter shows whether the price sits near its floor or its ceiling. Daily volume tells you whether it will actually fill. And a 5D badge means it's at a genuine multi-day extreme. If they don't agree, that itself is the answer - it's not a clean setup."
+        "text": "Four things, all on the item page. The Analyst Rating grades it as a buy and as a sell and shows both scores plus the four inputs behind them, so you can check its reasoning instead of trusting a word. The 30-day meter shows whether the price sits near its floor or its ceiling. Daily volume tells you whether it will actually fill. A 5D badge means it's at a genuine multi-day extreme, and a rocket or explosion flag means it moved 15% or more against its own 24-hour typical price - a much louder, rarer event. If they don't agree, that itself is the answer - it's not a clean setup."
       }
     },
     {
@@ -1980,7 +1980,20 @@ button, input { touch-action: manipulation; }
   .sbar { flex: 1 1 auto; min-width: 0; width: auto; }
   /* font-size MUST be >= 16px on touch inputs or iOS Safari auto-zooms in
      when the user taps to type, distorting the entire layout. Keep 16px. */
-  .sbar input { padding: 3px 6px 3px 26px; height: 30px; font-size: 16px; }
+  /* 30 -> 36px, and the sprite 16 -> 24px inside it. On desktop the selected
+     item is stated twice — the 48px chip beside the name AND this sprite — but
+     portrait hides the whole name block to save a row, so this one 16px sprite
+     was carrying the entire "which item am I looking at" job. It was the
+     smallest thing on screen doing the most important work.
+     The 6px of height goes to the sprite, not to padding, so the bar reads as
+     an item chip with a field attached rather than just a taller box. */
+  .sbar input { padding: 3px 6px 3px 34px; height: 36px; font-size: 16px; }
+  #itemIcon {
+    left: 5px; width: 24px; height: 24px; padding: 2px;
+    box-sizing: border-box; border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07);
+  }
   .icon-btn { flex: 0 0 auto; padding: 5px 9px; font-size: 15px; gap: 0; }
   /* Compact fav button in the ticker header on portrait mobile. */
   .fav-btn { padding: 5px 9px; gap: 5px; flex: 0 0 auto; font-size: 11px; }
@@ -2016,10 +2029,13 @@ button, input { touch-action: manipulation; }
      at the right. Same pattern as landscape — the ticker-title-group's
      separate name row is entirely eliminated, saving a whole row for the
      chart. Save button + timeframe share the reclaimed row instead. */
+  /* Left inset follows the sprite chip (5 + 24 + 5), so the name starts clear
+     of it rather than overlapping — this is the one number that has to move
+     whenever the icon size does. */
   .sbar-item {
-    display: flex; position: absolute; inset: 1px 24px 1px 24px; align-items: center;
+    display: flex; position: absolute; inset: 1px 24px 1px 34px; align-items: center;
     pointer-events: none; background: var(--bg-input); color: var(--text-main);
-    font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden;
+    font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; border-radius: 4px;
   }
   .sbar:focus-within .sbar-item { display: none; }
@@ -2134,8 +2150,21 @@ button, input { touch-action: manipulation; }
      hidden below. Focusing the field hides the name so you can type. */
   .search-group { flex: 1 1 auto; min-width: 0; }
   .sbar { flex: 1 1 auto; min-width: 90px; width: auto; }
-  .sbar input { padding: 2px 26px 2px 26px; height: 30px; font-size: 16px; }
-  .sbar-item { display: flex; position: absolute; inset: 1px 24px 1px 24px; align-items: center;
+  /* Same 36px bar and 24px sprite as portrait. Landscape is pinned to 100dvh
+     so the instinct is to keep this row as short as possible, but measured it
+     makes no difference at all: the chart comes out at 296px whether this bar
+     is 30px or 36px, because the row's height is set by the logo and mode pill
+     beside it, not by the search field. (A first pass here shaved the bar back
+     on the strength of a 10px chart difference that turned out to be the
+     activity bar landing between the two measurements, not this rule.) */
+  .sbar input { padding: 2px 26px 2px 34px; height: 36px; font-size: 16px; }
+  #itemIcon {
+    left: 5px; width: 24px; height: 24px; padding: 2px;
+    box-sizing: border-box; border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07);
+  }
+  .sbar-item { display: flex; position: absolute; inset: 1px 24px 1px 34px; align-items: center;
     pointer-events: none; background: var(--bg-input); color: var(--text-main); font-weight: 700;
     font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 4px; }
   .sbar:focus-within .sbar-item { display: none; }
@@ -12031,9 +12060,11 @@ if ('serviceWorker' in navigator) {
     </li>
 
     <li>
-      <h3>2 · Wait for a 5D badge</h3>
+      <h3>2 · Wait for a badge</h3>
       <p>An item flagged <b>▲ 5D</b> or <b>▼ 5D</b> has just hit a five-day high or low. That badge is the signal to open something — not the price itself, not a hunch. It appears in the list before you open anything, which is the whole point of keeping a list.</p>
       <p>The bar is deliberately high: an item only earns a badge when its live price is within 0.5% of a genuine 5-day extreme <em>and</em> the 5-day range is at least 3% wide, so a flat item can't pass itself off as a breakout.</p>
+      <p><b>Then there's the loud one.</b> When something moves <b>15% or more</b> against its own 24-hour typical price, the row stops showing a 5D badge and shows the move itself instead — <b>🚀 +18%</b> or <b>💥 −15%</b> — and the whole row lights up. A 5-day extreme is routine; a 15% swing in a day is an event, usually an update, a new drop source, or someone dumping a stack. It outranks the 5D badge rather than sitting next to it, because when both are true only one of them is why you should look.</p>
+      <p>Worth knowing which way to read it: a spike <em>down</em> is the interesting one for a buyer, and it is also the one most likely to keep falling. That is what step 3 is for.</p>
       <figure class="ex">
         <div class="ex-frame">
           <div class="col-header" style="padding:5px 10px 6px 6px">
@@ -12044,8 +12075,9 @@ if ('serviceWorker' in navigator) {
           <div class="wl-item at-low5d"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1617.png" alt="" loading="lazy"><span class="wl-item-name">Uncut diamond</span><span class="hl-badge low5d">▼ 5D</span></div><div class="wl-item-right"><span class="wl-item-price">2.5K</span><span class="meta-piece meta-chg down">-1.0%</span><span class="meta-piece meta-ea neutral">—</span><span class="meta-piece meta-vol">2M</span></div></div>
           <div class="wl-item"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1603.png" alt="" loading="lazy"><span class="wl-item-name">Emerald</span></div><div class="wl-item-right"><span class="wl-item-price">417</span><span class="meta-piece meta-chg up">+0.4%</span><span class="meta-piece meta-ea up">+6</span><span class="meta-piece meta-vol">2.57M</span></div></div>
           <div class="wl-item at-high5d"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/1621.png" alt="" loading="lazy"><span class="wl-item-name">Ruby</span><span class="hl-badge high5d">▲ 5D</span></div><div class="wl-item-right"><span class="wl-item-price">860</span><span class="meta-piece meta-chg up">+1.6%</span><span class="meta-piece meta-ea up">+10</span><span class="meta-piece meta-vol">3.02M</span></div></div>
+          <div class="wl-item at-spike-down"><div class="wl-item-left"><img src="https://static.runelite.net/cache/item/icon/5321.png" alt="" loading="lazy"><span class="wl-item-name">Watermelon seed</span><span class="hl-badge low5d">💥 -15%</span></div><div class="wl-item-right"><span class="wl-item-price">217</span><span class="meta-piece meta-chg down">-15.1%</span><span class="meta-piece meta-ea up">+103</span><span class="meta-piece meta-vol">242.2K</span></div></div>
         </div>
-        <figcaption>Two of these hit a 5-day extreme overnight. Open those two; ignore the rest.</figcaption>
+        <figcaption>Two hit a 5-day extreme overnight. The third moved 15% in a day — that one you look at first, and most carefully.</figcaption>
       </figure>
     </li>
 
@@ -12213,8 +12245,9 @@ if ('serviceWorker' in navigator) {
   <p>Add it to your home screen and a service worker loads the shell instantly with no URL bar. On iOS that step is also what enables notifications — the bell button walks you through it.</p>
 
   <h2>Scanners: a shortlist when you don't have one</h2>
-  <p>Not knowing what to look at is the hardest part of starting. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> hand you a shortlist of items already at an extreme.</p>
+  <p>Not knowing what to look at is the hardest part of starting. <strong>At 5D Highs</strong> and <strong>At 5D Lows</strong> hand you a shortlist of items already at an extreme, and <strong>Biggest Losers (24h)</strong> is where the day's hardest falls surface — the ones carrying a <b>💥</b> flag.</p>
   <p>The bar to get on it is deliberately high: an item only appears when its live price is within 0.5% of a genuine 5-day extreme, and only if the 5-day range is at least 3% — so flat items can't pass themselves off as breakouts.</p>
+  <p>The same <b>🚀 / 💥</b> flags from your watchlist appear on every row a scanner returns, so browsing works the same way watching does: you are looking for a badge, not reading every number. Anything at ±15% against its own 24-hour typical price is showing you the move instead of a 5D badge, and that's the row to open first.</p>
   <p>The margin lists split by how fast an item fills, which is really a question about your own time:</p>
   <ul class="about-qlist">
     <li><b>High Vol</b> — gems, ores, bars, arrows, runes, cannonballs. Small edges that fill fast. Suits sitting at the GE and cycling.</li>
@@ -12250,7 +12283,7 @@ if ('serviceWorker' in navigator) {
     </details>
     <details>
       <summary>How do I know if an item is worth flipping right now?</summary>
-      <p>Four things, all on the item page. The Analyst Rating grades it as a buy and as a sell and shows both scores plus the four inputs behind them, so you can check its reasoning instead of trusting a word. The 30-day meter shows whether the price sits near its floor or its ceiling. Daily volume tells you whether it will actually fill. And a 5D badge means it's at a genuine multi-day extreme. If they don't agree, that itself is the answer &mdash; it's not a clean setup.</p>
+      <p>Four things, all on the item page. The Analyst Rating grades it as a buy and as a sell and shows both scores plus the four inputs behind them, so you can check its reasoning instead of trusting a word. The 30-day meter shows whether the price sits near its floor or its ceiling. Daily volume tells you whether it will actually fill. A 5D badge means it's at a genuine multi-day extreme, and a rocket or explosion flag means it moved 15% or more against its own 24-hour typical price &mdash; a much louder, rarer event. If they don't agree, that itself is the answer &mdash; it's not a clean setup.</p>
     </details>
     <details>
       <summary>I'm new, or I don't have much gold. Is this still useful?</summary>
