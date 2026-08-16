@@ -2227,13 +2227,21 @@ button, input { touch-action: manipulation; }
   .sbar input { padding-right: 32px; }
   /* Ticker-title-group is now redundant — item name lives in the sbar. */
   .ticker-title-group { display: none !important; }
-  .ticker-header { padding: 0; border: none; background: transparent; gap: 8px; height: auto; flex-direction: row; flex-wrap: nowrap; align-items: center; }
+  .ticker-header { padding: 0; border: none; background: transparent; gap: 8px; row-gap: 0; height: auto; flex-direction: row; flex-wrap: nowrap; align-items: center; }
   /* Save button leads the timeframe row so it's the first thing after the
      search bar — easy thumb tap, and the timeframes get the rest of the row.
      Icon-only (star + gold already signal "favorite") so there's enough
      width left for the 6-button toolbar to share this same row instead of
      wrapping onto its own line below with the star stranded alone. */
-  .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
+  /* 30 -> 26px, and the timeframe pills are given the same floor. The star was
+     the tallest thing in this row and therefore what set its height, while the
+     pills beside it sat at 21px — a 9px mismatch that read as the star being
+     oversized AND cost the row 5px it was not using. 26 keeps a comfortable
+     touch target while letting the row close up around its contents. */
+  /* box-sizing so min-height is the OUTER height. Without it the star's 1px
+     border sits outside the 26px and it renders 28 — still 2px taller than the
+     pills, which is the mismatch this was meant to remove. */
+  .ticker-header .fav-btn { padding: 3px 6px; gap: 0; flex: 0 0 auto; min-height: 22px; box-sizing: border-box; }
   .ticker-header .fav-btn .fav-star { width: 16px; height: 16px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
   /* ── Mobile Save button ──────────────────────────────────────────────
@@ -2383,7 +2391,15 @@ button, input { touch-action: manipulation; }
   /* Icon-only Save button in landscape — the star + gold color already
      signal "favorite", and the "Save"/"Saved" label doesn't fit next to a
      6-button toolbar in a ~470 px header. Tap area stays big enough. */
-  .ticker-header .fav-btn { padding: 4px 6px; gap: 0; flex: 0 0 auto; min-height: 30px; }
+  /* 30 -> 26px, and the timeframe pills are given the same floor. The star was
+     the tallest thing in this row and therefore what set its height, while the
+     pills beside it sat at 21px — a 9px mismatch that read as the star being
+     oversized AND cost the row 5px it was not using. 26 keeps a comfortable
+     touch target while letting the row close up around its contents. */
+  /* box-sizing so min-height is the OUTER height. Without it the star's 1px
+     border sits outside the 26px and it renders 28 — still 2px taller than the
+     pills, which is the mismatch this was meant to remove. */
+  .ticker-header .fav-btn { padding: 3px 6px; gap: 0; flex: 0 0 auto; min-height: 22px; box-sizing: border-box; }
   .ticker-header .fav-btn .fav-star { width: 17px; height: 17px; }
   .ticker-header .fav-btn .fav-label, .ticker-header .fav-btn .fav-label-active { display: none; }
   /* ── Mobile Save button ──────────────────────────────────────────────
@@ -3364,7 +3380,11 @@ button, input { touch-action: manipulation; }
 @container tickerhdr (max-width: 620px) {
   .ticker-header .fav-btn .fav-label,
   .ticker-header .fav-btn .fav-label-active { display: none; }
-  .ticker-header .fav-btn { padding: 5px 7px; gap: 0; }
+  /* 5px -> 3px vertical. This rule sits AFTER the per-layout ones and so wins:
+     with 5px the star measured 28-29px against 26px pills (5+5+16 icon+2
+     border), which is the whole mismatch. Horizontal padding stays wider than
+     vertical so the tap target keeps its width. */
+  .ticker-header .fav-btn { padding: 3px 7px; gap: 0; }
   .ticker-title-group { gap: 7px; }
   #tickerHeaderIconLink { width: 30px; height: 30px; }
   #tickerHeaderIconLink img { width: 24px; height: 24px; max-width: 24px; max-height: 24px; }
@@ -3395,6 +3415,14 @@ button, input { touch-action: manipulation; }
 @media screen and (max-width: 640px) {
   .ticker-header .toolbar { flex: 1 1 auto; overflow: visible; }
   .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
+  /* Star sized to ITS OWN layout's pills. Portrait pills run ~21px, landscape
+     pins them to 30 — so a single figure in the shared container query made the
+     star oversized in one view and undersized in the other. It was 30 against
+     21px pills here, the 9px mismatch reported. */
+  .ticker-header .fav-btn { min-height: 22px; box-sizing: border-box; }
+}
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ticker-header .fav-btn { min-height: 30px; box-sizing: border-box; }
 }
 /* Below ~500px of header, the pills get their own full-width row.
    This is NOT the unconditional wrap that was removed earlier — that one fired
