@@ -1000,6 +1000,20 @@ button, input { touch-action: manipulation; }
    background contrast (--bg-chart vs. the page), not a drawn edge. */
 .chart-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-chart); border-radius: 6px; position: relative; overflow: hidden; }
 .chart { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; }
+/* On a touch device the page MUST stay scrollable through the chart.
+   touch-action:none hands every gesture to the canvas, which is right on
+   desktop (the wheel still scrolls the page) and a trap on a phone: with the
+   chart filling the screen there was no way to reach anything below it —
+   reported as "can't scroll past the chart", and there is no visible cue that
+   the canvas is why.
+   pan-y gives vertical drags back to the browser. The cost is real and worth
+   naming: one-finger vertical panning and the y-axis scale drag are no longer
+   available on touch, because the browser consumes those gestures now.
+   Horizontal panning, taps, and the double-tap resets all still work. Being
+   unable to scroll the page is a dead end; losing a gesture is not. */
+@media (pointer: coarse) {
+  .chart { touch-action: pan-y; }
+}
 /* The price strip lives above the chart now (not as an overlay) so the
    target / grade boxes can never cover chart data. The flex-row puts buy +
    sell side by side; on narrow widths they wrap and the chart simply moves
@@ -2152,7 +2166,18 @@ button, input { touch-action: manipulation; }
   .toolbar { flex: 1 1 auto; min-width: 0; justify-content: space-between; padding: 2px; align-items: center; }
   .toolbar button { flex: 1; padding: 5px 2px; font-size: 12px; min-width: 0; line-height: 1; }
   .pct-chg { display: none !important; }
-  .chart-container { flex: none; height: 52vh; min-height: 320px; min-width: 0; margin-bottom: 0; }
+  /* svh, NOT vh. On iOS `vh` resolves against the LARGE viewport — the height
+     the page would have with the URL bar and toolbar hidden — so 52vh is
+     around 69% of what is actually on screen while that chrome is showing.
+     Combined with the header and target boxes above it, the chart ran off the
+     bottom of the visible area on first load. `svh` is the SMALL viewport,
+     i.e. chrome visible, so this is 52% of what you can really see, and it
+     does not resize as the URL bar hides (dvh would, which re-renders the
+     canvas every time you scroll). vh first as the fallback for anything
+     without svh. Capped in px too so a large phone doesn't get an absurd one.
+     min-height 320 -> 260: on a small phone 320 was itself most of the screen,
+     which is the same bug with a different number. */
+  .chart-container { flex: none; height: 52vh; height: 52svh; min-height: 260px; max-height: 520px; min-width: 0; margin-bottom: 0; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   /* Target Buy + Target Sell SIDE BY SIDE on one line (was two stacked
      full-width rows — double the height for the same two numbers). Each box:
@@ -11226,6 +11251,9 @@ canvas.addEventListener('wheel', ev => {
    price axis, drag-to-scale the y-axis), 2 fingers = pinch zoom */
 let touchMode = null, lastTouchX = 0, lastTouchY = 0, touchMoved = false, tStartX = 0, tStartY = 0, pinchStart = 0, pinchZoom = 1;
 let lastAxisTapT = 0;
+/* Set once the first real movement of a touch drag decides whether the chart
+   or the page owns it — see the touchmove handler. */
+let touchAxisLocked = false;
 function dist(t) { const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
 canvas.addEventListener('touchstart', ev => {
   if (ev.touches.length === 1) {
@@ -11246,11 +11274,30 @@ canvas.addEventListener('touchstart', ev => {
     } else {
       touchMode = 'pan'; lastTouchX = t.clientX; lastTouchY = t.clientY;
     }
+    touchAxisLocked = false;
   }
   else if (ev.touches.length === 2) { touchMode = 'pinch'; pinchStart = dist(ev.touches); pinchZoom = zoom; }
 }, { passive: true });
 canvas.addEventListener('touchmove', ev => {
   if (!chartData.L) return;
+  /* The page has to stay scrollable THROUGH the chart. touch-action:pan-y
+     declares that, but a preventDefault() in here overrides it anyway, which
+     is what left the page stuck behind a full-height chart on a phone.
+     So decide once per gesture, on the first real movement, who owns it: a
+     mostly-vertical single-finger drag is the reader trying to scroll, and we
+     hand it to the browser untouched. Mostly-horizontal stays a chart pan.
+     Locked after the first decision so a drifting finger can't flip ownership
+     mid-drag, which reads as the chart fighting you. Axis-zone drags and
+     pinches are unaffected — they are unambiguous. */
+  if (touchMode === 'pagescroll') return;
+  if (touchMode === 'pan' && ev.touches.length === 1 && !touchAxisLocked) {
+    const t0 = ev.touches[0];
+    const adx = Math.abs(t0.clientX - tStartX), ady = Math.abs(t0.clientY - tStartY);
+    if (adx > 8 || ady > 8) {
+      touchAxisLocked = true;
+      if (ady > adx * 1.2) { touchMode = 'pagescroll'; return; }
+    }
+  }
   ev.preventDefault();
   if (touchMode === 'yscale' && ev.touches.length === 1) {
     const cy = ev.touches[0].clientY;
