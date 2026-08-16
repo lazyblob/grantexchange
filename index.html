@@ -888,7 +888,13 @@ button, input { touch-action: manipulation; }
    900w and 49px at 700w, versus a flat 12px above 1024. Packing left makes
    it the same 12px everywhere, so Save always reads as belonging to the
    item name it saves — TradingView-style symbol+star. */
-.ticker-header { padding: 6px 4px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
+/* Asymmetric padding on purpose. Above the header there is only the search
+   row and its own 4px; below it are the Target boxes, and the .main-column
+   flex gap already puts 8px there. 6px of padding-bottom on top of that gap
+   measured 16px of empty band between the timeframe pills and the boxes —
+   the widest unexplained space on the page. 2px leaves 10px total, which
+   still separates them without reading as a hole. */
+.ticker-header { padding: 6px 4px 2px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 4px 12px; flex-shrink: 0; container-type: inline-size; container-name: tickerhdr; }
 /* Shrink factor 8 vs the toolbar's 1: both CAN shrink, but the name gives up
    width roughly eight times faster, so it ellipsizes long before the pills
    start scrolling. The name is the cheapest thing on this row to lose — it's
@@ -3418,8 +3424,14 @@ button, input { touch-action: manipulation; }
   /* Star sized to ITS OWN layout's pills. Portrait pills run ~21px, landscape
      pins them to 30 — so a single figure in the shared container query made the
      star oversized in one view and undersized in the other. It was 30 against
-     21px pills here, the 9px mismatch reported. */
-  .ticker-header .fav-btn { min-height: 22px; box-sizing: border-box; }
+     21px pills here, the 9px mismatch reported.
+     Exact height, not a min-height, and padding zeroed on the vertical: the
+     container query above sets 3px, which with the 16px star and the 1px
+     border still measured 24 against 21px pills. The 3px difference was small
+     enough to argue for on tap-target grounds and it was still visibly wrong,
+     which is the answer — the row's height is set by the toolbar either way
+     (see the margin-top note below), so matching the pills costs nothing. */
+  .ticker-header .fav-btn { height: 21px; min-height: 0; padding: 0 7px; box-sizing: border-box; }
 }
 @media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .ticker-header .fav-btn { min-height: 30px; box-sizing: border-box; }
@@ -3453,6 +3465,20 @@ button, input { touch-action: manipulation; }
     overflow: visible;            /* full width — nothing left to scroll */
   }
   .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
+}
+/* …but the margin above is for the DESKTOP-narrow case, where the rule above
+   genuinely puts the pills on their own second row and they need separating
+   from the name. Both phone layouts keep the header `nowrap`, so there the
+   pills sit BESIDE the star on one row and that 6px is not a gap between two
+   rows — it is 6px of dead space added to the header's height, and it drops
+   the pills 6px below the star they are supposed to line up with.
+   Measured: portrait header 33px tall for 27px of content, landscape 46 for
+   40. Zeroing it is the single largest piece of slack in this stack.
+   Placed after the container query because neither has any specificity of its
+   own — source order is the whole mechanism. */
+@media screen and (max-width: 640px),
+       screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ticker-header .toolbar { margin-top: 0; }
 }
 /* ── Target box: caption above, number below ─────────────────────────────
    Applied by fitPriceNums when the number would starve its own caption, not
