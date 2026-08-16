@@ -2021,8 +2021,13 @@ button, input { touch-action: manipulation; }
   #logoBtn { margin-right: 0; flex-shrink: 0; }
   #logoBtn img { margin-right: 0; }
   .brand-logo .brand-word { display: none; }
-  .mode-pill { flex-shrink: 0; height: 26px; padding: 1px; align-self: flex-start; }
-  .mode-pill button { padding: 0 5px; font-size: 10px; }
+  /* Matches the search field it sits beside. It was 26px against a 30px bar,
+     which read as near enough; against the 36px bar it reads as undersized.
+     align-self:flex-start went with it — measured, that pinned the pill's
+     centre 5px above every other control in the row, so it was both smaller
+     AND not on the same line. Default alignment centres it with the rest. */
+  .mode-pill { flex-shrink: 0; height: 36px; padding: 2px; }
+  .mode-pill button { padding: 0 7px; font-size: 11px; }
   /* Cramming mode-pill + search + 5 icons into one row was overflowing on
      ~390px iPhones (the "?" button kept clipping off the right edge).
      Wrap inside search-group: search input takes a full row, the 5 buttons
