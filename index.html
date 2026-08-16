@@ -1968,12 +1968,16 @@ button, input { touch-action: manipulation; }
      mean nothing in particular. Find Opportunities takes the same parchment,
      so the two section headers read as siblings rather than as two unrelated
      colour codes. */
-  border-left: 3px solid var(--rs-parchment, #F2D49B);
+  /* No side stripe. Every other section keeps its accent, but this one is the
+     permanent, always-open list at the top of the sidebar — it does not need a
+     colour to tell it apart from anything, and the stripe was the only vertical
+     line in the block, which is what made the title and the column names read
+     as two stacked bars instead of one. */
   /* No rule underneath: .col-header (ITEM / LAST / CHG% …) sits immediately
      below and draws its own border-top, so this put a second line one row
      above the first. Other sections keep theirs — there the next thing down is
      list rows with no divider of their own. */
-  box-shadow: inset 6px 0 20px -15px var(--rs-parchment, #F2D49B);
+  box-shadow: none;
 }
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
 .fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
@@ -1994,7 +1998,12 @@ button, input { touch-action: manipulation; }
    across the middle just contradicts it.
    padding-left drops 6 -> 3 to pay for the 3px border, so the text stays on
    the same left edge it had before the stripe arrived. */
-.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 3px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-left: 3px solid var(--rs-parchment, #F2D49B); border-bottom: 1px solid var(--border-main); }
+/* padding-left 10px = the same inset .fav-head-host .category-title uses, so
+   ITEM starts on exactly the same x as FAVORITES above it. No border on the
+   top OR the left: the two rows share one background and one left edge, which
+   is what makes them read as a single chunky bar. The bottom border stays —
+   that is the boundary between the bar and the list, and it is wanted. */
+.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 10px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-bottom: 1px solid var(--border-main); }
 .col-header .ch-name { flex: 1 1 auto; min-width: 0; }
 .col-header .ch-cols { display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
 .col-header .ch-sortable { cursor: pointer; border-radius: 3px; transition: color 0.12s ease; }
