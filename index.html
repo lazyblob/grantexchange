@@ -3143,41 +3143,37 @@ button, input { touch-action: manipulation; }
 .qf-age { font-size:10px; font-weight:600; }
 .qf-fresh { color:var(--rs-green-deep); } .qf-ok { color:var(--text-muted); } .qf-stale { color:var(--rs-gold-deep); }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
-/* position:relative so the chart-tools popover can anchor to this row's right
-   edge and open upward over the chart — see .chart-tools.is-pop.open. */
+/* position:relative so the chart-tools popover can anchor to this row and
+   open upward over the chart — see .chart-tools.is-pop.open. */
 .qf-row { display:flex; align-items:center; gap:8px; min-width:0; position:relative; }
-/* Content-sized, NOT stretched. At flex:1 1 auto the stats strip claimed
-   the whole row and shoved Refresh against the far edge — measured at 1440,
-   that left a 509px void between "LIMIT 13K" and the button, so the control
-   read as an orphan parked in empty space rather than the end of this line.
-   It shrank to 169px at 1100 and 86px in the landscape column, which is why
-   it only ever looked wrong on a wide screen.
+/* Controls lead, figures trail. Set with `order` rather than by moving the
+   markup: #btnRefreshPrices and #chartTools are looked up by id from several
+   places and #quickFacts has its innerHTML rewritten every price tick, so
+   source order is load-bearing and layout order is not.
+   The controls sit flush at the row's left edge, under the chart's own left
+   edge, and the figures are pushed to the right by the auto margin. */
+.qf-row .ct-puck     { order:1; }
+.qf-row .chart-tools { order:2; }
+.qf-row .qf-refresh  { order:3; }
+/* Content-sized, NOT stretched. At flex:1 1 auto the strip claimed the whole
+   row; with margin-left:auto it takes only what it needs and parks at the far
+   end regardless of how wide the row is.
    min-width:0 stays: the strip still has to be allowed to shrink below its
    content width and scroll sideways on a phone. */
-.qf-row .quick-facts { flex:0 1 auto; min-width:0; }
-/* A hairline, because "right after the stats" and "part of the stats" are
+.qf-row .quick-facts { order:4; flex:0 1 auto; min-width:0; margin-left:auto; }
+/* A hairline, because "right before the stats" and "part of the stats" are
    one gap apart. The strip separates its own figures with "·", so a button
-   sitting 8px past the last one would just read as another reading. The
-   rule says the data ends here and a control begins.
-   It hangs off whichever control comes FIRST after the figures, which is
-   width-dependent: below 1024 that is the chart-tools puck, above it the
-   puck is hidden and Refresh leads. (It used to be scoped off .is-float,
-   from when Refresh floated out of this row on a phone entirely.) */
-.qf-row .ct-puck { margin-left:6px; position:relative; }
-.qf-row .ct-puck::before {
-  content:''; position:absolute; left:-8px; top:3px; bottom:3px;
+   sitting 8px from the first one would just read as another reading. The rule
+   says the controls end here and the data begins.
+   On Refresh, which is the last control at every width — the puck is hidden
+   above 1024px and the toggles are hidden below it, but Refresh is always
+   there and always order:3. No width-keyed duplicate needed, and no
+   :first-of-type either: both controls are <button>, and display:none does
+   not take an element out of that selector's reckoning. */
+.qf-row .qf-refresh { position:relative; margin-right:6px; }
+.qf-row .qf-refresh::after {
+  content:''; position:absolute; right:-8px; top:3px; bottom:3px;
   width:1px; background:var(--border-main);
-}
-/* Mirrors the .ct-puck display:none / max-width:1023.98px split exactly,
-   rather than leaning on :first-of-type — both controls are <button>, and
-   display:none does not take an element out of :first-of-type's reckoning,
-   so a structural selector would have put the divider on the hidden one. */
-@media (min-width:1024px) {
-  .qf-row .qf-refresh { margin-left:6px; position:relative; }
-  .qf-row .qf-refresh::before {
-    content:''; position:absolute; left:-8px; top:3px; bottom:3px;
-    width:1px; background:var(--border-main);
-  }
 }
 .qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
@@ -3194,7 +3190,9 @@ button, input { touch-action: manipulation; }
    Hidden below 1024px — see the markup comment. */
 .chart-tools { display: none; }
 @media (min-width: 1024px) {
-  .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
+  /* No margin-left: the toggles are the row's first item now, so any indent
+     here would push them off the chart's left edge above them. */
+  .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 }
 /* ── Below 1024px: the same toggles behind a puck ────────────────────────
    The toggles themselves don't fit the narrow row, but the 26px puck that
@@ -3231,13 +3229,13 @@ button, input { touch-action: manipulation; }
   .ct-puck .ui-ic { width: 14px; height: 14px; display: block; }
   /* Closed by default — the puck is the affordance, and the row cannot carry
      the toggles permanently any more than the chart could. Open, it is a
-     popover anchored to the row's own right edge (.qf-row is positioned for
-     exactly this) and it opens UPWARD, over the chart it belongs to, rather
-     than pushing the page down. */
+     popover anchored to the row's LEFT edge, directly above the puck that
+     opens it (.qf-row is positioned for exactly this), and it opens UPWARD
+     over the chart it belongs to rather than pushing the page down. */
   .chart-tools.is-pop { display: none; }
   .chart-tools.is-pop.open {
     display: flex; flex-direction: column; align-items: stretch; gap: 4px;
-    position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 6;
+    position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 6;
     padding: 5px; border-radius: 8px;
     background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
     border: 1px solid var(--border-main);
