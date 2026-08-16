@@ -12233,17 +12233,17 @@ setItem._userPicked = false;
      the fold just pushes what's underneath down, which is a legitimate thing
      to want from a "make the chart bigger" handle. Bounded so the page can't
      become one unscrollable chart. */
-  /* Portrait gets a PROPORTIONAL ceiling, not just "viewport minus 120".
-     On a tall phone that subtraction allows ~890px, so a height dragged once
-     and saved comes back every load and fills the screen — which looks exactly
-     like the CSS default being ignored, and is the real reason the page can
-     open as a chart with nothing under it even after the default was reduced.
-     55% leaves the strip, Potential Profit and the watchlist header below the
-     fold on every size measured. Desktop keeps the original allowance: there
-     the page scrolls freely and a big chart is a legitimate thing to want. */
-  const maxH = () => window.matchMedia('(max-width: 640px)').matches
-    ? Math.max(MIN, Math.min(window.innerHeight - 120, window.innerHeight * 0.55))
-    : Math.max(MIN + 80, window.innerHeight - 120);
+  /* One ceiling, and it is the DRAG's ceiling — deliberately generous.
+     A 55% portrait cap lived here briefly to stop the page opening as a
+     full-screen chart. It did that, but it also capped the drag, so asking for
+     a bigger chart on a phone silently stopped halfway. Those are two different
+     intents and they needed separating: what the page OPENS at is the CSS
+     default (42svh) plus the load-time clamp in applyStored below; how far you
+     can DRAG is this, and there is no good reason to stop someone who is
+     deliberately asking for a taller chart. Being unable to scroll past it was
+     the original complaint, and that is fixed at the touch-action level now,
+     so a tall chart is no longer a trap. */
+  const maxH = () => Math.max(MIN + 80, window.innerHeight - 120);
   /* Whether the handle is live is decided by the CSS, not repeated here —
      one breakpoint list to keep in sync instead of two. */
   const enabled = () => getComputedStyle(handle).display !== 'none';
