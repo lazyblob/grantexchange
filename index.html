@@ -2141,12 +2141,16 @@ button, input { touch-action: manipulation; }
   /* Keep just the scimitar icon — the "PocketGE" wordmark is what doesn't
      fit next to search + icons at this width, but a tap-to-refresh/home
      affordance is still worth the ~20px it costs.
-     24px, same as the #itemIcon sprite inside the search field beside it. At
-     18 it was the smallest thing in a row whose search bar is 36px tall, which
-     is the "not as visually tall as search" report — the fix is the sprite's
-     size, not the box around it, since the logo has no box. */
+     Size stays at the base 18px. It was briefly taken to 24 to match the
+     #itemIcon sprite beside it — the row's other controls were all short
+     against a 36px search field — and 24 came back visibly soft. Unlike the
+     item icons, which are hard-edged inventory sprites from
+     static.runelite.net, this one is a wiki PNG whose edges are already
+     anti-aliased; 18 is where that softness stays under the pixel grid.
+     Making the logo bigger AND crisp means sourcing it from the same cache
+     the item icons use, not scaling this file further. */
   #logoBtn { margin-right: 0; flex-shrink: 0; }
-  #logoBtn img { margin-right: 0; width: 24px; height: 24px; }
+  #logoBtn img { margin-right: 0; }
   .brand-logo .brand-word { display: none; }
   /* Matches the search field it sits beside. It was 26px against a 30px bar,
      which read as near enough; against the 36px bar it reads as undersized.
@@ -2374,9 +2378,9 @@ button, input { touch-action: manipulation; }
      truncating — see .ticker-header split below for the other half. */
   .mode-pill button { padding: 0 6px; }
   /* Keep just the scimitar icon — see the matching rule in the compact
-     breakpoint above for why. */
+     breakpoint above, including why its size stays at the base 18px. */
   #logoBtn { margin-right: 0; flex-shrink: 0; }
-  #logoBtn img { margin-right: 0; width: 24px; height: 24px; }
+  #logoBtn img { margin-right: 0; }
   .brand-logo .brand-word { display: none; }
   /* Combined search: the current item name overlays the search box (which is
      otherwise a squished, near-invisible sliver here), and a ↗ opens its
