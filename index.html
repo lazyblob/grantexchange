@@ -2274,7 +2274,16 @@ button, input { touch-action: manipulation; }
      without svh. Capped in px too so a large phone doesn't get an absurd one.
      min-height 320 -> 260: on a small phone 320 was itself most of the screen,
      which is the same bug with a different number. */
-  .chart-container { flex: none; height: 52vh; height: 52svh; min-height: 260px; max-height: 520px; min-width: 0; margin-bottom: 0; }
+  /* 52 -> 42svh. At 52 the chart plus the header and target boxes above it
+     filled the visible area, so the first thing below — the insta-buy strip,
+     then Potential Profit, then the watchlist — was entirely off screen on
+     load, and the page opened looking like a chart with nothing under it.
+     42svh keeps the chart the largest single element while letting what
+     follows it show above the fold, so there is a visible reason to scroll.
+     min-height 260 -> 230 for the same reason on the smallest phones, where a
+     percentage is not what is binding. The drag handle still reaches the old
+     size for anyone who wants it. */
+  .chart-container { flex: none; height: 42vh; height: 42svh; min-height: 230px; max-height: 460px; min-width: 0; margin-bottom: 0; }
   .watchlist-container { width: 100%; flex: 1; min-height: 400px; }
   /* Target Buy + Target Sell SIDE BY SIDE on one line (was two stacked
      full-width rows — double the height for the same two numbers). Each box:
