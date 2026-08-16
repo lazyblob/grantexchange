@@ -1386,12 +1386,39 @@ button, input { touch-action: manipulation; }
 /* Nested scanner titles (inside "Find Opportunities") are visually
    subordinate to it: smaller, indented, and NOT sticky — the outer
    wrapper's title already stays pinned while scrolling, so a second sticky
-   header one level down would just fight it for the same top:0 slot. */
+   header one level down would just fight it for the same top:0 slot.
+   ONE quiet row style for all six, and no per-row accent stripe. Each scanner
+   used to carry its own colour (sage, mint, parchment, red, teal, gold), which
+   is right for a top-level section and wrong here: six coloured bars stacked
+   under one header read as six competing sections rather than one menu, and
+   they out-shouted Favorites directly above them despite ranking below it.
+   The section accent on "Find Opportunities" is the one that carries identity;
+   these are its contents. The stripe is kept as a transparent 3px so the text
+   stays on the same left edge as every other title — collapsing the border
+   would shift all six sideways relative to the header they sit under. */
 .category-title.nested {
   position: static;
   padding: 6px 12px 6px 24px;
   font-size: 10px;
+  --cat-accent: transparent;
+  border-left-color: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
 }
+.category-title.nested:hover {
+  background: var(--bg-input);
+  box-shadow: none;
+  color: var(--text-main);
+}
+/* Quieter chevron to match — same idiom, one step down in contrast, so the
+   hierarchy reads on the control as well as the label. */
+.category-title.nested .cat-chevron {
+  width: 20px; height: 20px;
+  background: rgba(201,166,77,0.07);
+  color: rgba(201,166,77,0.75);
+}
+.category-title.nested:hover .cat-chevron { background: rgba(201,166,77,0.2); color: #FFD98A; }
+.category-title.nested .cat-chevron .ui-ic { width: 12px; height: 12px; }
 .category-title:hover {
   background: linear-gradient(180deg, #3b342a 0%, #2a241d 100%);
   box-shadow: inset 8px 0 24px -15px var(--cat-accent),
@@ -1401,19 +1428,33 @@ button, input { touch-action: manipulation; }
 /* Chevron rendered as a clearly tappable button so users can find "close"
    without aiming at a tiny glyph. Inverts when the section is collapsed so
    it's even more obvious the title is interactive. */
+/* Same chrome as .calc-caret, deliberately. The note below claims one chevron
+   idiom everywhere, but that only ever covered the GLYPH and its rotation —
+   the chrome had quietly forked into two: a gold-tinted borderless chip on
+   Potential Profit / Analyst Rating / Recommended Flip, and a white-tinted
+   bordered box on the category headers. Both sit in the same sidebar, inches
+   apart, doing the identical job, so the difference read as an accident rather
+   than a distinction. Standardised on the gold chip: three of the five already
+   used it, and gold is the app's interactive accent everywhere else. */
 .cat-chevron {
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px;
-  font-size: 11px; color: #F0EBDF;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px; color: var(--border-active);
+  background: rgba(201,166,77,0.12);
+  border: 0;
   border-radius: 4px;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  flex-shrink: 0;
+  transition: background 0.12s ease, color 0.12s ease;
 }
-.category-title:hover .cat-chevron { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.25); }
+.category-title:hover .cat-chevron { background: rgba(201,166,77,0.26); color: #FFD98A; }
 /* ONE chevron idiom everywhere something expands/collapses (category
    headers, Potential Profit, flip-card): the same SVG chevron-down that
-   rotates -90° when closed. No more mixed ▼ / ▶ / ▾ glyph styles. */
+   rotates -90° when closed, in the same gold chip — glyph, rotation AND
+   chrome, since matching only the first two still looked like two systems.
+   The one chevron that stays different is .fls-caret on the Favorites title,
+   and that is on purpose: it does not collapse anything, it opens the
+   watchlist switcher. Bare glyph, no chip, and it rotates 180° rather than
+   -90°, so the two roles stay distinguishable at a glance. */
 .cat-chevron .ui-ic, .calc-caret .ui-ic { width: 13px; height: 13px; transition: transform 0.15s ease; }
 .cat-chevron.closed .ui-ic, .calc-caret.closed .ui-ic { transform: rotate(-90deg); }
 
