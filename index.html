@@ -3143,7 +3143,9 @@ button, input { touch-action: manipulation; }
 .qf-age { font-size:10px; font-weight:600; }
 .qf-fresh { color:var(--rs-green-deep); } .qf-ok { color:var(--text-muted); } .qf-stale { color:var(--rs-gold-deep); }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
-.qf-row { display:flex; align-items:center; gap:8px; min-width:0; }
+/* position:relative so the chart-tools popover can anchor to this row's right
+   edge and open upward over the chart — see .chart-tools.is-pop.open. */
+.qf-row { display:flex; align-items:center; gap:8px; min-width:0; position:relative; }
 /* Content-sized, NOT stretched. At flex:1 1 auto the stats strip claimed
    the whole row and shoved Refresh against the far edge — measured at 1440,
    that left a 509px void between "LIMIT 13K" and the button, so the control
@@ -3157,32 +3159,36 @@ button, input { touch-action: manipulation; }
    one gap apart. The strip separates its own figures with "·", so a button
    sitting 8px past the last one would just read as another reading. The
    rule says the data ends here and a control begins.
-   Scoped off .is-float — in portrait the button is absolutely positioned
-   inside the chart, where there is no row and nothing to divide. */
-.qf-row .qf-refresh:not(.is-float) { margin-left:6px; position:relative; }
-.qf-row .qf-refresh:not(.is-float)::before {
+   It hangs off whichever control comes FIRST after the figures, which is
+   width-dependent: below 1024 that is the chart-tools puck, above it the
+   puck is hidden and Refresh leads. (It used to be scoped off .is-float,
+   from when Refresh floated out of this row on a phone entirely.) */
+.qf-row .ct-puck { margin-left:6px; position:relative; }
+.qf-row .ct-puck::before {
   content:''; position:absolute; left:-8px; top:3px; bottom:3px;
   width:1px; background:var(--border-main);
+}
+/* Mirrors the .ct-puck display:none / max-width:1023.98px split exactly,
+   rather than leaning on :first-of-type — both controls are <button>, and
+   display:none does not take an element out of :first-of-type's reckoning,
+   so a structural selector would have put the divider on the hidden one. */
+@media (min-width:1024px) {
+  .qf-row .qf-refresh { margin-left:6px; position:relative; }
+  .qf-row .qf-refresh::before {
+    content:''; position:absolute; left:-8px; top:3px; bottom:3px;
+    width:1px; background:var(--border-main);
+  }
 }
 .qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
   background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease, transform .12s ease; }
 .qf-refresh:hover { color:#fff; border-color:var(--border-active); }
 .qf-refresh:active { transform:translateY(1px); }
-/* Icon-only by default: on a phone the quick-facts strip already scrolls
-   sideways, so a word here would push VOL and LIMIT off the end. The roomy
-   layout has the space, and this button now does two different jobs — the
-   label is what tells you which one is armed without hovering for the
-   tooltip. */
+/* Icon-only by default: on a phone the quick-facts strip is narrow and a
+   word here would crowd the two figures it carries. The roomy layout has
+   the space, and this button does two different jobs — the label is what
+   tells you which one is armed without hovering for the tooltip. */
 .qf-rlabel { display:none; }
-/* Portrait parks this button in the chart's bottom-right corner instead of
-   the quick-facts row (see placeRefreshBtn). On a phone that row is already
-   scrolling sideways, and a 26px button plus its gap was the difference
-   between SPREAD being readable and being cut in half. The chart's bottom
-   corner is the emptiest space on the screen: the legend is hidden at this
-   width, and the price-axis gutter runs out below its last label. Given a
-   plate of its own so it reads as a control floating over the chart rather
-   than a hole punched in it. */
 /* Chart view toggles. Same 26px height and hairline border as .qf-refresh
    beside them so the group reads as one control cluster, not two designs.
    Hidden below 1024px — see the markup comment. */
@@ -3190,12 +3196,12 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 6px; }
 }
-/* ── Below 1024px: the same three toggles behind a floating puck ─────────
-   The quick-facts strip has no room for them — it already scrolls sideways
-   to fit numbers that are not optional — so they move INTO the chart, the
-   way a charting app puts its view controls on the canvas rather than in
-   the chrome. placeChartTools() relocates the real nodes, so the click
-   handlers wired at startup keep working untouched.
+/* ── Below 1024px: the same toggles behind a puck ────────────────────────
+   The toggles themselves don't fit the narrow row, but the 26px puck that
+   opens them does — so the puck sits in the quick-facts row beside Refresh
+   and the panel opens upward from it. Nothing is re-parented and nothing is
+   drawn on the canvas; the same nodes are in the same place at every width,
+   so the click handlers wired at startup keep working untouched.
 
    The band matters: this used to stop at 640px while the inline toolbar
    above starts at 1024px, which left 641-1023px with NEITHER — and that
@@ -3205,12 +3211,17 @@ button, input { touch-action: manipulation; }
    than leaving a hole between them. */
 .ct-puck { display: none; }
 @media (max-width: 1023.98px) {
+  /* An ordinary button at the end of the quick-facts row, sized and styled
+     to match .qf-refresh beside it. It used to be absolutely positioned over
+     the chart's bottom-right corner, and so did Refresh below 640px — the
+     row genuinely had no width to spare once it was printing the live pair
+     and the buy limit. It isn't printing those any more, so the controls go
+     back to the row and the canvas gets its corner back. */
   .ct-puck {
     display: inline-flex; align-items: center; justify-content: center;
-    position: absolute; right: 5px; bottom: 10px; z-index: 5;
-    width: 26px; height: 26px; padding: 0;
+    flex: 0 0 auto; width: 26px; height: 26px; padding: 0;
     border: 1px solid var(--border-main); border-radius: 6px;
-    background: rgba(12,11,9,0.86); backdrop-filter: blur(3px);
+    background: transparent;
     color: var(--text-muted); cursor: pointer;
     transition: color .15s ease, border-color .15s ease, transform .12s ease;
   }
@@ -3218,26 +3229,20 @@ button, input { touch-action: manipulation; }
   .ct-puck:active { transform: translateY(1px); }
   .ct-puck[aria-expanded="true"] { color: var(--buy-color); border-color: rgba(229,184,66,0.55); }
   .ct-puck .ui-ic { width: 14px; height: 14px; display: block; }
-  /* Closed by default — the puck is the affordance, and a phone chart
-     cannot spare three permanent chips on top of the data. */
-  .chart-tools.is-float { display: none; }
-  .chart-tools.is-float.open {
+  /* Closed by default — the puck is the affordance, and the row cannot carry
+     the toggles permanently any more than the chart could. Open, it is a
+     popover anchored to the row's own right edge (.qf-row is positioned for
+     exactly this) and it opens UPWARD, over the chart it belongs to, rather
+     than pushing the page down. */
+  .chart-tools.is-pop { display: none; }
+  .chart-tools.is-pop.open {
     display: flex; flex-direction: column; align-items: stretch; gap: 4px;
-    position: absolute; right: 5px; bottom: 42px; z-index: 6;
+    position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 6;
     padding: 5px; border-radius: 8px;
     background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
     border: 1px solid var(--border-main);
   }
-  .chart-tools.is-float .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
-}
-/* Portrait only: the refresh button floats into the chart's bottom-right
-   corner too, so the puck steps up to sit directly above it — one column
-   of round controls rather than two things floating independently. Above
-   640px refresh stays in the quick-facts row, so that corner is empty and
-   the puck drops back down into it. */
-@media (max-width: 640px) {
-  .ct-puck { bottom: 60px; }
-  .chart-tools.is-float.open { bottom: 92px; }
+  .chart-tools.is-pop .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
 }
 .ct-btn {
   height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
@@ -3253,18 +3258,14 @@ button, input { touch-action: manipulation; }
   color: var(--buy-color); border-color: rgba(229, 184, 66, 0.55);
   background: rgba(229, 184, 66, 0.10);
 }
-/* Lifted clear of the time axis. At bottom:5px the 26px button spanned 5 to
-   31px off the chart's bottom edge, and the x-axis label band measures 21px
-   — so it sat squarely on the last timestamp, which on a 1D chart is the
-   most-read label on the axis. 28px puts its lower edge 7px above that band
-   and lands it in the volume strip (which runs 21 to 85px up), where it
-   covers bars rather than text. Not higher: the price pane starts at 85px
-   and that is the part nobody wants a button parked on. */
-.qf-refresh.is-float {
-  position:absolute; right:5px; bottom:28px; z-index:5;
-  background:rgba(12,11,9,0.86); backdrop-filter:blur(3px);
-  border-color:var(--border-light);
-}
+/* The .qf-refresh.is-float rule lived here: on a phone the button was
+   absolutely positioned inside the chart, and the comment that went with it
+   was three sentences of arithmetic about which band of the canvas it could
+   sit on without covering the x-axis labels or the price pane. That is the
+   shape of a control with nowhere to go, and it had nowhere to go because
+   the quick-facts row was full of numbers printed elsewhere. It isn't now,
+   so the button is back in the row at every width and none of that
+   arithmetic is needed. */
 @media (min-width: 1024px) {
   .qf-refresh { width:auto; padding:0 10px; }
   .qf-rlabel { display:inline; font-size:10.5px; font-weight:700; letter-spacing:.2px; white-space:nowrap; }
@@ -3760,11 +3761,10 @@ button, input { touch-action: manipulation; }
            every price tick and would destroy the button with it. -->
       <div class="qf-row" id="quickFactsRow" style="display:none">
         <div class="quick-facts" id="quickFacts" aria-label="Last traded snapshot"></div>
-        <!-- Chart view toggles. Desktop only: these are conveniences, and the
-             phone's quick-facts strip already scrolls sideways to fit the
-             numbers, which are not optional. Each one is a plain visibility
-             switch rather than an indicator setting — nothing here changes
-             what the data says, only how much of it is drawn at once. -->
+        <!-- Chart view toggles. Inline above 1024px, behind this puck below
+             it. Each one is a plain visibility switch rather than an
+             indicator setting — nothing here changes what the data says,
+             only how much of it is drawn at once. -->
         <button type="button" class="ct-puck" id="ctPuck" aria-expanded="false"
           aria-controls="chartTools" aria-label="Chart view options" title="Chart view options">
           <svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -3793,7 +3793,7 @@ button, input { touch-action: manipulation; }
         <!-- One button, two jobs. It refreshes live prices; when the view has
              been zoomed/panned or a target price hand-nudged it also puts
              those back, and turns gold to say so. A separate "Reset zoom"
-             chip cost a chunk of a phone's quick-facts row, and the circular
+             chip would cost another slot in this row, and the circular
              refresh arrow already reads as "put it back" anyway. -->
         <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="qf-rlabel" id="refreshLabel">Refresh</span></button>
       </div>
@@ -4175,34 +4175,19 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   else if (mq.addListener) mq.addListener(placeItemInsight);
 });
 
-/* Refresh moves between the quick-facts row (roomy layouts) and the chart's
-   bottom-right corner (portrait, where the row has no spare width). Moves
-   the real node rather than cloning, so its click handler and every
-   getElementById('btnRefreshPrices') lookup keep working untouched — same
-   approach as placeShareButton below. Safe to re-parent: it lives OUTSIDE
-   #quickFacts precisely so renderQuickFacts's innerHTML rewrite can't
-   destroy it. */
-const _refreshPortraitMQ = window.matchMedia('(max-width: 640px)');
-function placeRefreshBtn() {
-  const btn = document.getElementById('btnRefreshPrices');
-  const chart = document.querySelector('.chart-container');
-  const row = document.getElementById('quickFactsRow');
-  if (!btn || !chart || !row) return;
-  const float = _refreshPortraitMQ.matches;
-  const host = float ? chart : row;
-  if (btn.parentElement !== host) host.appendChild(btn);
-  btn.classList.toggle('is-float', float);
-}
-/* Same re-parenting trick as placeRefreshBtn, for the same reason: moving
-   the real #chartTools node keeps the toggles wired by wireChartTools()
-   working, where a clone would silently stop responding.
-
-   Deliberately NOT _refreshPortraitMQ: refresh flips at 640px, but the
-   inline chart toolbar is hidden all the way up to 1024px, so keying the
-   float to the refresh query left 641-1023px — a phone in landscape —
-   with the toolbar hidden by CSS and the puck never floated by JS, i.e.
-   no chart settings at all. This query is the exact complement of the
-   `min-width: 1024px` rule that shows the inline toolbar. */
+/* Refresh and the chart-tools puck used to be RE-PARENTED between the
+   quick-facts row and the chart's bottom-right corner, because on a phone
+   that row had no spare width — it was printing the live insta-buy/sell pair
+   and the buy limit, all of which are stated elsewhere on the same screen.
+   With those gone the row fits both controls at every width, so there is
+   nothing to move: they stay where the markup puts them and CSS alone
+   decides whether the puck is shown and how its panel opens.
+   What's left is the panel's collapsed/popover state, which is still keyed
+   to the exact complement of the `min-width: 1024px` rule that shows the
+   inline toolbar — NOT to 640px. Refresh used to flip at 640 and the toolbar
+   at 1024, which once left 641-1023px (a phone in landscape) with the
+   toolbar hidden by CSS and the puck never surfaced by JS, i.e. no chart
+   settings at all. One query now, so that gap cannot reopen. */
 const _chartToolsFloatMQ = window.matchMedia('(max-width: 1023.98px)');
 /* Touch device — used by the chart draw to give the volume pane a smaller
    share of a phone's plot. Hoisted rather than called per draw, and it is a
@@ -4212,15 +4197,10 @@ const _coarseMQ = window.matchMedia('(pointer: coarse)');
 function placeChartTools() {
   const tools = document.getElementById('chartTools');
   const puck = document.getElementById('ctPuck');
-  const chart = document.querySelector('.chart-container');
-  const row = document.getElementById('quickFactsRow');
-  if (!tools || !puck || !chart || !row) return;
-  const float = _chartToolsFloatMQ.matches;
-  const host = float ? chart : row;
-  if (tools.parentElement !== host) host.appendChild(tools);
-  if (puck.parentElement !== host) host.appendChild(puck);
-  tools.classList.toggle('is-float', float);
-  if (!float) { tools.classList.remove('open'); puck.setAttribute('aria-expanded', 'false'); }
+  if (!tools || !puck) return;
+  const pop = _chartToolsFloatMQ.matches;
+  tools.classList.toggle('is-pop', pop);
+  if (!pop) { tools.classList.remove('open'); puck.setAttribute('aria-expanded', 'false'); }
 }
 function wireChartPuck() {
   const puck = document.getElementById('ctPuck');
@@ -4241,18 +4221,14 @@ function wireChartPuck() {
   });
 }
 placeChartTools(); wireChartPuck();
-placeRefreshBtn();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => {
-  placeChartTools(); wireChartPuck(); placeRefreshBtn();
+  placeChartTools(); wireChartPuck();
 });
-/* Both queries have to be watched now that they differ: crossing 640px
-   moves refresh (and restacks the puck above it via CSS), crossing 1024px
-   moves the toolbar between the quick-facts row and the chart. */
-const _onRefreshMQ = () => { placeRefreshBtn(); placeChartTools(); };
-[_refreshPortraitMQ, _chartToolsFloatMQ].forEach(mq => {
-  if (mq.addEventListener) mq.addEventListener('change', _onRefreshMQ);
-  else if (mq.addListener) mq.addListener(_onRefreshMQ);
-});
+/* One query now that nothing is re-parented — crossing 1024px only decides
+   whether the toggles are inline or behind the puck. */
+const _onChartToolsMQ = () => placeChartTools();
+if (_chartToolsFloatMQ.addEventListener) _chartToolsFloatMQ.addEventListener('change', _onChartToolsMQ);
+else if (_chartToolsFloatMQ.addListener) _chartToolsFloatMQ.addListener(_onChartToolsMQ);
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
@@ -9150,7 +9126,11 @@ function renderQuickFacts(m, node) {
   const parts = [];
   if (spread > 0) parts.push(cell('Spread', fmtGp(spread)));
   parts.push(cell('Vol', vol ? abbreviateNumber(vol) + '/day' : '—'));
-  parts.push(cell('Limit', m.limit ? abbreviateNumber(m.limit) : '—'));
+  /* Limit was the third cell. Potential Profit's subline states it in full a
+     few inches below — "18,000 units · 4h limit" — and unlike Vol that is
+     unconditional, so this was the same fact twice on one screen every time.
+     Spread stays: it is the one figure in this row nothing else on the page
+     prints, and the FAQ points at it by name. */
   el.innerHTML = parts.join('<span class="qf-sep">·</span>'); row.style.display = '';
 }
 
