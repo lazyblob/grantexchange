@@ -1602,14 +1602,23 @@ button, input { touch-action: manipulation; }
 .fls-current .fls-caret { display: flex; flex-shrink: 0; }
 .fls-current .fls-caret .ui-ic { width: 15px; height: 15px; transition: transform 0.15s ease; }
 .fls-current.open .fls-caret .ui-ic { transform: rotate(180deg); }
+/* Bare glyph on the RIGHT of the row, beside the overflow menu — the
+   TradingView arrangement. It used to be a bordered chip wedged between the
+   list name and its caret, which put an action in the middle of a label and
+   made the switcher look like it had two controls. Grouping it with the ⋯
+   reads as "things you can do to this list", leaving the left side to say
+   only which list you are on.
+   No box, matching the share icon: colour carries the affordance. Parchment
+   at rest so it belongs to the warm palette rather than the cool greys, gold
+   on hover. Padding keeps a 22px target around a small glyph. */
 .fls-add {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 22px; height: 22px; border-radius: 4px;
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #F0EBDF;
-  cursor: pointer; font-size: 13px; font-weight: 800; line-height: 1;
-  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  width: 22px; height: 22px; margin-left: auto; border-radius: 4px;
+  background: transparent; border: 0; color: var(--rs-parchment, #D6C7A2);
+  cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1;
+  transition: color 0.12s ease;
 }
-.fls-add:hover { color: var(--fav-gold, #FFB300); border-color: var(--fav-gold, #FFB300); background: rgba(255,179,0,0.12); }
+.fls-add:hover, .fls-add:focus-visible { color: var(--fav-gold, #FFB300); background: transparent; }
 .fls-menu {
   display: none; position: absolute; top: 100%; left: 13px; z-index: 20;
   min-width: 190px; max-width: 260px; max-height: 260px; overflow-y: auto;
@@ -1844,7 +1853,8 @@ button, input { touch-action: manipulation; }
 .wl-sort-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; font-size: 9px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; padding: 2px 7px; margin-right: 8px; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
 .wl-sort-btn:hover { color: var(--text-main); border-color: var(--border-active); }
 .cat-title-right { display: inline-flex; align-items: center; }
-.cat-title-label .fls-add { margin-left: 6px; }
+/* margin-left:auto on .fls-add does the pushing now; it is no longer inside
+   .cat-title-label, so the old 6px nudge has nothing to apply to. */
 /* Remove × — pinned to the right edge, hidden by default. There's no longer
    a reserved gutter (columns run to the edge for max name room), so on hover
    the row's data slides left ~22px to open space and the × fades in at the
@@ -7046,9 +7056,9 @@ function renderWatchlist() {
             <span class="fls-name">${escapeHtml(group.name)}</span>
             <span class="fls-caret">${uiIcon('chev')}</span>
           </button>
-          <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
           ${rlBadge}
         </span>
+        <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
         <div class="fls-menu${flsMenuOpen ? ' open' : ''}" id="flsMenu" role="menu">${listMenuHtml}</div>`;
     } else {
       titleDiv.innerHTML = `<span class="cat-title-label">${escapeHtml(group.name)}</span><span class="cat-title-right"><span class="cat-chevron${isGroupOpen ? '' : ' closed'}">${uiIcon('chev')}</span></span>`;
