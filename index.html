@@ -1957,6 +1957,8 @@ button, input { touch-action: manipulation; }
 }
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
 .fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
+/* The two right-hand controls share one centre line: same 22px box, both
+   centred by their flex parents, no stray margins on either. */
 .fav-head-host .col-menu { left: auto; right: 6px; }
 /* Title keeps only its type and spacing; every decoration is the host's now. */
 .fav-head-host .category-title {
@@ -1971,15 +1973,28 @@ button, input { touch-action: manipulation; }
 .col-header .ch-sortable.sorted { color: var(--border-active); }
 .col-header .ch-arrow { font-size: 8px; margin-left: 1px; }
 /* ⋯ column-visibility menu — small button on the left of the header. */
+/* Same treatment as .fls-add beside it: no box, colour carries the state.
+   It used to grow a filled background and a border on hover, so hovering the
+   pair gave you one glyph and one button — two different kinds of control for
+   two things that sit together and do the same sort of job.
+   22x22 to match .fls-add exactly. It was 20px with a 4px right margin, which
+   is what put the dots off the plus's centre line: a 2px height difference
+   centres 1px high, and the margin pushed it off horizontally too.
+   Gold on hover AND while the menu is open — aria-expanded is already
+   maintained for accessibility, so the open state is free to style from it
+   rather than needing a second class kept in sync. */
 .col-menu-btn {
-  flex-shrink: 0; margin-right: 4px;
-  background: transparent; border: 1px solid transparent; color: var(--text-muted);
+  flex-shrink: 0;
+  background: transparent; border: 0; color: var(--rs-parchment, #F2D49B);
   border-radius: 4px; font-size: 15px; line-height: 1;
-  width: 20px; height: 20px; cursor: pointer;
+  width: 22px; height: 22px; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: all 0.15s ease;
+  transition: color 0.12s ease;
 }
-.col-menu-btn:hover { color: var(--text-main); background: var(--bg-input); border-color: var(--border-light); }
+.col-menu-btn:hover, .col-menu-btn:focus-visible,
+.col-menu-btn[aria-expanded="true"] {
+  color: var(--fav-gold, #FFB300); background: transparent; border: 0;
+}
 .col-menu {
   display: none; position: absolute; left: 6px; top: calc(100% + 2px); z-index: 60;
   min-width: 200px; padding: 8px;
