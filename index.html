@@ -1609,13 +1609,18 @@ button, input { touch-action: manipulation; }
    reads as "things you can do to this list", leaving the left side to say
    only which list you are on.
    No box, matching the share icon: colour carries the affordance. Parchment
-   at rest so it belongs to the warm palette rather than the cool greys, gold
-   on hover. Padding keeps a 22px target around a small glyph. */
+   was too loud at rest — a bright glyph beside a muted label made the PLUS the
+   first thing read in a row whose subject is the word FAVORITES. It takes the
+   label's own --text-structural now, so the two sit at one level and the eye
+   lands on the name. Weight 300 and a slightly larger size keep the glyph
+   legible without the bold stroke doing the shouting instead of the colour.
+   Gold on hover and focus, where being the loudest thing IS the point.
+   Padding keeps a 22px target around a small glyph. */
 .fls-add {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   width: 22px; height: 22px; margin-left: auto; border-radius: 4px;
-  background: transparent; border: 0; color: var(--rs-parchment, #D6C7A2);
-  cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1;
+  background: transparent; border: 0; color: var(--text-structural);
+  cursor: pointer; font-size: 17px; font-weight: 300; line-height: 1;
   transition: color 0.12s ease;
 }
 .fls-add:hover, .fls-add:focus-visible { color: var(--fav-gold, #FFB300); background: transparent; }
@@ -1985,7 +1990,7 @@ button, input { touch-action: manipulation; }
    rather than needing a second class kept in sync. */
 .col-menu-btn {
   flex-shrink: 0;
-  background: transparent; border: 0; color: var(--rs-parchment, #F2D49B);
+  background: transparent; border: 0; color: var(--text-structural);
   border-radius: 4px; font-size: 15px; line-height: 1;
   width: 22px; height: 22px; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
