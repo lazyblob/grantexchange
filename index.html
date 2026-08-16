@@ -3129,8 +3129,15 @@ button, input { touch-action: manipulation; }
    told about.
    500px is where it flips: title floor ~200 + star-only Save 32 + the compact
    toolbar's natural 246 + gaps ~24. Above that they share a line as before. */
-@container tickerrow (max-width: 500px) {
-  .ticker-header { flex-wrap: wrap; }
+/* Desktop-narrow ONLY. Phone portrait (<=640px) has its own header layout that
+   deliberately pins the star and the six pills to one row with the search box,
+   and hides the item name entirely to pay for it. Letting this wrap rule reach
+   that layout put the star alone on its own line and took the header from 30px
+   to 71px — 41px straight off the chart on the smallest screens. */
+@media screen and (min-width: 641px) {
+  @container tickerrow (max-width: 500px) {
+    .ticker-header { flex-wrap: wrap; }
+  }
 }
 @container tickerhdr (max-width: 500px) {
   .ticker-header .toolbar {
@@ -3147,15 +3154,24 @@ button, input { touch-action: manipulation; }
    lines. Earlier audits missed it because they only checked whether the NUMBER
    fit; it always did. The caption was the thing paying.
    Placed last so it wins over each band's own .price-box rules. */
-.price-box.is-stacked { display: block; }
-.price-box.is-stacked .price-label {
-  display: flex; flex-direction: column; align-items: flex-start;
-  width: 100%; min-width: 0; flex-shrink: 1;
-}
-.price-box.is-stacked .price-label .live-val { max-width: 100%; }
-.price-box.is-stacked .price-val {
-  display: flex; align-items: center; justify-content: space-between;
-  width: 100%; margin-left: 0; margin-top: 3px;
+/* Guarded to >=641px, i.e. everywhere the -/+ steppers exist. Phone portrait
+   hides them, so there the "value row" is a bare number and giving it its own
+   line costs ~21px per box and buys nothing. That layout already solves this
+   problem its own way — 8px caption that ellipsises, value that never shrinks —
+   and it was tuned for that. Without the guard the boxes stacked at 375 and 390
+   but not at 430, because the 148px threshold below is calibrated against the
+   desktop 10px caption and the phone's is 8px. */
+@media screen and (min-width: 641px) {
+  .price-box.is-stacked { display: block; }
+  .price-box.is-stacked .price-label {
+    display: flex; flex-direction: column; align-items: flex-start;
+    width: 100%; min-width: 0; flex-shrink: 1;
+  }
+  .price-box.is-stacked .price-label .live-val { max-width: 100%; }
+  .price-box.is-stacked .price-val {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; margin-left: 0; margin-top: 3px;
+  }
 }
 </style>
 </head>
@@ -7970,7 +7986,12 @@ function fitPriceNums() {
   document.querySelectorAll('.price-box').forEach(box => {
     box.classList.remove('is-stacked');
   });
+  /* Matches the media guard on .price-box.is-stacked. Kept in sync here too so
+     the class is never applied where it has no styles — a stacked class with no
+     rules is invisible in the DOM inspector and reads as a mystery. */
+  const canStack = !window.matchMedia('(max-width: 640px)').matches;
   document.querySelectorAll('.price-box').forEach(box => {
+    if (!canStack) return;
     const lab = box.querySelector('.price-label');
     const val = box.querySelector('.price-val');
     if (!lab || !val) return;
