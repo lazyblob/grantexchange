@@ -1006,6 +1006,50 @@ button, input { touch-action: manipulation; }
    down a little. */
 .price-strip { display: flex; gap: 8px; padding: 0; flex-shrink: 0; flex-wrap: wrap; }
 .price-strip .price-box { flex: 1 1 0; min-width: 0; }
+/* ── Activity bar ────────────────────────────────────────────────────────
+   Indeterminate, not a progress bar: we genuinely do not know how far along a
+   fetch is, and a bar that fills 0->100% would be inventing that. This is the
+   Material two-segment motion — a long segment that accelerates across, then a
+   short one chasing it — which reads as "working" rather than "23% done".
+   The track keeps its 3px at all times and only the paint changes, so starting
+   or finishing a load never shifts the chart underneath it.
+   Placed on the seam between the target numbers and the chart because those
+   are the two things the fetch is about to change; put anywhere else it would
+   be decoration. */
+.load-bar {
+  position: relative; height: 3px; margin: 3px 0 1px;
+  overflow: hidden; border-radius: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+.load-bar span {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  width: 100%; transform-origin: left center;
+  background: linear-gradient(90deg, rgba(229,184,66,0.35), var(--border-active) 45%, #FFD98A 70%, rgba(229,184,66,0.35));
+  will-change: transform; transform: scaleX(0);
+}
+.load-bar.is-active { background: rgba(229,184,66,0.10); }
+/* The two cubic-beziers and the 2.1s cycle are Material's — the shape of the
+   easing is the whole effect, and eyeballing an approximation reads as a
+   generic slider instead. */
+.load-bar.is-active span:nth-child(1) { animation: lb-long 2.1s cubic-bezier(0.65,0.815,0.735,0.395) infinite; }
+.load-bar.is-active span:nth-child(2) { animation: lb-short 2.1s cubic-bezier(0.165,0.84,0.44,1) 1.15s infinite; }
+@keyframes lb-long {
+  0%   { transform: translateX(-35%) scaleX(0.35); }
+  60%  { transform: translateX(100%) scaleX(0.9); }
+  100% { transform: translateX(100%) scaleX(0.9); }
+}
+@keyframes lb-short {
+  0%   { transform: translateX(-100%) scaleX(0.12); }
+  70%  { transform: translateX(110%) scaleX(0.6); }
+  100% { transform: translateX(110%) scaleX(0.6); }
+}
+/* Motion is the entire point here, so with reduced-motion the honest
+   substitute is a static presence, not a slower slide. */
+@media (prefers-reduced-motion: reduce) {
+  .load-bar.is-active span:nth-child(1) { animation: none; transform: scaleX(1); opacity: 0.5; }
+  .load-bar.is-active span:nth-child(2) { animation: none; transform: scaleX(0); }
+}
 /* Target Buy / Target Sell are the hero of the app — these are the actual
    recommendation. Side-tinted background, a colored accent stripe on the
    left, and a soft glow on the number itself so the eye lands here first
@@ -3337,6 +3381,14 @@ button, input { touch-action: manipulation; }
         </div>
       </div>
 
+      <!-- Indeterminate activity bar, sitting on the seam between the target
+           numbers and the chart — the two things a fetch is about to change.
+           Always in the DOM and always occupying its 3px, so switching item or
+           timeframe never nudges the chart up and down. aria-hidden because
+           #chartLoading below already announces loading to a screen reader;
+           two live regions saying the same thing is worse than one. -->
+      <div class="load-bar" id="loadBar" aria-hidden="true"><span></span><span></span></div>
+
       <div class="chart-container">
         <canvas id="chart" class="chart"></canvas>
         <div id="chartLoading" class="chart-loading"><div class="cl-spinner"></div>Loading live prices…</div>
@@ -4419,10 +4471,62 @@ const fmtYAxis = (v, step) => {
   return (neg ? '-' : '') + out + suffix;
 };
 
+/* ── Activity bar controller ─────────────────────────────────────────────
+   Driven from jget, the single choke point every price fetch goes through, so
+   the bar tracks real network activity rather than being sprinkled on the
+   handlers someone remembered. Wiring it to setItem instead would have missed
+   the refresh button, the timeframe fetches and the scanners, and would have
+   lied on a memo hit where nothing is actually in flight.
+
+   Ref counted, because overlapping fetches are the normal case here — an item
+   load fires latest + 24h + volumes + timeseries at once, and a bar that
+   cleared on the first one to land would flicker four times.
+
+   SHOW_DELAY: a fetch that resolves in 80ms from cache should show nothing at
+   all. A bar that appears and vanishes within two frames reads as a glitch,
+   not as feedback.
+   MIN_VISIBLE: once shown it stays for at least one beat, so a load finishing
+   just after the delay doesn't produce that same flash from the other side. */
+const _lb = { n: 0, shownAt: 0, showTimer: 0, hideTimer: 0 };
+const LB_SHOW_DELAY = 180, LB_MIN_VISIBLE = 480;
+function _lbEl() { return document.getElementById('loadBar'); }
+function _lbPaint(on) {
+  const el = _lbEl();
+  if (el) el.classList.toggle('is-active', on);
+}
+function lbStart() {
+  _lb.n++;
+  if (_lb.hideTimer) { clearTimeout(_lb.hideTimer); _lb.hideTimer = 0; }
+  if (_lb.n === 1 && !_lb.shownAt && !_lb.showTimer) {
+    _lb.showTimer = setTimeout(() => {
+      _lb.showTimer = 0;
+      if (_lb.n > 0) { _lb.shownAt = Date.now(); _lbPaint(true); }
+    }, LB_SHOW_DELAY);
+  }
+}
+function lbStop() {
+  _lb.n = Math.max(0, _lb.n - 1);
+  if (_lb.n > 0) return;
+  if (_lb.showTimer) { clearTimeout(_lb.showTimer); _lb.showTimer = 0; }   // never got shown — leave it alone
+  if (!_lb.shownAt) return;
+  const left = Math.max(0, LB_MIN_VISIBLE - (Date.now() - _lb.shownAt));
+  _lb.hideTimer = setTimeout(() => {
+    _lb.hideTimer = 0;
+    if (_lb.n === 0) { _lb.shownAt = 0; _lbPaint(false); }
+  }, left);
+}
+
 async function jget(url) {
-  const r = await fetch(url, { cache: "default" });
-  if (!r.ok) throw new Error(url + " HTTP " + r.status);
-  return await r.json();
+  lbStart();
+  try {
+    const r = await fetch(url, { cache: "default" });
+    if (!r.ok) throw new Error(url + " HTTP " + r.status);
+    return await r.json();
+  } finally {
+    /* finally, not after the return: a failed fetch must clear the bar too, or
+       one dead request leaves it running forever. */
+    lbStop();
+  }
 }
 const loadMapping = () => jget(PRICES_API + "/mapping");
 const loadLatest = () => jget(PRICES_API + "/latest");
