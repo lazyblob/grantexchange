@@ -5323,13 +5323,19 @@ async function buildShareCardCanvas() {
      sentence — four competing figures where the reader wanted two. */
   const tgtY = flowY + 62;
   const tgtPrefix = view === '1d' ? 'TARGET ' : 'SWING ';
-  if (recommendedBuy > 0 && recommendedSell > 0) {
+  /* ONLY the side selected on the page. Both prices were printed here for a
+     spell, on the reasoning that the edge line underneath is a buy-to-sell
+     figure and one price leaves it unexplained. In practice that makes the
+     card state a plan and its opposite at once: "sell Virtus at 62,879,996" is
+     a call, "buy at 61,005,554 / sell at 62,879,996" is a spreadsheet, and the
+     reader has to work out which half was the point. The selected box is the
+     sharer's actual call, it is the line drawn on the chart below, and it is
+     the one that travels. The profit line keeps its own labels, so it still
+     reads without the second price beside it. */
+  if (shareTgt > 0) {
     const put = runAt(tgtY);
-    put(tgtPrefix + 'BUY  ', '#8A8274', '700', 17);
-    put(fmtGp(recommendedBuy), '#E5B842', '800', 34);
-    put('   →   ', '#8A8274', '700', 28);
-    put(tgtPrefix + 'SELL  ', '#8A8274', '700', 17);
-    put(fmtGp(recommendedSell), '#26A9AB', '800', 34);
+    put(tgtPrefix + (shareIsBuy ? 'BUY  ' : 'SELL  '), '#8A8274', '700', 17);
+    put(fmtGp(shareTgt), shareTgtColor, '800', 34);
   }
 
   /* ── 4. What the edge is worth, in one line ───────────────────────────
