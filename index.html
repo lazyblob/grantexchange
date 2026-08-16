@@ -2129,13 +2129,24 @@ button, input { touch-action: manipulation; }
      the row will scroll-clip cleanly instead of running off the screen. */
   /* No overflow:hidden here — the ⋯ overflow menu is an absolutely-
      positioned dropdown that must be allowed to spill below the panel. */
-  .top-panel { padding: 3px 6px; position: relative; }
+  /* Horizontal padding to zero. This panel has no card, border or background
+     of its own, so the 6px was invisible except as an indent: it pushed the
+     row's first control 6px right of the item rows, Target boxes and pill row
+     that all start at the content edge, and pulled the search field's right
+     edge 6px in from the same. The menu button reads as "weirdly to the right"
+     because of it — measured, its glyph started at x=21 while the star on the
+     row below starts at 12. */
+  .top-panel { padding: 3px 0; position: relative; }
   .panel-left { width: 100%; align-items: center; flex-wrap: nowrap; justify-content: space-between; gap: 4px; min-width: 0; }
   /* Keep just the scimitar icon — the "PocketGE" wordmark is what doesn't
      fit next to search + icons at this width, but a tap-to-refresh/home
-     affordance is still worth the ~20px it costs. */
+     affordance is still worth the ~20px it costs.
+     24px, same as the #itemIcon sprite inside the search field beside it. At
+     18 it was the smallest thing in a row whose search bar is 36px tall, which
+     is the "not as visually tall as search" report — the fix is the sprite's
+     size, not the box around it, since the logo has no box. */
   #logoBtn { margin-right: 0; flex-shrink: 0; }
-  #logoBtn img { margin-right: 0; }
+  #logoBtn img { margin-right: 0; width: 24px; height: 24px; }
   .brand-logo .brand-word { display: none; }
   /* Matches the search field it sits beside. It was 26px against a 30px bar,
      which read as near enough; against the 36px bar it reads as undersized.
@@ -2183,7 +2194,13 @@ button, input { touch-action: manipulation; }
   .fav-btn .fav-star { width: 13px; height: 13px; }
   /* ⋯ overflow menu on mobile: button shows, container becomes a dropdown */
   .more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
-  .more-toggle { display: inline-flex !important; font-size: 18px; line-height: 1; padding: 5px 10px; min-width: 38px; justify-content: center; }
+  /* 38px wide -> 34, and the height pinned to 36 so it fills the same band as
+     the search field rather than floating 3px short at each end. The width
+     comes off because with the panel's indent gone, 10px of horizontal padding
+     was the remaining thing holding the glyph away from the content edge.
+     Losing 4px of width is paid back by the taller box: 38x30 = 1140, 34x36 =
+     1224, so the tap target grows. */
+  .more-toggle { display: inline-flex !important; font-size: 18px; line-height: 1; padding: 5px 7px; min-width: 34px; min-height: 36px; justify-content: center; }
   .more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 15px; border-color: transparent; background: transparent; }
   .more-actions .icon-btn:hover, .more-actions .icon-btn:active { background: var(--bg-input); }
   .more-actions .icon-label { display: inline; font-size: 13px; }
@@ -2343,9 +2360,15 @@ button, input { touch-action: manipulation; }
   .main-column { gap: 3px; }
   .content-area { flex-direction: row; gap: 4px; }
   .top-row-wrapper { flex-direction: row; gap: 4px; height: auto; align-items: stretch; }
-  .top-panel { flex: 1 1 55%; min-width: 0; padding: 3px 6px; }
+  /* Horizontal padding to zero — same reasoning as portrait: no card here, so
+     it only indented the first control away from the edge everything below it
+     starts at. */
+  .top-panel { flex: 1 1 55%; min-width: 0; padding: 3px 0; }
   .panel-left { flex-wrap: nowrap; gap: 4px; }
-  .mode-pill { height: 30px; flex: 0 0 auto; }
+  /* 30 -> 36, matching the search field it sits beside. Free vertically: the
+     panel is already 36px tall because the search bar makes it so, and the
+     pill was just sitting 3px short at each end inside that. */
+  .mode-pill { height: 36px; flex: 0 0 auto; }
   /* Trims a few px off the F2P/P2P pill so the item name next to it has
      room to spell out longer names ("Emerald necklace") instead of
      truncating — see .ticker-header split below for the other half. */
@@ -2353,7 +2376,7 @@ button, input { touch-action: manipulation; }
   /* Keep just the scimitar icon — see the matching rule in the compact
      breakpoint above for why. */
   #logoBtn { margin-right: 0; flex-shrink: 0; }
-  #logoBtn img { margin-right: 0; }
+  #logoBtn img { margin-right: 0; width: 24px; height: 24px; }
   .brand-logo .brand-word { display: none; }
   /* Combined search: the current item name overlays the search box (which is
      otherwise a squished, near-invisible sliver here), and a ↗ opens its
@@ -2387,7 +2410,9 @@ button, input { touch-action: manipulation; }
   /* Collapse the 4 secondary actions into the ⋯ dropdown (like portrait) so
      the row isn't cluttered and the combined search has room. */
   .more-wrap { display: inline-flex; position: relative; flex: 0 0 auto; }
-  .more-toggle { display: inline-flex !important; padding: 4px 8px; min-width: 32px; min-height: 30px; justify-content: center; }
+  /* min-height 30 -> 36 for the same reason as .mode-pill above: the row is
+     already 36 tall, and 30 just left the button short at both ends. */
+  .more-toggle { display: inline-flex !important; padding: 4px 6px; min-width: 32px; min-height: 36px; justify-content: center; }
   .more-actions .icon-btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 15px; border-color: transparent; background: transparent; }
   .more-actions .icon-label { display: inline; font-size: 13px; }
   /* Ticker header carries the Save button + timeframe toolbar (item name
@@ -2503,6 +2528,18 @@ button, input { touch-action: manipulation; }
 .ui-ic.ic-spin { animation: uiIcSpin 1.2s linear infinite; }
 @keyframes uiIcSpin { to { transform: rotate(360deg); } }
 .icon-btn .ui-ic { width: 15px; height: 15px; display: block; }
+/* The hamburger's ink, on the layouts where it shares a row with a 36px search
+   field and a 24px item sprite. At 15px it was the smallest mark in that row
+   by some way, which is the other half of "not as visually tall as search" —
+   the button's box is transparent, so the glyph IS the button as far as the
+   eye is concerned. 20px puts it in the same weight class as the scimitar
+   beside it without touching the desktop row, where 15 is right.
+   ID selector on purpose: `.icon-btn .ui-ic` above is same-specificity and
+   later in source than the mobile blocks, so a class rule there would lose. */
+@media screen and (max-width: 640px),
+       screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  #btnMore .ui-ic { width: 20px; height: 20px; }
+}
 .cat-title-label { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
 .fc-kicker { display: inline-flex; align-items: center; gap: 5px; }
 .find-flip-btn .ff-bolt .ui-ic { width: 16px; height: 16px; display: block; }
