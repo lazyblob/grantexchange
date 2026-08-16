@@ -2839,7 +2839,17 @@ button, input { touch-action: manipulation; }
    rescue it from an innerHTML rebuild. */
 #btnShare { display:none; }
 .rg-top #btnShare { display:inline-flex; }
-.rg-top .fav-btn { margin-left:auto; padding:3px 5px; gap:0; flex:0 0 auto; min-height:0; }
+/* Bare glyph, no chip. Everywhere else .fav-btn is a labelled control that
+   needs a boundary to read as pressable; here it is a lone 13px icon, and a
+   border around it makes a box that is mostly empty and competes with the
+   chevron beside it. The padding stays so the tap target does not shrink to
+   the glyph — the box goes, the target does not. Colour carries the
+   affordance instead: muted at rest, white on hover/focus. */
+.rg-top .fav-btn {
+  margin-left:auto; padding:3px 5px; gap:0; flex:0 0 auto; min-height:0;
+  border:0; background:transparent; color:var(--text-muted);
+}
+.rg-top .fav-btn:hover, .rg-top .fav-btn:focus-visible { color:#fff; background:transparent; border:0; }
 .rg-top .fav-btn .fav-label { display:none; }
 .rg-top .fav-btn svg { width:13px; height:13px; }
 /* Collapsed: eyebrow + Buy/grade/Sell scale drop away, leaving the verdict,
