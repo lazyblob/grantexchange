@@ -1473,7 +1473,13 @@ button, input { touch-action: manipulation; }
 /* Per-section accent colour drives the left stripe AND the left-edge glow. */
 .category-title.high-title { --cat-accent: var(--sell-color); }
 .category-title.low-title { --cat-accent: var(--buy-color); }
-.category-title.fav-title { --cat-accent: var(--fav-gold, #FFB300); }
+/* Parchment, not fav-gold. Gold is the app's "you chose this / act on this"
+   colour — the saved star, the active timeframe, hover states. Spending it on
+   a section stripe that is permanently there made the loudest accent in the
+   sidebar mean nothing in particular. Parchment says "section" without
+   claiming to be a signal. Find Opportunities takes the same one below, so the
+   two headers read as siblings rather than as two unrelated colour codes. */
+.category-title.fav-title { --cat-accent: var(--rs-parchment, #F2D49B); }
 .category-title.lose-title { --cat-accent: var(--negative); }
 .category-title.rec-title { --cat-accent: #FF9800; }
 /* Muted sage greens — the old #2ECC71/#7FE3A6 limes read neon-cool against
@@ -1485,7 +1491,7 @@ button, input { touch-action: manipulation; }
 /* "Find Opportunities" wrapper — same title chrome as any other section,
    just with a neutral accent (it's a container for six differently-
    accented sections, not a signal of its own). */
-.category-title.find-opps-title { --cat-accent: #8AA9C9; }
+.category-title.find-opps-title { --cat-accent: var(--rs-parchment, #F2D49B); }
 /* Nested scanner titles (inside "Find Opportunities") are visually
    subordinate to it: smaller, indented, and NOT sticky — the outer
    wrapper's title already stays pinned while scrolling, so a second sticky
@@ -1956,9 +1962,18 @@ button, input { touch-action: manipulation; }
      the single loudest header in the sidebar, which is what made FAVORITES
      look heavier than its four peers despite identical type. */
   background: var(--bg-panel);
-  border-left: 3px solid var(--fav-gold, #FFB300);
-  border-bottom: 1px solid #141210;
-  box-shadow: inset 6px 0 20px -15px var(--fav-gold, #FFB300);
+  /* Parchment, not fav-gold. Gold is the app's "you chose this / act on this"
+     colour — the saved star, the active timeframe, hover. Spending it on a
+     stripe that is permanently there made the loudest accent in the sidebar
+     mean nothing in particular. Find Opportunities takes the same parchment,
+     so the two section headers read as siblings rather than as two unrelated
+     colour codes. */
+  border-left: 3px solid var(--rs-parchment, #F2D49B);
+  /* No rule underneath: .col-header (ITEM / LAST / CHG% …) sits immediately
+     below and draws its own border-top, so this put a second line one row
+     above the first. Other sections keep theirs — there the next thing down is
+     list rows with no divider of their own. */
+  box-shadow: inset 6px 0 20px -15px var(--rs-parchment, #F2D49B);
 }
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
 .fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
@@ -1996,6 +2011,13 @@ button, input { touch-action: manipulation; }
   display: inline-flex; align-items: center; justify-content: center;
   transition: color 0.12s ease;
 }
+/* Optical nudge, and it needs one even though the BOXES are already level.
+   align-items:center centres the line box, not the ink inside it, and "⋯"
+   draws its dots below the middle of its own line box while "+" sits on the
+   centre. Measured, the two 22px boxes share a centre line exactly — the
+   glyphs still did not, which is why matching the box sizes alone did not
+   fix it. This aligns what you actually see. */
+.col-menu-btn { transform: translateY(-2px); }
 .col-menu-btn:hover, .col-menu-btn:focus-visible,
 .col-menu-btn[aria-expanded="true"] {
   color: var(--fav-gold, #FFB300); background: transparent; border: 0;
