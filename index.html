@@ -1985,7 +1985,16 @@ button, input { touch-action: manipulation; }
   background: transparent; border-left: none; border-bottom: none;
   box-shadow: none; padding-left: 10px;
 }
-.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 6px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-top: 1px solid var(--border-main); border-bottom: 1px solid var(--border-main); }
+/* Continues the Favorites header rather than sitting under it as its own
+   thing. The parchment stripe carries straight down through this row, so the
+   title and the column names read as one bar with two lines — which is what
+   they are: the second line labels the list the first line names.
+   border-top is gone with it. That rule was drawing a divider between two
+   halves of the same block, and once the stripe runs through both, a line
+   across the middle just contradicts it.
+   padding-left drops 6 -> 3 to pay for the 3px border, so the text stays on
+   the same left edge it had before the stripe arrived. */
+.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 3px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-left: 3px solid var(--rs-parchment, #F2D49B); border-bottom: 1px solid var(--border-main); }
 .col-header .ch-name { flex: 1 1 auto; min-width: 0; }
 .col-header .ch-cols { display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
 .col-header .ch-sortable { cursor: pointer; border-radius: 3px; transition: color 0.12s ease; }
