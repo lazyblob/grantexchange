@@ -1035,8 +1035,9 @@ button, input { touch-action: manipulation; }
    are the two things the fetch is about to change; put anywhere else it would
    be decoration. */
 .load-bar {
-  position: relative; height: 3px; margin: 3px 0 1px;
-  overflow: hidden; border-radius: 2px;
+  position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 6;
+  pointer-events: none;              /* never steals a drag from the chart */
+  overflow: hidden;
   background: transparent;
   transition: background 0.2s ease;
 }
@@ -3522,15 +3523,16 @@ button, input { touch-action: manipulation; }
         </div>
       </div>
 
-      <!-- Indeterminate activity bar, sitting on the seam between the target
-           numbers and the chart — the two things a fetch is about to change.
-           Always in the DOM and always occupying its 3px, so switching item or
-           timeframe never nudges the chart up and down. aria-hidden because
-           #chartLoading below already announces loading to a screen reader;
-           two live regions saying the same thing is worse than one. -->
-      <div class="load-bar" id="loadBar" aria-hidden="true"><span></span><span></span></div>
-
       <div class="chart-container">
+        <!-- Indeterminate activity bar, laid ON the chart's top edge rather
+             than in the gap above it. It used to be a sibling reserving its own
+             3px plus margins, which put a permanent empty band between the
+             target numbers and the chart for something visible only while
+             loading. Absolutely positioned inside the container costs zero
+             layout, so nothing moves when it appears. aria-hidden because
+             #chartLoading below already announces loading to a screen reader;
+             two live regions saying the same thing is worse than one. -->
+        <div class="load-bar" id="loadBar" aria-hidden="true"><span></span><span></span></div>
         <canvas id="chart" class="chart"></canvas>
         <div id="chartLoading" class="chart-loading"><div class="cl-spinner"></div>Loading live prices…</div>
         <div id="tip" class="chart-tip"></div>
