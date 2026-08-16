@@ -932,7 +932,11 @@ button, input { touch-action: manipulation; }
     border-radius: 10px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 4px rgba(0,0,0,0.35);
   }
-  #tickerHeaderIconLink img { width: 34px; height: 34px; max-width: 34px; max-height: 34px; }
+  /* 34 -> 40 inside the same 48px plate. The plate is what makes a dark icon
+     legible, but it only helps in proportion to how much of it the icon fills;
+     34px in a 48px chip is mostly empty plate. 40 keeps a 4px margin so it
+     still reads as a slot rather than a cropped image. */
+  #tickerHeaderIconLink img { width: 40px; height: 40px; max-width: 40px; max-height: 40px; }
   .ticker-title-group { gap: 12px; }
 }
 .ticker-title-group img { width: 34px; height: 34px; image-rendering: pixelated; }
@@ -1799,12 +1803,14 @@ button, input { touch-action: manipulation; }
    anyway. Deterministic beats clever here.
    Low alpha and a warm hue so it reads as the inventory slot it is imitating:
    dark sprites now sit on something, bright ones barely register a change. */
-.wl-item-left img {
-  width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0;
-  box-sizing: content-box; padding: 2px; border-radius: 4px;
-  background: rgba(214, 199, 162, 0.10);
-  box-shadow: inset 0 0 0 1px rgba(214, 199, 162, 0.07);
-}
+/* No plate here, deliberately — reverted after seeing it on a full list.
+   One plate on the hero icon is a fix for a real problem; the same plate on
+   every row is 12 of them stacked vertically, which badges the whole list and
+   breaks the dense row rhythm the watchlist depends on. Most icons read fine at
+   20px; the few that don't are not worth taxing every other row for.
+   The hero icon (#tickerHeaderIconLink) and the mobile search sprite keep
+   theirs, where there is exactly one and it is the thing being identified. */
+.wl-item-left img { width: 21px; height: 21px; image-rendering: pixelated; flex-shrink: 0; }
 /* One colour AND one weight for every item name, flagged or not. Names used
    to shift to green / gold / pale-mint depending on why a row was
    highlighted; that went first, because it made the list's most-scanned
@@ -8219,10 +8225,15 @@ function computeViewTargets(node, id) {
    half-pixel steps, and only when the number is long enough to overflow in
    the first place), self-correcting on rotation and resize, and it cannot
    clip by construction rather than by my having picked the right constants. */
-/* Minimum width the caption needs to say something useful. "Insta-sell:
-   13,110,000 · 1h ago" measures ~140px at its largest size; below ~120 it is
-   losing the timestamp, and by 30 it is showing the word "Insta". */
-const PRICE_CAPTION_MIN_W = 148;
+/* Minimum width the caption needs to say something useful.
+   Was 148 — the width at which nothing is truncated at all — which made the box
+   stack the moment the caption lost its "· 1m ago" suffix, even in a 340px box
+   with room to spare. That trades a whole row of height for a timestamp. The
+   caption ellipsises perfectly well; the number does not shrink either way.
+   96px still shows "Insta-sell: 1,999" — the label and the figure, which is the
+   part that matters — so stacking is reserved for boxes that genuinely cannot
+   fit a caption beside the number. */
+const PRICE_CAPTION_MIN_W = 96;
 function fitPriceNums() {
   /* Decide the LAYOUT first, and always measure from the un-stacked state, so
      the answer depends only on width and content — never on what the box
