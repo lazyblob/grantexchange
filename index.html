@@ -1376,7 +1376,47 @@ button, input { touch-action: manipulation; }
 .calc-breakdown .bd-net { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-light); line-height: 15px; }
 .calc-breakdown .bd-net > span:first-child { font-size: 10px; letter-spacing: 0.3px; color: var(--text-main); }
 .calc-breakdown .bd-net > span:last-child { font-size: 13px; font-weight: 700; }
-.watchlist-content { flex: 1; overflow-y: auto; }
+.watchlist-content { flex: 1; overflow-y: auto; min-height: 0; }
+/* ── Splitter between Favorites and Find Opportunities ───────────────────
+   The two lists share one fixed-height column, so every px one gains the
+   other loses — which is exactly the case a draggable divider exists for.
+   Hidden by default and switched on only where the column's height is
+   actually constrained (see the desktop block): on phone portrait the whole
+   sidebar scrolls, so there is no fixed budget to divide and a splitter would
+   be a control that does nothing.
+   The hit area is 11px but the visible line is 3px — a 3px drag target is a
+   fiddly one, and the padding costs nothing because it sits in the gap the
+   two sections already had between them. */
+.wl-splitter { display: none; }
+@media (min-width: 1024px) and (pointer: fine) {
+  .wl-splitter {
+    display: flex; align-items: center; justify-content: center;
+    height: 11px; flex: 0 0 auto; cursor: row-resize;
+    touch-action: none;                 /* we own the gesture; don't scroll */
+    background: transparent; border: 0; padding: 0;
+  }
+  .wl-splitter span {
+    display: block; height: 3px; width: 46px; border-radius: 2px;
+    background: rgba(255,255,255,0.13);
+    transition: background 0.12s ease, width 0.12s ease;
+  }
+  .wl-splitter:hover span, .wl-splitter:focus-visible span, .wl-splitter.is-dragging span {
+    background: var(--border-active); width: 64px;
+  }
+  .wl-splitter:focus-visible { outline: none; }
+  /* Sized by the drag, scrolls its own overflow, and never grows past the
+     column. max-height rather than height so a COLLAPSED Find Opportunities
+     stays the height of its own title bar instead of being padded out to a
+     size the user picked for the expanded state. */
+  .find-opps-host {
+    flex: 0 0 auto; min-height: 0;
+    max-height: var(--opps-h, 46%);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
+  /* While dragging, kill text selection and pointer noise across the whole
+     page — without this a fast drag selects list rows behind the cursor. */
+  body.wl-resizing { user-select: none; cursor: row-resize; }
+}
 .category-group { border-bottom: 1px solid var(--border-main); }
 /* Category title — sticky at top of the scroll container AND visually
    distinct from the dense colored rows below.
@@ -3236,11 +3276,25 @@ button, input { touch-action: manipulation; }
    desktop 10px caption and the phone's is 8px. */
 @media screen and (min-width: 641px) {
   .price-box.is-stacked { display: block; }
+  /* Caption on ONE row, number under it — two lines, not three.
+     The first version stacked the title above the live quote, which made a
+     three-line box for what is really one caption and one number. They sit
+     side by side now: the title is short and fixed, the quote takes the rest
+     and ellipsises, which is the same priority the inline layout uses. */
   .price-box.is-stacked .price-label {
-    display: flex; flex-direction: column; align-items: flex-start;
-    width: 100%; min-width: 0; flex-shrink: 1;
+    display: flex; flex-direction: row; align-items: baseline;
+    gap: 8px; width: 100%; min-width: 0; flex-shrink: 1;
   }
-  .price-box.is-stacked .price-label .live-val { max-width: 100%; }
+  /* .pl-t exists so this rule has something to select. The title used to be a
+     bare TEXT NODE beside the .live-val span, and a text node in a flex
+     container becomes an ANONYMOUS flex item — unstylable and unselectable, so
+     ":first-child" here would have matched .live-val and pinned exactly the
+     wrong half. */
+  .price-box.is-stacked .price-label .pl-t { flex: 0 0 auto; }
+  .price-box.is-stacked .price-label .live-val {
+    flex: 0 1 auto; min-width: 0; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .price-box.is-stacked .price-val {
     display: flex; align-items: center; justify-content: space-between;
     width: 100%; margin-left: 0; margin-top: 3px;
@@ -3401,11 +3455,11 @@ button, input { touch-action: manipulation; }
 
       <div class="price-strip">
         <div id="buyPrice" class="price-box low">
-          <div class="price-label">Target Buy <span id="lblLiveBuy" class="live-val">Insta-sell: —</span></div>
+          <div class="price-label"><span class="pl-t">Target Buy</span> <span id="lblLiveBuy" class="live-val">Insta-sell: —</span></div>
           <div class="price-val"><span>—</span></div>
         </div>
         <div id="sellPrice" class="price-box high selected">
-          <div class="price-label">Target Sell <span id="lblLiveSell" class="live-val">Insta-buy: —</span></div>
+          <div class="price-label"><span class="pl-t">Target Sell</span> <span id="lblLiveSell" class="live-val">Insta-buy: —</span></div>
           <div class="price-val"><span>—</span></div>
         </div>
       </div>
@@ -3528,6 +3582,13 @@ button, input { touch-action: manipulation; }
       <div class="fav-head-host" id="favHeadHost"><div id="favHeadTitle"></div></div>
       <div class="col-header" id="colHeader"></div>
       <div class="watchlist-content" id="watchlistContent"></div>
+      <!-- Drag handle between the two lists. role=separator with
+           aria-orientation is the ARIA pattern for exactly this, and it is
+           focusable so the split is reachable with arrow keys and not only
+           with a pointer. -->
+      <div class="wl-splitter" id="wlSplitter" role="separator" tabindex="0"
+           aria-orientation="horizontal" aria-label="Resize Find Opportunities. Arrow keys adjust, double-click resets."
+           title="Drag to resize · double-click to reset"><span></span></div>
       <!-- Find Opportunities lives in its own host, NOT inside
            #watchlistContent, purely so it can be ordered independently
            of the favorites list (see the landscape media query). -->
@@ -8199,8 +8260,8 @@ function renderTargetBoxes() {
      under Target Sell it's node.high, its Insta-buy. Same names in both
      places, so the two rows can be read against each other instead of
      leaving you to work out which side of the spread you're looking at. */
-  $("#buyPrice").innerHTML = `<div class="price-label">${buyLbl} <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('buy', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedBuy))}">${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">${sellLbl} <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('sell', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedSell))}">${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label"><span class="pl-t">${buyLbl}</span> <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('buy', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedBuy))}">${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label"><span class="pl-t">${sellLbl}</span> <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('sell', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedSell))}">${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
   wireTargetPriceSteppers();
   fitPriceNums();
   /* Re-sync the flip card's Buy @ / Sell @ highlight: it only lights while the
@@ -11257,8 +11318,8 @@ function renderOverMax(m) {
     document.querySelectorAll(".view-btn").forEach(b => b.classList.toggle('active', b.dataset.view === view));
   }
   currentSeries = filterSeries(overMaxFull, getPeriod(view));
-  $("#buyPrice").innerHTML = `<div class="price-label">Target WTB <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wtb)}</span></div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label">Target WTS <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wts)}</span></div>`;
+  $("#buyPrice").innerHTML = `<div class="price-label"><span class="pl-t">Target WTB</span> <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wtb)}</span></div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label"><span class="pl-t">Target WTS</span> <span class="live-val">Aggregated</span></div><div class="price-val"><span>${abbreviateNumber(o.wts)}</span></div>`;
   $("#tickerLivePrice").textContent = abbreviateNumber(o.wts);
   $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
   recommendedBuy = o.wtb; recommendedSell = o.wts;
@@ -12021,6 +12082,107 @@ setItem._userPicked = false;
     const cur = parseInt(box.style.getPropertyValue('--chart-h'), 10);
     const cap = maxH();
     if (cur > cap) { box.style.setProperty('--chart-h', cap + 'px'); if (typeof resizeCanvas === 'function') resizeCanvas(); }
+  });
+})();
+
+/* ── Favorites / Find Opportunities splitter ─────────────────────────────
+   Drag the divider to trade height between the two lists. Stored as a PERCENT
+   of the column, not a pixel height: the sidebar's height changes with the
+   window, and a saved "320px" that was two thirds on a laptop is a sliver on a
+   monitor and taller than the column on a short one. A percent survives both. */
+(function () {
+  const KEY = 'pge_opps_pct';
+  const MIN_OPPS = 12, MAX_OPPS = 82;      // percent of the column
+  const MIN_FAV_PX = 118;                  // ~3 rows of the list must survive
+  const bar = document.getElementById('wlSplitter');
+  const host = document.getElementById('findOppsHost');
+  const wrap = document.querySelector('.watchlist-container');
+  if (!bar || !host || !wrap) return;
+
+  /* The upper limit is a PIXEL guarantee for the favorites list, converted to
+     a percent, not a flat percentage cap. A flat 82% left the list 19px — a
+     scroll container with no visible rows — because the percentage is of the
+     whole column, and the column also carries the list header and the column
+     header above it. Reserve those plus three rows, then whatever is left is
+     what the drag may claim. */
+  const limits = () => {
+    const r = wrap.getBoundingClientRect();
+    const fav = document.getElementById('watchlistContent');
+    const overhead = (fav && r.height > 0) ? Math.max(0, fav.getBoundingClientRect().top - r.top) : 0;
+    if (!(r.height > 0)) return { lo: MIN_OPPS, hi: MAX_OPPS };
+    const maxPx = r.height - overhead - MIN_FAV_PX - bar.offsetHeight;
+    return { lo: MIN_OPPS, hi: Math.max(MIN_OPPS, Math.min(MAX_OPPS, (maxPx / r.height) * 100)) };
+  };
+  const clamp = v => { const { lo, hi } = limits(); return Math.max(lo, Math.min(hi, v)); };
+  const apply = pct => wrap.style.setProperty('--opps-h', pct.toFixed(1) + '%');
+  const stored = () => {
+    try { const v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) ? clamp(v) : null; }
+    catch (e) { return null; }
+  };
+  const save = pct => { try { localStorage.setItem(KEY, pct.toFixed(1)); } catch (e) {} };
+
+  let cur = stored();
+  if (cur != null) apply(cur);
+
+  /* Percent is measured against the CONTAINER, so the number means the same
+     thing at any window height. Drag up = the bottom list grows, which is why
+     this is (bottom - y) rather than (y - top). */
+  const pctFromY = (y) => {
+    const r = wrap.getBoundingClientRect();
+    if (!(r.height > 0)) return cur == null ? 46 : cur;
+    return clamp(((r.bottom - y) / r.height) * 100);
+  };
+
+  let dragging = false;
+  const onMove = (e) => {
+    if (!dragging) return;
+    cur = pctFromY(e.clientY);
+    apply(cur);
+    e.preventDefault();
+  };
+  const stop = () => {
+    if (!dragging) return;
+    dragging = false;
+    bar.classList.remove('is-dragging');
+    document.body.classList.remove('wl-resizing');
+    if (cur != null) save(cur);
+  };
+  bar.addEventListener('pointerdown', (e) => {
+    if (e.button != null && e.button !== 0) return;
+    dragging = true;
+    bar.classList.add('is-dragging');
+    document.body.classList.add('wl-resizing');
+    /* Capture so the drag keeps tracking when the cursor outruns the 11px
+       handle — which it always does. */
+    try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  bar.addEventListener('pointermove', onMove);
+  bar.addEventListener('pointerup', stop);
+  bar.addEventListener('pointercancel', stop);
+  /* Belt and braces: if the capture is lost (dev tools, alt-tab mid-drag) the
+     pointerup may never reach the handle, and a stuck drag is unrecoverable
+     without a reload. */
+  window.addEventListener('pointerup', stop);
+  window.addEventListener('blur', stop);
+
+  bar.addEventListener('dblclick', () => {
+    cur = null;
+    wrap.style.removeProperty('--opps-h');
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+  bar.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 8 : 3;
+    let d = 0;
+    if (e.key === 'ArrowUp') d = step;          // up = more Find Opportunities
+    else if (e.key === 'ArrowDown') d = -step;
+    else if (e.key === 'Home') { cur = MAX_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
+    else if (e.key === 'End') { cur = MIN_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
+    else return;
+    const base = cur != null ? cur : (host.getBoundingClientRect().height / Math.max(1, wrap.getBoundingClientRect().height)) * 100;
+    cur = clamp(base + d);
+    apply(cur); save(cur);
+    e.preventDefault();
   });
 })();
 
