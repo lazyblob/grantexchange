@@ -2705,10 +2705,22 @@ button, input { touch-action: manipulation; }
    verdict line behind a hairline, in muted type, with the eyebrow at the same
    weight as the other section labels but no colour of its own. It must read as
    context for the rating, never as a second, competing call. */
-.rg-read { margin-top:8px; padding-top:7px; border-top:1px solid var(--border-hair); }
-.rg-read .rr-t { display:block; font-size:8.5px; font-weight:800; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-muted); opacity:0.8; }
-.rg-read .rr-b { margin:3px 0 0; font-size:10px; line-height:1.55; color:var(--text-muted); }
-@media (min-width:1024px){ .rg-read .rr-b { font-size:10.5px; } }
+/* A left rule rather than a hairline above, and NEUTRAL text. The presence
+   comes from structure, not colour, and that's deliberate: this block fires in
+   both directions — "heavy volume near the low" and "heavy volume near the
+   high, watch for rejection" come out of the same engine — so any directional
+   colour would be wrong half the time. Gold in particular is the app's buy /
+   you-chose-this accent, so gold body text would read as a buy signal on a
+   caption that also appears when an item is topping out, and would give the
+   one line that ends "not a prediction" the same weight as the numbers you act
+   on. The rule is gold because it's a bracket, not a verdict.
+   6px of indent, not 10: at 10 this caption wrapped to a third line, and the
+   height is worth more to the chart on a phone than the extra breathing room
+   is worth here. */
+.rg-read { margin-top:9px; padding-left:6px; border-left:2px solid var(--border-active); }
+.rg-read .rr-t { display:block; font-size:8.5px; font-weight:800; letter-spacing:0.7px; text-transform:uppercase; color:var(--text-muted); }
+.rg-read .rr-b { margin:3px 0 0; font-size:11px; line-height:1.5; color:#B9B1A3; }
+@media (min-width:1024px){ .rg-read .rr-b { font-size:11.5px; } }
 /* No collapsed-state rule needed: this lives inside .rg-why, which the
    collapsed state already hides. */
 /* The reason text is the first thing to wrap on a narrow column, so give it
