@@ -541,7 +541,13 @@ button, input { touch-action: manipulation; }
 .wrap { max-width: 1800px; margin: 0 auto; padding: 8px; height: 100dvh; display: flex; flex-direction: column; gap: 8px; }
 .content-area { display: flex; flex-direction: row; flex: 1; gap: 8px; min-height: 0; min-width: 0; }
 .main-column { flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
-.top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+/* Second query container, tracking the same width as .ticker-header inside it.
+   Needed because a @container rule can style a container's DESCENDANTS but
+   never the container element itself — so `@container tickerhdr` could set the
+   toolbar's flex (a child) while `flex-wrap` on .ticker-header was silently
+   dropped, which is a failure with no error and no warning. Querying the
+   wrapper puts .ticker-header back in scope. */
+.top-row-wrapper { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; container-type: inline-size; container-name: tickerrow; }
 /* No card chrome — the search input carries its own border, and that's
    the one control in this row that actually needs a boundary. Everything
    else reads fine as controls floating on the page background. */
@@ -3068,6 +3074,47 @@ button, input { touch-action: manipulation; }
 @media screen and (max-width: 640px) {
   .ticker-header .toolbar { flex: 1 1 auto; overflow: visible; }
   .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
+}
+/* Below ~500px of header, the pills get their own full-width row.
+   This is NOT the unconditional wrap that was removed earlier — that one fired
+   at a 1023px viewport where the six buttons needed 266px and had far more,
+   costing ~50px of chart for nothing. Here they genuinely do not fit: with an
+   expensive item the title group's content floor alone is ~200px, and once the
+   strip is down to ~110px of visible width the scroll treatment stops being a
+   graceful fallback. Measured on a 13.5M item at a 380px header, 1D was
+   scrolled off the left AND 5Y off the right — the two ends of the range, the
+   most likely things to want, both invisible at once. A row that shows all six
+   beats a row that shows three and hides the rest behind a gesture nobody is
+   told about.
+   500px is where it flips: title floor ~200 + star-only Save 32 + the compact
+   toolbar's natural 246 + gaps ~24. Above that they share a line as before. */
+@container tickerrow (max-width: 500px) {
+  .ticker-header { flex-wrap: wrap; }
+}
+@container tickerhdr (max-width: 500px) {
+  .ticker-header .toolbar {
+    flex: 1 1 100%; margin-top: 6px; gap: 4px;
+    overflow: visible;            /* full width — nothing left to scroll */
+  }
+  .ticker-header .toolbar button { flex: 1 1 0; min-width: 0; }
+}
+/* ── Target box: caption above, number below ─────────────────────────────
+   Applied by fitPriceNums when the number would starve its own caption, not
+   by width alone — the trigger is the item's price, and CSS cannot see that.
+   Measured on a 13.5M item: the caption was truncated at EVERY width below
+   1280, and at a 209px box it was 27px wide with the title wrapped onto three
+   lines. Earlier audits missed it because they only checked whether the NUMBER
+   fit; it always did. The caption was the thing paying.
+   Placed last so it wins over each band's own .price-box rules. */
+.price-box.is-stacked { display: block; }
+.price-box.is-stacked .price-label {
+  display: flex; flex-direction: column; align-items: flex-start;
+  width: 100%; min-width: 0; flex-shrink: 1;
+}
+.price-box.is-stacked .price-label .live-val { max-width: 100%; }
+.price-box.is-stacked .price-val {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; margin-left: 0; margin-top: 3px;
 }
 </style>
 </head>
@@ -7869,7 +7916,43 @@ function computeViewTargets(node, id) {
    half-pixel steps, and only when the number is long enough to overflow in
    the first place), self-correcting on rotation and resize, and it cannot
    clip by construction rather than by my having picked the right constants. */
+/* Minimum width the caption needs to say something useful. "Insta-sell:
+   13,110,000 · 1h ago" measures ~140px at its largest size; below ~120 it is
+   losing the timestamp, and by 30 it is showing the word "Insta". */
+const PRICE_CAPTION_MIN_W = 148;
 function fitPriceNums() {
+  /* Decide the LAYOUT first, and always measure from the un-stacked state, so
+     the answer depends only on width and content — never on what the box
+     happened to be doing a moment ago. Deciding from the current state would
+     let it oscillate: stacking makes the caption fit, which then argues for
+     un-stacking, which crushes it again. */
+  document.querySelectorAll('.price-box').forEach(box => {
+    box.classList.remove('is-stacked');
+  });
+  document.querySelectorAll('.price-box').forEach(box => {
+    const lab = box.querySelector('.price-label');
+    const val = box.querySelector('.price-val');
+    if (!lab || !val) return;
+    const lr = lab.getBoundingClientRect(), vr = val.getBoundingClientRect();
+    /* Only bands that put the caption and the number on ONE row have this
+       problem; where they already stack, there is nothing to fix.
+       Tested by HORIZONTAL adjacency, not by comparing tops. The inline bands
+       centre both items vertically, so a caption wrapped to three lines beside
+       a one-line number has tops ~20px apart and a top-comparison calls it
+       "already stacked" — which is exactly the worst-crushed case, and it got
+       skipped. If the number starts at or after the caption's right edge, they
+       are side by side, whatever their tops say. */
+    if (vr.left < lr.right - 2) return;
+    const cs = getComputedStyle(box);
+    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const gap = (parseFloat(cs.columnGap) || parseFloat(cs.gap) || 0);
+    /* scrollWidth, not the rendered width: the number may already have been
+       squeezed, and what matters is the room it actually wants. */
+    const wantsForCaption = box.clientWidth - padX - gap - val.scrollWidth;
+    if (wantsForCaption < PRICE_CAPTION_MIN_W) box.classList.add('is-stacked');
+  });
+  /* Then shrink the numeral if it still overflows — the stack may have given
+     it more room, so this has to run after the layout is settled. */
   document.querySelectorAll('.price-val .pv-num').forEach(el => {
     el.style.fontSize = '';                       // back to the class tier
     let size = parseFloat(getComputedStyle(el).fontSize) || 0;
