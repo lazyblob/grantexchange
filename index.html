@@ -1999,9 +1999,14 @@ button, input { touch-action: manipulation; }
    centred by their flex parents, no stray margins on either. */
 .fav-head-host .col-menu { left: auto; right: 6px; }
 /* Title keeps only its type and spacing; every decoration is the host's now. */
+/* 16px, so FAVORITES lands on the same x as POTENTIAL PROFIT and ANALYST
+   RATING. Those sit inside .calc-container's 14px inset; this bar has no such
+   parent, so it has to reproduce the inset itself. It was 10px, which put the
+   sidebar's five section headers on three different left edges — 1119, 1117
+   and 1113 — close enough to look like a mistake rather than a rhythm. */
 .fav-head-host .category-title {
   background: transparent; border-left: none; border-bottom: none;
-  box-shadow: none; padding-left: 10px;
+  box-shadow: none; padding-left: 16px;
 }
 /* Continues the Favorites header rather than sitting under it as its own
    thing. The parchment stripe carries straight down through this row, so the
@@ -2017,7 +2022,7 @@ button, input { touch-action: manipulation; }
    top OR the left: the two rows share one background and one left edge, which
    is what makes them read as a single chunky bar. The bottom border stays —
    that is the boundary between the bar and the list, and it is wanted. */
-.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 10px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-bottom: 1px solid var(--border-main); }
+.col-header { position: relative; display: flex; align-items: center; padding: 5px 14px 6px 16px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); background: var(--bg-panel); border-bottom: 1px solid var(--border-main); }
 .col-header .ch-name { flex: 1 1 auto; min-width: 0; }
 .col-header .ch-cols { display: flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
 .col-header .ch-sortable { cursor: pointer; border-radius: 3px; transition: color 0.12s ease; }
