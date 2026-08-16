@@ -1980,7 +1980,15 @@ button, input { touch-action: manipulation; }
   box-shadow: none;
 }
 .fav-head-host > #favHeadTitle { flex: 1 1 auto; min-width: 0; }
-.fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 6px; }
+/* 14px, the SAME right inset .col-header uses, so the dots finish on exactly
+   the x that VOL does and the block has one right edge instead of two. It was
+   6px, which left the dots hanging 8px further right than every column label
+   beneath them.
+   The + needs no change of its own: it is pushed right by margin-left:auto
+   inside #favHeadTitle, which is flex:1 and therefore ends wherever this wrap
+   begins — widening this pulls the title's right edge left, and the + rides
+   along with it, keeping the gap between the two controls exactly as it was. */
+.fav-head-host .ch-menu-wrap { flex: 0 0 auto; display: flex; align-items: center; padding-right: 14px; }
 /* The two right-hand controls share one centre line: same 22px box, both
    centred by their flex parents, no stray margins on either. */
 .fav-head-host .col-menu { left: auto; right: 6px; }
