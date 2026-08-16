@@ -3445,7 +3445,7 @@ button, input { touch-action: manipulation; }
      how much room the timeframe pills get. At 22px a 10-digit price claimed
      227px of a 338px header and left the pills 47px — one pill. 17px is still
      the largest thing on the row and hands ~60px back. The exact figure is
-     never lost: the insta-buy/insta-sell strip under the chart carries it. */
+     never lost: the Target Sell box's caption carries the live insta-buy. */
   .ticker-header .ticker-price-row .price { font-size: 17px; }
 }
 /* The two compact layouts (phone portrait, phone landscape) want the OPPOSITE
@@ -4596,6 +4596,12 @@ let buyOverridden = false, sellOverridden = false;
    one gp no matter how far you're travelling. */
 function priceStepFor(price) { return 1; }
 let liveBuyRaw = null, liveSellRaw = null;
+/* When those two prints actually TRADED — node.lowTime / node.highTime from
+   the API, which is a different clock from lastLiveFetchAt (when we polled).
+   The target boxes used to age their captions off the fetch, so they read
+   "just now" about a print that was three minutes old, and disagreed with the
+   quick-facts strip directly below them showing the same two numbers. */
+let liveBuyTime = null, liveSellTime = null;
 let lastLiveFetchAt = null; // unix seconds — stamped on every successful loadLatest(), drives the "Live: … · Xm ago" label
 let isCalcOpen = false;
 let currentItemSrc = null;
@@ -8537,12 +8543,17 @@ function renderTargetBoxes() {
     return n >= 14 ? 'pv-xs' : n >= 11 ? 'pv-sm' : n >= 8 ? 'pv-md' : '';
   };
   /* "Live:" alone never said WHICH live price. Under Target Buy it's
-     liveBuyRaw = node.low, which the quick-facts strip calls Insta-sell;
-     under Target Sell it's node.high, its Insta-buy. Same names in both
-     places, so the two rows can be read against each other instead of
-     leaving you to work out which side of the spread you're looking at. */
-  $("#buyPrice").innerHTML = `<div class="price-label"><span class="pl-t">${buyLbl}</span> <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('buy', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedBuy))}">${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
-  $("#sellPrice").innerHTML = `<div class="price-label"><span class="pl-t">${sellLbl}</span> <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}<span class="live-age" data-live-age>${lastLiveFetchAt ? ' · ' + fmtAge(lastLiveFetchAt) : ''}</span></span></div><div class="price-val">${step('sell', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedSell))}">${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
+     liveBuyRaw = node.low, the Insta-sell; under Target Sell it's node.high,
+     the Insta-buy. These two captions are now the ONLY place the live pair is
+     printed — the quick-facts strip below the chart used to repeat both, with
+     a different age beside each, which is how the disagreement showed up.
+     The age is the print's own timestamp, so "3m ago" means the trade
+     happened three minutes ago, NOT that we polled three minutes ago. Coloured
+     with the same fresh/ok/stale scale the strip used, so the signal survived
+     the move. */
+  const ageSpan = (t, side) => `<span class="live-age ${ageClass(t)}" data-live-age="${side}">${t ? ' · ' + fmtAge(t) : ''}</span>`;
+  $("#buyPrice").innerHTML = `<div class="price-label"><span class="pl-t">${buyLbl}</span> <span class="live-val">Insta-sell: ${fmtGp(liveBuyRaw)}${ageSpan(liveBuyTime, 'buy')}</span></div><div class="price-val">${step('buy', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedBuy))}">${fmtGp(recommendedBuy)}</span>${step('buy', 1)}</div>`;
+  $("#sellPrice").innerHTML = `<div class="price-label"><span class="pl-t">${sellLbl}</span> <span class="live-val">Insta-buy: ${fmtGp(liveSellRaw)}${ageSpan(liveSellTime, 'sell')}</span></div><div class="price-val">${step('sell', -1)}<span class="pv-num ${pvFit(fmtGp(recommendedSell))}">${fmtGp(recommendedSell)}</span>${step('sell', 1)}</div>`;
   wireTargetPriceSteppers();
   fitPriceNums();
   /* Re-sync the flip card's Buy @ / Sell @ highlight: it only lights while the
@@ -8554,9 +8565,11 @@ function renderTargetBoxes() {
 /* Keeps the "· Xm ago" labels above current without a full re-render (which
    would also re-wire the stepper buttons every tick for no reason). */
 function tickLiveAge() {
-  if (!lastLiveFetchAt) return;
-  const text = ' · ' + fmtAge(lastLiveFetchAt);
-  document.querySelectorAll('[data-live-age]').forEach(el => { el.textContent = text; });
+  document.querySelectorAll('[data-live-age]').forEach(el => {
+    const t = el.dataset.liveAge === 'sell' ? liveSellTime : liveBuyTime;
+    el.textContent = t ? ' · ' + fmtAge(t) : '';
+    el.className = 'live-age ' + ageClass(t);
+  });
 }
 /* Nudging the box updates the actual recommendedBuy/Sell — the same
    variables the chart's dashed target line and the Potential Profit calc
@@ -9127,9 +9140,14 @@ function renderQuickFacts(m, node) {
   const high = node.high ?? node.avgHighPrice ?? 0, low = node.low ?? node.avgLowPrice ?? 0;
   const spread = (high > 0 && low > 0) ? high - low : 0, vol = dailyVolume(m.id);
   const cell = (k, v, extra = '') => `<span class="qf-cell"><span class="qf-k">${k}</span><span class="qf-v">${v}</span>${extra}</span>`;
-  const age = t => ` <span class="qf-age ${ageClass(t)}">${fmtAge(t)}</span>`;
-  const parts = [ cell('Insta-buy', high ? fmtGp(high) : '—', high ? age(node.highTime) : ''),
-                  cell('Insta-sell', low ? fmtGp(low) : '—', low ? age(node.lowTime) : '') ];
+  /* Insta-buy and Insta-sell used to lead this strip. They are the same two
+     numbers the Target boxes print in their captions, a couple of inches
+     above — and the two carried DIFFERENT ages, because the boxes were aged
+     off the fetch time and these off the prints' own timestamps. Two clocks
+     for one fact is worse than either. The prints' timestamps were the
+     correct ones, so they moved up to the captions and the duplicate cells
+     are gone; Spread, Vol and Limit are unique to this row and stay. */
+  const parts = [];
   if (spread > 0) parts.push(cell('Spread', fmtGp(spread)));
   parts.push(cell('Vol', vol ? abbreviateNumber(vol) + '/day' : '—'));
   parts.push(cell('Limit', m.limit ? abbreviateNumber(m.limit) : '—'));
@@ -11870,6 +11888,8 @@ async function setItem(m, opts = {}) {
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
+  liveBuyTime = node?.lowTime ?? null;
+  liveSellTime = node?.highTime ?? null;
   /* Full last price ("2,739 gp"), not the rounded "2.7K" — the abbreviation
      was too lossy to be useful as the headline number. */
   $("#tickerLivePrice").innerHTML = `${fmtGp(liveSellRaw)} <span class="tlp-gp">gp</span>`;
@@ -12111,6 +12131,8 @@ setItem._userPicked = false;
         const node = latest.data[String(selected.id)];
         liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
         liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
+        liveBuyTime = node?.lowTime ?? null;
+        liveSellTime = node?.highTime ?? null;
         $("#tickerLivePrice").innerHTML = `${fmtGp(liveSellRaw)} <span class="tlp-gp">gp</span>`;
         const targets = computeViewTargets(node, selected.id);
         /* Leave a manually-nudged side alone — otherwise this refresh
