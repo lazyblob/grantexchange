@@ -3202,30 +3202,44 @@ button, input { touch-action: manipulation; }
    title says Range and the ends are self-evidently its ends) and the
    floating live-price bubble, which would overhang into the chart and is
    the same figure as the hero price two rows up. */
-.qf-row .item-insight {
-  order:4; flex:1 1 auto; min-width:0; max-width:none;
-  margin:0; padding:0; border-top:0; text-align:left;
+/* The one-line meter, keyed to a CLASS rather than to .qf-row, because it is
+   now used in two positions: inside the quick-facts row on desktop, and as
+   its own full-width line directly under that row on a landscape phone. Same
+   presentation, two places — placeItemInsight owns which. */
+.item-insight.is-inline {
+  max-width:none; margin:0; padding:0; border-top:0; text-align:left;
 }
-.qf-row .ins-meter {
+.item-insight.is-inline .ins-meter {
   max-width:none; margin:0; display:flex; align-items:center; gap:10px;
 }
 /* order:-2 so the title still LEADS. The low-end value is pulled in front of
    the track with order:-1, and without this the title (default order 0)
    ended up behind it — "1,907 30-DAY RANGE ▸" rather than
    "30-DAY RANGE 1,907 ▸". */
-.qf-row .ins-title { order:-2; padding:0; white-space:nowrap; flex:0 0 auto; }
+.item-insight.is-inline .ins-title { order:-2; padding:0; white-space:nowrap; flex:0 0 auto; }
 /* min-width, not a fixed one: the bar is the only thing here that should
    spend the leftover, but it must also be allowed to give it back before
-   the row overflows. */
-.qf-row .ins-track { order:0; flex:1 1 auto; min-width:70px; margin-top:0; }
+   the line overflows. */
+.item-insight.is-inline .ins-track { order:0; flex:1 1 auto; min-width:70px; margin-top:0; }
 /* display:contents so the two ends become items of .ins-meter itself and
    can be ordered around the track — otherwise they stay trapped in their
    own box, which is the box that put them underneath it. */
-.qf-row .ins-ends { display:contents; }
-.qf-row .ins-end    { order:-1; flex:0 0 auto; }
-.qf-row .ins-end-hi { order:1; }
-.qf-row .ins-elabel, .qf-row .ins-price { display:none; }
-.qf-row .ins-val { font-size:11.5px; }
+.item-insight.is-inline .ins-ends { display:contents; }
+.item-insight.is-inline .ins-end    { order:-1; flex:0 0 auto; }
+.item-insight.is-inline .ins-end-hi { order:1; }
+.item-insight.is-inline .ins-elabel,
+.item-insight.is-inline .ins-price { display:none; }
+.item-insight.is-inline .ins-val { font-size:11.5px; }
+/* Only the in-row copy is a flex child of the row and needs to behave as one. */
+.qf-row .item-insight { order:4; flex:1 1 auto; min-width:0; }
+/* Landscape phone: its OWN line under the row rather than inside it. Sharing
+   the row worked at desktop widths but not here — the main column is barely
+   600px, and once Fill/VP/Refresh, the meter and Spread/Vol were all on it
+   the figures were running under the sidebar. A line of its own costs ~19px
+   and the row stops fighting. */
+@media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .item-insight.is-inline { margin-top:4px; }
+}
 /* A hairline, because "right before the stats" and "part of the stats" are
    one gap apart. The strip separates its own figures with "·", so a button
    sitting 8px from the first one would just read as another reading. The rule
@@ -4160,11 +4174,21 @@ function yAxisOnRight() {
    844px the same way it fits at 1440, so landscape and desktop are the same
    case and the second query is gone. */
 const _insightPortraitMQ = window.matchMedia('(max-width: 640px)');
+/* Back after briefly being deleted. The one-line meter does fit the row at
+   844px in a headless viewport, which is what that deletion was measured on —
+   but on a real landscape phone the main column is narrower still, and
+   Fill/VP/Refresh + meter + Spread/Vol together pushed the figures under the
+   sidebar. So landscape keeps a branch: same one-line form, its own line. */
+const _insightLandscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)');
 function placeItemInsight() {
   const insight = document.getElementById('itemInsight');
   const sideModule = document.getElementById('sideModule');
   const quickFacts = document.getElementById('quickFacts');
   if (!insight || !sideModule || !quickFacts) return;
+  /* One switch for the presentation, separate from the three for position:
+     portrait gets the stacked card in the sidebar, everything else the
+     one-liner — whether that line is in the row or under it. */
+  insight.classList.toggle('is-inline', !_insightPortraitMQ.matches);
   if (_insightPortraitMQ.matches) {
     // portrait: drop it just under the Potential Profit / Analyst module
     if (insight.previousElementSibling !== sideModule) sideModule.after(insight);
@@ -4184,15 +4208,18 @@ function placeItemInsight() {
        whole app, because the app is pinned to 100dvh and there was no room
        inside it. There is now. */
     const qfRow = document.getElementById('quickFactsRow');
-    if (qfRow) { if (insight.parentElement !== qfRow) qfRow.appendChild(insight); }
-    else if (quickFacts.nextElementSibling !== insight) quickFacts.after(insight);
+    if (!qfRow) { if (quickFacts.nextElementSibling !== insight) quickFacts.after(insight); }
+    else if (_insightLandscapeMQ.matches) {
+      // its own line, immediately under the row
+      if (qfRow.nextElementSibling !== insight) qfRow.after(insight);
+    } else if (insight.parentElement !== qfRow) qfRow.appendChild(insight);
   }
 }
 placeItemInsight();
 // .about-section is parsed after this script, so re-run once the DOM is ready
 // (the landscape branch anchors to it).
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeItemInsight);
-[_insightPortraitMQ].forEach(mq => {
+[_insightPortraitMQ, _insightLandscapeMQ].forEach(mq => {
   if (mq.addEventListener) mq.addEventListener('change', placeItemInsight);
   else if (mq.addListener) mq.addListener(placeItemInsight);
 });
