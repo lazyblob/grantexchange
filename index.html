@@ -1295,7 +1295,18 @@ button, input { touch-action: manipulation; }
      + description sit BELOW the chart instead of stealing its height. The chart
      is floored to fill the first screen down to the quick-facts strip (which
      then aligns with the sidebar's Favorites section); the insight lands just
-     under the fold. Landscape/portrait keep their own height rules. */
+     under the fold. Landscape/portrait keep their own height rules.
+     The floor is what keeps the chart filling the first screen, and it only
+     works because the chart's `flex: 1` has something to expand into. Drag
+     the chart resizer and that stops being true — .chart-container takes an
+     explicit --chart-h and leaves the flex sizing, so nothing in the column
+     stretches any more. The floor then holds a full viewport open that
+     nothing can fill, and the whole band between the app and the description
+     goes blank. Measured at 1440x900 with the chart dragged to 190px and a
+     short favourites list: content ended at 459, the description started at
+     932 — 473px of nothing.
+     See the :has() rule at the end of this block, which drops the floor in
+     exactly that state. */
   .wrap { height: auto; min-height: 100dvh; }
   .content-area { align-items: stretch; }
   /* Cap the chart so header + price strip + chart + quick-facts fill the first
@@ -1331,6 +1342,31 @@ button, input { touch-action: manipulation; }
      actually engage once the list runs long, so it scrolls on its own while
      the chart stays put. */
   .watchlist-container { max-height: calc(100dvh - 16px); }
+  /* .wrap is `height: 100dvh` so the chart's `flex: 1` has a definite screen
+     to fill — the app deliberately occupies exactly one viewport. Drag the
+     chart resizer, though, and .chart-container leaves that flex sizing for
+     an explicit `--chart-h`: nothing in the column stretches any more, both
+     columns end at their content, and the leftover shows as a blank band
+     between the app and the about-section that nothing can move into.
+     Measured at 1589x526 with the chart dragged to 190px: the quick-facts
+     row ended at 420 while .main-column ran to 518, so ~98px of empty column
+     inside a .wrap that still claimed the whole screen. At 900 tall it was
+     172px.
+     Shrinking the wrap in exactly that state is the honest reading of the
+     gesture: making the chart smaller should mean less app on screen, not
+     the same screen with a hole in it. Everything else keeps 100dvh, so the
+     default layout is untouched.
+     Safe here specifically because the sidebar's cap above is viewport-based
+     (calc(100dvh - 16px)) rather than a percentage — with nothing definite to
+     resolve against, a `max-height: 100%` would compute to `none` and a long
+     favourites list would grow the page instead of scrolling internally.
+     min-height, NOT height: `height` is already `auto` two rules up, so
+     setting it again does nothing — the floor is the whole mechanism, and
+     the first version of this change set the wrong one and measured no
+     difference at all.
+     :has() is unsupported on very old browsers, where this simply doesn't
+     match and the behaviour is what it is today. */
+  .wrap:has(.chart-container.user-sized) { min-height: 0; }
 }
 .calc-container { background: var(--bg-panel); border-bottom: 1px solid var(--border-main); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 .calc-headline { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; border-radius: 4px; padding: 2px; margin: -2px; transition: background 0.15s ease; -webkit-tap-highlight-color: rgba(201,166,77,0.2); }
