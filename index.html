@@ -3143,8 +3143,6 @@ button, input { touch-action: manipulation; }
 .qf-age { font-size:10px; font-weight:600; }
 .qf-fresh { color:var(--rs-green-deep); } .qf-ok { color:var(--text-muted); } .qf-stale { color:var(--rs-gold-deep); }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
-/* position:relative so the chart-tools popover can anchor to this row and
-   open upward over the chart — see .chart-tools.is-pop.open. */
 .qf-row { display:flex; align-items:center; gap:8px; min-width:0; position:relative; }
 /* Controls lead, figures trail. Set with `order` rather than by moving the
    markup: #btnRefreshPrices and #chartTools are looked up by id from several
@@ -3152,7 +3150,6 @@ button, input { touch-action: manipulation; }
    source order is load-bearing and layout order is not.
    The controls sit flush at the row's left edge, under the chart's own left
    edge, and the figures are pushed to the right by the auto margin. */
-.qf-row .ct-puck     { order:1; }
 .qf-row .chart-tools { order:2; }
 .qf-row .qf-refresh  { order:3; }
 /* Content-sized, NOT stretched. At flex:1 1 auto the strip claimed the whole
@@ -3187,60 +3184,22 @@ button, input { touch-action: manipulation; }
 .qf-rlabel { display:none; }
 /* Chart view toggles. Same 26px height and hairline border as .qf-refresh
    beside them so the group reads as one control cluster, not two designs.
-   Hidden below 1024px — see the markup comment. */
-.chart-tools { display: none; }
-@media (min-width: 1024px) {
-  /* No margin-left: the toggles are the row's first item now, so any indent
-     here would push them off the chart's left edge above them. */
-  .chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
-}
-/* ── Below 1024px: the same toggles behind a puck ────────────────────────
-   The toggles themselves don't fit the narrow row, but the 26px puck that
-   opens them does — so the puck sits in the quick-facts row beside Refresh
-   and the panel opens upward from it. Nothing is re-parented and nothing is
-   drawn on the canvas; the same nodes are in the same place at every width,
-   so the click handlers wired at startup keep working untouched.
-
-   The band matters: this used to stop at 640px while the inline toolbar
-   above starts at 1024px, which left 641-1023px with NEITHER — and that
-   band is exactly a phone held sideways, where the quick-facts row is
-   MORE crowded than in portrait, not less. The puck now covers the whole
-   range the inline toolbar doesn't, so the two are complementary rather
-   than leaving a hole between them. */
-.ct-puck { display: none; }
-@media (max-width: 1023.98px) {
-  /* An ordinary button at the end of the quick-facts row, sized and styled
-     to match .qf-refresh beside it. It used to be absolutely positioned over
-     the chart's bottom-right corner, and so did Refresh below 640px — the
-     row genuinely had no width to spare once it was printing the live pair
-     and the buy limit. It isn't printing those any more, so the controls go
-     back to the row and the canvas gets its corner back. */
-  .ct-puck {
-    display: inline-flex; align-items: center; justify-content: center;
-    flex: 0 0 auto; width: 26px; height: 26px; padding: 0;
-    border: 1px solid var(--border-main); border-radius: 6px;
-    background: transparent;
-    color: var(--text-muted); cursor: pointer;
-    transition: color .15s ease, border-color .15s ease, transform .12s ease;
-  }
-  .ct-puck:hover { color: #fff; border-color: var(--border-active); }
-  .ct-puck:active { transform: translateY(1px); }
-  .ct-puck[aria-expanded="true"] { color: var(--buy-color); border-color: rgba(229,184,66,0.55); }
-  .ct-puck .ui-ic { width: 14px; height: 14px; display: block; }
-  /* Closed by default — the puck is the affordance, and the row cannot carry
-     the toggles permanently any more than the chart could. Open, it is a
-     popover anchored to the row's LEFT edge, directly above the puck that
-     opens it (.qf-row is positioned for exactly this), and it opens UPWARD
-     over the chart it belongs to rather than pushing the page down. */
-  .chart-tools.is-pop { display: none; }
-  .chart-tools.is-pop.open {
-    display: flex; flex-direction: column; align-items: stretch; gap: 4px;
-    position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 6;
-    padding: 5px; border-radius: 8px;
-    background: rgba(12,11,9,0.94); backdrop-filter: blur(4px);
-    border: 1px solid var(--border-main);
-  }
-  .chart-tools.is-pop .ct-btn { height: 28px; padding: 0 12px; text-align: center; }
+   Inline at EVERY width. They spent a long time hidden behind a puck below
+   1024px, on the reasoning that the quick-facts row couldn't carry two more
+   chips — which was true while that row was also printing the live
+   insta-buy/sell pair and the buy limit. It prints Spread and Vol now, so
+   the two toggles cost less than the puck saved: measured at 375px, the
+   narrowest layout, the row needs 293 of 367px with both inline.
+   No margin-left: the toggles are the row's first item, so any indent here
+   would push them off the chart's left edge above them. */
+.chart-tools { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+/* The .ct-puck block lived here: a 26px button that opened these same two
+   toggles as a popover below 1024px. Deleted with the popover — the toggles
+   are inline at every width now, so the puck was a lid on an open box. Its
+   JS went with it (placeChartTools/wireChartPuck and their media query),
+   which also retires the 641-1023px band that once had neither the inline
+   toolbar nor a working puck. */
+.ct-btn { height: 28px; padding: 0 12px; text-align: center; }
 }
 .ct-btn {
   height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
@@ -3763,14 +3722,6 @@ button, input { touch-action: manipulation; }
              it. Each one is a plain visibility switch rather than an
              indicator setting — nothing here changes what the data says,
              only how much of it is drawn at once. -->
-        <button type="button" class="ct-puck" id="ctPuck" aria-expanded="false"
-          aria-controls="chartTools" aria-label="Chart view options" title="Chart view options">
-          <svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" aria-hidden="true">
-            <line x1="4" y1="8" x2="20" y2="8"/><circle cx="10" cy="8" r="2.2" fill="currentColor"/>
-            <line x1="4" y1="16" x2="20" y2="16"/><circle cx="16" cy="16" r="2.2" fill="currentColor"/>
-          </svg>
-        </button>
         <div class="chart-tools" id="chartTools" role="group" aria-label="Chart view options">
           <!-- There was a "Dots" toggle here that switched the highs and lows
                to connected lines. Removed: connecting raw insta-buy/insta-sell
@@ -4173,60 +4124,11 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   else if (mq.addListener) mq.addListener(placeItemInsight);
 });
 
-/* Refresh and the chart-tools puck used to be RE-PARENTED between the
-   quick-facts row and the chart's bottom-right corner, because on a phone
-   that row had no spare width — it was printing the live insta-buy/sell pair
-   and the buy limit, all of which are stated elsewhere on the same screen.
-   With those gone the row fits both controls at every width, so there is
-   nothing to move: they stay where the markup puts them and CSS alone
-   decides whether the puck is shown and how its panel opens.
-   What's left is the panel's collapsed/popover state, which is still keyed
-   to the exact complement of the `min-width: 1024px` rule that shows the
-   inline toolbar — NOT to 640px. Refresh used to flip at 640 and the toolbar
-   at 1024, which once left 641-1023px (a phone in landscape) with the
-   toolbar hidden by CSS and the puck never surfaced by JS, i.e. no chart
-   settings at all. One query now, so that gap cannot reopen. */
-const _chartToolsFloatMQ = window.matchMedia('(max-width: 1023.98px)');
 /* Touch device — used by the chart draw to give the volume pane a smaller
    share of a phone's plot. Hoisted rather than called per draw, and it is a
    live MediaQueryList so plugging in a mouse re-evaluates on the next frame
    without a listener. */
 const _coarseMQ = window.matchMedia('(pointer: coarse)');
-function placeChartTools() {
-  const tools = document.getElementById('chartTools');
-  const puck = document.getElementById('ctPuck');
-  if (!tools || !puck) return;
-  const pop = _chartToolsFloatMQ.matches;
-  tools.classList.toggle('is-pop', pop);
-  if (!pop) { tools.classList.remove('open'); puck.setAttribute('aria-expanded', 'false'); }
-}
-function wireChartPuck() {
-  const puck = document.getElementById('ctPuck');
-  const tools = document.getElementById('chartTools');
-  if (!puck || !tools || puck.dataset.wired) return;
-  puck.dataset.wired = '1';
-  puck.onclick = (ev) => {
-    ev.stopPropagation();
-    const open = tools.classList.toggle('open');
-    puck.setAttribute('aria-expanded', open ? 'true' : 'false');
-  };
-  /* Tapping the chart to read a price should not leave the panel hanging
-     over it. */
-  document.addEventListener('click', (ev) => {
-    if (ev.target.closest('#ctPuck, #chartTools')) return;
-    tools.classList.remove('open');
-    puck.setAttribute('aria-expanded', 'false');
-  });
-}
-placeChartTools(); wireChartPuck();
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => {
-  placeChartTools(); wireChartPuck();
-});
-/* One query now that nothing is re-parented — crossing 1024px only decides
-   whether the toggles are inline or behind the puck. */
-const _onChartToolsMQ = () => placeChartTools();
-if (_chartToolsFloatMQ.addEventListener) _chartToolsFloatMQ.addEventListener('change', _onChartToolsMQ);
-else if (_chartToolsFloatMQ.addListener) _chartToolsFloatMQ.addListener(_onChartToolsMQ);
 
 /* Share button lives inside the Analyst Rating gauge's header row, next to
    the "?" glossary chip, on every layout — moves the actual #btnShare node
