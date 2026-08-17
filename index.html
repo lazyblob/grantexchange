@@ -196,6 +196,25 @@
 <link rel="dns-prefetch" href="https://api.weirdgloop.org">
 
 <script>
+  /* A reload lands at the TOP, not wherever you happened to be scrolled.
+     Browsers restore the previous scroll position by default, which is right
+     for an article and wrong for this: the app is the first screen, and a
+     refresh is what you press to get fresh prices on the item you are
+     looking at. Measured on a 430x932 phone with a full favourites list —
+     scrolled to the watchlist at y=692, hit reload, came back at y=707.
+     Worse than a plain jump, because the app renders asynchronously: the
+     restore is applied against a page that is still growing, so where you
+     land depends on how fast the prices came back. That is the "sometimes"
+     in the report.
+     Set here, in the first script in <head>, because restoration is applied
+     before any later script would run — doing this from the app bundle is
+     already too late to prevent the jump, only late enough to correct it
+     visibly.
+     Fragment links are unaffected: `manual` governs history restoration, not
+     scrolling to a #target, so /#meet-the-dev still jumps where it should
+     (verified). Nothing here pushes history state, so back/forward is a
+     different site and has nothing to restore either. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   /* Self-exclusion from analytics. On a site this size the maintainer's own
      browsing is a real share of traffic, and it skews everything that
      matters — sessions, bounce rate, which items look popular, whether a
