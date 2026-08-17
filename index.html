@@ -1375,7 +1375,14 @@ button, input { touch-action: manipulation; }
      to ~one screen makes .watchlist-content's existing overflow-y:auto
      actually engage once the list runs long, so it scrolls on its own while
      the chart stays put. */
-  .watchlist-container { max-height: calc(100dvh - 16px); }
+  /* --main-h is the MAIN COLUMN's content height, measured in JS (see
+     sidebarCap). The viewport figure is the fallback and the hard ceiling:
+     before this, an expanded Find Opportunities grew the sidebar to a full
+     screen while the main column ended well above it — the panel ran ~180px
+     past the "VOL 1.47M/day" row it sits beside, and expanding a scanner
+     shoved the whole page down. Capped to the column, the scanner scrolls
+     inside its own box instead and nothing else moves. */
+  .watchlist-container { max-height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
   /* .wrap is `height: 100dvh` so the chart's `flex: 1` has a definite screen
      to fill — the app deliberately occupies exactly one viewport. Drag the
      chart resizer, though, and .chart-container leaves that flex sizing for
@@ -1498,7 +1505,19 @@ button, input { touch-action: manipulation; }
    `0 1 auto` and would otherwise squash proportionally — a half-height flip
    card to save a list that can simply scroll. min-height:0 is what lets it
    shrink below content at all; overflow-y:auto is what it does then. */
-.watchlist-content { flex: 0 100 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
+/* shrink:1, and the modules above are pinned instead — see .flip-finder et al
+   below. Was shrink:100, from when this list was the only thing that could
+   give: with the panel now capped to the main column, expanding a scanner
+   made the list yield ALL of it and the favourites vanished entirely. Equal
+   shrink lets the two lists give ground in proportion to their content, so
+   both stay visible and both scroll, and the splitter is still there to
+   override the split deliberately. */
+.watchlist-content { flex: 0 1 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
+/* The fixed-content siblings do NOT shrink. This is what shrink:100 on the
+   list was really protecting against — a half-height Recommended Flip to save
+   a list that can simply scroll — and pinning them says it directly instead
+   of encoding it as a ratio between two other numbers. */
+.flip-finder, .fav-head-host, .col-header { flex: 0 0 auto; }
 /* ── Splitter between Favorites and Find Opportunities ───────────────────
    The two lists share one fixed-height column, so every px one gains the
    other loses — which is exactly the case a draggable divider exists for.
@@ -12743,6 +12762,64 @@ setItem._userPicked = false;
     apply(cur); save(cur);
     e.preventDefault();
   });
+})();
+
+/* ── Sidebar height cap ──────────────────────────────────────────────────
+   Hold the sidebar to the main column's height, so a long or expanded list
+   scrolls inside the panel instead of growing the page.
+
+   It has to be measured rather than expressed in CSS. `max-height: 100%`
+   resolves against .content-area, whose height is the max of ITS children —
+   including this one — so the percentage is circular and, when .wrap's height
+   is indefinite, resolves to `none` outright. That is the same trap the
+   splitter and the landscape cap both hit.
+
+   The measurement is the main column's CONTENT height, summed from its
+   children, NOT its box: the box is a stretched flex item whose height is the
+   row's, which the sidebar helps decide. Summing the children reads only
+   things the sidebar cannot influence — at these widths .chart-container is
+   pinned between a min- and max-height 72px apart, both derived from the
+   viewport, so it does not chase the value either. */
+(function sidebarCap() {
+  const area = document.querySelector('.content-area');
+  const main = document.querySelector('.main-column');
+  const side = document.querySelector('.watchlist-container');
+  if (!area || !main || !side) return;
+  /* Side-by-side layouts only. Stacked, the sidebar IS the page below the
+     chart and capping it would just hide the list behind a second scrollbar. */
+  const sideBySideMQ = window.matchMedia('(min-width: 1024px)');
+  let last = -1, raf = 0;
+  const measure = () => {
+    raf = 0;
+    if (!sideBySideMQ.matches) { area.style.removeProperty('--main-h'); last = -1; return; }
+    const gap = parseFloat(getComputedStyle(main).rowGap) || 0;
+    let h = 0, n = 0;
+    for (const el of main.children) {
+      if (getComputedStyle(el).display === 'none') continue;
+      h += el.getBoundingClientRect().height + (n ? gap : 0);
+      n++;
+    }
+    h = Math.round(h);
+    /* Only write on a real change. Setting the property can resize the row,
+       which re-fires the observer — a 1px deadband is what stops that from
+       becoming a loop. */
+    if (Math.abs(h - last) <= 1) return;
+    last = h;
+    area.style.setProperty('--main-h', h + 'px');
+  };
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
+  measure();
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(schedule);
+    ro.observe(main);
+    for (const el of main.children) ro.observe(el);
+  }
+  window.addEventListener('resize', schedule);
+  if (sideBySideMQ.addEventListener) sideBySideMQ.addEventListener('change', schedule);
+  else if (sideBySideMQ.addListener) sideBySideMQ.addListener(schedule);
+  /* Expanding a scanner or the flip card changes the column's height without
+     resizing the window. */
+  document.addEventListener('click', schedule, true);
 })();
 
 /* PWA: register the service worker so the app is installable to the home
