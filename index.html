@@ -1407,7 +1407,18 @@ button, input { touch-action: manipulation; }
 .calc-breakdown .bd-net { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-light); line-height: 15px; }
 .calc-breakdown .bd-net > span:first-child { font-size: 10px; letter-spacing: 0.3px; color: var(--text-main); }
 .calc-breakdown .bd-net > span:last-child { font-size: 13px; font-weight: 700; }
-.watchlist-content { flex: 1; overflow-y: auto; min-height: 0; }
+/* Content-sized, not greedy. `flex: 1` made this list claim every spare
+   pixel of the column, so a short favourites list padded itself out with
+   empty scroll area and pushed the splitter and Find Opportunities to the
+   floor — measured on an 11-item list in a 936px column, 568px of nothing
+   between the last row and the divider. The list is as tall as its rows now
+   and Find Opportunities sits directly under them.
+   shrink:100 rather than 1, so when the column IS over-full this is the
+   thing that gives. Its siblings (the flip card, the two headers) are all
+   `0 1 auto` and would otherwise squash proportionally — a half-height flip
+   card to save a list that can simply scroll. min-height:0 is what lets it
+   shrink below content at all; overflow-y:auto is what it does then. */
+.watchlist-content { flex: 0 100 auto; overflow-y: auto; min-height: 0; }
 /* ── Splitter between Favorites and Find Opportunities ───────────────────
    The two lists share one fixed-height column, so every px one gains the
    other loses — which is exactly the case a draggable divider exists for.
