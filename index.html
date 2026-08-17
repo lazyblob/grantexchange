@@ -1382,7 +1382,22 @@ button, input { touch-action: manipulation; }
      past the "VOL 1.47M/day" row it sits beside, and expanding a scanner
      shoved the whole page down. Capped to the column, the scanner scrolls
      inside its own box instead and nothing else moves. */
-  .watchlist-container { max-height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
+  /* HEIGHT, not max-height: the panel is exactly as tall as the main column,
+     so it always reaches the row the column ends on rather than stopping
+     wherever its own content happens to run out. Capped by the viewport for
+     the case where the column is taller than the screen. */
+  .watchlist-container { height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
+  /* Who absorbs the difference, and who gives it back. The favourites list
+     GROWS into whatever the panel has spare — so a short list simply has room
+     under its rows, which is what a watchlist looks like, rather than leaving
+     a hole between two panels. Find Opportunities takes what it needs and
+     yields 100x faster, so when the two together overflow it is the scanner
+     that scrolls, not the list: "my favourite list shouldn't scroll and
+     shorten like that, just the Find Opportunities".
+     min-height keeps its title bar from being squashed to nothing when it is
+     the one giving ground. Only once it is down to that bar does the list
+     start to scroll, which with a long enough list is unavoidable. */
+
   /* .wrap is `height: 100dvh` so the chart's `flex: 1` has a definite screen
      to fill — the app deliberately occupies exactly one viewport. Drag the
      chart resizer, though, and .chart-container leaves that flex sizing for
@@ -1512,7 +1527,14 @@ button, input { touch-action: manipulation; }
    shrink lets the two lists give ground in proportion to their content, so
    both stay visible and both scroll, and the splitter is still there to
    override the split deliberately. */
-.watchlist-content { flex: 0 1 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
+/* GROWS into whatever the panel has spare, and is the LAST thing to give it
+   back. A short list simply has room under its rows — which is what a
+   watchlist looks like — rather than leaving a hole between two panels, and a
+   list that fits is never scrolled just because the scanner below it is open.
+   Pair this with .find-opps-host's shrink:100 below; the two together are the
+   whole rule, and changing one without the other is what made the favourites
+   collapse to a single row. */
+.watchlist-content { flex: 1 1 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
 /* The fixed-content siblings do NOT shrink. This is what shrink:100 on the
    list was really protecting against — a half-height Recommended Flip to save
    a list that can simply scroll — and pinning them says it directly instead
@@ -1555,8 +1577,14 @@ button, input { touch-action: manipulation; }
      min-height:0 so that when both lists together exceed the panel it can
      still give ground — the list shrinks 100x faster (see .watchlist-content),
      so this only yields once the list is already at its floor. */
+  /* Takes what it needs and yields 100x faster than the list, so when the two
+     together overflow the panel it is the SCANNER that scrolls. min-height
+     keeps its title bar intact while it is the one giving ground — measured
+     without it, a 60-item list squeezed this to 7px, i.e. the section header
+     itself was sliced. Only once it is down to that bar does the list start
+     to scroll, which with a long enough list is unavoidable. */
   .find-opps-host {
-    flex: 0 1 auto; min-height: 0;
+    flex: 0 100 auto; min-height: 32px;
     overflow-y: auto; overscroll-behavior: contain;
   }
   /* While dragging, kill text selection and pointer noise across the whole
