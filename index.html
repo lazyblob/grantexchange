@@ -2896,10 +2896,21 @@ button, input { touch-action: manipulation; }
   font-size:10.5px; min-height:26px; padding:4px 10px;
 }
 /* Keep "Next" available while collapsed so recs can be cycled without
-   expanding. Header layout when collapsed: kicker takes what's left after
-   Next + chevron; the label ellipsizes as a last-resort safety net rather
-   than being hidden. */
-.flip-card.collapsed .fc-kicker { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+   expanding. Header layout: the kicker takes what's left after Next +
+   chevron; the label ellipsizes as a last-resort safety net rather than
+   being hidden.
+   BOTH states, not just collapsed. This was scoped to .collapsed, so an
+   expanded card let "Recommended Flip" wrap to two lines in the narrow
+   landscape sidebar — reported from an iPhone. It does not reproduce in
+   Chromium at 740, 844 or 932 landscape, where the label measures 127px and
+   fits: it is the font-metric slack the .fc-collapse note below is already
+   worried about, and a device whose glyphs run a few px wider tips it over.
+   Which is the argument for pinning it rather than trusting the fit — same
+   reasoning as .calc-headline-label, whose comment says exactly this about
+   "Potential Profit". Wrapping costs a whole line of a section that is meant
+   to be one; ellipsizing costs a couple of characters of a name you can
+   already infer. */
+.fc-kicker { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* Collapsed used to drop the label to 9.5px, which made this section name
    visibly smaller than its four peers in the state users see most. It fits
    at full size next to Next + chevron; the ellipsis above is the safety net
