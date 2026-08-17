@@ -1240,7 +1240,17 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) { .chart-tip { font-size: 11.5px; padding: 8px 11px; } }
 .chart-tip strong { display: block; margin-bottom: 4px; padding-bottom: 4px; color: #fff; font-size: 0.92em; letter-spacing: .2px; border-bottom: 1px solid var(--border-main); }
 .chart-tip .tip-marker { font-weight: 800; letter-spacing: 0.2px; }
-.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+/* align-self:flex-start + max-height:100% instead of the default stretch.
+   Stretched, the panel was always the full height of the chart column, so a
+   short favourites list left the panel drawn — border, background and all —
+   over ~180px of nothing below Find Opportunities. Now the panel ends where
+   its content ends, and only grows to the column's height when it has the
+   content to fill it. max-height keeps the internal scrolling: at full height
+   the list still shrinks and scrolls rather than overflowing.
+   NOTE: this makes the panel's height indefinite, which is exactly what the
+   splitter's `max-height: var(--opps-h, 46%)` resolves against — see the
+   note on .find-opps-host. */
+.watchlist-container { width: var(--wl-width, 330px); flex-shrink: 0; align-self: flex-start; max-height: 100%; background: var(--bg-panel); border: 1px solid var(--border-hair); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
 /* Draggable divider between chart and sidebar. Hidden by default (real
    phones, where the sidebar stacks below the chart instead of beside it);
    shown any time the layout is the side-by-side row, which since the
@@ -1450,9 +1460,19 @@ button, input { touch-action: manipulation; }
      column. max-height rather than height so a COLLAPSED Find Opportunities
      stays the height of its own title bar instead of being padded out to a
      size the user picked for the expanded state. */
+  /* --opps-h is set in PIXELS by the splitter, not as a percentage. The panel
+     is content-height now (align-self:flex-start), which makes its height
+     indefinite — and a percentage max-height against an indefinite parent
+     resolves to `none`. Measured before this changed: Find Opportunities
+     rendered 172px at --opps-h:15% AND at 60%, i.e. the drag silently stopped
+     capping anything. getComputedStyle is no help there, it echoes back "15%"
+     either way; only the rendered height shows it.
+     The splitter still thinks in percent — of the COLUMN, which has a definite
+     height and does not move when this element grows — and converts on the way
+     out. `none` as the fallback because a percentage here would be a lie. */
   .find-opps-host {
     flex: 0 0 auto; min-height: 0;
-    max-height: var(--opps-h, 46%);
+    max-height: var(--opps-h, none);
     overflow-y: auto; overscroll-behavior: contain;
   }
   /* While dragging, kill text selection and pointer noise across the whole
@@ -12462,10 +12482,19 @@ setItem._userPicked = false;
   const KEY = 'pge_opps_pct';
   const MIN_OPPS = 12, MAX_OPPS = 82;      // percent of the column
   const MIN_FAV_PX = 118;                  // ~3 rows of the list must survive
+  const DEFAULT_PCT = 46;
   const bar = document.getElementById('wlSplitter');
   const host = document.getElementById('findOppsHost');
   const wrap = document.querySelector('.watchlist-container');
   if (!bar || !host || !wrap) return;
+  /* Every measurement below is against the COLUMN, not the panel. The panel
+     is content-height, so (a) its height is indefinite and percentages inside
+     it do not resolve, and (b) it grows as Find Opportunities grows, which
+     would make "percent of the panel" chase its own tail mid-drag. The column
+     is a fixed-height flex line: stable, and the same thing the user is
+     actually dividing up. */
+  const col = document.querySelector('.content-area') || wrap.parentElement;
+  const colH = () => { const r = col.getBoundingClientRect(); return r.height > 0 ? r.height : 0; };
 
   /* The upper limit is a PIXEL guarantee for the favorites list, converted to
      a percent, not a flat percentage cap. A flat 82% left the list 19px — a
@@ -12474,15 +12503,19 @@ setItem._userPicked = false;
      header above it. Reserve those plus three rows, then whatever is left is
      what the drag may claim. */
   const limits = () => {
-    const r = wrap.getBoundingClientRect();
+    const h = colH();
     const fav = document.getElementById('watchlistContent');
-    const overhead = (fav && r.height > 0) ? Math.max(0, fav.getBoundingClientRect().top - r.top) : 0;
-    if (!(r.height > 0)) return { lo: MIN_OPPS, hi: MAX_OPPS };
-    const maxPx = r.height - overhead - MIN_FAV_PX - bar.offsetHeight;
-    return { lo: MIN_OPPS, hi: Math.max(MIN_OPPS, Math.min(MAX_OPPS, (maxPx / r.height) * 100)) };
+    if (!(h > 0)) return { lo: MIN_OPPS, hi: MAX_OPPS };
+    const overhead = fav ? Math.max(0, fav.getBoundingClientRect().top - col.getBoundingClientRect().top) : 0;
+    const maxPx = h - overhead - MIN_FAV_PX - bar.offsetHeight;
+    return { lo: MIN_OPPS, hi: Math.max(MIN_OPPS, Math.min(MAX_OPPS, (maxPx / h) * 100)) };
   };
   const clamp = v => { const { lo, hi } = limits(); return Math.max(lo, Math.min(hi, v)); };
-  const apply = pct => wrap.style.setProperty('--opps-h', pct.toFixed(1) + '%');
+  /* Percent in, pixels out — see the .find-opps-host note. */
+  const apply = pct => {
+    const h = colH();
+    if (h > 0) wrap.style.setProperty('--opps-h', Math.round(h * pct / 100) + 'px');
+  };
   const stored = () => {
     try { const v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) ? clamp(v) : null; }
     catch (e) { return null; }
@@ -12490,14 +12523,18 @@ setItem._userPicked = false;
   const save = pct => { try { localStorage.setItem(KEY, pct.toFixed(1)); } catch (e) {} };
 
   let cur = stored();
-  if (cur != null) apply(cur);
+  apply(cur == null ? DEFAULT_PCT : cur);
+  /* px has to be recomputed when the column changes height; a percentage used
+     to ride that for free. The stored value stays a percentage so it still
+     means the same thing on a different monitor. */
+  window.addEventListener('resize', () => apply(cur == null ? DEFAULT_PCT : cur));
 
   /* Percent is measured against the CONTAINER, so the number means the same
      thing at any window height. Drag up = the bottom list grows, which is why
      this is (bottom - y) rather than (y - top). */
   const pctFromY = (y) => {
-    const r = wrap.getBoundingClientRect();
-    if (!(r.height > 0)) return cur == null ? 46 : cur;
+    const r = col.getBoundingClientRect();
+    if (!(r.height > 0)) return cur == null ? DEFAULT_PCT : cur;
     return clamp(((r.bottom - y) / r.height) * 100);
   };
 
@@ -12536,7 +12573,7 @@ setItem._userPicked = false;
 
   bar.addEventListener('dblclick', () => {
     cur = null;
-    wrap.style.removeProperty('--opps-h');
+    apply(DEFAULT_PCT);
     try { localStorage.removeItem(KEY); } catch (e) {}
   });
   bar.addEventListener('keydown', (e) => {
@@ -12547,7 +12584,7 @@ setItem._userPicked = false;
     else if (e.key === 'Home') { cur = MAX_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
     else if (e.key === 'End') { cur = MIN_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
     else return;
-    const base = cur != null ? cur : (host.getBoundingClientRect().height / Math.max(1, wrap.getBoundingClientRect().height)) * 100;
+    const base = cur != null ? cur : (host.getBoundingClientRect().height / Math.max(1, colH())) * 100;
     cur = clamp(base + d);
     apply(cur); save(cur);
     e.preventDefault();
