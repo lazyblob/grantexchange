@@ -1296,13 +1296,28 @@ button, input { touch-action: manipulation; }
 @media (min-width: 1024px) {
   .ch-resize { display: block; flex: 0 0 10px; height: 10px; margin: -4px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
 }
-@media (max-width: 640px) {
+/* Both touch layouts — portrait AND landscape phone. Landscape used to be
+   the one band with no handle at all, on the reasoning that a ~390px-tall
+   viewport has nothing to trade. That is true only while the app is pinned to
+   one screen: the ask is to trade the quick-facts row and the 30-Day Range
+   for chart, pushing them below the fold, which is exactly what the portrait
+   handle already does. So the band gets the same handle and, in its own block
+   further down, the same `height: auto` on .wrap that lets a taller chart
+   grow the page instead of overflowing a fixed box. */
+@media (max-width: 640px),
+       screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   /* Taller than the desktop handle: a 10px strip is a fine mouse target and
      a poor thumb one. The pill inside stays 2px, so it costs 8px of layout
      and reads the same. */
   .ch-resize { display: block; flex: 0 0 20px; height: 20px; margin: -6px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
   .ch-resize::before { width: 46px; height: 3px; }
   .ch-resize.dragging::before { width: 72px; }
+}
+/* …but a 20px strip is a lot of a 390px screen to spend on chrome, so
+   landscape gets a shorter one. 14px is still a comfortable thumb target and
+   hands 6px back to the chart it exists to resize. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ch-resize { flex: 0 0 14px; height: 14px; margin: -5px 0; }
 }
 @media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
@@ -2442,6 +2457,19 @@ button, input { touch-action: manipulation; }
      Reclaims ~80px straight into the chart,
      which was being squeezed to ~100px. */
   .wrap { padding: 3px; gap: 3px; }
+  /* ONLY once the chart has been hand-dragged. The fixed 100dvh is what makes
+     the chart's `flex: 1` fill exactly one screen here, so relaxing it
+     unconditionally has two costs I measured before scoping it: the default
+     layout grew ~44px past the fold, and — worse — a reset stopped working,
+     because with the column's height indefinite `flex: 1` means "content
+     height" and the chart simply kept whatever the canvas bitmap already was
+     (548px, unchanged by the reset that had correctly cleared --chart-h).
+     Dragged, the chart has an explicit height and nothing needs to stretch,
+     so the wrap can grow and push the quick-facts row and the 30-Day Range
+     below the fold — which is the whole point of the gesture. Double-click
+     removes .user-sized, this rule stops matching, and `flex: 1` refills one
+     screen exactly as before. Same shape as the desktop rule. */
+  .wrap:has(.chart-container.user-sized) { height: auto; min-height: 100dvh; }
   .main-column { gap: 3px; }
   .content-area { flex-direction: row; gap: 4px; }
   .top-row-wrapper { flex-direction: row; gap: 4px; height: auto; align-items: stretch; }
@@ -2559,7 +2587,12 @@ button, input { touch-action: manipulation; }
      list clipped to nothing (it's flex:1 with overflow hidden on the
      container). Let the WHOLE sidebar scroll as one unit instead, so the
      flip card, calculator, then every watchlist row are all reachable. */
-  .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  /* Viewport-based cap, not the base `max-height: 100%`. Once a dragged chart
+     makes .wrap's height indefinite (see the :has rule above) a percentage
+     resolves to `none`, and a long favourites list would grow this column to
+     its full content height instead of scrolling inside it. Same trap as the
+     desktop cap and the splitter's. */
+  .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: calc(100dvh - 6px); }
   /* Favorites is the reason this column exists, but it sat behind ~320px of
      modules in a viewport only ~390-515px tall, so it opened essentially
      below the fold. The container is a flex column, so `order` re-stacks it
@@ -12485,7 +12518,16 @@ setItem._userPicked = false;
      deliberately asking for a taller chart. Being unable to scroll past it was
      the original complaint, and that is fixed at the touch-action level now,
      so a tall chart is no longer a trap. */
-  const maxH = () => Math.max(MIN + 80, window.innerHeight - 120);
+  /* `innerHeight - 120` is a sane ceiling on a tall window and nonsense on a
+     short one: a landscape phone is ~390px, so it computes to 270 — BELOW the
+     ~303px the chart already is there, which made dragging down shrink the
+     chart instead of growing it. Measured at 932x430: 344 -> 320.
+     Landscape gets a multiple of the viewport instead. 1.6 screens is enough
+     to push the quick-facts row and the 30-Day Range below the fold, which is
+     the whole point of the gesture there, while still bounded so the page
+     cannot become one unscrollable chart. */
+  const maxH = () => Math.max(MIN + 80, window.innerHeight - 120,
+                              landscapeMQ.matches ? Math.round(window.innerHeight * 1.6) : 0);
   /* Whether the handle is live is decided by the CSS, not repeated here —
      one breakpoint list to keep in sync instead of two. */
   const enabled = () => getComputedStyle(handle).display !== 'none';
@@ -12494,7 +12536,14 @@ setItem._userPicked = false;
      phone screen. Desktop keeps the original key so heights already saved
      there survive this change. */
   const portraitMQ = window.matchMedia('(max-width: 640px)');
-  const heightKey = () => portraitMQ.matches ? 'ge_chartHeight_p' : 'ge_chartHeight';
+  /* Three layouts, three keys. Landscape phone used to fall through to the
+     desktop key by omission — it had no handle, so nothing could be saved
+     under it; now that it does, a 300px chart chosen on a phone held sideways
+     would otherwise turn up on a monitor. */
+  const landscapeMQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)');
+  const heightKey = () => portraitMQ.matches ? 'ge_chartHeight_p'
+                        : landscapeMQ.matches ? 'ge_chartHeight_l'
+                        : 'ge_chartHeight';
 
   const setH = (h) => {
     box.style.setProperty('--chart-h', Math.round(h) + 'px');
@@ -12518,9 +12567,18 @@ setItem._userPicked = false;
     if (enabled() && v >= MIN) setH(Math.min(v, maxH())); else unset();
   };
   applyStored();
-  if (portraitMQ.addEventListener) portraitMQ.addEventListener('change', () => {
+  /* Both queries, now that both name a layout with its own saved height. A
+     phone rotating portrait <-> landscape crosses portraitMQ too, but a wide
+     short window growing tall (a tablet, a resized browser) crosses only the
+     landscape one — and that is exactly the case where the stored key changes
+     underneath us. */
+  const _onLayoutMQ = () => {
     applyStored();
     if (typeof resizeCanvas === 'function') resizeCanvas();
+  };
+  [portraitMQ, landscapeMQ].forEach(mq => {
+    if (mq.addEventListener) mq.addEventListener('change', _onLayoutMQ);
+    else if (mq.addListener) mq.addListener(_onLayoutMQ);
   });
 
   let startY = 0, startH = 0, dragging = false, raf = 0;
