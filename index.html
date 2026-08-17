@@ -1483,7 +1483,7 @@ button, input { touch-action: manipulation; }
    `0 1 auto` and would otherwise squash proportionally — a half-height flip
    card to save a list that can simply scroll. min-height:0 is what lets it
    shrink below content at all; overflow-y:auto is what it does then. */
-.watchlist-content { flex: 0 100 auto; overflow-y: auto; min-height: 0; }
+.watchlist-content { flex: 0 100 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
 /* ── Splitter between Favorites and Find Opportunities ───────────────────
    The two lists share one fixed-height column, so every px one gains the
    other loses — which is exactly the case a draggable divider exists for.
@@ -1515,19 +1515,14 @@ button, input { touch-action: manipulation; }
      column. max-height rather than height so a COLLAPSED Find Opportunities
      stays the height of its own title bar instead of being padded out to a
      size the user picked for the expanded state. */
-  /* --opps-h is set in PIXELS by the splitter, not as a percentage. The panel
-     is content-height now (align-self:flex-start), which makes its height
-     indefinite — and a percentage max-height against an indefinite parent
-     resolves to `none`. Measured before this changed: Find Opportunities
-     rendered 172px at --opps-h:15% AND at 60%, i.e. the drag silently stopped
-     capping anything. getComputedStyle is no help there, it echoes back "15%"
-     either way; only the rendered height shows it.
-     The splitter still thinks in percent — of the COLUMN, which has a definite
-     height and does not move when this element grows — and converts on the way
-     out. `none` as the fallback because a percentage here would be a lie. */
+  /* No max-height of its own any more. This element used to carry the
+     splitter's cap (--opps-h); the splitter sizes the favourites list
+     directly now, and this simply follows it up the column. `0 1 auto` with
+     min-height:0 so that when both lists together exceed the panel it can
+     still give ground — the list shrinks 100x faster (see .watchlist-content),
+     so this only yields once the list is already at its floor. */
   .find-opps-host {
-    flex: 0 0 auto; min-height: 0;
-    max-height: var(--opps-h, none);
+    flex: 0 1 auto; min-height: 0;
     overflow-y: auto; overscroll-behavior: contain;
   }
   /* While dragging, kill text selection and pointer noise across the whole
@@ -12556,69 +12551,76 @@ setItem._userPicked = false;
 })();
 
 /* ── Favorites / Find Opportunities splitter ─────────────────────────────
-   Drag the divider to trade height between the two lists. Stored as a PERCENT
-   of the column, not a pixel height: the sidebar's height changes with the
-   window, and a saved "320px" that was two thirds on a laptop is a sliver on a
-   monitor and taller than the column on a short one. A percent survives both. */
+   Drag the divider to trade height between the two lists.
+
+   This drives the FAVOURITES list's height, not Find Opportunities'. It used
+   to be the other way round — a max-height cap on Find Opportunities — and
+   that stopped working the moment the favourites list became content-sized
+   instead of `flex: 1`. With both lists taking exactly their content, capping
+   the lower one redistributes nothing: there is no greedy element to hand the
+   space back to. Measured after that change, dragging the handle from the top
+   of the column to the bottom moved it 0px.
+
+   Sizing the list directly has no such dependency. Shrink its max-height and
+   it scrolls, Find Opportunities follows it up, and the panel (which is
+   content-height) closes up behind them. Grow it and the reverse. It behaves
+   the same whether or not the content happens to fill the column, which is
+   the property the old version quietly lacked.
+
+   Stored as a PERCENT of the column, not a pixel height: the sidebar's height
+   changes with the window, and a saved "320px" that was two thirds on a
+   laptop is a sliver on a monitor and taller than the column on a short one.
+   A percent survives both. */
 (function () {
-  const KEY = 'pge_opps_pct';
-  const MIN_OPPS = 12, MAX_OPPS = 82;      // percent of the column
-  const MIN_FAV_PX = 118;                  // ~3 rows of the list must survive
-  const DEFAULT_PCT = 46;
+  const KEY = 'pge_fav_pct';
+  /* One row, not three. The report was that Find Opportunities could not be
+     dragged near the top of the list; a three-row floor is most of why, on
+     top of the mechanism being dead. One row still shows the list is a list
+     and keeps a drop target for the drag back down. */
+  const MIN_FAV_PX = 41;                   // one watchlist row
+  const MIN_OPPS_PX = 34;                  // its collapsed title bar
   const bar = document.getElementById('wlSplitter');
-  const host = document.getElementById('findOppsHost');
+  const list = document.getElementById('watchlistContent');
   const wrap = document.querySelector('.watchlist-container');
-  if (!bar || !host || !wrap) return;
-  /* Every measurement below is against the COLUMN, not the panel. The panel
-     is content-height, so (a) its height is indefinite and percentages inside
-     it do not resolve, and (b) it grows as Find Opportunities grows, which
-     would make "percent of the panel" chase its own tail mid-drag. The column
-     is a fixed-height flex line: stable, and the same thing the user is
-     actually dividing up. */
+  if (!bar || !list || !wrap) return;
+  /* Measured against the COLUMN, which has a definite height and does not
+     move when the lists resize — see the note on .watchlist-container. */
   const col = document.querySelector('.content-area') || wrap.parentElement;
   const colH = () => { const r = col.getBoundingClientRect(); return r.height > 0 ? r.height : 0; };
 
-  /* The upper limit is a PIXEL guarantee for the favorites list, converted to
-     a percent, not a flat percentage cap. A flat 82% left the list 19px — a
-     scroll container with no visible rows — because the percentage is of the
-     whole column, and the column also carries the list header and the column
-     header above it. Reserve those plus three rows, then whatever is left is
-     what the drag may claim. */
-  const limits = () => {
-    const h = colH();
-    const fav = document.getElementById('watchlistContent');
-    if (!(h > 0)) return { lo: MIN_OPPS, hi: MAX_OPPS };
-    const overhead = fav ? Math.max(0, fav.getBoundingClientRect().top - col.getBoundingClientRect().top) : 0;
-    const maxPx = h - overhead - MIN_FAV_PX - bar.offsetHeight;
-    return { lo: MIN_OPPS, hi: Math.max(MIN_OPPS, Math.min(MAX_OPPS, (maxPx / h) * 100)) };
+  /* How much room the list may claim: from where it starts down to the bottom
+     of the column, less the handle and enough for Find Opportunities' own
+     title bar. Its TOP is stable — everything above it (the modules, the two
+     headers) is content-sized and unaffected by this drag — so this can be
+     read mid-drag without the measurement chasing itself. */
+  const room = () => {
+    const listT = list.getBoundingClientRect().top;
+    const colB = col.getBoundingClientRect().bottom;
+    return Math.max(MIN_FAV_PX, colB - listT - bar.offsetHeight - MIN_OPPS_PX);
   };
-  const clamp = v => { const { lo, hi } = limits(); return Math.max(lo, Math.min(hi, v)); };
-  /* Percent in, pixels out — see the .find-opps-host note. */
+  const clampPx = px => Math.max(MIN_FAV_PX, Math.min(room(), px));
+  const pctOf = px => (px / Math.max(1, colH())) * 100;
+  const pxOf = pct => (pct / 100) * colH();
+
   const apply = pct => {
     const h = colH();
-    if (h > 0) wrap.style.setProperty('--opps-h', Math.round(h * pct / 100) + 'px');
+    if (h > 0) wrap.style.setProperty('--fav-h', Math.round(clampPx(pxOf(pct))) + 'px');
   };
   const stored = () => {
-    try { const v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) ? clamp(v) : null; }
+    try { const v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) ? v : null; }
     catch (e) { return null; }
   };
   const save = pct => { try { localStorage.setItem(KEY, pct.toFixed(1)); } catch (e) {} };
 
   let cur = stored();
-  apply(cur == null ? DEFAULT_PCT : cur);
-  /* px has to be recomputed when the column changes height; a percentage used
-     to ride that for free. The stored value stays a percentage so it still
-     means the same thing on a different monitor. */
-  window.addEventListener('resize', () => apply(cur == null ? DEFAULT_PCT : cur));
+  if (cur != null) apply(cur);
+  /* The stored value is a percentage, so the pixels have to be re-derived
+     whenever the column changes height. */
+  window.addEventListener('resize', () => { if (cur != null) apply(cur); });
 
-  /* Percent is measured against the CONTAINER, so the number means the same
-     thing at any window height. Drag up = the bottom list grows, which is why
-     this is (bottom - y) rather than (y - top). */
-  const pctFromY = (y) => {
-    const r = col.getBoundingClientRect();
-    if (!(r.height > 0)) return cur == null ? DEFAULT_PCT : cur;
-    return clamp(((r.bottom - y) / r.height) * 100);
-  };
+  /* Drag DOWN grows the favourites list, which is the direction the handle
+     moves — the pointer's y IS the list's new bottom edge. */
+  const pctFromY = (y) => pctOf(clampPx(y - list.getBoundingClientRect().top));
 
   let dragging = false;
   const onMove = (e) => {
@@ -12653,21 +12655,22 @@ setItem._userPicked = false;
   window.addEventListener('pointerup', stop);
   window.addEventListener('blur', stop);
 
+  /* Double-click clears the override entirely, back to "as tall as its rows". */
   bar.addEventListener('dblclick', () => {
     cur = null;
-    apply(DEFAULT_PCT);
+    wrap.style.removeProperty('--fav-h');
     try { localStorage.removeItem(KEY); } catch (e) {}
   });
   bar.addEventListener('keydown', (e) => {
-    const step = e.shiftKey ? 8 : 3;
+    const stepPx = e.shiftKey ? 80 : 30;
     let d = 0;
-    if (e.key === 'ArrowUp') d = step;          // up = more Find Opportunities
-    else if (e.key === 'ArrowDown') d = -step;
-    else if (e.key === 'Home') { cur = MAX_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
-    else if (e.key === 'End') { cur = MIN_OPPS; apply(cur); save(cur); e.preventDefault(); return; }
+    if (e.key === 'ArrowUp') d = -stepPx;         // up = less list, more Find Opportunities
+    else if (e.key === 'ArrowDown') d = stepPx;
+    else if (e.key === 'Home') { cur = pctOf(room()); apply(cur); save(cur); e.preventDefault(); return; }
+    else if (e.key === 'End') { cur = pctOf(MIN_FAV_PX); apply(cur); save(cur); e.preventDefault(); return; }
     else return;
-    const base = cur != null ? cur : (host.getBoundingClientRect().height / Math.max(1, colH())) * 100;
-    cur = clamp(base + d);
+    const basePx = cur != null ? pxOf(cur) : list.getBoundingClientRect().height;
+    cur = pctOf(clampPx(basePx + d));
     apply(cur); save(cur);
     e.preventDefault();
   });
