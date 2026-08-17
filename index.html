@@ -4973,6 +4973,7 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
        states the buy limit, which does not depend on whether the panel is
        open, so it is written once by restoreCalculator and left alone. */
     if (hl) hl.setAttribute('aria-expanded', isCalcOpen);
+    track('potential_profit_toggle', { state: isCalcOpen ? 'open' : 'closed' });
   };
   $('#calcToggle').onclick = toggleCalc;
   $('#calcToggle').onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleCalc(); } };
@@ -5005,6 +5006,64 @@ function updateSelection() {
     el.classList.toggle('selected', onChart && el.dataset.side === activePriceBox));
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   INTERACTION TRACKING
+   ════════════════════════════════════════════════════════════════════════
+   One helper for every "did anyone actually use this" question. GA4 is
+   already configured up in <head> (with the /?ga=off opt-out), and setItem
+   fires the virtual page_view — this is only the deliberate-action layer on
+   top of it.
+
+   Rules this follows, because analytics that lie are worse than none:
+   - USER ACTIONS ONLY. Nothing fires on render, on load, or on a price
+     tick. Every call site below sits inside a click/keyboard handler.
+   - EVERY event carries the item and timeframe. "Someone expanded Analyst
+     Rating" is barely a fact; "someone expanded it on a 5Y Twisted bow" is
+     one. The params come from the same globals the UI reads, so they can't
+     disagree with what was on screen.
+   - STATE, NOT TWO EVENT NAMES. A toggle sends one event with state:
+     'open'|'closed' rather than _expand/_collapse pairs, so the open rate
+     is a ratio inside one event rather than a join across two.
+   - gtag may be a queue, a no-op, or absent. `typeof gtag === 'function'`
+     is true even before the library loads (it's defined in <head> and
+     pushes to dataLayer), and false if the script was blocked — so this is
+     never a hard dependency, and it is wrapped anyway. Analytics must never
+     be able to break a button.
+
+   Deliberately NOT tracked: chart hover/tooltip, scroll depth, and anything
+   that fires per frame. */
+function track(name, params) {
+  try {
+    if (typeof gtag !== 'function') return;
+    gtag('event', name, Object.assign({
+      item_id: selected ? String(selected.id) : undefined,
+      item_name: selected ? selected.name : undefined,
+      timeframe: typeof view === 'string' ? view : undefined,
+    }, params || {}));
+  } catch (e) {}
+}
+/* The -/+ steppers are the one control here that fires in bursts: walking a
+   target 40gp is 40 clicks, and 40 events would both drown the report and
+   tell you less than one. Coalesced per side — the burst reports once, when
+   it stops, with the number of presses, the net direction and the price
+   landed on. That is the question worth asking ("do people nudge, and how
+   far?"), and it is one event instead of forty. */
+const _stepBurst = {};
+function trackTargetAdjust(side, dir) {
+  const b = _stepBurst[side] || (_stepBurst[side] = { n: 0, net: 0, t: null });
+  b.n++; b.net += dir;
+  clearTimeout(b.t);
+  b.t = setTimeout(() => {
+    track('target_adjust', {
+      side: side,                                     // buy | sell
+      presses: b.n,
+      direction: b.net > 0 ? 'up' : b.net < 0 ? 'down' : 'net_zero',
+      value: side === 'buy' ? recommendedBuy : recommendedSell,
+    });
+    b.n = 0; b.net = 0;
+  }, 900);
+}
+
 $('#btnFav').onclick = () => {
   if (!selected) return;
   const idStr = String(selected.id);
@@ -5015,6 +5074,8 @@ $('#btnFav').onclick = () => {
   rlPostFavorite(idStr, selected.name, wasFavorited);
   updateFavoriteBtn();
   renderWatchlist();
+  track('favorite_toggle', { state: wasFavorited ? 'removed' : 'added',
+                             list_size: favorites.length });
 };
 
 function updateFavoriteBtn() {
@@ -5878,6 +5939,7 @@ function openShareModal(blob) {
 
 async function shareCard() {
   if (!selected) return;
+  track('share_card', { step: 'click' });
   const btn = $('#btnShare');
   const label = btn.querySelector('.fav-label');
   const originalText = label.textContent;
@@ -5895,6 +5957,10 @@ async function shareCard() {
     label.textContent = 'Failed';
     setTimeout(() => { label.textContent = originalText; }, 1800);
     btn.disabled = false;
+    /* Worth its own step: a render that throws is a bug report, not a
+       behaviour signal, and it should not sit in the same bucket as a
+       card the user simply chose not to send. */
+    track('share_card', { step: 'render_failed' });
     return;
   }
   label.textContent = originalText;
@@ -5904,9 +5970,11 @@ async function shareCard() {
   // Touch first: the OS sheet is the right answer on a phone.
   if (matchMedia('(pointer: coarse)').matches && shareCanUseNativeFiles(file)) {
     // Cancelling the OS sheet rejects with AbortError — not a failure.
-    try { await shareNativeWith(file); } catch (e) { /* dismissed */ }
+    try { await shareNativeWith(file); track('share_card', { step: 'shared_native' }); }
+    catch (e) { track('share_card', { step: 'dismissed' }); }
     return;
   }
+  track('share_card', { step: 'modal' });
   openShareModal(blob);
 }
 $('#btnShare').onclick = shareCard;
@@ -7260,6 +7328,7 @@ function renderWatchlist() {
     const nowCollapsed = findOppsBody.classList.toggle("collapsed");
     findOppsTitle.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
     groupOpenStates[FIND_OPPS_KEY] = !nowCollapsed;
+    track('find_opportunities_toggle', { state: nowCollapsed ? 'closed' : 'open' });
   };
   groups.slice(1).forEach(group => {
     const gd = buildGroupDiv(group, true);
@@ -8470,6 +8539,8 @@ function adjustTargetPrice(side, dir, ev) {
     sellOverridden = true;
   }
   applyTargetPriceChange();
+  /* After the change, so `value` reports the price landed on. */
+  trackTargetAdjust(side, dir);
 }
 function applyTargetPriceChange() {
   renderTargetBoxes();
@@ -8718,6 +8789,8 @@ document.addEventListener('click', (ev) => {
     b.setAttribute('aria-expanded', next ? 'false' : 'true');
     b.setAttribute('aria-label', (next ? 'Expand' : 'Collapse') + ' Analyst Rating details');
   });
+  /* `next` is the COLLAPSED flag, so it inverts to the panel's state. */
+  track('analyst_rating_toggle', { state: next ? 'closed' : 'open' });
 });
 
 /* The expanded gauge shows its working. A 0-100 score nobody can audit is
@@ -9376,7 +9449,7 @@ function wireHeaderToggle(row, chevron, skipSel) {
 function wireFlipButtons(){
   const h = flipHost(); if (!h) return;
   const next = h.querySelector('#btnNextFlip');
-  if (next) { next.disabled = recBusy; next.onclick = e => { e.stopPropagation(); findFlip({ advance: true }); }; }
+  if (next) { next.disabled = recBusy; next.onclick = e => { e.stopPropagation(); track('recommended_flip_next'); findFlip({ advance: true }); }; }
   const card = h.querySelector('.flip-card[data-id]');
   /* Collapse toggle: hides the card body, leaving a one-line summary (name ·
      score · edge). Persisted so it stays collapsed across re-renders (Next,
@@ -9389,6 +9462,7 @@ function wireFlipButtons(){
       col.classList.toggle('closed', isCollapsed);
       col.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
       setFlipCollapsed(isCollapsed);
+      track('recommended_flip_toggle', { state: isCollapsed ? 'closed' : 'open' });
     };
     wireHeaderToggle(h.querySelector('.fc-head'), col, '#btnNextFlip, .fc-collapse, button, a');
   }
@@ -11849,10 +11923,14 @@ setItem._userPicked = false;
     document.querySelectorAll(".view-btn").forEach(b => {
       b.onclick = () => {
         document.querySelectorAll(".view-btn").forEach(x => x.classList.remove("active"));
+        const from = view;
         b.classList.add("active"); view = preferredView = b.dataset.view; zoom = 1.0; yScale = 1; yOffset = 0;
         setItem._userPicked = true;
         keepActiveViewVisible();
         refreshChart();
+        /* `timeframe` is the one they picked (track() reads the global, which
+           is already reassigned); `from` says what they left. */
+        track('timeframe_change', { from: from });
       };
     });
     /* Dragging/wheeling the strip changes which edge has hidden pills. */
@@ -12043,7 +12121,13 @@ setItem._userPicked = false;
          fail entirely). Clearing the overrides before refreshLivePrices()
          also lets its own "leave a nudged side alone" guard fall through, so
          the fresh quote repopulates both targets. */
-      if (viewIsDirty()) { resetChartView(); restoreEngineTargets(); syncChartReset(); }
+      /* Read the dirty flag BEFORE the reset clears it — that bit is the
+         whole question here: is this button used to refresh prices, or to
+         undo a zoom/nudge? They are two different features wearing one
+         icon, and the answer decides whether they should stay that way. */
+      const wasDirty = viewIsDirty();
+      track('refresh_click', { mode: wasDirty ? 'reset_view' : 'refresh' });
+      if (wasDirty) { resetChartView(); restoreEngineTargets(); syncChartReset(); }
       btn.disabled = true;
       const icon = btn.querySelector('.ui-ic');
       if (icon) icon.classList.add('ic-spin');
