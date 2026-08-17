@@ -3182,8 +3182,9 @@ button, input { touch-action: manipulation; }
    the space, and this button does two different jobs — the label is what
    tells you which one is armed without hovering for the tooltip. */
 .qf-rlabel { display:none; }
-/* Chart view toggles. Same 26px height and hairline border as .qf-refresh
-   beside them so the group reads as one control cluster, not two designs.
+/* Chart view toggles. Same 26px height as .qf-refresh beside them so the
+   group sits on one line; the chrome is deliberately NOT the same — see
+   .ct-btn below.
    Inline at EVERY width. They spent a long time hidden behind a puck below
    1024px, on the reasoning that the quick-facts row couldn't carry two more
    chips — which was true while that row was also printing the live
@@ -3199,22 +3200,27 @@ button, input { touch-action: manipulation; }
    JS went with it (placeChartTools/wireChartPuck and their media query),
    which also retires the 641-1023px band that once had neither the inline
    toolbar nor a working puck. */
-.ct-btn { height: 28px; padding: 0 12px; text-align: center; }
-}
+/* Bare words, no chip — the same reasoning as the Share glyph in the Analyst
+   Rating header (.rg-top .fav-btn): a border around a 10px label makes a box
+   that is mostly empty, and two of them sitting against Refresh's box turned
+   the corner of the row into three competing outlines. The padding stays so
+   the tap target does not shrink to the text; the box goes, the target does
+   not, and colour carries the whole affordance.
+   Muted at rest and white on hover, exactly as Share behaves. The one place
+   this has to go further is the ON state: Share is an action and never has
+   one, while these are toggles and would otherwise be unreadable — so ON is
+   gold, which is already this page's "you chose this" everywhere else (the
+   active timeframe pill, the saved star). No fill and no glow behind it;
+   the word alone changes colour. */
 .ct-btn {
-  height: 26px; padding: 0 9px; border: 1px solid var(--border-main); border-radius: 6px;
+  height: 26px; padding: 0 6px; border: 0; border-radius: 4px;
   background: transparent; color: var(--text-muted); cursor: pointer;
   font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: .2px;
-  transition: color .15s ease, border-color .15s ease, background .15s ease;
+  transition: color .15s ease;
 }
-.ct-btn:hover { color: var(--text-main); border-color: var(--border-light); }
-/* On == the layer is being drawn. Gold, because that is this page's
-   "you chose this" colour everywhere else (favourites, active timeframe),
-   and deliberately a fill rather than a glow — see the Save button. */
-.ct-btn[aria-pressed="true"] {
-  color: var(--buy-color); border-color: rgba(229, 184, 66, 0.55);
-  background: rgba(229, 184, 66, 0.10);
-}
+.ct-btn:hover, .ct-btn:focus-visible { color: #fff; }
+.ct-btn[aria-pressed="true"] { color: var(--buy-color); }
+.ct-btn[aria-pressed="true"]:hover { color: #FFD98A; }
 /* The .qf-refresh.is-float rule lived here: on a phone the button was
    absolutely positioned inside the chart, and the comment that went with it
    was three sentences of arithmetic about which band of the canvas it could
