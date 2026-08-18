@@ -1365,6 +1365,24 @@ button, input { touch-action: manipulation; }
      centre-ish would have kept the thumb right where the problem is. */
   .ch-resize::before { left: 25%; }
 }
+/* ── Tap to maximise, instead of dragging ────────────────────────────────
+   On a touch screen the drag itself was the problem, not the range it
+   covered: the strip sits ~48px above the bottom edge in landscape, which is
+   iOS gesture territory, and moving the grip left of the home indicator made
+   it reachable without making it pleasant. A drag is a poor gesture for
+   "make this bigger" on a phone regardless — it needs a precise grab on a
+   14px strip and a steady pull.
+   So touch gets a toggle instead, offering the two heights that actually
+   matter: the layout's default, and the same ceiling the drag would have
+   reached. A mouse keeps the strip, because a drag with a cursor is fine and
+   it can size the chart to anything between those two.
+   LAST of the .ch-resize rules on purpose — same specificity as the blocks
+   above, so this wins on order. */
+.ct-tall { display: none; }
+@media (pointer: coarse) {
+  .ct-tall { display: inline-flex; align-items: center; }
+  .ch-resize { display: none; }
+}
 @media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
   .wl-resize::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 30px; background: var(--border-light); border-radius: 2px; transition: background 0.15s, height 0.15s; }
@@ -4056,6 +4074,11 @@ button, input { touch-action: manipulation; }
                them reads as their switch rather than the profile's. -->
           <button type="button" class="ct-btn" id="ctVol" aria-pressed="false"
             title="Volume profile — how much traded at each price level">VP</button>
+          <!-- Touch-only stand-in for the drag handle: one tap goes to the
+               same ceiling the drag would have reached, another puts it back.
+               See chartHeightResizer, which owns both. -->
+          <button type="button" class="ct-btn ct-tall" id="ctTall" aria-pressed="false"
+            title="Expand the chart to full height">Max</button>
         </div>
         <!-- One button, two jobs. It refreshes live prices; when the view has
              been zoomed/panned or a target price hand-nudged it also puts
@@ -12731,9 +12754,14 @@ setItem._userPicked = false;
      cannot become one unscrollable chart. */
   const maxH = () => Math.max(MIN + 80, window.innerHeight - 120,
                               landscapeMQ.matches ? Math.round(window.innerHeight * 1.6) : 0);
-  /* Whether the handle is live is decided by the CSS, not repeated here —
-     one breakpoint list to keep in sync instead of two. */
-  const enabled = () => getComputedStyle(handle).display !== 'none';
+  /* Whether resizing is live at all is decided by the CSS, not repeated here
+     — one breakpoint list to keep in sync instead of two. EITHER control
+     counts: on touch the handle is display:none and the Max button is the
+     only way in, and reading the handle alone would have made applyStored()
+     drop every saved height on a phone. */
+  const tallBtn = document.getElementById('ctTall');
+  const shown = (el) => !!el && getComputedStyle(el).display !== 'none';
+  const enabled = () => shown(handle) || shown(tallBtn);
   /* A height chosen on a phone must not follow you to the desktop layout,
      and vice versa: 700px is a reasonable chart on a monitor and most of a
      phone screen. Desktop keeps the original key so heights already saved
@@ -12756,11 +12784,39 @@ setItem._userPicked = false;
     box.classList.remove('user-sized');
     box.style.removeProperty('--chart-h');
   };
+  /* Is the chart sitting at the ceiling right now? Compared against the live
+     maxH() rather than a stored flag, so a rotate or a window resize that
+     moves the ceiling leaves the button telling the truth. The 2px slack
+     absorbs the rounding in setH. */
+  const atMax = () => box.classList.contains('user-sized') &&
+    Math.abs(parseInt(box.style.getPropertyValue('--chart-h'), 10) - maxH()) <= 2;
+  const syncTall = () => {
+    if (!tallBtn) return;
+    const on = atMax();
+    tallBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    tallBtn.title = on ? 'Back to the default chart height' : 'Expand the chart to full height';
+  };
   const clear = () => {
     unset();
     try { localStorage.removeItem(heightKey()); } catch (e) {}
     if (typeof resizeCanvas === 'function') resizeCanvas();
+    syncTall();
   };
+  if (tallBtn) tallBtn.addEventListener('click', () => {
+    const goingUp = !atMax();
+    if (goingUp) {
+      const h = maxH();
+      setH(h);
+      /* Persisted the same way a finished drag is, under the same per-layout
+         key, so the two controls cannot disagree about what was chosen. */
+      try { localStorage.setItem(heightKey(), String(Math.round(h))); } catch (e) {}
+      if (typeof resizeCanvas === 'function') resizeCanvas();
+      syncTall();
+    } else {
+      clear();
+    }
+    track('chart_max_toggle', { state: goingUp ? 'on' : 'off' });
+  });
   /* Re-read on every breakpoint change (rotate, resize, desktop <-> phone):
      the stored height belongs to the layout, so crossing the boundary has to
      load that layout's value or drop back to its default. */
@@ -12768,6 +12824,7 @@ setItem._userPicked = false;
     let v = NaN;
     try { v = parseInt(localStorage.getItem(heightKey()) || '', 10); } catch (e) {}
     if (enabled() && v >= MIN) setH(Math.min(v, maxH())); else unset();
+    syncTall();
   };
   applyStored();
   /* Both queries, now that both name a layout with its own saved height. A
@@ -12803,6 +12860,7 @@ setItem._userPicked = false;
     const h = Math.round(box.getBoundingClientRect().height);
     if (h) { try { localStorage.setItem(heightKey(), String(h)); } catch (e) {} }
     if (typeof resizeCanvas === 'function') resizeCanvas();
+    syncTall();
   };
   handle.addEventListener('mousedown', (e) => { begin(e.clientY); e.preventDefault(); });
   window.addEventListener('mousemove', (e) => { if (dragging) apply(e.clientY); });
@@ -12819,6 +12877,7 @@ setItem._userPicked = false;
     const cur = parseInt(box.style.getPropertyValue('--chart-h'), 10);
     const cap = maxH();
     if (cur > cap) { box.style.setProperty('--chart-h', cap + 'px'); if (typeof resizeCanvas === 'function') resizeCanvas(); }
+    syncTall();
   });
 })();
 
