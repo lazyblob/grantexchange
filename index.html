@@ -2849,11 +2849,13 @@ button, input { touch-action: manipulation; }
 .build-info-pop .bi-by-n { display: block; color: var(--text-muted); font-size: 9.5px; margin-top: 2px; line-height: 1.45; }
 
 /* ── Share: hover hint + share sheet ─────────────────────────────────────── */
-/* The Share button sits in the Analyst Rating header (that's simply where
-   there's room for it), which makes it read as "share the rating". It isn't —
-   it shares the whole item. The hint names the item so there's no guessing,
-   and lists what actually ends up in the card. Same shell as
-   .build-info-pop so the two hovers feel like one thing. */
+/* The hint names the item and lists what actually ends up in the card, so
+   there's no guessing before the click. It was load-bearing when Share sat
+   in the Analyst Rating header, where the placement itself said "share the
+   rating"; beside the chart's own controls the button no longer misleads,
+   but naming what a one-click publish is about to publish is worth keeping
+   on its own terms. Same shell as .build-info-pop so the two hovers feel
+   like one thing. */
 .share-tip {
   position: fixed; z-index: 1200; width: 250px; padding: 10px 12px;
   background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 8px;
@@ -3226,37 +3228,42 @@ button, input { touch-action: manipulation; }
   text-transform:uppercase; color:var(--text-structural);
 }
 .rg-top .pg-help { margin-left:0; }
-/* Share button (see placeShareButton) — icon-only, pushed to the far
-   right past the "?" glossary chip, on every layout.
-   It is only ever VISIBLE inside .rg-top. Its markup home is the ticker
-   header next to the favourite star, because it has to exist somewhere for
-   placeShareButton() to move the real node (not a clone) into the gauge —
-   but that move cannot happen until the gauge has rendered, so on a cold
-   load it sat there in plain sight next to the star for the whole "Loading
-   live prices…" spell and then jumped. Scoping display to .rg-top means the
-   button shows up where it belongs and nowhere else, which also covers the
-   mid-render moment when renderRatingGauge parks it back in the header to
-   rescue it from an innerHTML rebuild. */
+/* Share button (see placeShareButton) — icon-only, in one of two hosts
+   depending on width. Hidden by default and switched on per host: its markup
+   home is the ticker header next to the favourite star, which is also where
+   the wide placement puts it, so the default-off keeps the narrow layouts
+   from flashing it beside Save for the frame before placeShareButton() runs.
+   Bare glyph, no chip, in both. Everywhere else .fav-btn is a labelled
+   control that needs a boundary to read as pressable; here it is a lone icon,
+   and a border around it makes a box that is mostly empty — and next to the
+   timeframe pills a bordered chip would read as a seventh timeframe, which is
+   exactly what the segmented group beside it is made of. The padding stays so
+   the tap target does not shrink to the glyph: the box goes, the target does
+   not. Colour carries the affordance instead — muted at rest, white on
+   hover/focus, the same as .ct-btn and .qf-refresh next to it. */
 #btnShare { display:none; }
-.rg-top #btnShare { display:inline-flex; }
-/* Bare glyph, no chip. Everywhere else .fav-btn is a labelled control that
-   needs a boundary to read as pressable; here it is a lone 13px icon, and a
-   border around it makes a box that is mostly empty and competes with the
-   chevron beside it. The padding stays so the tap target does not shrink to
-   the glyph — the box goes, the target does not. Colour carries the
-   affordance instead: muted at rest, white on hover/focus. */
-.rg-top .fav-btn {
-  margin-left:auto; padding:3px 5px; gap:0; flex:0 0 auto; min-height:0;
+.ticker-header #btnShare, .qf-row #btnShare { display:inline-flex; }
+#btnShare.fav-btn {
+  padding:3px 5px; gap:0; flex:0 0 auto; min-height:0;
   border:0; background:transparent; color:var(--text-muted);
 }
-.rg-top .fav-btn:hover, .rg-top .fav-btn:focus-visible { color:#fff; background:transparent; border:0; }
-.rg-top .fav-btn .fav-label { display:none; }
-.rg-top .fav-btn svg { width:13px; height:13px; }
-/* Collapsed: eyebrow + Buy/grade/Sell scale drop away, leaving the verdict,
-   the bar and Share. .rg-top is lifted out of the flow and pinned top-right
-   so the toggle and Share sit on the SAME line as the verdict rather than
-   holding a row of their own — collapsing that row is most of the height
-   saving, so leaving it in place would defeat the point. */
+#btnShare.fav-btn:hover, #btnShare.fav-btn:focus-visible { color:#fff; background:transparent; border:0; }
+#btnShare .fav-label { display:none; }
+#btnShare svg { width:15px; height:15px; }
+/* Wide: after the timeframe pills. The header's own 12px column gap plus
+   this margin is what separates an ACTION from a set of mutually exclusive
+   OPTIONS — without it the eye reads seven items in one group. */
+.ticker-header #btnShare { margin-left:6px; }
+/* Narrow: the quick-facts row, sharing order:3 with Refresh so it falls in
+   right after it on source order alone — no renumbering of the four
+   `order`s this row already depends on. 26px to match .ct-btn and
+   .qf-refresh either side of it. */
+.qf-row #btnShare { order:3; height:26px; padding:0 6px; }
+/* Collapsed: eyebrow + Buy/grade/Sell scale drop away, leaving the verdict
+   and the bar. .rg-top is lifted out of the flow and pinned top-right so the
+   toggle sits on the SAME line as the verdict rather than holding a row of
+   its own — collapsing that row is most of the height saving, so leaving it
+   in place would defeat the point. */
 .rg-wrap { position:relative; }
 /* Wears .calc-caret so this expander is literally the same component as the
    Potential Profit one — size, chip, chevron and the .closed rotation all
@@ -3274,7 +3281,11 @@ button, input { touch-action: manipulation; }
    pair at every width. Landscape is where the tightness SHOWS, not where it
    differs, and per-width values here are what produced three chevrons that
    behaved differently before. */
-.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:18px; }
+/* margin-left:auto, not 18px. The 18px separated this chevron from the Share
+   button beside it, and Share carried the auto margin that pushed the pair
+   to the right edge. Share has moved to the chart, so this is now the only
+   thing after the eyebrow and has to do its own pushing. */
+.rg-toggle { border:none; padding:0; cursor:pointer; order:3; margin-left:auto; }
 /* Hover/press come from .calc-caret above — this used to redeclare its own
    and was the reason the three chevrons behaved differently. */
 /* Collapsing hides the SUPPORTING detail — the BUY/SELL scale row and the
@@ -3468,6 +3479,17 @@ button, input { touch-action: manipulation; }
    not take an element out of that selector's reckoning. */
 .qf-row .qf-refresh { position:relative; margin-right:6px; }
 .qf-row .qf-refresh::after {
+  content:''; position:absolute; right:-8px; top:3px; bottom:3px;
+  width:1px; background:var(--border-main);
+}
+/* …except below 1024px, where Share joins this row and becomes the last
+   control instead. The rule marks the boundary, not the button, so it moves
+   with whatever is actually last — left on Refresh it would have fenced off
+   Share along with the figures it is not. */
+.qf-row:has(#btnShare) .qf-refresh { margin-right:0; }
+.qf-row:has(#btnShare) .qf-refresh::after { content:none; }
+.qf-row #btnShare { position:relative; margin-right:6px; }
+.qf-row #btnShare::after {
   content:''; position:absolute; right:-8px; top:3px; bottom:3px;
   width:1px; background:var(--border-main);
 }
@@ -4456,20 +4478,40 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
    without a listener. */
 const _coarseMQ = window.matchMedia('(pointer: coarse)');
 
-/* Share button lives inside the Analyst Rating gauge's header row, next to
-   the "?" glossary chip, on every layout — moves the actual #btnShare node
-   (not a clone) so its existing click handler and shareCard()'s
-   $('#btnShare') lookup keep working unchanged. renderRatingGauge calls
-   this again after every re-render since rebuilding its innerHTML would
-   otherwise drop the moved node. */
+/* Share belongs with the chart, not with the Analyst Rating. What it
+   publishes is the ITEM — name, chart, 30-day range, targets, margin after
+   tax — and parking it in the gauge's header said it published the rating,
+   which is why that button needed a hover tooltip explaining it did not.
+   Two homes, chosen by width:
+     >=1024px  the ticker header, after the timeframe pills, in the band
+               that ran empty between 5Y and the sidebar
+     narrower  the quick-facts row, next to Refresh and Fill/VP, where the
+               rest of the chart's controls already are
+   Still the real node and never a clone, so the existing click handler and
+   shareCard()'s $('#btnShare') lookup keep working untouched.
+   Both hosts are static: nothing rebuilds #tickerHeader or #quickFactsRow
+   by innerHTML. That is not incidental — living in #sideModule is what
+   required three separate blocks elsewhere to rescue this node before a
+   rebuild destroyed it outright, and moving out of that subtree retires all
+   three. */
+const _shareWideMQ = window.matchMedia('(min-width: 1024px)');
 function placeShareButton() {
   const shareBtn = document.getElementById('btnShare');
-  const gaugeTop = document.querySelector('#ratingGauge .rg-top');
-  if (!shareBtn || !gaugeTop || shareBtn.parentElement === gaugeTop) return;
-  gaugeTop.appendChild(shareBtn);
+  if (!shareBtn) return;
+  /* Positioned against a SIBLING, not appended to a host. Two reasons, both
+     of which bit: the ticker header is already Share's markup parent, so a
+     "have we got the right parent yet" guard early-returns and leaves it
+     sitting where the source put it, in front of the toolbar rather than
+     after it. And the quick-facts row gets the 30-Day Range meter appended
+     into it later by placeItemInsight, so "last child" is not a fixed
+     target there either. Naming the element to sit behind is exact in both. */
+  const anchor = document.getElementById(_shareWideMQ.matches ? 'timeToolbar' : 'btnRefreshPrices');
+  if (!anchor || anchor.nextElementSibling === shareBtn) return;
+  anchor.after(shareBtn);
 }
 placeShareButton();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeShareButton);
+_shareWideMQ.addEventListener('change', placeShareButton);
 let hoverIdx = null;
 let hoverY = null; // raw cursor Y (CSS px, canvas-relative) for the crosshair's horizontal line + price label
 let selectedAbsIdx = null;
@@ -5263,19 +5305,6 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
      makes the line STATIC, which is why toggleCalc no longer rewrites it. */
   const subText = `${defaultQty.toLocaleString()} units · ${hasLimit ? '4h limit' : 'no GE limit'}`;
   const qtyLabel = hasLimit ? 'Qty (4H)' : 'Qty (any)';
-  // placeShareButton() may have moved the real #btnShare node into the
-  // OLD #ratingGauge/.rg-top (a descendant of #sideModule) — replacing
-  // #sideModule's innerHTML below would destroy that node outright, not
-  // just visually: it's a moved node, not a clone, so once its ancestor
-  // subtree is wiped it's gone from the document forever, and every
-  // future placeShareButton() call finds nothing to move. Rescue it back
-  // into the ticker header (its original home) first; renderRatingGauge
-  // further down re-homes it into the freshly-rebuilt .rg-top via its own
-  // placeShareButton() call, same as any other render.
-  const rescueShareBtn = $('#btnShare');
-  if (rescueShareBtn && $('#sideModule')?.contains(rescueShareBtn)) {
-    $('#tickerHeader')?.appendChild(rescueShareBtn);
-  }
   $("#sideModule").innerHTML = `
     <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
       <div class="calc-headline-left">
@@ -9095,8 +9124,8 @@ function computeGrade(item, side) {
 const isRoomyLayout = () => window.matchMedia('(min-width: 1024px)').matches;
 const collapseKey = (base) => isRoomyLayout() ? base + '_wide' : base;
 /* Collapsed hides the Buy/grade/Sell scale and the four-row breakdown,
-   leaving the label, the verdict, the bar and Share — everything a repeat
-   user still reads.
+   leaving the label, the verdict and the bar — everything a repeat user
+   still reads.
    Collapsed is the FIRST-LOAD default, matching every other sidebar
    section: Potential Profit, Find Opportunities and all six scanners
    already start shut, so this one starting open made the sidebar's opening
@@ -9296,19 +9325,6 @@ function ratingWhyHtml(gBuy, gSell, tf) {
 
 function renderRatingGauge(item, mountEl, opts = {}) {
   if (!mountEl) return;
-  // This function is called more than once per item load (restoreCalculator,
-  // then refreshItemInsights right after) and unconditionally replaces
-  // mountEl.innerHTML on every path below, early-return included. If
-  // #btnShare is currently living inside mountEl (placeShareButton moved
-  // the real node in on a PRIOR call within this same synchronous flow),
-  // that replacement destroys it outright before this call's own trailing
-  // placeShareButton() ever runs — the node is just gone, not hidden.
-  // Rescue it out first; placeShareButton() at the end of this function
-  // re-homes it into whatever gets built below, same as any other render.
-  const rescueShareBtn = $('#btnShare');
-  if (rescueShareBtn && mountEl.contains(rescueShareBtn)) {
-    $('#tickerHeader')?.appendChild(rescueShareBtn);
-  }
   const isSel = item && selected && String(item.id) === String(selected.id);
   let gBuy = opts.gBuy, gSell = opts.gSell;
   if (gBuy === undefined || gSell === undefined) {
@@ -9401,16 +9417,13 @@ function renderRatingGauge(item, mountEl, opts = {}) {
       '<span class="rg-sub">' + sub + '</span><span class="rg-end rg-end-sell">Sell</span></div>' +
     whyHtml;
   mountEl.classList.toggle('is-collapsed', collapsed);
-  // Rebuilding the mount wipes any child moved into .rg-top — re-place the
-  // Share button (landscape only; see placeShareButton) every render.
-  placeShareButton();
   /* Same widened target as the other two section headers. Re-wired here
-     because the innerHTML above throws the previous row away. Share, the
-     help chip and the chevron are all skipped — only the row's own space
-     and the "Analyst Rating" label toggle it. */
+     because the innerHTML above throws the previous row away. The help chip
+     and the chevron are skipped — only the row's own space and the
+     "Analyst Rating" label toggle it. */
   wireHeaderToggle(mountEl.querySelector('.rg-top'),
                    mountEl.querySelector('.rg-toggle'),
-                   '#btnShare, .pg-help, .rg-toggle, button, a');
+                   '.pg-help, .rg-toggle, button, a');
 }
 
 /* Quick-facts strip below the chart: live insta-buy/insta-sell with "…ago"
@@ -12009,17 +12022,6 @@ function renderOverMax(m) {
   $("#tickerLivePrice").textContent = abbreviateNumber(o.wts);
   $("#tickerChange").innerHTML = `<span class="neutral">— Estimated Value</span>`;
   recommendedBuy = o.wtb; recommendedSell = o.wts;
-  // This rebuild replaces #sideModule with the Over-Max module entirely —
-  // no #ratingGauge div at all afterward, so if #btnShare is currently
-  // living inside the OLD one, rescue it back to the ticker header before
-  // the wipe (same reasoning as renderRatingGauge/restoreCalculator) or
-  // it's destroyed with nowhere for placeShareButton() to ever find it
-  // again — over-max items have no gauge to nest it in, so parked next to
-  // Save is the correct permanent home here, not a transient stop.
-  const rescueShareBtnOverMax = $('#btnShare');
-  if (rescueShareBtnOverMax && $('#sideModule')?.contains(rescueShareBtnOverMax)) {
-    $('#tickerHeader')?.appendChild(rescueShareBtnOverMax);
-  }
   $("#sideModule").innerHTML = `
     <div class="calc-headline-label" style="color: var(--fav-gold);">${uiIcon('crown')} Over-Max Consensus Engine</div>
     <div style="font-size: 10px; color: var(--text-muted); margin: 6px 0; line-height: 1.4;">
