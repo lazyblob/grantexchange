@@ -3350,7 +3350,13 @@ button, input { touch-action: manipulation; }
 .qf-age { font-size:10px; font-weight:600; }
 .qf-fresh { color:var(--rs-green-deep); } .qf-ok { color:var(--text-muted); } .qf-stale { color:var(--rs-gold-deep); }
 .qf-sep { color:var(--border-light); flex:0 0 auto; }
-.qf-row { display:flex; align-items:center; gap:8px; min-width:0; position:relative; }
+/* wrap + row-gap so the figures have somewhere to go when fitQuickFactsRow
+   decides they do not fit; without the wrap they would simply overflow. */
+.qf-row { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; min-width:0; position:relative; }
+/* A line of its own, starting at the left edge — under Fill/VP, in the space
+   that was empty anyway. margin-left:auto is what parks it at the far right
+   on a shared line, and it is exactly what has to go when it gets its own. */
+.qf-row.is-stacked .quick-facts { margin-left:0; }
 /* Controls lead, figures trail. Set with `order` rather than by moving the
    markup: #btnRefreshPrices and #chartTools are looked up by id from several
    places and #quickFacts has its innerHTML rewritten every price tick, so
@@ -9400,6 +9406,51 @@ function renderQuickFacts(m, node) {
      Spread stays: it is the one figure in this row nothing else on the page
      prints, and the FAQ points at it by name. */
   el.innerHTML = parts.join('<span class="qf-sep">·</span>'); row.style.display = '';
+  fitQuickFactsRow();
+}
+/* Spread and Vol get a line of their own when the row cannot hold them. On a
+   600M item the 30-Day Range prints two ten-digit numbers and there is simply
+   no room left; the strip used to be squeezed until SPREAD sat under the range
+   bar and VOL was cut off entirely.
+
+   `flex-wrap: wrap` on the row does the wrapping. All this decides is where
+   the strip sits ONCE wrapped: `margin-left: auto` is what parks it at the far
+   right of a shared line, and on a line of its own that same margin strands it
+   on the right instead of putting it under Fill/VP where the space is.
+
+   So the test is "is it on a different line from Refresh", not "is it
+   clipped". Clipping was the first version's signal and it never fired — once
+   the row wraps, the strip is never squeezed, so adding flex-wrap destroyed
+   the very condition being measured. Comparing line positions asks the
+   question that is still true afterwards.
+
+   No feedback loop: auto margins resolve to zero for line-breaking, so
+   removing one cannot pull the strip back up onto line one and start the
+   toggle oscillating. */
+function fitQuickFactsRow() {
+  const row = document.getElementById('quickFactsRow');
+  const qf = document.getElementById('quickFacts');
+  const ref = document.getElementById('btnRefreshPrices');
+  if (!row || !qf || !ref) return;
+  const wrapped = qf.getBoundingClientRect().top > ref.getBoundingClientRect().top + 4;
+  row.classList.toggle('is-stacked', wrapped);
+}
+/* Watch the ROW, not just the render. renderQuickFacts calls the fit, but the
+   30-Day Range meter is moved into this row by placeItemInsight afterwards —
+   so at render time the row has not wrapped yet and the answer is always
+   "no". Measured before this: at 900x800 the strip was visibly on line two
+   while the class was still off. The row's height is what changes when it
+   wraps, and toggling a margin does not change that height, so observing it
+   cannot feed back. */
+let _qfFitRaf = 0;
+const _scheduleQfFit = () => {
+  if (_qfFitRaf) return;
+  _qfFitRaf = requestAnimationFrame(() => { _qfFitRaf = 0; fitQuickFactsRow(); });
+};
+window.addEventListener('resize', _scheduleQfFit);
+if ('ResizeObserver' in window) {
+  const _qfRow = document.getElementById('quickFactsRow');
+  if (_qfRow) new ResizeObserver(_scheduleQfFit).observe(_qfRow);
 }
 
 /* One call every price-render site adds to keep the insights row in sync.
