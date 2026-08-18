@@ -11601,9 +11601,15 @@ function syncChartReset() {
   b.setAttribute('aria-label', t);
   /* The word follows the job. Leaving it on "Refresh" while the button is
      gold and about to undo a zoom would make the label the least accurate
-     thing on the row. */
+     thing on the row.
+     "Reset", not "Reset view": one word is enough on a button that is already
+     gold and already carries a title spelling out exactly what gets reset.
+     It does not make the button width-stable — measured, "Refresh" is 81px
+     and "Reset" 70 — but 11px narrower beats "Reset view" widening it by
+     ~30, and the 30-Day Range meter beside it flexes, so the slack is
+     absorbed rather than shunting the figures at the end of the row. */
   const lbl = document.getElementById('refreshLabel');
-  if (lbl) lbl.textContent = dirty ? 'Reset view' : 'Refresh';
+  if (lbl) lbl.textContent = dirty ? 'Reset' : 'Refresh';
 }
 /* Put the hand-nudged targets back on the engine's own numbers. Done from
    the CURRENT latest snapshot so the boxes correct the instant you click,
