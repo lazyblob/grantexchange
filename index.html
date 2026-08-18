@@ -3310,6 +3310,9 @@ button, input { touch-action: manipulation; }
   -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:5px 2px; margin:3px 0 0; font-size:11px; color:var(--text-muted); }
 .quick-facts::-webkit-scrollbar { display:none; }
 .qf-cell { display:inline-flex; align-items:baseline; gap:4px; white-space:nowrap; flex:0 0 auto; }
+/* A tooltip nobody knows is there is not a tooltip. The help cursor is the
+   only signal a native title gets, and it costs nothing. */
+.qf-cell[title], .ins-end[title] { cursor: help; }
 .qf-k { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
 .qf-v { font-size:12px; font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums; }
 .qf-age { font-size:10px; font-weight:600; }
@@ -3982,9 +3985,18 @@ button, input { touch-action: manipulation; }
             <span class="ins-fill" id="insFill"></span>
             <span class="ins-marker" id="insMarker"><span class="ins-price" id="insPrice"></span></span>
           </div>
+          <!-- Titles on .ins-end, not on the value, so the figure and its
+               "30-DAY LOW/HIGH" caption are one hover target. Static text, so
+               it lives here rather than being rewritten by renderItemInsight
+               on every price tick.
+               "sold for" is true to within a bucket: the series these come
+               from is averaged per interval, so this is the lowest/highest
+               INTERVAL, not necessarily one individual print. Close enough to
+               state plainly in a tooltip; noted here so nobody later reads the
+               copy as a promise about a single trade. -->
           <div class="ins-ends">
-            <span class="ins-end"><span class="ins-val" id="insLo">—</span><span class="ins-elabel">30-Day Low</span></span>
-            <span class="ins-end ins-end-hi"><span class="ins-val" id="insHi">—</span><span class="ins-elabel">30-Day High</span></span>
+            <span class="ins-end" title="The lowest price this item sold for in the last 30 days."><span class="ins-val" id="insLo">—</span><span class="ins-elabel">30-Day Low</span></span>
+            <span class="ins-end ins-end-hi" title="The highest price this item sold for in the last 30 days."><span class="ins-val" id="insHi">—</span><span class="ins-elabel">30-Day High</span></span>
           </div>
         </div>
       </div>
@@ -9329,7 +9341,12 @@ function renderQuickFacts(m, node) {
   if (!m || !node) { row.style.display = 'none'; return; }
   const high = node.high ?? node.avgHighPrice ?? 0, low = node.low ?? node.avgLowPrice ?? 0;
   const spread = (high > 0 && low > 0) ? high - low : 0, vol = dailyVolume(m.id);
-  const cell = (k, v, extra = '') => `<span class="qf-cell"><span class="qf-k">${k}</span><span class="qf-v">${v}</span>${extra}</span>`;
+  /* `tip` lands on the whole cell, so the label and the figure share one
+     hover target — the reported behaviour was "hover over the word spread
+     AND the spread value", and splitting them would make half the control
+     silently inert. */
+  const cell = (k, v, extra = '', tip = '') =>
+    `<span class="qf-cell"${tip ? ` title="${tip}"` : ''}><span class="qf-k">${k}</span><span class="qf-v">${v}</span>${extra}</span>`;
   /* Insta-buy and Insta-sell used to lead this strip. They are the same two
      numbers the Target boxes print in their captions, a couple of inches
      above — and the two carried DIFFERENT ages, because the boxes were aged
@@ -9338,7 +9355,12 @@ function renderQuickFacts(m, node) {
      correct ones, so they moved up to the captions and the duplicate cells
      are gone; Spread, Vol and Limit are unique to this row and stay. */
   const parts = [];
-  if (spread > 0) parts.push(cell('Spread', fmtGp(spread)));
+  /* Deliberately says what it is NOT. The spread is the figure people mistake
+     for their profit, and the FAQ already has to spend a paragraph on the
+     difference — a 2,000gp item with a 40gp spread keeps nothing once the 2%
+     tax lands. Naming the tax here is the whole value of the tooltip. */
+  if (spread > 0) parts.push(cell('Spread', fmtGp(spread), '',
+    'Insta-buy minus insta-sell right now, before tax. Room to work with, not profit — the 2% GE tax comes out of it.'));
   parts.push(cell('Vol', vol ? abbreviateNumber(vol) + '/day' : '—'));
   /* Limit was the third cell. Potential Profit's subline states it in full a
      few inches below — "18,000 units · 4h limit" — and unlike Vol that is
