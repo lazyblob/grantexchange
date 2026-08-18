@@ -1617,15 +1617,32 @@ button, input { touch-action: manipulation; }
      still give ground — the list shrinks 100x faster (see .watchlist-content),
      so this only yields once the list is already at its floor. */
   /* Takes what it needs and yields 100x faster than the list, so when the two
-     together overflow the panel it is the SCANNER that scrolls. min-height
+     together overflow the panel it is the SCANNER that scrolls. The floor
      keeps its title bar intact while it is the one giving ground — measured
-     without it, a 60-item list squeezed this to 7px, i.e. the section header
+     without one, a 60-item list squeezed this to 7px, i.e. the section header
      itself was sliced. Only once it is down to that bar does the list start
-     to scroll, which with a long enough list is unavoidable. */
+     to scroll, which with a long enough list is unavoidable.
+
+     That floor was a flat 32px while the bar measures 35px plus its 1px
+     rule, so the scanner was squeezed 4px past its own header: the closed
+     bar got a scrollbar of its own and a sliced header — a control with
+     nothing inside it offering to scroll. 36px is the measured height, not
+     another guess.
+     `min-height: min-content` looked like the way to stop guessing
+     altogether, and is not: heights have no min-content/max-content
+     distinction the way widths do, so it resolves to the FULL content
+     height and the scanner grew to 1431px and swallowed the whole panel.
+     The number stays; what makes it safe is the rule below. */
   .find-opps-host {
-    flex: 0 100 auto; min-height: 32px;
+    flex: 0 100 auto; min-height: 36px;
     overflow-y: auto; overscroll-behavior: contain;
   }
+  /* Closed, the floor stops mattering: content-sized and unshrinkable, so
+     the host is exactly the bar however tall the bar happens to be. The
+     state that has nothing to scroll can no longer be squeezed into
+     scrolling it, whatever --hdr-size does at some future breakpoint —
+     which is the half of this that isn't a magic number. */
+  .find-opps-host:has(.find-opps-body.collapsed) { flex: 0 0 auto; overflow: hidden; }
   /* While dragging, kill text selection and pointer noise across the whole
      page — without this a fast drag selects list rows behind the cursor. */
   body.wl-resizing { user-select: none; cursor: row-resize; }
