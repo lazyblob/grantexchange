@@ -3268,10 +3268,17 @@ button, input { touch-action: manipulation; }
 #btnShare.fav-btn:hover, #btnShare.fav-btn:focus-visible { color:#fff; background:transparent; border:0; }
 #btnShare .fav-label { display:none; }
 #btnShare svg { width:15px; height:15px; }
-/* Wide: after the timeframe pills. The header's own 12px column gap plus
-   this margin is what separates an ACTION from a set of mutually exclusive
-   OPTIONS — without it the eye reads seven items in one group. */
-.ticker-header #btnShare { margin-left:6px; }
+/* Wide: parked at the far right of the header, not tucked in behind 5Y.
+   An 18px gap was enough to keep this from reading as a seventh timeframe,
+   but "not quite touching the pills" still leaves it in their orbit — the
+   eye takes the whole run from 1D to the glyph as one busy strip. An auto
+   margin puts the row's empty space BETWEEN the options and the action,
+   which is where it does some work: the pills end, nothing, then a single
+   control against the sidebar edge.
+   The toolbar is `flex: 0 1 auto` with its own overflow-x, so on a narrow
+   window it gives up the slack first and scrolls, exactly as it did when
+   the space after it was empty. */
+.ticker-header #btnShare { margin-left:auto; }
 /* Narrow: the quick-facts row, sharing order:3 with Refresh so it falls in
    right after it on source order alone — no renumbering of the four
    `order`s this row already depends on. 26px to match .ct-btn and
