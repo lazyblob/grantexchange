@@ -1293,8 +1293,43 @@ button, input { touch-action: manipulation; }
 /* Only applied once the handle has actually been dragged, so the default
    sizing keeps working untouched for everyone else. */
 .chart-container.user-sized { flex: 0 0 auto; height: var(--chart-h); min-height: 0; max-height: none; }
-@media (min-width: 1024px) {
+/* 641px, not 1024. The side-by-side row layout starts at 640 — .wl-resize,
+   the WIDTH handle, already says so in its own comment — but the height
+   handle was gated at 1024, so every window between the two had no way to
+   resize the chart at all. Reported from an 878x842 window: display computed
+   to `none` and there was nothing to drag.
+   The landscape-phone rule further down is later in source and keeps its own
+   14px sizing, so this does not reach it. */
+@media (min-width: 641px) {
   .ch-resize { display: block; flex: 0 0 10px; height: 10px; margin: -4px 0; cursor: row-resize; position: relative; z-index: 6; touch-action: none; }
+}
+/* …and the band needs the same two supports the other layouts already have,
+   or the handle would be present and useless.
+   .wrap is a fixed 100dvh here (the min-height:100dvh variant is >=1024
+   only), so a hand-sized chart would be clipped rather than pushing what is
+   under it down. height:auto once user-sized, with no floor, so growing the
+   chart grows the page AND shrinking it closes the gap up — the same net
+   effect as the >=1024 rule, reached with one declaration because this band
+   has no min-height to cancel. Reset drops .user-sized and 100dvh returns.
+   The sidebar cap has to stop being a percentage for the same reason it did
+   in every other layout: with .wrap's height indefinite, `max-height: 100%`
+   resolves to `none` and a long favourites list grows the page instead of
+   scrolling inside itself. */
+@media (min-width: 641px) and (max-width: 1023.98px) {
+  .wrap:has(.chart-container.user-sized) { height: auto; }
+}
+/* HEIGHT, not max-height: the panel is exactly as tall as the main column, so
+   it always reaches the row the column ends on rather than stopping wherever
+   its own content happens to run out. Capped by the viewport for the case
+   where the column is taller than the screen. --main-h is measured in JS; see
+   sidebarCap.
+   >=641px, matching .ch-resize and .wl-resize rather than the 1024 this
+   started at. The band between was the one place the sidebar could still be
+   the taller column: measured at 878x842, shrinking the chart left the panel
+   198px past the main column's last row — the same blank band the desktop
+   rule exists to prevent. */
+@media (min-width: 641px) {
+  .watchlist-container { height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
 }
 /* Both touch layouts — portrait AND landscape phone. Landscape used to be
    the one band with no handle at all, on the reasoning that a ~390px-tall
@@ -1382,11 +1417,8 @@ button, input { touch-action: manipulation; }
      past the "VOL 1.47M/day" row it sits beside, and expanding a scanner
      shoved the whole page down. Capped to the column, the scanner scrolls
      inside its own box instead and nothing else moves. */
-  /* HEIGHT, not max-height: the panel is exactly as tall as the main column,
-     so it always reaches the row the column ends on rather than stopping
-     wherever its own content happens to run out. Capped by the viewport for
-     the case where the column is taller than the screen. */
-  .watchlist-container { height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
+  /* The panel's own height rule moved to its own >=641px block below, so the
+     641-1023 band gets it too — see there. */
   /* Who absorbs the difference, and who gives it back. The favourites list
      GROWS into whatever the panel has spare — so a short list simply has room
      under its rows, which is what a watchlist looks like, rather than leaving
@@ -12841,9 +12873,10 @@ setItem._userPicked = false;
   const main = document.querySelector('.main-column');
   const side = document.querySelector('.watchlist-container');
   if (!area || !main || !side) return;
-  /* Side-by-side layouts only. Stacked, the sidebar IS the page below the
-     chart and capping it would just hide the list behind a second scrollbar. */
-  const sideBySideMQ = window.matchMedia('(min-width: 1024px)');
+  /* Side-by-side layouts only — the same 641px the CSS uses. Stacked, the
+     sidebar IS the page below the chart and capping it would just hide the
+     list behind a second scrollbar. */
+  const sideBySideMQ = window.matchMedia('(min-width: 641px)');
   let last = -1, raf = 0;
   const measure = () => {
     raf = 0;
