@@ -1353,6 +1353,17 @@ button, input { touch-action: manipulation; }
    hands 6px back to the chart it exists to resize. */
 @media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .ch-resize { flex: 0 0 14px; height: 14px; margin: -5px 0; }
+  /* Off centre, and only here. The strip spans the whole column so the drag
+     works anywhere along it, but nobody aims at an invisible strip — they aim
+     at the pill, and a centred pill on a landscape iPhone puts the thumb in
+     the home indicator's swipe band. Reported as not being able to grab the
+     handle without dismissing the app. Nothing else on the page can move out
+     of the way: the indicator is centred on the VIEWPORT, so the pill goes
+     left. A quarter of the way across the chart column lands it around a
+     sixth of the way across the screen, clear of the band by a wide margin
+     rather than by a few pixels — an offset small enough to still read as
+     centre-ish would have kept the thumb right where the problem is. */
+  .ch-resize::before { left: 25%; }
 }
 @media (min-width: 640px) {
   .wl-resize { display: block; flex: 0 0 8px; align-self: stretch; cursor: col-resize; position: relative; margin: 0 -4px; z-index: 6; touch-action: none; }
