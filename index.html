@@ -1348,39 +1348,31 @@ button, input { touch-action: manipulation; }
   .ch-resize::before { width: 46px; height: 3px; }
   .ch-resize.dragging::before { width: 72px; }
 }
-/* …but a 20px strip is a lot of a 390px screen to spend on chrome, so
-   landscape gets a shorter one. 14px is still a comfortable thumb target and
-   hands 6px back to the chart it exists to resize. */
-@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
-  .ch-resize { flex: 0 0 14px; height: 14px; margin: -5px 0; }
-  /* Off centre, and only here. The strip spans the whole column so the drag
-     works anywhere along it, but nobody aims at an invisible strip — they aim
-     at the pill, and a centred pill on a landscape iPhone puts the thumb in
-     the home indicator's swipe band. Reported as not being able to grab the
-     handle without dismissing the app. Nothing else on the page can move out
-     of the way: the indicator is centred on the VIEWPORT, so the pill goes
-     left. A quarter of the way across the chart column lands it around a
-     sixth of the way across the screen, clear of the band by a wide margin
-     rather than by a few pixels — an offset small enough to still read as
-     centre-ish would have kept the thumb right where the problem is. */
-  .ch-resize::before { left: 25%; }
-}
-/* ── Tap to maximise, instead of dragging ────────────────────────────────
-   On a touch screen the drag itself was the problem, not the range it
-   covered: the strip sits ~48px above the bottom edge in landscape, which is
-   iOS gesture territory, and moving the grip left of the home indicator made
-   it reachable without making it pleasant. A drag is a poor gesture for
-   "make this bigger" on a phone regardless — it needs a precise grab on a
-   14px strip and a steady pull.
-   So touch gets a toggle instead, offering the two heights that actually
-   matter: the layout's default, and the same ceiling the drag would have
-   reached. A mouse keeps the strip, because a drag with a cursor is fine and
-   it can size the chart to anything between those two.
+/* ── Tap to maximise, alongside the drag ─────────────────────────────────
+   Every touch layout gets the toggle: it offers the two heights that
+   actually matter — the layout's default, and the same ceiling a full drag
+   would reach — in one tap, which is a better gesture for "make this bigger"
+   than a precise grab on a thin strip and a steady pull.
+   It ADDS to the strip rather than replacing it. Hiding the strip on every
+   coarse pointer was too wide a cut: portrait's handle sits 365px above the
+   bottom edge and never collided with anything, and losing the fine control
+   there was a straight loss.
+   A mouse gets no button: a cursor drag is fine, and it already covers every
+   height between the two the button offers.
    LAST of the .ch-resize rules on purpose — same specificity as the blocks
-   above, so this wins on order. */
+   above, so the one below wins on order. */
 .ct-tall { display: none; }
 @media (pointer: coarse) {
   .ct-tall { display: inline-flex; align-items: center; }
+}
+/* The one layout where the strip goes. Short landscape puts it ~48px above
+   the bottom edge, inside iOS's home-indicator swipe band — reported as not
+   being able to grab the handle without dismissing the app. Moving the grip
+   left of the indicator made it reachable without making it pleasant, so the
+   strip gives way to the button here and the off-centre pill that went with
+   it is gone too: a 390px-tall screen also had the least room to spend 14px
+   on chrome. Portrait and desktop keep the drag. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .ch-resize { display: none; }
 }
 @media (min-width: 640px) {
