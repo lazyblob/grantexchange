@@ -12783,12 +12783,32 @@ setItem._userPicked = false;
     box.classList.remove('user-sized');
     box.style.removeProperty('--chart-h');
   };
-  /* Is the chart sitting at the ceiling right now? Compared against the live
-     maxH() rather than a stored flag, so a rotate or a window resize that
-     moves the ceiling leaves the button telling the truth. The 2px slack
-     absorbs the rounding in setH. */
+  /* The BUTTON's target is the SCREEN, not maxH(). maxH() is the DRAG's
+     ceiling and is deliberately generous — 1.6 viewports in landscape, so
+     that someone pulling the handle down can keep going. Tapping is not
+     pulling: it is one gesture with one outcome, and it should land
+     somewhere you can defend without a second gesture to undo it.
+     Measured on a 932x430 landscape phone: the chart is 300px at rest and
+     already reaches within 53px of the bottom of the screen, so the drag
+     ceiling of 688 was more than twice the chart and buried everything
+     under it. There simply is not much unused space to claim there, and the
+     button now claims exactly that much: the chart's bottom meets the bottom
+     of the screen and stops.
+     Portrait is barely affected, which is the check that this is the right
+     rule rather than a landscape special case — 724 before, 736 now.
+     chartTop is a DOCUMENT coordinate, so this is the same number whatever
+     the page is scrolled to, and nothing above the chart moves when the
+     chart grows. */
+  const fitH = () => {
+    const topDoc = box.getBoundingClientRect().top + window.scrollY;
+    return Math.max(MIN, Math.min(maxH(), Math.round(window.innerHeight - topDoc)));
+  };
+  /* Is the chart sitting at that height right now? Compared live rather than
+     against a stored flag, so a rotate or a resize that moves the screen
+     leaves the button telling the truth. The 2px slack absorbs setH's
+     rounding. */
   const atMax = () => box.classList.contains('user-sized') &&
-    Math.abs(parseInt(box.style.getPropertyValue('--chart-h'), 10) - maxH()) <= 2;
+    Math.abs(parseInt(box.style.getPropertyValue('--chart-h'), 10) - fitH()) <= 2;
   const syncTall = () => {
     if (!tallBtn) return;
     const on = atMax();
@@ -12804,7 +12824,7 @@ setItem._userPicked = false;
   if (tallBtn) tallBtn.addEventListener('click', () => {
     const goingUp = !atMax();
     if (goingUp) {
-      const h = maxH();
+      const h = fitH();
       setH(h);
       /* Persisted the same way a finished drag is, under the same per-layout
          key, so the two controls cannot disagree about what was chosen. */
