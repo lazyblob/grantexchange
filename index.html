@@ -1328,8 +1328,17 @@ button, input { touch-action: manipulation; }
    the taller column: measured at 878x842, shrinking the chart left the panel
    198px past the main column's last row — the same blank band the desktop
    rule exists to prevent. */
+/* max(): the column's height is the TARGET, --fav-floor is the FLOOR. Slimmer
+   rows alone cannot deliver "15 favourites before it scrolls" — measured, a
+   900px window would need 30.8px rows and a 720px one 18.8px, which is a row
+   shorter than the icon in it. The panel has to be allowed past the column
+   instead, and only by as much as the rows actually present require: the
+   floor is measured as chrome + min(favourites, 15) rows, so a short list
+   still ends where its content ends and nothing re-opens the blank band the
+   height rule exists to close. Desktop only; --fav-floor is unset elsewhere
+   and max() then ignores it. */
 @media (min-width: 641px) {
-  .watchlist-container { height: min(calc(100dvh - 16px), var(--main-h, 100dvh)); }
+  .watchlist-container { height: max(min(calc(100dvh - 16px), var(--main-h, 100dvh)), var(--fav-floor, 0px)); }
 }
 /* Both touch layouts — portrait AND landscape phone. Landscape used to be
    the one band with no handle at all, on the reasoning that a ~390px-tall
@@ -1594,7 +1603,16 @@ button, input { touch-action: manipulation; }
    Pair this with .find-opps-host's shrink:100 below; the two together are the
    whole rule, and changing one without the other is what made the favourites
    collapse to a single row. */
-.watchlist-content { flex: 1 1 auto; overflow-y: auto; min-height: 0; max-height: var(--fav-h, none); }
+/* min-height is the list's RESERVE, not zero, whenever the floor is in play
+   (see sidebarCap). The panel's height already sets aside chrome + up to 15
+   rows, but reserving it in the panel is not the same as the list keeping it:
+   flex hands the scanner shrink:100 against the list's shrink:1, and
+   proportional shrink still took ~3px off the list — enough to clip the
+   eleventh row and start it scrolling while the scanner sat 3px above its
+   own floor. With the reserve declared, the scanner yields all of it and
+   scrolls, which is the rule everywhere else on this panel. Defaults to 0,
+   so every layout that does not set --fav-min is exactly as it was. */
+.watchlist-content { flex: 1 1 auto; overflow-y: auto; min-height: var(--fav-min, 0px); max-height: var(--fav-h, none); }
 /* The fixed-content siblings do NOT shrink. This is what shrink:100 on the
    list was really protecting against — a half-height Recommended Flip to save
    a list that can simply scroll — and pinning them says it directly instead
@@ -1897,7 +1915,10 @@ button, input { touch-action: manipulation; }
 .scan-row.loading { color: var(--text-muted); cursor: default; }
 /* No per-row divider — a little extra vertical padding plus the hover fill
    below is enough separation without a line between every single row. */
-.wl-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+/* 7px of vertical padding, not 10. A 41px row on a 900px-tall window let the
+   list show 11 favourites; 35px shows 13, and the row still clears its 21px
+   of content comfortably — the icon sets the floor here, not the padding. */
+.wl-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
 .wl-item:hover { background: var(--bg-input); }
 /* Selected row uses a white OUTLINE (not a border) so it paints on top of the
    at-high / at-low green/gold borders + pulse box-shadow and reads identically
@@ -13051,9 +13072,64 @@ setItem._userPicked = false;
      sidebar IS the page below the chart and capping it would just hide the
      list behind a second scrollbar. */
   const sideBySideMQ = window.matchMedia('(min-width: 641px)');
-  let last = -1, raf = 0;
+  /* "At least 15 before it scrolls" is a desktop promise: the narrower
+     side-by-side band has neither the height to keep nor the room to spend. */
+  const deskMQ = window.matchMedia('(min-width: 1024px)');
+  const FAV_TARGET = 15;
+  let last = -1, lastFloor = -1, raf = 0;
+  /* Runs on its own, BEFORE the --main-h deadband below: adding a favourite
+     changes what the panel needs without changing the main column at all, so
+     gating this behind that deadband would leave the floor stale exactly when
+     it matters. */
+  const measureFloor = () => {
+    const list = document.getElementById('watchlistContent');
+    /* Not while the splitter is in charge. Dragging it sets --fav-h to size
+       the list deliberately, and a floor pushing the other way would be the
+       app arguing with the user about a height they just chose. */
+    if (!deskMQ.matches || !list || side.style.getPropertyValue('--fav-h')) {
+      if (lastFloor !== 0) {
+        side.style.removeProperty('--fav-floor');
+        side.style.removeProperty('--fav-min');
+        lastFloor = 0;
+      }
+      return;
+    }
+    const rows = list.querySelectorAll('.wl-item');
+    const rowH = rows.length ? rows[0].getBoundingClientRect().height : 0;
+    if (!rowH) return;
+    /* Every sibling counts at the height it CANNOT go below, not the height
+       it happens to be. Find Opportunities is the one flexible child, and
+       measuring it as-rendered made the floor chase it: expanding a scanner
+       grew the panel, which gave the scanner more room, which grew the floor
+       again — and in between, the list lost a row and started scrolling at
+       eleven favourites. Costing it at its floor makes the panel height
+       independent of the scanner's state, which puts the established rule
+       back in force: with a fixed panel, shrink:100 against the list's
+       shrink:1 means the SCANNER yields and scrolls, not the list. */
+    let chrome = 0;
+    for (const el of side.children) {
+      if (el === list || getComputedStyle(el).display === 'none') continue;
+      const cs = getComputedStyle(el);
+      const floorPx = parseFloat(cs.minHeight);
+      const h = el.getBoundingClientRect().height;
+      chrome += (cs.flexShrink !== '0' && floorPx > 0) ? Math.min(h, floorPx) : h;
+    }
+    /* Plus the panel's OWN borders. chrome sums the children; the height this
+       floor sets is the container's border box, and leaving the 1px top and
+       bottom out left the list 2px short of 15 rows — 523px for a 525px
+       need, i.e. fourteen rows and a sliver. */
+    const frame = side.getBoundingClientRect().height - side.clientHeight;
+    const reserve = Math.ceil(Math.min(rows.length, FAV_TARGET) * rowH);
+    const need = Math.ceil(chrome + frame) + reserve;
+    if (Math.abs(need - lastFloor) <= 1) return;
+    lastFloor = need;
+    side.style.setProperty('--fav-floor', need + 'px');
+    /* Inherits down to .watchlist-content, which is where it is read. */
+    side.style.setProperty('--fav-min', reserve + 'px');
+  };
   const measure = () => {
     raf = 0;
+    measureFloor();
     if (!sideBySideMQ.matches) { area.style.removeProperty('--main-h'); last = -1; return; }
     const gap = parseFloat(getComputedStyle(main).rowGap) || 0;
     let h = 0, n = 0;
@@ -13076,6 +13152,19 @@ setItem._userPicked = false;
     const ro = new ResizeObserver(schedule);
     ro.observe(main);
     for (const el of main.children) ro.observe(el);
+  }
+  /* The floor needs its own trigger. Everything above watches the MAIN
+     column, and favouriting an item changes what the sidebar needs without
+     touching the main column at all — measured, the floor sat at its
+     first-render value through 4, 15, 16 and 30 favourites.
+     childList on the list rather than a ResizeObserver on the panel: we
+     write --fav-floor to the panel, so observing its size would be observing
+     our own writes. Nothing here ever mutates the list's children, so this
+     cannot feed back. renderWatchlist empties and refills this element
+     rather than replacing it, so one observer holds for the session. */
+  if ('MutationObserver' in window) {
+    const listEl = document.getElementById('watchlistContent');
+    if (listEl) new MutationObserver(schedule).observe(listEl, { childList: true });
   }
   window.addEventListener('resize', schedule);
   if (sideBySideMQ.addEventListener) sideBySideMQ.addEventListener('change', schedule);
