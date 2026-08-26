@@ -3273,7 +3273,7 @@ button, input { touch-action: manipulation; }
    not. Colour carries the affordance instead — muted at rest, white on
    hover/focus, the same as .ct-btn and .qf-refresh next to it. */
 #btnShare { display:none; }
-.ticker-header #btnShare, .qf-row #btnShare { display:inline-flex; }
+.ticker-header #btnShare, .qf-row #btnShare, .panel-left #btnShare { display:inline-flex; }
 #btnShare.fav-btn {
   padding:3px 5px; gap:0; flex:0 0 auto; min-height:0;
   border:0; background:transparent; color:var(--text-muted);
@@ -3292,6 +3292,12 @@ button, input { touch-action: manipulation; }
    window it gives up the slack first and scrolls, exactly as it did when
    the space after it was empty. */
 .ticker-header #btnShare { margin-left:auto; }
+/* Short header: beside the search box instead. .search-group is `flex: 1 1
+   auto`, so this lands hard against the right edge of that row with no
+   margin of its own needed — the search field gives up the width. 36px to
+   sit on the same centre line as the 36px search input rather than floating
+   against its top edge. */
+.panel-left #btnShare { height:36px; flex:0 0 auto; }
 /* Narrow: the quick-facts row, sharing order:3 with Refresh so it falls in
    right after it on source order alone — no renumbering of the four
    `order`s this row already depends on. 26px to match .ct-btn and
@@ -3957,7 +3963,7 @@ button, input { touch-action: manipulation; }
               <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
             </div>
 
-            <div class="search-group">
+            <div class="search-group" id="searchGroup">
               <div class="sbar">
                 <img id="itemIcon" src="" alt="Selected OSRS item icon">
                 <input id="query" placeholder="Search items..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -4538,6 +4544,37 @@ const _coarseMQ = window.matchMedia('(pointer: coarse)');
    rebuild destroyed it outright, and moving out of that subtree retires all
    three. */
 const _shareWideMQ = window.matchMedia('(min-width: 1024px)');
+/* Does the ticker header have room for Share alongside everything else?
+   MEASURED, not thresholded. A fixed width was the obvious approach and is
+   wrong here for the same reason the .fav-btn label rule below already
+   documents: the title group's floor is content-driven, so the header that
+   fits a 650gp "Ruby" does not fit a 59,930,778 "Gilded scimitar", and the
+   number would have to assume the worst case at every width.
+   Worse, the breaking points are not even monotonic — measured by sweeping
+   the sidebar splitter, the header is fine at 686px, clips 5Y at 666, is
+   fine again at 626 (the max-width:620 query drops the Save label and buys
+   back ~60px), clips again at 586, and finally wraps the glyph onto a line
+   of its own at 486. No single threshold describes that.
+   The toolbar's scrollWidth, not its rendered width: it is `flex: 0 1 auto`
+   with its own overflow, so rendered it is whatever it was squeezed to, and
+   the question is whether its CONTENT fits. Using scrollWidth also makes
+   this answer independent of where Share currently is, which is what stops
+   moving it out (freeing room) from immediately moving it back in. */
+function _headerFitsShare() {
+  const hdr = document.getElementById('tickerHeader');
+  const tb = document.getElementById('timeToolbar');
+  const shareBtn = document.getElementById('btnShare');
+  if (!hdr || !tb || !shareBtn) return true;
+  const gap = parseFloat(getComputedStyle(hdr).columnGap) || 0;
+  let need = 0, n = 0;
+  for (const el of hdr.children) {
+    if (el === shareBtn || getComputedStyle(el).display === 'none') continue;
+    need += (el === tb ? tb.scrollWidth : el.getBoundingClientRect().width) + (n ? gap : 0);
+    n++;
+  }
+  need += shareBtn.getBoundingClientRect().width + gap;
+  return need <= hdr.getBoundingClientRect().width;
+}
 function placeShareButton() {
   const shareBtn = document.getElementById('btnShare');
   if (!shareBtn) return;
@@ -4548,9 +4585,27 @@ function placeShareButton() {
      after it. And the quick-facts row gets the 30-Day Range meter appended
      into it later by placeItemInsight, so "last child" is not a fixed
      target there either. Naming the element to sit behind is exact in both. */
-  const anchor = document.getElementById(_shareWideMQ.matches ? 'timeToolbar' : 'btnRefreshPrices');
+  let anchorId;
+  if (!_shareWideMQ.matches) anchorId = 'btnRefreshPrices';
+  /* Third home: beside the search box, one row up. When the header is short
+     — a narrow window, or the sidebar splitter dragged wide — Share was
+     either clipping 5Y behind the toolbar's fade or being pushed onto a line
+     of its own. The top row is the nearest place with room to spare, and
+     Share is a whole-page action rather than a chart control, so it does not
+     look out of place next to the search. */
+  else anchorId = _headerFitsShare() ? 'timeToolbar' : 'searchGroup';
+  const anchor = document.getElementById(anchorId);
   if (!anchor || anchor.nextElementSibling === shareBtn) return;
   anchor.after(shareBtn);
+}
+/* The header's width is driven by the sidebar splitter as much as by the
+   window, and its content floor moves with the item's name and price, so
+   re-decide whenever it changes size. Moving Share does not change the
+   header's width — the column sets that — so observing it cannot feed back
+   on itself, and _headerFitsShare() is placement-independent besides. */
+if ('ResizeObserver' in window) {
+  const _hdrEl = document.getElementById('tickerHeader');
+  if (_hdrEl) new ResizeObserver(() => placeShareButton()).observe(_hdrEl);
 }
 placeShareButton();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeShareButton);
