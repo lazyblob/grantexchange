@@ -3281,6 +3281,9 @@ button, input { touch-action: manipulation; }
 #btnShare.fav-btn:hover, #btnShare.fav-btn:focus-visible { color:#fff; background:transparent; border:0; }
 #btnShare .fav-label { display:none; }
 #btnShare svg { width:15px; height:15px; }
+/* Pills to the second row, Share to the end of the first. Only set when
+   placeShareButton has measured that the name row can take it — see there. */
+.ticker-header.hdr-share-inline .toolbar { order: 1; }
 /* Wide: parked at the far right of the header, not tucked in behind 5Y.
    An 18px gap was enough to keep this from reading as a seventh timeframe,
    but "not quite touching the pills" still leaves it in their orbit — the
@@ -4560,7 +4563,7 @@ const _shareWideMQ = window.matchMedia('(min-width: 1024px)');
    the question is whether its CONTENT fits. Using scrollWidth also makes
    this answer independent of where Share currently is, which is what stops
    moving it out (freeing room) from immediately moving it back in. */
-function _headerFitsShare() {
+function _rowFitsShare(excludeToolbar) {
   const hdr = document.getElementById('tickerHeader');
   const tb = document.getElementById('timeToolbar');
   const shareBtn = document.getElementById('btnShare');
@@ -4569,11 +4572,33 @@ function _headerFitsShare() {
   let need = 0, n = 0;
   for (const el of hdr.children) {
     if (el === shareBtn || getComputedStyle(el).display === 'none') continue;
-    need += (el === tb ? tb.scrollWidth : el.getBoundingClientRect().width) + (n ? gap : 0);
+    if (el === tb) { if (excludeToolbar) continue; need += tb.scrollWidth + (n ? gap : 0); n++; continue; }
+    need += el.getBoundingClientRect().width + (n ? gap : 0);
     n++;
   }
   need += shareBtn.getBoundingClientRect().width + gap;
   return need <= hdr.getBoundingClientRect().width;
+}
+/* Has the toolbar taken a row of its own? Asked geometrically — is it below
+   the item name — rather than by comparing its width to the header's. The
+   width comparison was the first attempt and silently never fired: the
+   toolbar's `flex: 1 1 100%` is 100% of the CONTENT box, while clientWidth
+   includes the header's 4px of side padding, so it measured 8px short at
+   every width and the name-row placement never happened.
+   True regardless of where Share currently sits, so reading it cannot feed
+   back on the placement it decides. */
+function _toolbarOwnsARow() {
+  const hdr = document.getElementById('tickerHeader');
+  const tb = document.getElementById('timeToolbar');
+  if (!hdr || !tb) return false;
+  const shareBtn = document.getElementById('btnShare');
+  let firstTop = null;
+  for (const el of hdr.children) {
+    if (el === tb || el === shareBtn || getComputedStyle(el).display === 'none') continue;
+    const b = el.getBoundingClientRect().bottom;
+    if (firstTop === null || b > firstTop) firstTop = b;
+  }
+  return firstTop !== null && tb.getBoundingClientRect().top >= firstTop - 2;
 }
 function placeShareButton() {
   const shareBtn = document.getElementById('btnShare');
@@ -4585,15 +4610,32 @@ function placeShareButton() {
      after it. And the quick-facts row gets the 30-Day Range meter appended
      into it later by placeItemInsight, so "last child" is not a fixed
      target there either. Naming the element to sit behind is exact in both. */
-  let anchorId;
+  const hdr = document.getElementById('tickerHeader');
+  let anchorId, inline = false;
   if (!_shareWideMQ.matches) anchorId = 'btnRefreshPrices';
-  /* Third home: beside the search box, one row up. When the header is short
-     — a narrow window, or the sidebar splitter dragged wide — Share was
+  else if (_toolbarOwnsARow()) {
+    /* The header is narrow enough that the timeframe pills have taken a row
+       to themselves — which means the NAME row is now half empty. Measured
+       in the reported case: a ~500px header with the sidebar dragged wide,
+       "Gilded scimitar" and its star using 290 of it. Sending Share to the
+       search bar there squeezed it against the column edge while 210px sat
+       unused one line down. So it goes on the name row instead, and only
+       falls through to the search bar if it will not fit even there. */
+    inline = _rowFitsShare(true);
+    anchorId = inline ? 'timeToolbar' : 'searchGroup';
+  }
+  /* Beside the search box, one row up. When the header is short but the pills
+     are still sharing the name row, there is no spare line to use — Share was
      either clipping 5Y behind the toolbar's fade or being pushed onto a line
-     of its own. The top row is the nearest place with room to spare, and
-     Share is a whole-page action rather than a chart control, so it does not
-     look out of place next to the search. */
-  else anchorId = _headerFitsShare() ? 'timeToolbar' : 'searchGroup';
+     of its own. The top row is the nearest place with room, and Share is a
+     whole-page action rather than a chart control, so it does not look out of
+     place next to the search. */
+  else anchorId = _rowFitsShare(false) ? 'timeToolbar' : 'searchGroup';
+  /* order:1 on the toolbar, so Share (order 0, last of the order-0 items in
+     source) sorts onto the name row ahead of it. The DOM anchor stays
+     `after the toolbar` either way — `order` decides which ROW it lands on,
+     and its own auto margin then parks it at the right end of that row. */
+  if (hdr) hdr.classList.toggle('hdr-share-inline', inline);
   const anchor = document.getElementById(anchorId);
   if (!anchor || anchor.nextElementSibling === shareBtn) return;
   anchor.after(shareBtn);
