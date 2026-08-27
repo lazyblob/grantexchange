@@ -2927,6 +2927,26 @@ function updateMetaForItem(m) {
   renderItemSeo(m);
 }
 
+/* ── Prerendered item pages ────────────────────────────────────────────────
+   Only a subset of items has a static page at /item/<slug>/ (see
+   prerender_items.py). The generator writes the list to item-pages.js, which
+   loads before this file, so both the canonical URL and the related links can
+   point at a real document instead of guessing and linking a 404.
+   Empty until the generator has run, in which case everything below falls
+   back to the ?q= behaviour the site had before. */
+const PGE_PAGES = (() => {
+  try { return new Set((window.__PGE_PAGES__ || []).map(n => String(n).toLowerCase())); }
+  catch (e) { return new Set(); }
+})();
+/* Mirrors slugify() in prerender_items.py. If these two ever disagree the
+   links point at pages that do not exist, so they are deliberately trivial. */
+function itemSlug(name) {
+  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+function itemPagePath(name) {
+  return PGE_PAGES.has(String(name || '').toLowerCase()) ? `/item/${itemSlug(name)}/` : null;
+}
+
 /* ── Per-item indexable copy ───────────────────────────────────────────────
    Generated from data already on the page, so it costs no extra request and
    cannot drift from what the terminal shows.
@@ -3037,7 +3057,9 @@ function renderItemSeo(m) {
   const rel = relatedItems(m, 4);
   if (rel.length) {
     relEl.innerHTML = 'Related: ' + rel.map(x =>
-      `<a href="/?q=${encodeURIComponent(x.name)}">${escapeHtml(x.name)}</a>`
+      /* the static page when there is one, ?q= otherwise — both resolve to
+         the same item, but only one of them is prerendered */
+      `<a href="${itemPagePath(x.name) || '/?q=' + encodeURIComponent(x.name)}">${escapeHtml(x.name)}</a>`
     ).join('<span class="is-sep">·</span>');
     relEl.hidden = false;
   } else {
@@ -8089,10 +8111,24 @@ async function setItem(m, opts = {}) {
         });
       }
     } else {
-      const slug = encodeURIComponent(m.name);
-      const newUrl = `${window.location.pathname}?q=${slug}`;
-      if (window.location.search !== `?q=${slug}`) {
-        history.replaceState(null, '', newUrl);
+      const pagePath = itemPagePath(m.name);
+      if (pagePath) {
+        /* This item has a prerendered document, so that URL is its home: the
+           address bar, anything shared from it, and the canonical below all
+           point there, and a refresh lands on real HTML instead of a shell. */
+        if (window.location.pathname !== pagePath || window.location.search) {
+          history.replaceState(null, '', pagePath);
+        }
+      } else {
+        const slug = encodeURIComponent(m.name);
+        /* Base "/" when we are ON an item page, not location.pathname — that
+           would have produced /item/emerald/?q=Other when picking an item
+           that has no page of its own. */
+        const base = window.location.pathname.startsWith('/item/') ? '/' : window.location.pathname;
+        const newUrl = `${base}?q=${slug}`;
+        if (window.location.pathname !== base || window.location.search !== `?q=${slug}`) {
+          history.replaceState(null, '', newUrl);
+        }
       }
       updateMetaForItem(m);
       if (typeof gtag === 'function') {
@@ -8505,7 +8541,15 @@ setItem._userPicked = false;
          4. Ruby as a last resort.
        F2P / Members mode is respected — won't restore a members item in F2P. */
     const eligible = (m) => m && (membersOn || !m.members);
-    const urlQ = (() => { try { return new URLSearchParams(window.location.search).get('q'); } catch (e) { return null; } })();
+    /* A prerendered page states its item in the head, so the app does not
+       have to infer it from a URL it no longer carries a ?q= in. Falls back
+       to ?q= for every item without a static page, and for the homepage. */
+    const urlQ = (() => {
+      try {
+        if (window.__PGE_ITEM__ && window.__PGE_ITEM__.name) return window.__PGE_ITEM__.name;
+        return new URLSearchParams(window.location.search).get('q');
+      } catch (e) { return null; }
+    })();
     const urlItem = urlQ ? mapping.find(x => x.name.toLowerCase() === urlQ.toLowerCase()) : null;
     /* A ?q= deep link must ALWAYS resolve to its item. Googlebot and shared
        links arrive with no saved prefs — i.e. F2P mode — and members-only

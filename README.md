@@ -43,7 +43,23 @@ Or jump to a specific item:
 
 ## Tech
 
-Plain HTML / CSS / vanilla JavaScript — one file, no build step. Charts render to a `<canvas>`. State persists in the browser's localStorage. PWA manifest + service worker. Hosted on GitHub Pages.
+Plain HTML / CSS / vanilla JavaScript, no framework and no bundler. Charts render to a `<canvas>`. State persists in the browser's localStorage. PWA manifest + service worker. Hosted on GitHub Pages.
+
+`index.html` is the app shell; `app.css` and `app.js` hold the rest. They used to be inline in a single 838KB file — they were split out so a prerendered page per item does not have to carry a copy of the whole app, and so the app is downloaded once and cached across navigations.
+
+### Regenerating the static bits
+
+GitHub Pages serves by path, so `/?q=Emerald` and `/?q=Mahogany%20logs` are the same file and cannot differ in their raw HTML. Items with real search demand get a prerendered document at `/item/<slug>/` instead, which carries its own title, description, canonical, H1, summary and related links before any JavaScript runs. `?q=` URLs keep working and canonicalise to the path page when one exists.
+
+Run from the repo root, in order, and commit the output:
+
+```sh
+python3 update_items.py        # refresh items-json from the wiki
+python3 prerender_items.py     # top 800 by daily volume -> item/<slug>/index.html + item-pages.js
+python3 generate_sitemap.py    # path URLs for prerendered items, ?q= for the rest
+```
+
+`prerender_items.py` fetches live prices; `--snapshot prices.json` reuses a saved copy, and `--limit N` changes how many items get a page. Re-running rewrites every generated page, so prices in them are a snapshot — the app updates them live on load.
 
 Data sources:
 - [OSRS Wiki real-time prices API](https://prices.runescape.wiki/) — live insta-buy / insta-sell, 5-minute / 1-hour / 6-hour / daily candles.

@@ -11,6 +11,7 @@ canonical the page declares about itself.
 Run from the repo root after update_items.py:  python3 generate_sitemap.py
 """
 import json
+import re
 from datetime import date
 from pathlib import Path
 from urllib.parse import quote
@@ -42,6 +43,22 @@ def ge_items():
             seen[key] = it
     return sorted(seen.values(), key=lambda it: it["name"].lower())
 
+
+
+def slugify(name):
+    """Must match slugify() in prerender_items.py and itemSlug() in app.js."""
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def prerendered_names():
+    """Which items prerender_items.py actually wrote a page for. Read from its
+    output rather than recomputed, so a sitemap entry can never promise a page
+    that was not generated."""
+    try:
+        txt = Path("./item-pages.js").read_text()
+        return {n.lower() for n in json.loads(re.search(r"=\s*(\[.*\])\s*;", txt, re.S).group(1))}
+    except Exception:
+        return set()
 
 # Items released AFTER the items-json snapshot (it's an osrsbox archive that
 # stops around 2021). The live app resolves ?q= names against the live wiki
@@ -83,8 +100,16 @@ def main():
     ]
     names = {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)
+    # Items with a prerendered page get their PATH url — that is the one they
+    # declare as canonical, and listing ?q= for them would point Google at a
+    # URL whose raw HTML is the generic shell. Everything else keeps ?q=,
+    # which is still exactly what those pages canonicalise to.
+    prerendered = prerendered_names()
     for name in all_names:
-        rows.append(f"{SITE}/?q={quote(name, safe=ENC_SAFE)}|{today}|daily|0.7")
+        if name.lower() in prerendered:
+            rows.append(f"{SITE}/item/{slugify(name)}/|{today}|daily|0.7")
+        else:
+            rows.append(f"{SITE}/?q={quote(name, safe=ENC_SAFE)}|{today}|daily|0.7")
 
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
