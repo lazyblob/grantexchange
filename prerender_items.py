@@ -132,9 +132,17 @@ def summary_html(it, buy, sell, vol):
     are = "are" if is_plural(it["name"]) else "is"
     out = (f'<b>{name}</b> {are} trading at <b>{gp(buy)} gp</b> on the Old School '
            f'RuneScape Grand Exchange')
-    if sell:
+    # Mirrors the same three branches in renderItemSeo (app.js): a zero
+    # spread reads like a broken template, and a negative one — insta-sell
+    # above insta-buy, which happens when one side's last print is stale —
+    # would print "a -3 gp spread".
+    if sell and buy - sell > 0:
         out += (f', with insta-sell at {gp(sell)} gp — a {gp(buy - sell)} gp spread '
                 f'before the 2% GE tax.')
+    elif sell and buy == sell:
+        out += ', buying and selling at the same price right now.'
+    elif sell:
+        out += f', with insta-sell at {gp(sell)} gp.'
     else:
         out += '.'
     if vol:
