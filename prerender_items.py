@@ -179,7 +179,10 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
     name = esc(it["name"])
     url = f"{SITE}/item/{slug}/"
     title = f"{name} Price OSRS — {gp(buy)} gp · Live GE Chart & Flip Margin | PocketGE"
-    desc = (f'{name} is {gp(buy)} gp on the OSRS Grand Exchange'
+    # "Mahogany logs IS 155 gp" was going out as the SERP snippet while the
+    # summary right below it said "are" — the plural rule was applied to the
+    # on-page copy and not to the description.
+    desc = (f'{name} {"are" if is_plural(it["name"]) else "is"} {gp(buy)} gp on the OSRS Grand Exchange'
             + (f' (insta-buy {gp(buy)}, insta-sell {gp(sell)})' if sell else '')
             + '. Live chart & flip margin after 2% tax'
             + (f' · {abbrev(vol)} traded/day' if vol else '')
@@ -221,7 +224,17 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
         {"@context": "https://schema.org", "@type": "ItemPage", "name": title,
          "description": desc, "url": url, "dateModified": date.today().isoformat()},
     ], separators=(",", ":")) + "</script>\n")
-    return s.replace("</head>", boot + jsonld + "</head>", 1)
+    s = s.replace("</head>", boot + jsonld + "</head>", 1)
+    # The about + FAQ prose is identical on every page and 43KB of each one:
+    # 35MB across the set, and for search, 797 documents whose bulk is the
+    # same text as each other and as the homepage. The homepage keeps it; the
+    # item pages keep only what is about their item. (The drawer's
+    # "meet the dev" link falls back to /#meet-the-dev — see app.js.)
+    cut = s.find('<section class="about-section"')
+    end = s.rfind("</body>")
+    if cut > 0 and end > cut:
+        s = s[:cut] + s[end:]
+    return s
 
 
 def main():
