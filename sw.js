@@ -2,8 +2,10 @@
    screen without aggressively caching dev iterations. Network-first for HTML
    with a cached fallback when offline; everything else (price API, item icons,
    third-party) passes straight through to the network. */
-const CACHE = 'pocketge-shell-v1';
-const SHELL = ['/', '/index.html', '/manifest.json'];
+/* v2: the app's CSS and JS are external files now (see index.html). They
+   have to be in the shell or an offline load gets bare markup. */
+const CACHE = 'pocketge-shell-v2';
+const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/manifest.json'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
