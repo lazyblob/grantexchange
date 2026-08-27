@@ -3001,71 +3001,48 @@ function renderItemSeo(m) {
   if (!m || !buyNow) { host.hidden = true; return; }
   const name = escapeHtml(m.name);
   const are = isPluralName(m.name) ? 'are' : 'is';
-  const have = isPluralName(m.name) ? 'have' : 'has';
 
-  let out = `<b>${name}</b> ${are} trading at <b>${fmtGp(buyNow)} gp</b> on the Old School RuneScape Grand Exchange`;
-  if (sellNow > 0) {
-    const spread = buyNow - sellNow;
-    /* "a 0 gp spread before the 2% GE tax" is true and reads like a
-       template that failed. The two prices meeting is a normal, momentary
-       state of a liquid item — Mahogany logs was sitting there on the day
-       these pages first went out — so say what is happening instead.
-       Negative lands here too: insta-sell above insta-buy happens when one
-       side's last print is stale, and "a -3 gp spread" is worse than simply
-       not claiming a spread at all. */
-    if (spread > 0) {
-      out += `, with insta-sell at ${fmtGp(sellNow)} gp — a ${fmtGp(spread)} gp spread before the 2% GE tax.`;
-    } else if (spread === 0) {
-      out += ', buying and selling at the same price right now.';
-    } else {
-      out += `, with insta-sell at ${fmtGp(sellNow)} gp.`;
-    }
-  } else {
-    out += '.';
-  }
+  /* Terse on purpose. The long form said the same numbers twice — once in
+     the paragraph and again in a Q&A pair underneath — and spent a clause
+     on "on the Old School RuneScape Grand Exchange" that no reader needed
+     at that length. Same facts, roughly a third of the words.
+     The spread is no longer stated as a figure: printing both prices says
+     it, and dropping the claim retires the zero and negative branches this
+     sentence used to need (a 0 gp spread read like a broken template, and
+     a stale print on one side could produce a negative one). */
+  let out = `<b>${name}</b> ${are} <b>${fmtGp(buyNow)} gp</b> on the OSRS GE`;
+  if (sellNow > 0) out += ` (insta-sell ${fmtGp(sellNow)} gp)`;
+  out += '.';
   const r30 = thirtyDayStats(m);
   const vol = dailyVolume(m.id);
-  if (r30) {
-    out += ` Over the last 30 days ${isPluralName(m.name) ? 'they' : 'it'} ${have} ranged` +
-           ` <b>${fmtGp(r30.lo)}–${fmtGp(r30.hi)} gp</b>`;
-    out += vol ? ` on roughly ${abbreviateNumber(vol)} traded a day.` : '.';
-  } else if (vol) {
-    out += ` Roughly ${abbreviateNumber(vol)} trade a day.`;
-  }
-  /* The margin sentence, with the branch that keeps it honest. A 13 gp
-     spread against an 8 gp tax is not a flip, and gems land there often —
-     printing "+0 gp per item" instead would be technically true and useless. */
+  /* Joined, so a missing range or volume never leaves a stray separator. */
+  const facts = [];
+  if (r30) facts.push(`30-day range <b>${fmtGp(r30.lo)}–${fmtGp(r30.hi)} gp</b>`);
+  if (vol) facts.push(`~${abbreviateNumber(vol)}/day`);
+  if (facts.length) out += ' ' + facts.join(' · ') + '.';
   const tBuy = recommendedBuy, tSell = recommendedSell;
   if (tBuy > 0 && tSell > 0) {
     const per = tSell - tBuy - calculateTax(tSell, m.id);
-    if (per > 0) {
-      out += ` At the current target prices (${fmtGp(tBuy)} buy / ${fmtGp(tSell)} sell)` +
-             ` that's <b>+${fmtGp(per)} gp per item after tax</b>`;
-      /* No buy limit is a real state for a lot of items — potions, seeds,
-         raw materials. Drop the clause rather than invent a number. */
-      out += m.limit > 0
-        ? `, or ${abbreviateNumber(per * m.limit)} across the ${m.limit.toLocaleString()} four-hour buy limit.`
-        : '.';
-    } else {
-      out += ` At the current target prices (${fmtGp(tBuy)} buy / ${fmtGp(tSell)} sell)` +
-             ` the spread doesn't clear the 2% tax, so there's no flip in ${isPluralName(m.name) ? 'them' : 'it'} at these prices.`;
-    }
+    out += ` Target ${fmtGp(tBuy)} / ${fmtGp(tSell)} → `;
+    /* Still two branches. A spread that cannot beat the tax is not a flip,
+       and gems land there often — "+0 gp after tax" would be true and
+       useless. And no buy limit is a real state for potions, seeds and raw
+       materials, so that clause is dropped rather than invented. */
+    out += per > 0
+      ? `<b>+${fmtGp(per)} gp after tax</b>` +
+        (m.limit > 0 ? ` (~${abbreviateNumber(per * m.limit)} per 4h limit).` : '.')
+      : 'no margin after the 2% tax.';
   }
   sumEl.innerHTML = out;
 
-  /* Two questions people type verbatim. Visible text only — no per-item
-     FAQPage schema: Google dropped that rich result for most sites, and the
-     site-level FAQ JSON-LD already covers the markup side. */
-  const qa = [`<p><b>How much ${are} ${name} in OSRS?</b> ${fmtGp(buyNow)} gp to buy instantly right now` +
-              (sellNow > 0 ? `, ${fmtGp(sellNow)} gp to sell instantly.` : '.') + `</p>`];
-  /* "What's the buy limit FOR x", not "What are the x buy limit" — the
-     subject of this question is the limit, which is singular whatever the
-     item is called, so `are` has no business here. It is also closer to how
-     the question actually gets typed. */
-  qa.push(m.limit > 0
-    ? `<p><b>What's the buy limit for ${name}?</b> ${m.limit.toLocaleString()} every four hours.</p>`
-    : `<p><b>What's the buy limit for ${name}?</b> No GE buy limit on this item.</p>`);
-  qaEl.innerHTML = qa.join('');
+  /* One line, not two questions. "How much is X in OSRS?" repeated the
+     price the sentence above had just given; the buy limit is the only
+     answer the paragraph does not already carry, since it names the limit
+     only as "per 4h limit". Visible text only — still no per-item FAQPage
+     schema, which Google dropped for most sites. */
+  qaEl.innerHTML = m.limit > 0
+    ? `<p><b>Buy limit:</b> ${m.limit.toLocaleString()} every 4 hours.</p>`
+    : `<p><b>Buy limit:</b> none on this item.</p>`;
 
   const rel = relatedItems(m, 4);
   if (rel.length) {
