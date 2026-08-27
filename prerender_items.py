@@ -125,43 +125,29 @@ def abbrev(n):
 
 
 def summary_html(it, buy, sell, vol):
-    """The same sentence shape renderItemSeo builds, minus the two clauses that
-    need client-side computation. Kept in step with it by hand — if that
-    template changes, this is the other half."""
+    """The short form renderItemSeo builds, minus the two clauses that need
+    client-side computation (30-day range, after-tax margin). Kept in step
+    with it by hand — if that template changes, this is the other half.
+    No spread figure: printing both prices says it, and not claiming one
+    retires the zero and negative cases this sentence used to special-case."""
     name = esc(it["name"])
     are = "are" if is_plural(it["name"]) else "is"
-    out = (f'<b>{name}</b> {are} trading at <b>{gp(buy)} gp</b> on the Old School '
-           f'RuneScape Grand Exchange')
-    # Mirrors the same three branches in renderItemSeo (app.js): a zero
-    # spread reads like a broken template, and a negative one — insta-sell
-    # above insta-buy, which happens when one side's last print is stale —
-    # would print "a -3 gp spread".
-    if sell and buy - sell > 0:
-        out += (f', with insta-sell at {gp(sell)} gp — a {gp(buy - sell)} gp spread '
-                f'before the 2% GE tax.')
-    elif sell and buy == sell:
-        out += ', buying and selling at the same price right now.'
-    elif sell:
-        out += f', with insta-sell at {gp(sell)} gp.'
-    else:
-        out += '.'
+    out = f'<b>{name}</b> {are} <b>{gp(buy)} gp</b> on the OSRS GE'
+    if sell:
+        out += f' (insta-sell {gp(sell)} gp)'
+    out += '.'
     if vol:
-        out += f' Around {abbrev(vol)} trade a day'
-        out += f' against a {it["limit"]:,} four-hour buy limit.' if it.get("limit") else '.'
-    elif it.get("limit"):
-        out += f' The four-hour buy limit is {it["limit"]:,}.'
+        out += f' ~{abbrev(vol)}/day.'
     return out
 
 
-def qa_html(it, buy, sell):
-    name = esc(it["name"])
-    are = "are" if is_plural(it["name"]) else "is"
-    a = (f'<p><b>How much {are} {name} in OSRS?</b> {gp(buy)} gp to buy instantly'
-         + (f', {gp(sell)} gp to sell instantly.</p>' if sell else '.</p>'))
-    b = (f'<p><b>What\'s the buy limit for {name}?</b> '
-         + (f'{it["limit"]:,} every four hours.</p>' if it.get("limit")
-            else 'No GE buy limit on this item.</p>'))
-    return a + b
+def qa_html(it):
+    """One line. The price question repeated what the sentence above just
+    said; the buy limit is the only fact the paragraph does not already
+    carry, since it names the limit only as "per 4h limit"."""
+    return ('<p><b>Buy limit:</b> ' +
+            (f'{it["limit"]:,} every 4 hours.</p>' if it.get("limit")
+             else 'none on this item.</p>'))
 
 
 def related_html(it, by_name, vol_of, pages):
@@ -215,7 +201,7 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
                   '</section>',
                   '<section class="item-seo" id="itemSeo">\n'
                   f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol)}</p>\n'
-                  f'  <div class="is-qa" id="isQa">{qa_html(it, buy, sell)}</div>\n'
+                  f'  <div class="is-qa" id="isQa">{qa_html(it)}</div>\n'
                   + (f'  <p class="is-rel" id="isRelated">{related}</p>\n' if related
                      else '  <p class="is-rel" id="isRelated" hidden></p>\n')
                   + '</section>', 1)
