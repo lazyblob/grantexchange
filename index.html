@@ -449,6 +449,26 @@ button, input { touch-action: manipulation; }
 .about-section p { margin: 0 0 12px; }
 .about-section a { color: var(--border-active); text-decoration: none; }
 .about-section a:hover { text-decoration: underline; }
+/* Sits in the band between the terminal and the about copy, styled as the
+   quiet lead-in to that copy rather than as a fifth panel of the app. No
+   card, no border, no colour of its own — this is prose for a reader who
+   scrolled past the chart, and a crawler that never sees the chart at all. */
+.item-seo { max-width: 900px; margin: 0 auto; padding: 18px 20px 0; }
+.item-seo .is-sum { font-size: 13.5px; line-height: 1.62; color: var(--text-main); margin: 0; }
+.item-seo .is-sum b { color: #fff; font-weight: 700; }
+/* Two questions people actually type. Dim, small, and one line each — they
+   earn their place on relevance, not attention. */
+.item-seo .is-qa { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.item-seo .is-qa p { font-size: 12.5px; line-height: 1.55; color: var(--text-muted); margin: 0; }
+.item-seo .is-qa b { color: var(--text-main); font-weight: 700; }
+/* Real anchors, not JS handlers: the point of this row is that a crawler can
+   follow it. Nothing on the site linked one item page to another before, so
+   the long tail was reachable only through the sitemap. */
+.item-seo .is-rel { margin-top: 10px; font-size: 12.5px; color: var(--text-muted); }
+.item-seo .is-rel a { color: var(--border-active); text-decoration: none; }
+.item-seo .is-rel a:hover { text-decoration: underline; color: #fff; }
+.item-seo .is-rel .is-sep { color: rgba(217,211,199,0.34); margin: 0 6px; }
+@media (max-width: 640px) { .item-seo { padding: 14px 14px 0; } }
 .about-section .about-intro { font-size: 14px; color: var(--text-main); padding-bottom: 12px; border-bottom: 1px solid var(--border-main); margin-bottom: 20px; }
 /* A human aside, not more SEO copy — quieter and slightly set apart so it
    reads as a personal note rather than continuing the product description
@@ -3889,7 +3909,10 @@ button, input { touch-action: manipulation; }
 </head>
 <body>
 
-<h1 class="sr-only">PocketGE: The OSRS Trading Terminal — Grand Exchange Prices, Watchlists &amp; Flip Finder</h1>
+<!-- Itemised per page by renderItemSeo; restoreBrandMeta puts the brand
+     wording back on "/". Every ?q= page shared this one heading before,
+     which told a crawler that 4,000 URLs were all about the same thing. -->
+<h1 class="sr-only" id="seoH1">PocketGE: The OSRS Trading Terminal — Grand Exchange Prices, Watchlists &amp; Flip Finder</h1>
 
 <!-- The landing/interstitial screen used to live here: a brand page shown
      on first visit to "/" with a "Continue to app" button. Removed. Someone
@@ -6948,6 +6971,7 @@ function restoreBrandMeta() {
   setMetaTag('twitter:description', desc);
   setCanonicalLink('https://pocketge.com/');
   removeItemJsonLd();
+  clearItemSeo();
 }
 
 /* Footer freshness signal — stamps the last successful price refresh so a
@@ -7241,6 +7265,143 @@ function updateMetaForItem(m) {
   setMetaTag('twitter:description', desc.length > 200 ? desc.slice(0, 197) + '…' : desc);
   setCanonicalLink(url.split('#')[0]);
   setItemJsonLd(m, gp, desc);
+  /* Same trigger as the meta tags: this runs on every item change AND every
+     price tick, so the copy never lags the numbers above it. */
+  renderItemSeo(m);
+}
+
+/* ── Per-item indexable copy ───────────────────────────────────────────────
+   Generated from data already on the page, so it costs no extra request and
+   cannot drift from what the terminal shows.
+
+   Plurality: "Mahogany logs is trading at" reads like scraped spam, so the
+   verb agrees with the item. The head noun is the LAST word normally but the
+   FIRST word when the name contains " of " — OSRS is full of "Ring of coins"
+   and "Bag of salt", which are singular things whose last word is plural.
+   -ss and -us are excluded so "Molten glass" and "Cactus" stay singular. */
+function isPluralName(name) {
+  const n = String(name || '').trim();
+  if (!n) return false;
+  const head = / of /i.test(n) ? n.split(/\s+/)[0] : n.split(/\s+/).pop();
+  const w = head.toLowerCase();
+  return /s$/.test(w) && !/(ss|us)$/.test(w);
+}
+/* Sibling items, by the most distinctive word in the name — "Emerald" for
+   Emerald, "Mahogany" for Mahogany logs. Ranked by daily volume so the links
+   point at pages worth crawling rather than at dead stock. */
+function relatedItems(m, max) {
+  if (!m || !Array.isArray(mapping) || !mapping.length) return [];
+  const STOP = new Set(['of','the','and','a','an','grimy','raw','cooked','uncut','super','half']);
+  const words = String(m.name).toLowerCase().split(/[^a-z0-9]+/)
+    .filter(w => w.length >= 4 && !STOP.has(w))
+    .sort((a, b) => b.length - a.length);
+  /* Longest word FIRST, then fall back through the rest. Taking only the
+     longest was the first cut and it strands compound names: "Emerald
+     necklace" keys on "necklace", matches nothing else in the game, and
+     loses the entire Emerald family it should be linking to. Trying each
+     word in turn keeps the specific match when one exists and reaches the
+     family when it does not. */
+  for (const key of words) {
+    const hits = mapping
+      .filter(x => x.id !== m.id && String(x.name).toLowerCase().includes(key))
+      .sort((a, b) => dailyVolume(b.id) - dailyVolume(a.id));
+    if (hits.length) return hits.slice(0, max || 4);
+  }
+  return [];
+}
+function renderItemSeo(m) {
+  const host = document.getElementById('itemSeo');
+  const sumEl = document.getElementById('isSummary');
+  const qaEl = document.getElementById('isQa');
+  const relEl = document.getElementById('isRelated');
+  const h1 = document.getElementById('seoH1');
+  if (!host || !sumEl || !qaEl || !relEl) return;
+  const isSel = m && selected && String(selected.id) === String(m.id);
+  const buyNow = isSel && liveSellRaw > 0 ? liveSellRaw : 0;   // insta-buy
+  const sellNow = isSel && liveBuyRaw > 0 ? liveBuyRaw : 0;    // insta-sell
+  /* No prices, nothing honest to say. Better an absent block than a
+     paragraph of em-dashes, which is what a crawler would otherwise index. */
+  if (!m || !buyNow) { host.hidden = true; return; }
+  const name = escapeHtml(m.name);
+  const are = isPluralName(m.name) ? 'are' : 'is';
+  const have = isPluralName(m.name) ? 'have' : 'has';
+
+  let out = `<b>${name}</b> ${are} trading at <b>${fmtGp(buyNow)} gp</b> on the Old School RuneScape Grand Exchange`;
+  if (sellNow > 0) {
+    const spread = buyNow - sellNow;
+    out += `, with insta-sell at ${fmtGp(sellNow)} gp — a ${fmtGp(spread)} gp spread before the 2% GE tax.`;
+  } else {
+    out += '.';
+  }
+  const r30 = thirtyDayStats(m);
+  const vol = dailyVolume(m.id);
+  if (r30) {
+    out += ` Over the last 30 days ${isPluralName(m.name) ? 'they' : 'it'} ${have} ranged` +
+           ` <b>${fmtGp(r30.lo)}–${fmtGp(r30.hi)} gp</b>`;
+    out += vol ? ` on roughly ${abbreviateNumber(vol)} traded a day.` : '.';
+  } else if (vol) {
+    out += ` Roughly ${abbreviateNumber(vol)} trade a day.`;
+  }
+  /* The margin sentence, with the branch that keeps it honest. A 13 gp
+     spread against an 8 gp tax is not a flip, and gems land there often —
+     printing "+0 gp per item" instead would be technically true and useless. */
+  const tBuy = recommendedBuy, tSell = recommendedSell;
+  if (tBuy > 0 && tSell > 0) {
+    const per = tSell - tBuy - calculateTax(tSell, m.id);
+    if (per > 0) {
+      out += ` At the current target prices (${fmtGp(tBuy)} buy / ${fmtGp(tSell)} sell)` +
+             ` that's <b>+${fmtGp(per)} gp per item after tax</b>`;
+      /* No buy limit is a real state for a lot of items — potions, seeds,
+         raw materials. Drop the clause rather than invent a number. */
+      out += m.limit > 0
+        ? `, or ${abbreviateNumber(per * m.limit)} across the ${m.limit.toLocaleString()} four-hour buy limit.`
+        : '.';
+    } else {
+      out += ` At the current target prices (${fmtGp(tBuy)} buy / ${fmtGp(tSell)} sell)` +
+             ` the spread doesn't clear the 2% tax, so there's no flip in ${isPluralName(m.name) ? 'them' : 'it'} at these prices.`;
+    }
+  }
+  sumEl.innerHTML = out;
+
+  /* Two questions people type verbatim. Visible text only — no per-item
+     FAQPage schema: Google dropped that rich result for most sites, and the
+     site-level FAQ JSON-LD already covers the markup side. */
+  const qa = [`<p><b>How much ${are} ${name} in OSRS?</b> ${fmtGp(buyNow)} gp to buy instantly right now` +
+              (sellNow > 0 ? `, ${fmtGp(sellNow)} gp to sell instantly.` : '.') + `</p>`];
+  /* "What's the buy limit FOR x", not "What are the x buy limit" — the
+     subject of this question is the limit, which is singular whatever the
+     item is called, so `are` has no business here. It is also closer to how
+     the question actually gets typed. */
+  qa.push(m.limit > 0
+    ? `<p><b>What's the buy limit for ${name}?</b> ${m.limit.toLocaleString()} every four hours.</p>`
+    : `<p><b>What's the buy limit for ${name}?</b> No GE buy limit on this item.</p>`);
+  qaEl.innerHTML = qa.join('');
+
+  const rel = relatedItems(m, 4);
+  if (rel.length) {
+    relEl.innerHTML = 'Related: ' + rel.map(x =>
+      `<a href="/?q=${encodeURIComponent(x.name)}">${escapeHtml(x.name)}</a>`
+    ).join('<span class="is-sep">·</span>');
+    relEl.hidden = false;
+  } else {
+    /* Emptied, not just hidden. Hiding alone left the PREVIOUS item's links
+       in the DOM — switching from Emerald ring to Emerald necklace left the
+       necklace page holding a hidden link to itself. */
+    relEl.innerHTML = '';
+    relEl.hidden = true;
+  }
+  if (h1) h1.textContent = `${m.name} price in OSRS — live Grand Exchange data`;
+  /* The item sprite carried one generic alt on every page. Its name is the
+     single most on-topic string available for it. */
+  const icon = document.getElementById('tickerHeaderIcon');
+  if (icon) icon.alt = `${m.name} — OSRS Grand Exchange item icon`;
+  host.hidden = false;
+}
+function clearItemSeo() {
+  const host = document.getElementById('itemSeo');
+  const h1 = document.getElementById('seoH1');
+  if (host) host.hidden = true;
+  if (h1) h1.textContent = 'PocketGE: The OSRS Trading Terminal — Grand Exchange Prices, Watchlists & Flip Finder';
 }
 
 /* Per-item structured data, swapped in place on every item change:
@@ -13280,6 +13441,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<!-- Per-item indexable copy. Every ?q= page shipped byte-identical body text
+     before this, so the only thing distinguishing /?q=Emerald from
+     /?q=Mahogany%20logs to a crawler was the numbers inside the terminal UI.
+     Everything here is generated from data the page has already fetched —
+     see renderItemSeo. Hidden until an item is loaded so the homepage and a
+     failed price fetch never show an empty shell. -->
+<section class="item-seo" id="itemSeo" hidden>
+  <p class="is-sum" id="isSummary"></p>
+  <div class="is-qa" id="isQa"></div>
+  <p class="is-rel" id="isRelated" hidden></p>
+</section>
 <section class="about-section" aria-label="About PocketGE">
   <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong> — TradingView-inspired charts, watchlists you build yourself, and scanners that let the trading opportunities come to you. Look for value, look for breakouts. Made easy.</p>
   <p class="about-intro-2">It won't predict the market. Nothing can. What it does is make the OSRS Grand Exchange readable — whether you've been merching for years or you're still working out how the GE works.</p>
