@@ -8401,7 +8401,11 @@ setItem._userPicked = false;
     const rsnLink = moreMenu.querySelector('.drawer-rsn');
     if (rsnLink) rsnLink.addEventListener('click', (ev) => {
       const target = document.getElementById('meet-the-dev');
-      if (!target) return;
+      /* Prerendered item pages omit the about/FAQ prose — 797 identical
+         copies of it is 35MB of boilerplate and, for search, 797 pages whose
+         bulk is the same text. Send the link to the homepage's copy rather
+         than letting it quietly do nothing there. */
+      if (!target) { window.location.href = '/#meet-the-dev'; return; }
       ev.preventDefault();
       closeMore();
       requestAnimationFrame(() => {
