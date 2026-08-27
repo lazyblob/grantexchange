@@ -1,0 +1,115 @@
+# Builds the per-item static pages and commits them.
+#
+# This runs here rather than on anyone's machine for two reasons: nobody
+# should need a Python toolchain and a clone to publish a page, and the
+# generator needs to reach prices.runescape.wiki, which sandboxed
+# environments commonly block. A GitHub runner has both.
+#
+# Output is committed straight to the default branch because GitHub Pages
+# serves this repo as-is — an uncommitted page is not a published page.
+name: Prerender item pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'How many items to prerender, ranked by daily volume'
+        required: false
+        default: '800'
+  # Monthly, not weekly. Each run rewrites every generated page, so the commit
+  # is ~34MB of changed files at the default limit; monthly keeps the history
+  # from ballooning, and prices in the HTML are only a snapshot anyway — the
+  # app replaces them with live ones the moment it loads.
+  schedule:
+    - cron: '17 4 1 * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prerender
+  cancel-in-progress: false
+
+jobs:
+  prerender:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Fetched as its own step so a network failure reads as "the price API
+      # was unreachable" rather than surfacing halfway through a render.
+      - name: Fetch price snapshot
+        run: |
+          set -euo pipefail
+          curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
+            -A "pocketge.com prerender (github actions)" \
+            https://prices.runescape.wiki/api/v1/osrs/latest  -o /tmp/latest.json
+          curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
+            -A "pocketge.com prerender (github actions)" \
+            https://prices.runescape.wiki/api/v1/osrs/volumes -o /tmp/volumes.json
+          python3 - <<'PY'
+          import json, datetime
+          snap = {"latest": json.load(open('/tmp/latest.json'))["data"],
+                  "volumes": json.load(open('/tmp/volumes.json'))["data"],
+                  "fetched": datetime.date.today().isoformat()}
+          json.dump(snap, open('/tmp/snapshot.json', 'w'))
+          print(f"{len(snap['latest']):,} priced items, {len(snap['volumes']):,} with volume")
+          PY
+
+      - name: Generate pages and sitemap
+        run: |
+          set -euo pipefail
+          python3 prerender_items.py --limit "${{ github.event.inputs.limit || '800' }}" \
+                                     --snapshot /tmp/snapshot.json
+          python3 generate_sitemap.py
+
+      # A page that names the wrong item, or an empty summary, is worse than
+      # no page — fail the run rather than commit it.
+      - name: Sanity-check the output
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re, sys, pathlib
+          pages = json.loads(re.search(r"=\s*(\[.*\])\s*;",
+                    pathlib.Path('item-pages.js').read_text(), re.S).group(1))
+          assert pages, "item-pages.js is empty — nothing was generated"
+          files = list(pathlib.Path('item').rglob('index.html'))
+          assert len(files) == len(pages), f"{len(files)} pages vs {len(pages)} listed"
+          bad = []
+          for f in files:
+              s = f.read_text()
+              slug = f.parent.name
+              t = re.search(r"<title>(.*?)</title>", s, re.S)
+              summ = re.search(r'id="isSummary">(.*?)</p>', s, re.S)
+              canon = re.search(r'<link rel="canonical" href="([^"]*)"', s)
+              if not t or "Price OSRS" not in t.group(1): bad.append(f"{slug}: title")
+              elif not summ or len(re.sub(r"<[^>]+>", "", summ.group(1))) < 60: bad.append(f"{slug}: summary")
+              elif not canon or not canon.group(1).endswith(f"/item/{slug}/"): bad.append(f"{slug}: canonical")
+          if bad:
+              print("\n".join(bad[:20])); sys.exit(f"{len(bad)} bad pages")
+          size = sum(f.stat().st_size for f in files)
+          print(f"{len(files):,} pages, {size/1e6:.1f} MB, all with title/summary/canonical")
+          # every related link must point at a page that exists
+          slugs = {f.parent.name for f in files}
+          dangling = {h for f in files for h in re.findall(r'href="/item/([^/"]+)/"', f.read_text())} - slugs
+          assert not dangling, f"related links to missing pages: {sorted(dangling)[:10]}"
+          print("no related link points at a missing page")
+          PY
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add item item-pages.js sitemap.xml
+          if git diff --cached --quiet; then
+            echo "nothing changed"
+            exit 0
+          fi
+          git commit -m "Prerender item pages ($(date -u +%Y-%m-%d))" \
+                     -m "Generated by .github/workflows/prerender.yml. Prices are a snapshot; the app refreshes them live on load."
+          git push
