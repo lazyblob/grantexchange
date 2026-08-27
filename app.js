@@ -3006,7 +3006,20 @@ function renderItemSeo(m) {
   let out = `<b>${name}</b> ${are} trading at <b>${fmtGp(buyNow)} gp</b> on the Old School RuneScape Grand Exchange`;
   if (sellNow > 0) {
     const spread = buyNow - sellNow;
-    out += `, with insta-sell at ${fmtGp(sellNow)} gp — a ${fmtGp(spread)} gp spread before the 2% GE tax.`;
+    /* "a 0 gp spread before the 2% GE tax" is true and reads like a
+       template that failed. The two prices meeting is a normal, momentary
+       state of a liquid item — Mahogany logs was sitting there on the day
+       these pages first went out — so say what is happening instead.
+       Negative lands here too: insta-sell above insta-buy happens when one
+       side's last print is stale, and "a -3 gp spread" is worse than simply
+       not claiming a spread at all. */
+    if (spread > 0) {
+      out += `, with insta-sell at ${fmtGp(sellNow)} gp — a ${fmtGp(spread)} gp spread before the 2% GE tax.`;
+    } else if (spread === 0) {
+      out += ', buying and selling at the same price right now.';
+    } else {
+      out += `, with insta-sell at ${fmtGp(sellNow)} gp.`;
+    }
   } else {
     out += '.';
   }
