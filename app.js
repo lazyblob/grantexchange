@@ -2870,6 +2870,36 @@ function syncBuildInfo() {
   window.addEventListener('resize', close);
 })();
 
+/* ── The homepage copy follows the URL ──────────────────────────────────
+   Picking an item never reloads — it rewrites the URL with replaceState —
+   so the about/FAQ prose used to sit on screen under an item URL, and
+   /item/emerald/ rendered one page if you clicked your way there and a
+   different one if you refreshed. Same address, two documents.
+
+   The copy now shows in exactly the state a fresh load of the URL would
+   show it in: a bare "/" visit, which is what isHomepageDefault already
+   means. Clicking an item hides it, clicking home brings it back, and a
+   refresh at any point lands on what was already on screen.
+
+   The footer goes with it because the prerenderer cuts from
+   .about-section to </body>, so a real item page has no footer either. */
+function syncHomepageCopy() {
+  document.body.classList.toggle('app-only', !isHomepageDefault);
+}
+/* Boot takes a couple of seconds to reach setItem, which on a /?q=Cake link
+   is long enough to show 7000px of essay and then yank it away. This script
+   tag sits above .about-section in the markup, so deciding here — from the
+   URL alone, the same input boot uses — means the copy is never painted in
+   the first place. Deliberately only ADDS the class: if this is wrong (a ?q=
+   naming an item that does not resolve), setItem clears it a moment later,
+   whereas defaulting to hidden would blank the homepage outright were the
+   app to fail to boot. */
+try {
+  if (window.__PGE_ITEM__ || new URLSearchParams(window.location.search).get('q')) {
+    document.body.classList.add('app-only');
+  }
+} catch (e) {}
+
 /* Per-item meta refresh. Updates description / OG / Twitter / canonical so a
    shared `/?q=Cake` link's social card shows the actual item, and so each
    `?q=` URL has its own canonical (lets Google index per-item pages instead
@@ -8075,6 +8105,7 @@ async function setItem(m, opts = {}) {
      app still SHOWS the item internally; only the document-level metadata
      stays brand-aligned for the homepage URL. */
   isHomepageDefault = !!opts.keepHomepage;
+  syncHomepageCopy();
   /* Persist the last-viewed item so refresh / reopen lands you back on it
      instead of the default landing item. Recent items list tracks the last
      ~10 picks so the search bar can offer quick-toggle between them. */

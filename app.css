@@ -138,6 +138,9 @@ button, input { touch-action: manipulation; }
    skip its render work until scrolled near (crawlers still see it all).
    Big intrinsic-size placeholder keeps the scrollbar honest. */
 .about-section, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 3000px; }
+/* Set by syncHomepageCopy() whenever an item is showing — see the note there.
+   display:none rather than [hidden] so no later rule can quietly re-show it. */
+body.app-only .about-section, body.app-only .site-footer { display: none; }
 .about-section h2 { color: var(--text-main); font-size: 18px; margin: 28px 0 8px; font-weight: 700; }
 .about-section h2:first-of-type { margin-top: 0; }
 .about-section p { margin: 0 0 12px; }
