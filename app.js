@@ -5683,10 +5683,23 @@ function flipScoreTip(rec){
     <div class="fc-tip-foot">Tap ↻ Next to walk down the ranking — scores fall as the picks get thinner.</div>
   </div>`;
 }
+/* The third clause used to be a two-way toggle whose false branch — "both
+   sides recently traded" — was the ordinary case, so it printed on virtually
+   every pick and wrapped the line onto two. A phrase that is true of almost
+   everything tells you nothing about the item in front of you.
+
+   Only the warning half survives, and only when it fires. Nothing replaces it
+   in the common case: the two facts that are left already vary per item, and
+   the rest of the card carries buy/sell, profit, per-4h and daily volume.
+   Fill speed and 5D range were the candidates, but hrsToLimit is just the
+   per-4h figure restated against volume already shown two rows down, and the
+   5D extremes are not computed on this path — inventing a signal here would
+   put a number on the card that nothing else validates. */
 function recWhy(edgePct, qtyEff, lowConf){
-  return [ `${(edgePct * 100).toFixed(edgePct < 0.1 ? 2 : 1)}% net edge`,
-           `${abbreviateNumber(qtyEff)}/4h fillable`,
-           lowConf ? 'thinner tape — patient bid' : 'both sides recently traded' ].join(' · ');
+  const bits = [ `${(edgePct * 100).toFixed(edgePct < 0.1 ? 2 : 1)}% net edge`,
+                 `${abbreviateNumber(qtyEff)}/4h fillable` ];
+  if (lowConf) bits.push('thinner tape — patient bid');
+  return bits.join(' · ');
 }
 function buildRec(c, eng){
   const item = c.item, node = c.node;
