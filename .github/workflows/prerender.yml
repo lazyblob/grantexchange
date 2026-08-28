@@ -137,6 +137,17 @@ jobs:
           real = [n for n in missing if n not in excused]
           print(f"{len(want):,} pinned items priced, {len(want) - len(missing):,} with pages")
           assert not real, f"pinned items with no page: {sorted(real)[:15]}"
+
+          # A pin only produces a page if the item is in the mapping AND has a
+          # live price, and the assertion above deliberately excuses the rest --
+          # otherwise a quiet item would fail the build. That silence is how
+          # bonds went unnoticed, so the run says out loud which pins produced
+          # nothing and why. Reported, not fatal.
+          allp = {it["name"] for it in P.ge_items(snap.get("mapping")) if P.is_pinned(it["name"])}
+          unpriced = sorted(allp - set(want))
+          if unpriced:
+              print(f"{len(unpriced)} pinned items had no live price, so no page: "
+                    + ", ".join(unpriced[:12]) + (" ..." if len(unpriced) > 12 else ""))
           PY
 
       - name: Commit
