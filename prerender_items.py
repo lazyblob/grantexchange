@@ -114,9 +114,13 @@ def is_pinned(name):
         (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
         or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
         or "revenant ether" in n or "cannonball" in n
-        # tablets are named for the destination -- "Varrock teleport" -- with
-        # no "tablet" anywhere in the name
-        or n.endswith(" teleport")
+        # Match "teleport" as a word anywhere, not as a suffix. The live
+        # mapping names the actual tablets "Varrock teleport (tablet)", so an
+        # endswith() test pinned the obscure scroll-style ones -- Ardeaglais,
+        # Lumberyard, Nardah -- and missed all ten of the tablets people
+        # actually flip. Those were in the set only because volume happened to
+        # carry them, which is the exact dependency pinning exists to remove.
+        or re.search(r"\bteleports?\b", n)
         or re.search(r"\bbolts?\b", n) or re.search(r"\barrows?\b", n)
         # darts and dart tips together: the tip is the buy side of the same
         # trade, so a page for one without the other is half a flip
@@ -124,8 +128,14 @@ def is_pinned(name):
         or ("bones" in n or "ashes" in n)
         # ores and the bars they smelt into: same trade, both sides
         or re.search(r"\bores?\b", n) or re.search(r"\bbars?\b", n)
-        or (re.search(r"\(\d\)$", name) and _POTION.search(name))
-        or n in _FOOD
+        # Any potion word, with or without a dose suffix. Requiring "(n)"
+        # excluded the whole unfinished-potion stage -- Ranarr potion (unf) and
+        # its fourteen siblings -- which is a herblore staple and half of that
+        # trade. Checked against the live names: this catches nothing that is
+        # not a potion.
+        or _POTION.search(name)
+        # raw and cooked together, same reasoning as darts and dart tips
+        or n in _FOOD or (n.startswith("raw ") and n[4:] in _FOOD)
         or any(n in (h, "grimy " + h, h + " leaf", "grimy " + h + " leaf",
                      h + " weed", "grimy " + h + " weed") for h in _HERBS)
         or (n.endswith(" seed") and n.split()[0] in {h.split()[0] for h in _HERBS})
