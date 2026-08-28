@@ -162,6 +162,11 @@ button, input { touch-action: manipulation; }
 .item-seo .is-rel a { color: var(--border-active); text-decoration: none; }
 .item-seo .is-rel a:hover { text-decoration: underline; color: #fff; }
 .item-seo .is-rel .is-sep { color: rgba(217,211,199,0.34); margin: 0 6px; }
+/* Sits directly under the related row: both are "where to go next", so they
+   read as one small block rather than two stray lines. */
+.item-seo .is-guide { margin-top: 6px; font-size: 12.5px; line-height: 1.55; color: var(--text-muted); }
+.item-seo .is-guide a { color: var(--border-active); text-decoration: none; font-weight: 600; }
+.item-seo .is-guide a:hover { text-decoration: underline; color: #fff; }
 @media (max-width: 640px) { .item-seo { padding: 14px 14px 0; } }
 .about-section .about-intro { font-size: 14px; color: var(--text-main); padding-bottom: 12px; border-bottom: 1px solid var(--border-main); margin-bottom: 20px; }
 /* A human aside, not more SEO copy — quieter and slightly set apart so it
@@ -286,7 +291,8 @@ button, input { touch-action: manipulation; }
    else reads fine as controls floating on the page background. */
 .top-panel { padding: 4px 2px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 8px; }
 .panel-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
-#logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; }
+/* text-decoration:none because this is an <a> now — see the note in the markup. */
+#logoBtn { font-weight: 800; color: #fff; cursor: pointer; margin-right: 6px; font-size: 16px; letter-spacing: -0.5px; user-select: none; transition: opacity 0.15s; display: flex; align-items: center; text-decoration: none; }
 #logoBtn img { width: 18px; height: 18px; image-rendering: pixelated; margin-right: 4px; }
 #logoBtn:hover { opacity: 0.8; }
 .search-group { display: flex; align-items: center; gap: 4px; flex: 1 1 auto; min-width: 0; }

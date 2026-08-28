@@ -386,7 +386,14 @@
                 <a class="drawer-link drawer-rsn" href="#meet-the-dev">Add me in game — <b>pocketge</b></a>
               </div>
             </div>
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" role="button" tabindex="0" aria-label="Refresh the page"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
+            <!-- A real link to "/", not a reload. Reloading is wrong from an
+                 item page: /item/<slug>/ is a document with the about/FAQ copy
+                 stripped out, so reloading it could never bring that copy back,
+                 and picking any prerendered item rewrites the URL to that path
+                 even when the visit started at "/". Being an anchor also makes
+                 Enter, middle-click and open-in-new-tab work on their own, and
+                 gives every item page a crawlable link home. -->
+            <a id="logoBtn" class="brand-logo" href="/" aria-label="PocketGE home — full guide and FAQ"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></a>
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
               <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
@@ -763,6 +770,11 @@
   <p class="is-sum" id="isSummary"></p>
   <div class="is-qa" id="isQa"></div>
   <p class="is-rel" id="isRelated" hidden></p>
+  <!-- A prerendered item page carries only its own copy — the guide and FAQ
+       live on the homepage and are deliberately not duplicated onto 800
+       pages. Static, so it is in the first HTML of every generated page and
+       gives each one a real link back to the explanatory content. -->
+  <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>
 <section class="about-section" aria-label="About PocketGE">
   <p class="about-intro">PocketGE is a <strong>trading terminal for the Old School RuneScape Grand Exchange</strong> — TradingView-inspired charts, watchlists you build yourself, and scanners that let the trading opportunities come to you. Look for value, look for breakouts. Made easy.</p>
@@ -780,7 +792,8 @@
 
   <p class="about-devnote" id="meet-the-dev" tabindex="-1">👋 Thanks for finding PocketGE — I'm <strong>pocketge</strong> in-game too, usually around the GE on World 301/302. I'm actively building and improving this based on my own flipping and your feedback. Bug, feature idea, or just want to talk flipping? Add me in-game.</p>
 
-  <h2>How a flip actually goes</h2>
+  <!-- Stable anchor: item pages link here for the walkthrough. -->
+  <h2 id="how-it-works">How a flip actually goes</h2>
   <p>Four steps, in this order. Everything else on the page is in service of one of them.</p>
 
   <ol class="flow">

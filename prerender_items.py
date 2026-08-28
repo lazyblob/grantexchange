@@ -193,18 +193,25 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
     s = re.sub(r'(<h1 class="sr-only" id="seoH1">).*?(</h1>)',
                lambda m: m.group(1) + f"{name} price in OSRS — live Grand Exchange data" + m.group(2),
                s, count=1, flags=re.S)
-    # the SEO block, filled and visible
-    s = s.replace('<section class="item-seo" id="itemSeo" hidden>\n'
-                  '  <p class="is-sum" id="isSummary"></p>\n'
-                  '  <div class="is-qa" id="isQa"></div>\n'
-                  '  <p class="is-rel" id="isRelated" hidden></p>\n'
-                  '</section>',
-                  '<section class="item-seo" id="itemSeo">\n'
-                  f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol)}</p>\n'
-                  f'  <div class="is-qa" id="isQa">{qa_html(it)}</div>\n'
-                  + (f'  <p class="is-rel" id="isRelated">{related}</p>\n' if related
-                     else '  <p class="is-rel" id="isRelated" hidden></p>\n')
-                  + '</section>', 1)
+    # The SEO block, filled and visible. Matched as a whole section rather than
+    # as one exact multi-line literal: the literal had to be kept byte-identical
+    # to the markup, so adding a line to the block in index.html (the guide
+    # link) would silently match nothing and ship 800 pages with an empty
+    # summary. This raises instead, and the guide link is carried through from
+    # the template so its copy lives in one place.
+    guide = re.search(r'( *<p class="is-guide">.*?</p>\n)', s, re.S)
+    block = re.search(r' *<section class="item-seo" id="itemSeo" hidden>.*?</section>', s, re.S)
+    if not block:
+        raise SystemExit("index.html has no item-seo block to fill — markup changed?")
+    s = (s[:block.start()]
+         + '<section class="item-seo" id="itemSeo">\n'
+         + f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol)}</p>\n'
+         + f'  <div class="is-qa" id="isQa">{qa_html(it)}</div>\n'
+         + (f'  <p class="is-rel" id="isRelated">{related}</p>\n' if related
+            else '  <p class="is-rel" id="isRelated" hidden></p>\n')
+         + (guide.group(1) if guide else '')
+         + '</section>'
+         + s[block.end():])
     # per-item icon alt, and the bootstrap the app reads instead of ?q=
     s = s.replace('alt="Live OSRS Grand Exchange price tracker — selected item icon"',
                   f'alt="{name} — OSRS Grand Exchange item icon"', 1)

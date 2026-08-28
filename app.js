@@ -2827,12 +2827,23 @@ function syncBuildInfo() {
   tip.className = 'share-tip';
   tip.setAttribute('role', 'tooltip');
   tip.id = 'logoTip';
-  tip.innerHTML = `<div class="st-title">Tap to <b>refresh</b></div>
-    <div class="st-sub">Reloads the page for fresh prices and a reset chart view.</div>
-    <ul class="st-list">
-      <li>Add me in-game: <b style="color:var(--fav-gold)">${escapeHtml(OWNER_RSN)}</b></li>
-      <li>Usually around the GE on ${escapeHtml(OWNER_WORLDS)}</li>
-    </ul>`;
+  /* The click does two different things depending on where you are, so the
+     tooltip has to be written at open time rather than baked in once: from an
+     item page it navigates home (and brings the guide and FAQ with it), and
+     from the homepage the same href is a reload. */
+  const atHome = () => window.location.pathname === '/' && !window.location.search;
+  const fill = () => {
+    tip.innerHTML = (atHome()
+      ? `<div class="st-title">Tap to <b>refresh</b></div>
+         <div class="st-sub">Reloads the page for fresh prices and a reset chart view.</div>`
+      : `<div class="st-title">Tap for the <b>homepage</b></div>
+         <div class="st-sub">Back to pocketge.com — the guide, the worked example and the FAQ.</div>`) +
+      `<ul class="st-list">
+        <li>Add me in-game: <b style="color:var(--fav-gold)">${escapeHtml(OWNER_RSN)}</b></li>
+        <li>Usually around the GE on ${escapeHtml(OWNER_WORLDS)}</li>
+      </ul>`;
+  };
+  fill();
   document.body.appendChild(tip);
 
   const place = () => {
@@ -2843,18 +2854,18 @@ function syncBuildInfo() {
     tip.style.left = left + 'px';
     tip.style.top = Math.max(8, top) + 'px';
   };
-  const open = () => { place(); tip.classList.add('open'); };
+  /* Re-fill on every open: picking an item rewrites the URL under us via
+     replaceState, so which of the two messages is true changes without a
+     reload. */
+  const open = () => { fill(); place(); tip.classList.add('open'); };
   const close = () => tip.classList.remove('open');
 
   el.addEventListener('mouseenter', () => { if (matchMedia('(hover: hover)').matches) open(); });
   el.addEventListener('mouseleave', close);
   el.addEventListener('focus', open);
   el.addEventListener('blur', close);
-  /* role=button without this is a lie to a keyboard user — the element is a
-     span, so Enter and Space do not fire its onclick on their own. */
-  el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.reload(); }
-  });
+  /* No keydown shim any more: it existed because a span with role=button does
+     not fire its onclick on Enter. A real anchor does. */
   document.addEventListener('scroll', close, true);
   window.addEventListener('resize', close);
 })();
