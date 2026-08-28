@@ -388,7 +388,14 @@
                 <a class="drawer-link drawer-rsn" href="#meet-the-dev">Add me in game — <b>pocketge</b></a>
               </div>
             </div>
-            <span id="logoBtn" class="brand-logo" onclick="window.location.reload();" role="button" tabindex="0" aria-label="Refresh the page"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></span>
+            <!-- A real link to "/", not a reload. Reloading is wrong from an
+                 item page: /item/<slug>/ is a document with the about/FAQ copy
+                 stripped out, so reloading it could never bring that copy back,
+                 and picking any prerendered item rewrites the URL to that path
+                 even when the visit started at "/". Being an anchor also makes
+                 Enter, middle-click and open-in-new-tab work on their own, and
+                 gives every item page a crawlable link home. -->
+            <a id="logoBtn" class="brand-logo" href="/" aria-label="PocketGE home — full guide and FAQ"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></a>
             <div class="mode-pill">
               <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
               <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
@@ -765,6 +772,7 @@
   <p class="is-sum" id="isSummary"><b>Cooked meat</b> is <b>71 gp</b> on the OSRS GE (insta-sell 70 gp). ~19.5K/day.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 6,000 every 4 hours.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/meat-pie/">Meat pie</a></p>
+  <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>
 </body>
 </html>
