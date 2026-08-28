@@ -86,8 +86,17 @@ jobs:
               t = re.search(r"<title>(.*?)</title>", s, re.S)
               summ = re.search(r'id="isSummary">(.*?)</p>', s, re.S)
               canon = re.search(r'<link rel="canonical" href="([^"]*)"', s)
+              h1 = re.search(r'id="seoH1">(.*?) price in OSRS', s, re.S)
+              # The summary is judged on what it SAYS, not how long it is. A
+              # 60-character floor was standing in for that, and it failed four
+              # honest pages (Vial, Cod, Flax, Jug) the moment the copy got
+              # shorter: a three-letter name and a two-digit price is a
+              # perfectly good summary. Name plus price is the real property.
+              txt = re.sub(r"<[^>]+>", "", summ.group(1)) if summ else ""
               if not t or "Price OSRS" not in t.group(1): bad.append(f"{slug}: title")
-              elif not summ or len(re.sub(r"<[^>]+>", "", summ.group(1))) < 60: bad.append(f"{slug}: summary")
+              elif not h1: bad.append(f"{slug}: h1")
+              elif not txt.startswith(h1.group(1) + " "): bad.append(f"{slug}: summary names {txt[:40]!r}")
+              elif "gp on the OSRS GE" not in txt: bad.append(f"{slug}: summary quotes no price")
               elif not canon or not canon.group(1).endswith(f"/item/{slug}/"): bad.append(f"{slug}: canonical")
           if bad:
               print("\n".join(bad[:20])); sys.exit(f"{len(bad)} bad pages")
