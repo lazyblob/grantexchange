@@ -222,9 +222,18 @@ def summary_html(it, buy, sell, vol):
     name = esc(it["name"])
     are = "are" if is_plural(it["name"]) else "is"
     out = f'<b>{name}</b> {are} <b>{gp(buy)} gp</b> on the OSRS GE'
-    if sell:
+    # Only quote the sell side when it is BELOW the buy side. Above it means
+    # the two prints are from different moments, not that there is money in
+    # it, and printing the pair anyway invites the subtraction: pinning the
+    # thin categories put 177 such pages in the set, up to
+    # "1 gp ... (insta-sell 10,000 gp)". Dropping the spread FIGURE in #357 was
+    # not enough — two numbers side by side state a spread whether or not the
+    # sentence names one.
+    if sell and sell <= buy:
         out += f' (insta-sell {gp(sell)} gp)'
     out += '.'
+    if sell and sell > buy:
+        out += ' Both sides last traded at different times — no live spread to quote.'
     if vol:
         out += f' ~{abbrev(vol)}/day.'
     return out

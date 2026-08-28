@@ -3057,8 +3057,13 @@ function renderItemSeo(m) {
      sentence used to need (a 0 gp spread read like a broken template, and
      a stale print on one side could produce a negative one). */
   let out = `<b>${name}</b> ${are} <b>${fmtGp(buyNow)} gp</b> on the OSRS GE`;
-  if (sellNow > 0) out += ` (insta-sell ${fmtGp(sellNow)} gp)`;
+  /* Only when the sell side is BELOW the buy side. Above it means the two
+     prints are from different moments, not that there is money in it, and the
+     pair states a spread whether or not the sentence names one — which is why
+     dropping the figure alone was not enough. Mirrors summary_html(). */
+  if (sellNow > 0 && sellNow <= buyNow) out += ` (insta-sell ${fmtGp(sellNow)} gp)`;
   out += '.';
+  if (sellNow > buyNow) out += ' Both sides last traded at different times — no live spread to quote.';
   const r30 = thirtyDayStats(m);
   const vol = dailyVolume(m.id);
   /* Joined, so a missing range or volume never leaves a stray separator. */
