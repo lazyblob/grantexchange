@@ -114,6 +114,10 @@ def is_pinned(name):
         (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
         or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
         or "revenant ether" in n or "cannonball" in n
+        # Bonds trade too thinly to clear the volume cutoff and are one of the
+        # most searched prices in the game -- the case pinning is for. The word
+        # boundary keeps it to the two bond items and nothing else.
+        or re.search(r"\bbonds?\b", n)
         # Match "teleport" as a word anywhere, not as a suffix. The live
         # mapping names the actual tablets "Varrock teleport (tablet)", so an
         # endswith() test pinned the obscure scroll-style ones -- Ardeaglais,
