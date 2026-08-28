@@ -51,13 +51,22 @@ jobs:
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
             -A "pocketge.com prerender (github actions)" \
             https://prices.runescape.wiki/api/v1/osrs/volumes -o /tmp/volumes.json
+          # The item universe. items-json is a 2021 osrsbox archive whose newer
+          # entries are name-only skeletons, so anything released since could
+          # never be prerendered; this is the same list app.js searches.
+          curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
+            -A "pocketge.com prerender (github actions)" \
+            https://prices.runescape.wiki/api/v1/osrs/mapping -o /tmp/mapping.json
           python3 - <<'PY'
           import json, datetime
           snap = {"latest": json.load(open('/tmp/latest.json'))["data"],
                   "volumes": json.load(open('/tmp/volumes.json'))["data"],
+                  "mapping": json.load(open('/tmp/mapping.json')),
                   "fetched": datetime.date.today().isoformat()}
+          assert len(snap["mapping"]) > 3000, f"mapping looks truncated: {len(snap['mapping'])}"
           json.dump(snap, open('/tmp/snapshot.json', 'w'))
-          print(f"{len(snap['latest']):,} priced items, {len(snap['volumes']):,} with volume")
+          print(f"{len(snap['latest']):,} priced items, {len(snap['volumes']):,} with volume, "
+                f"{len(snap['mapping']):,} in the mapping")
           PY
 
       - name: Generate pages and sitemap
@@ -65,7 +74,7 @@ jobs:
           set -euo pipefail
           python3 prerender_items.py --limit "${{ github.event.inputs.limit || '800' }}" \
                                      --snapshot /tmp/snapshot.json
-          python3 generate_sitemap.py
+          python3 generate_sitemap.py --snapshot /tmp/snapshot.json
 
       # A page that names the wrong item, or an empty summary, is worse than
       # no page — fail the run rather than commit it.
@@ -107,6 +116,27 @@ jobs:
           dangling = {h for f in files for h in re.findall(r'href="/item/([^/"]+)/"', f.read_text())} - slugs
           assert not dangling, f"related links to missing pages: {sorted(dangling)[:10]}"
           print("no related link points at a missing page")
+
+          # The pinned categories are the whole point of pinning: if one stops
+          # matching -- a rename, a regex edit -- the set silently reverts to
+          # "top N by volume" and nobody notices until someone searches for a
+          # teleport tablet. Every pinned item that HAS a price must have a page.
+          sys.path.insert(0, '.')
+          import prerender_items as P
+          snap = json.load(open('/tmp/snapshot.json'))
+          have = {n.lower() for n in pages}
+          want = [it["name"] for it in P.ge_items(snap.get("mapping"))
+                  if P.is_pinned(it["name"])
+                  and (snap["latest"].get(str(it["id"])) or {}).get("high")]
+          missing = [n for n in want if n.lower() not in have]
+          # a slug collision is a legitimate reason to be absent; anything else is not
+          taken = {}
+          for n in want:
+              taken.setdefault(P.slugify(n), []).append(n)
+          excused = {n for v in taken.values() if len(v) > 1 for n in v[1:]}
+          real = [n for n in missing if n not in excused]
+          print(f"{len(want):,} pinned items priced, {len(want) - len(missing):,} with pages")
+          assert not real, f"pinned items with no page: {sorted(real)[:15]}"
           PY
 
       - name: Commit

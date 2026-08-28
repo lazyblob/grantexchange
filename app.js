@@ -2982,7 +2982,12 @@ const PGE_PAGES = (() => {
 /* Mirrors slugify() in prerender_items.py. If these two ever disagree the
    links point at pages that do not exist, so they are deliberately trivial. */
 function itemSlug(name) {
-  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  /* Must match slugify() in prerender_items.py and generate_sitemap.py. "+" is
+     spelled out rather than stripped: as punctuation it collapsed the
+     (p)/(p+)/(p++) families onto one slug, so this would have sent
+     "Adamant bolts (p++)" to the page for "Adamant bolts (p)". */
+  return String(name || '').toLowerCase().replace(/\(-\)/g, ' minus ').replace(/\+/g, ' plus ')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 function itemPagePath(name) {
   return PGE_PAGES.has(String(name || '').toLowerCase()) ? `/item/${itemSlug(name)}/` : null;
