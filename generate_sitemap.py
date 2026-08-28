@@ -10,6 +10,7 @@ canonical the page declares about itself.
 
 Run from the repo root after update_items.py:  python3 generate_sitemap.py
 """
+import argparse
 import json
 import re
 from datetime import date
@@ -46,8 +47,10 @@ def ge_items():
 
 
 def slugify(name):
-    """Must match slugify() in prerender_items.py and itemSlug() in app.js."""
-    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    """Must match slugify() in prerender_items.py and itemSlug() in app.js.
+    "+" becomes a word so the (p)/(p+)/(p++) families stay distinct."""
+    return re.sub(r"[^a-z0-9]+", "-",
+                  name.lower().replace("(-)", " minus ").replace("+", " plus ")).strip("-")
 
 
 def prerendered_names():
@@ -82,7 +85,27 @@ EXTRA_NAMES = [
 ]
 
 
+def mapping_items(path):
+    """Item names from a saved live-mapping snapshot, when one was passed.
+
+    items-json is an osrsbox archive that stops around 2021, which is why
+    EXTRA_NAMES below exists at all — a hand-kept list of items released since,
+    added one at a time as somebody noticed. The live mapping is the same list
+    the app searches, so when the snapshot carries it there is nothing left for
+    that list to catch up on."""
+    try:
+        snap = json.loads(Path(path).read_text())
+    except Exception:
+        return set()
+    return {it["name"] for it in snap.get("mapping") or [] if it.get("name")}
+
+
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--snapshot", help="price snapshot JSON; its mapping, when "
+                                       "present, replaces the stale items-json list")
+    args = ap.parse_args()
+    live = mapping_items(args.snapshot) if args.snapshot else set()
     items = ge_items()
     today = date.today().isoformat()
     rows = [
@@ -98,7 +121,7 @@ def main():
         f"{SITE}/high-alch-calculator.html|{today}|daily|0.8",
         f"{SITE}/cannonball-profit-calculator.html|{today}|daily|0.7",
     ]
-    names = {it["name"] for it in items}
+    names = live or {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)
     # Items with a prerendered page get their PATH url — that is the one they
     # declare as canonical, and listing ?q= for them would point Google at a
@@ -120,7 +143,9 @@ def main():
                    f"<changefreq>{freq}</changefreq><priority>{prio}</priority></url>")
     out.append("</urlset>")
     OUT.write_text("\n".join(out) + "\n")
-    print(f"Wrote {OUT} — {len(rows)} URLs ({len(all_names)} items, {len(EXTRA_NAMES)} post-snapshot extras).")
+    src = "live mapping" if live else "items-json (stale)"
+    print(f"Wrote {OUT} — {len(rows)} URLs ({len(all_names)} items from the {src}, "
+          f"{len(set(EXTRA_NAMES) - names)} still coming from the hand-kept extras).")
 
 
 if __name__ == "__main__":

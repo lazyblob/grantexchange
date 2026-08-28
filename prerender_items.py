@@ -43,9 +43,28 @@ PAGES_JS = Path("./item-pages.js")
 
 
 # ── item list ─────────────────────────────────────────────────────────────
-def ge_items():
-    """GE-tradeable items, one per name — the same filter generate_sitemap.py
-    applies, so the two files can never disagree about what exists."""
+def ge_items(mapping=None):
+    """GE-tradeable items, one per name.
+
+    The live wiki mapping is the source when we have it, and items-json is the
+    fallback. That order matters: items-json is an osrsbox archive that stops
+    around 2021, and 476 of its records are name-and-buy-limit skeletons with
+    id=None scraped from the wiki's buying-limits table. The filter below drops
+    every one of them, so items released since — Sunfire splinters, Demon tear,
+    Aether rune, Huasca, Ancient brew, the antler bolts — could never be
+    prerendered no matter how heavily they traded. Sunfire splinters is in the
+    app's own default watchlist and still had no page.
+
+    The mapping is the same list app.js searches, so building from it means the
+    prerendered set can never again lag the app's idea of what exists."""
+    if mapping:
+        seen = {}
+        for it in mapping:
+            if not it.get("name") or it.get("id") is None:
+                continue
+            seen.setdefault(it["name"].lower(), {**it, "limit": it.get("limit") or 0})
+        return list(seen.values())
+
     seen = {}
     for f in ITEMS_DIR.glob("*.json"):
         try:
@@ -67,9 +86,63 @@ def ge_items():
     return list(seen.values())
 
 
+# ── categories pinned in regardless of volume ─────────────────────────────
+# Ranking by daily volume is a good default and a bad rule for a flipper's
+# shopping list. Poisoned arrow and bolt variants, low-dose potions and the
+# quieter teleport tablets all trade below the cutoff (~18k/day at 800 pages)
+# yet are exactly the things people search for by name. These are pinned in at
+# whatever volume they happen to do, so the set stops depending on where the
+# cutoff lands this month.
+_POTION = re.compile(r"potion|mix|brew|serum|antidote|anti-?venom|anti-?poison"
+                     r"|restore|elixir", re.I)
+_F2P_RUNES = {"air rune", "water rune", "earth rune", "fire rune",
+              "mind rune", "body rune"}
+_FOOD = {"shark", "monkfish", "karambwan", "cooked karambwan", "anglerfish",
+         "manta ray", "sea turtle", "lobster", "swordfish", "tuna", "trout",
+         "salmon", "bass", "dark crab", "cake", "jug of wine", "pineapple pizza",
+         "summer pie", "wild pie", "admiral pie", "mushroom pie",
+         "cooked chicken", "bread", "potato with cheese", "tuna potato"}
+_HERBS = ["guam", "marrentill", "tarromin", "harralander", "ranarr", "toadflax",
+          "irit", "avantoe", "kwuarm", "snapdragon", "cadantine", "lantadyme",
+          "dwarf weed", "torstol", "huasca"]
+
+
+def is_pinned(name):
+    n = name.lower()
+    return bool(
+        # runes: the F2P four are high-volume anyway, this is for the rest
+        (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
+        or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
+        or "revenant ether" in n or "cannonball" in n
+        # tablets are named for the destination -- "Varrock teleport" -- with
+        # no "tablet" anywhere in the name
+        or n.endswith(" teleport")
+        or re.search(r"\bbolts?\b", n) or re.search(r"\barrows?\b", n)
+        # darts and dart tips together: the tip is the buy side of the same
+        # trade, so a page for one without the other is half a flip
+        or re.search(r"\bdarts?\b", n) or "dart tip" in n
+        or ("bones" in n or "ashes" in n)
+        # ores and the bars they smelt into: same trade, both sides
+        or re.search(r"\bores?\b", n) or re.search(r"\bbars?\b", n)
+        or (re.search(r"\(\d\)$", name) and _POTION.search(name))
+        or n in _FOOD
+        or any(n in (h, "grimy " + h, h + " leaf", "grimy " + h + " leaf",
+                     h + " weed", "grimy " + h + " weed") for h in _HERBS)
+        or (n.endswith(" seed") and n.split()[0] in {h.split()[0] for h in _HERBS})
+    )
+
+
 def slugify(name):
-    s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    return s
+    # "+" has to survive as a word. Stripping it as punctuation collapsed
+    # "Adamant bolts (p)", "(p+)" and "(p++)" onto one slug -- 116 such
+    # collisions across 318 names -- and the caller skips a taken slug, so two
+    # of every three poisoned variants were silently dropped and the surviving
+    # page sat at a URL naming a different item. The plain variant keeps the
+    # bare slug it already has, so no published URL stops resolving.
+    # "(-)" marks the weaker Nightmare Zone variant and is the same trap:
+    # "Antipoison (-)(1)" and "Antipoison(1)" are different items.
+    s = name.lower().replace("(-)", " minus ").replace("+", " plus ")
+    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")
 
 
 # ── price snapshot ────────────────────────────────────────────────────────
@@ -87,6 +160,8 @@ def price_snapshot(path=None):
         return json.loads(Path(path).read_text())
     snap = {"latest": fetch(f"{API}/latest")["data"],
             "volumes": fetch(f"{API}/volumes")["data"],
+            # the item universe, so the set can never lag what the app can see
+            "mapping": fetch(f"{API}/mapping"),
             "fetched": date.today().isoformat()}
     return snap
 
@@ -247,8 +322,6 @@ def main():
     args = ap.parse_args()
 
     tpl = TEMPLATE.read_text()
-    items = ge_items()
-    print(f"{len(items):,} GE-tradeable items")
 
     try:
         snap = price_snapshot(args.snapshot)
@@ -258,20 +331,42 @@ def main():
         Path(args.save_snapshot).write_text(json.dumps(snap))
     latest, volumes = snap["latest"], snap["volumes"]
 
+    items = ge_items(snap.get("mapping"))
+    src = "live wiki mapping" if snap.get("mapping") else "items-json (STALE — no mapping in snapshot)"
+    print(f"{len(items):,} GE-tradeable items, from the {src}")
+
     # rank by daily volume — where the search demand actually is
     priced = [it for it in items if str(it["id"]) in latest
               and (latest[str(it["id"])] or {}).get("high")]
     priced.sort(key=lambda it: volumes.get(str(it["id"]), 0), reverse=True)
     chosen = priced[:args.limit]
 
+    # then add the pinned categories, wherever they landed in the ranking.
+    # Appended rather than merged into the sort so --limit keeps meaning
+    # "how deep into the volume ranking to go" and the pins are visibly extra.
+    already = {id(it) for it in chosen}
+    pins = [it for it in priced if id(it) not in already and is_pinned(it["name"])]
+    chosen = chosen + pins
+    cut = volumes.get(str(chosen[args.limit - 1]["id"]), 0) if len(chosen) >= args.limit else 0
+    print(f"top {min(args.limit, len(priced)):,} by volume (cutoff ~{cut:,.0f}/day) "
+          f"+ {len(pins):,} pinned = {len(chosen):,}")
+
     # slugs first: related links may only point at pages that will exist
-    pages, by_name = {}, {}
+    pages, by_name, dropped = {}, {}, []
     for it in chosen:
         slug = slugify(it["name"])
         if not slug or slug in pages:
-            continue          # a collision would overwrite a page; skip, don't guess
+            # A collision still has to be skipped -- two items cannot share a
+            # URL -- but it is reported now. Silently dropping them is how 318
+            # names ended up sharing 116 slugs without anyone noticing, and how
+            # /item/adamant-arrow-p/ came to serve "Adamant arrow(p++)".
+            dropped.append(f'{it["name"]} -> {slug or "(empty)"}')
+            continue
         pages[slug] = it["name"]
         by_name[it["name"].lower()] = it
+    if dropped:
+        print(f"  {len(dropped)} skipped for slug collisions: {', '.join(dropped[:6])}"
+              + (" ..." if len(dropped) > 6 else ""))
 
     if OUT_DIR.exists():
         shutil.rmtree(OUT_DIR)   # stale pages must not outlive the set
