@@ -105,6 +105,20 @@ _FOOD = {"shark", "monkfish", "karambwan", "cooked karambwan", "anglerfish",
 _HERBS = ["guam", "marrentill", "tarromin", "harralander", "ranarr", "toadflax",
           "irit", "avantoe", "kwuarm", "snapdragon", "cadantine", "lantadyme",
           "dwarf weed", "torstol", "huasca"]
+# High-value PvM gear. The --top-value rule below already selects on price and
+# would catch most of this on its own, but a godsword or a Bandos piece can sit
+# an order of magnitude under a Twisted bow and fall outside whatever N is set
+# to. These are named so the guarantee does not depend on where that cutoff
+# lands. Family terms, not exact names, so each one covers the pieces, the
+# ornament-kit variants and the "... armour set" / "... robes set" GE items.
+_LUXURY = re.compile(
+    r"scythe of vitur|twisted bow|torva|inquisitor|soulreaper|oathplate"
+    r"|elysian|3rd age|bandos|armadyl|godsword|voidwaker|ancestral|virtus"
+    r"|masori|tumeken|sanguinesti|justiciar|primordial|pegasian|eternal boots"
+    r"|avernic|zaryte|dragon claws|harmonised|volatile orb|eldritch"
+    r"|dinh's|ferocious gloves|venator bow|amulet of rancour|nightmare staff"
+    r"|osmumten|ancient godsword|infernal|dragon warhammer|spirit shield",
+    re.I)
 
 
 def is_pinned(name):
@@ -114,6 +128,7 @@ def is_pinned(name):
         (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
         or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
         or "revenant ether" in n or "cannonball" in n
+        or _LUXURY.search(name)
         # Bonds trade too thinly to clear the volume cutoff and are one of the
         # most searched prices in the game -- the case pinning is for. The word
         # boundary keeps it to the two bond items and nothing else.
@@ -340,6 +355,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=800,
                     help="how many items to prerender, ranked by daily volume")
+    ap.add_argument("--top-value", type=int, default=400,
+                    help="also prerender this many of the most expensive items, "
+                         "which volume ranking never reaches")
     ap.add_argument("--snapshot", help="path to a saved price snapshot JSON")
     ap.add_argument("--save-snapshot", help="write the fetched snapshot here")
     args = ap.parse_args()
@@ -364,14 +382,28 @@ def main():
     priced.sort(key=lambda it: volumes.get(str(it["id"]), 0), reverse=True)
     chosen = priced[:args.limit]
 
-    # then add the pinned categories, wherever they landed in the ranking.
+    # Then the most expensive items, ranked by price rather than by turnover.
+    # Volume ranking cannot reach them: a Twisted bow trades a handful of times
+    # a day, so the whole high-value tier -- scythes, torva, ancestral, virtus,
+    # godswords, 3rd age -- scored zero pages under volume alone. That tier is
+    # also where the highest-intent searches are, since nobody looks up a
+    # 1.5B price idly. Selecting on price keeps this true for items that do not
+    # exist yet, which a list of names cannot.
+    px = lambda it: (latest[str(it["id"])] or {}).get("high") or 0
+    by_value = sorted(priced, key=px, reverse=True)[:args.top_value]
+
+    # then the pinned categories, wherever they landed in either ranking.
     # Appended rather than merged into the sort so --limit keeps meaning
-    # "how deep into the volume ranking to go" and the pins are visibly extra.
-    already = {id(it) for it in chosen}
-    pins = [it for it in priced if id(it) not in already and is_pinned(it["name"])]
-    chosen = chosen + pins
-    cut = volumes.get(str(chosen[args.limit - 1]["id"]), 0) if len(chosen) >= args.limit else 0
+    # "how deep into the volume ranking to go" and the extras stay visible.
+    seen_ids = {it["id"] for it in chosen}
+    value_pins = [it for it in by_value if it["id"] not in seen_ids]
+    seen_ids |= {it["id"] for it in value_pins}
+    pins = [it for it in priced if it["id"] not in seen_ids and is_pinned(it["name"])]
+    chosen = chosen + value_pins + pins
+    cut = volumes.get(str(priced[args.limit - 1]["id"]), 0) if len(priced) >= args.limit else 0
+    vcut = px(by_value[-1]) if by_value else 0
     print(f"top {min(args.limit, len(priced)):,} by volume (cutoff ~{cut:,.0f}/day) "
+          f"+ {len(value_pins):,} by value (down to {vcut:,.0f} gp) "
           f"+ {len(pins):,} pinned = {len(chosen):,}")
 
     # slugs first: related links may only point at pages that will exist
