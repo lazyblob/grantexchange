@@ -3593,6 +3593,17 @@ function renderWatchlist() {
         const nowCollapsed = listDiv.classList.toggle("collapsed");
         titleDiv.querySelector(".cat-chevron").classList.toggle('closed', nowCollapsed);
         groupOpenStates[stateKey] = !nowCollapsed;
+        /* nested === true is exactly the Find Opportunities children (the only
+           other caller passes the Favorites group, which takes the isFavTitle
+           branch and never reaches this handler). State rather than an
+           open-only event, matching the other toggles here, so the open rate
+           is a ratio inside one event instead of a join across two. */
+        if (nested) {
+          track('opportunities_category', {
+            category: group.name,
+            state: nowCollapsed ? 'closed' : 'open',
+          });
+        }
         if (!nowCollapsed && hasScan && scanStatus[group.scan] === 'idle') {
           if (group.scan === 'fived') runFiveDayScan();
           else if (group.scan === 'steady') runSteadyFlipsScan();
@@ -8362,7 +8373,19 @@ setItem._userPicked = false;
     qInput.addEventListener("focus", () => { if (!qInput.value.trim()) showRecents(); });
     sb.addEventListener("click", e => {
       const id = e.target.closest('div')?.dataset?.id;
-      if (id) { const m = mapping.find(x => String(x.id) === String(id)); if (m) { sb.style.display = "none"; qInput.blur(); setItem._userPicked = false; setItem(m); } }
+      if (id) { const m = mapping.find(x => String(x.id) === String(id)); if (m) {
+        /* Read the box BEFORE setItem clears it: the same dropdown serves
+           typed results and the recents list, and which one you clicked is
+           the only thing separating "found by searching" from "went back to
+           something I already had". */
+        const typed = qInput.value.trim();
+        sb.style.display = "none"; qInput.blur(); setItem._userPicked = false; setItem(m);
+        /* After setItem, so track()'s default item_id/item_name describe the
+           item that was chosen rather than the one being left. The virtual
+           page_view already records WHICH item; this records HOW it was
+           reached, which the page_view cannot say. */
+        track('search_select', { via: typed ? 'search' : 'recent', query_len: typed.length });
+      } }
     });
     document.addEventListener("click", e => { if (e.target !== qInput) sb.style.display = "none"; });
 
@@ -8400,6 +8423,12 @@ setItem._userPicked = false;
         if (el.hasAttribute('role')) el.setAttribute('aria-selected', String(on));
       });
       if (!changed) return;
+      /* After the `changed` guard on purpose: clicking F2P while already on
+         F2P is a real click but not a real switch, and counting it would
+         inflate whichever mode people happen to already be in. This function
+         has no callers but the two onclick handlers below, so it cannot fire
+         on boot or on a restored preference. */
+      track('members_mode', { mode: on ? 'p2p' : 'f2p' });
       dayHiLoCache = {}; steadyFlipsCache = []; scanStatus = { fived: 'idle', steady: 'idle' };
       renderWatchlist();
       resetFlipFinder();
