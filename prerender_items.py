@@ -348,7 +348,30 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
     end = s.rfind("</body>")
     if cut > 0 and end > cut:
         s = s[:cut] + s[end:]
+    # ...but the FAQ's STRUCTURED DATA sits in <head> and survived that cut, so
+    # every item page was shipping an 8.9KB FAQPage block declaring fourteen
+    # Questions that the page does not contain -- the prose describing them was
+    # removed three lines up. Google's rule is explicit: do not mark up content
+    # that is not visible to the reader. Wrong on 1,694 pages, and ~15MB of the
+    # set. The homepage, which does show the FAQ, keeps it.
+    s = drop_faq_jsonld(s)
     return s
+
+
+def drop_faq_jsonld(s):
+    """Remove the FAQPage block only, leaving the other JSON-LD alone.
+
+    Matched by parsing each ld+json block rather than by one regex over the
+    whole document: the blocks sit next to each other, so a greedy pattern
+    would take the WebApplication and WebSite entities with it, and a lazy one
+    stops at the first </script> whichever block that belongs to."""
+    out, idx = [], 0
+    for m in re.finditer(r'\s*<script type="application/ld\+json"[^>]*>(.*?)</script>', s, re.S):
+        if '"FAQPage"' in m.group(1):
+            out.append(s[idx:m.start()])
+            idx = m.end()
+    out.append(s[idx:])
+    return "".join(out)
 
 
 def main():
