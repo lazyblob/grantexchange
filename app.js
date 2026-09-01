@@ -6210,7 +6210,7 @@ function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(
 
 /* ── RuneLite bridge (PocketGE Flip Tracker plugin) ──────────────────────
    The plugin can serve this session on 127.0.0.1 (opt-in, loopback only —
-   see runelite-plugin/). Once the user opts in (the Bank modal's Connect
+   see github.com/lazyblob/pocketge-flip-tracker). Once the user opts in (the Bank modal's Connect
    toggle), this polls in the BACKGROUND — not gated on that modal being
    open — because the whole point is that the site's own sidebar (Favorites
    in particular) stays live-linked to the plugin, not just a panel buried
