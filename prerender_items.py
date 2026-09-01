@@ -399,12 +399,44 @@ def main():
     value_pins = [it for it in by_value if it["id"] not in seen_ids]
     seen_ids |= {it["id"] for it in value_pins}
     pins = [it for it in priced if it["id"] not in seen_ids and is_pinned(it["name"])]
-    chosen = chosen + value_pins + pins
+    seen_ids |= {it["id"] for it in pins}
+
+    # Finally, anything that ALREADY has a published page and is still a real,
+    # priced item keeps it.
+    #
+    # Without this the set is recomputed from scratch every run, so an item
+    # drifting a few places down the volume ranking loses its URL. The last
+    # run did exactly that to 95 items -- Wool, Cod, Compost, Shortbow, Rune
+    # dagger -- while the set as a whole GREW from 797 to 1,688. They had not
+    # stopped existing or stopped trading; the population they were ranked
+    # against changed. Repeat that monthly and Google spends the year watching
+    # a thousand URLs appear and vanish, which is worse for the site than any
+    # of them being marginal.
+    #
+    # An item can still lose its page by leaving the mapping or losing its
+    # price, which are the only two cases where there is nothing to render.
+    previous = set()
+    if PAGES_JS.exists():
+        try:
+            previous = {n.lower() for n in json.loads(
+                re.search(r"=\s*(\[.*\])\s*;", PAGES_JS.read_text(), re.S).group(1))}
+        except Exception:
+            previous = set()
+    kept = [it for it in priced
+            if it["id"] not in seen_ids and it["name"].lower() in previous]
+
+    chosen = chosen + value_pins + pins + kept
     cut = volumes.get(str(priced[args.limit - 1]["id"]), 0) if len(priced) >= args.limit else 0
     vcut = px(by_value[-1]) if by_value else 0
     print(f"top {min(args.limit, len(priced)):,} by volume (cutoff ~{cut:,.0f}/day) "
           f"+ {len(value_pins):,} by value (down to {vcut:,.0f} gp) "
-          f"+ {len(pins):,} pinned = {len(chosen):,}")
+          f"+ {len(pins):,} pinned + {len(kept):,} kept from the last run "
+          f"= {len(chosen):,}")
+    if previous:
+        lost = len(previous) - len({n.lower() for n in previous}
+                                   & {it["name"].lower() for it in chosen})
+        print(f"  {lost:,} previously published item(s) could not be kept "
+              f"(gone from the mapping, or no live price)")
 
     # slugs first: related links may only point at pages that will exist
     pages, by_name, dropped = {}, {}, []
