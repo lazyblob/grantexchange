@@ -642,6 +642,7 @@ function moveFavoriteBeforeAfter(dragId, targetId, before) {
   if (!before) targetIdx += 1;
   favorites.splice(targetIdx, 0, dragId);
   persistFavoriteLists();
+  rlPostOrder(); // keep the in-game list in the same order as this one
   renderWatchlist();
 }
 
@@ -6223,7 +6224,15 @@ function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(
    (Safari being the holdout), and the plugin answers the CORS +
    Private-Network-Access preflight. */
 const RL_BRIDGE_URL = 'http://127.0.0.1:8477';
-const RL_POLL_MS = 15000;
+/* 5s, not 15s. The poll used to only carry background state (profit,
+   portfolio, favorites) where a quarter-minute of lag was invisible. It now
+   also carries navRequest — the plugin asking THIS tab to open an item
+   because you clicked a chart in game — and a click that takes up to
+   fifteen seconds to do anything reads as broken. The payload is a loopback
+   fetch of already-computed state (the plugin caches its bank composition
+   rather than rebuilding it per request), so the extra ticks cost
+   essentially nothing. */
+const RL_POLL_MS = 5000;
 let rlTimer = null;
 let rlWanted = (() => { try { return localStorage.getItem('ge_rl_bridge') === '1'; } catch (e) { return false; } })();
 let rlConnected = false;
@@ -6233,9 +6242,24 @@ let rlConnected = false;
    is currently active — there's no single global "the" RuneLite list
    anymore. */
 let rlFavoriteListsByName = new Map();
+/* Last navRequest.seq we acted on. Starts null rather than 0 deliberately:
+   the plugin keeps the most recent request in its payload so a dropped poll
+   or a reload can't lose the click, which means the FIRST payload after
+   connecting usually carries a stale one from earlier in the session.
+   Acting on that would yank the page to some item you looked at an hour ago
+   the moment you hit Connect. So the first payload only records the seq —
+   navigation starts from the next increment. */
+let rlLastNavSeq = null;
 function rlMatchedFavIds() {
   const l = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
   return l ? l.itemIds : [];
+}
+function rlAgeText(minutes) {
+  if (minutes < 60) return minutes + ' min';
+  const h = Math.floor(minutes / 60);
+  if (h < 24) return h + (h === 1 ? ' hour' : ' hours');
+  const d = Math.floor(h / 24);
+  return d + (d === 1 ? ' day' : ' days');
 }
 function rlRenderModal(data) {
   const dot = $('#rlDot'), body = $('#rlBody');
@@ -6261,8 +6285,38 @@ function rlRenderModal(data) {
   if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
   }
+  /* Liquid gp, shown separately from portfolio value because they answer
+     different questions: net worth vs what you could actually put into an
+     offer right now. It's also the number the plugin's own advisor sizes
+     every buy against, so showing it makes its suggestions legible. */
+  if (data.cash != null && Number(data.cash) > 0) {
+    html += `<div class="rl-hint" style="margin:-4px 0 8px">Liquid cash: <strong>${abbreviateNumber(Number(data.cash))} gp</strong> (coins + platinum tokens, bank and inventory)</div>`;
+  }
   if (data.bankSeen === false) {
     html += `<div class="rl-hint" style="margin:-4px 0 8px">Open your bank once in-game this session so the plugin can include it in your portfolio value — it can't read bank contents until it's been opened.</div>`;
+  } else if (data.bankSeenAt) {
+    /* "Seen" alone can't tell a bank read ten seconds ago from one read
+       three hours and forty trades back — and portfolio value, the bank
+       list below and the plugin's own sell suggestions are all exactly that
+       stale. Saying so beats presenting an old snapshot as current. */
+    const ageMin = Math.max(0, Math.round((Date.now() - Number(data.bankSeenAt)) / 60000));
+    if (ageMin >= 5) {
+      html += `<div class="rl-hint" style="margin:-4px 0 8px">Bank last read <strong>${rlAgeText(ageMin)}</strong> ago — open your bank in-game to refresh it.</div>`;
+    }
+  }
+  const stacks = Array.isArray(data.bankStacks) ? data.bankStacks : [];
+  if (stacks.length) {
+    const top = stacks.slice(0, 8);
+    const rest = stacks.length - top.length;
+    html += `<div class="rl-hint" style="margin:8px 0 4px">Biggest bank stacks</div>`;
+    html += top.map(b => `
+      <div class="rl-flip" data-rl-item="${String(b.name || '').replace(/"/g, '&quot;')}" title="Open the live chart">
+        <span class="rl-name">${escapeHtml(String(b.name || ''))} ×${Number(b.quantity || 0).toLocaleString()}</span>
+        <span class="rl-nums">${b.value ? abbreviateNumber(Number(b.value)) + ' gp' : '—'}</span>
+      </div>`).join('');
+    if (rest > 0) {
+      html += `<div class="rl-hint" style="margin:4px 0 0">+ ${rest.toLocaleString()} more ${rest === 1 ? 'stack' : 'stacks'}</div>`;
+    }
   }
   html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Any local list whose name matches one of your in-game lists is live-linked in the sidebar</div>`;
   if (!flips.length) {
@@ -6298,6 +6352,7 @@ function rlApply(data) {
     });
   }
   rlFavoriteListsByName = newLists;
+  rlHandleNavRequest(data && data.navRequest);
   rlRenderModal(data);
   if (rlConnected) rlReconcileFavorites();
   // Only re-render the (potentially large) watchlist when something it
@@ -6306,6 +6361,52 @@ function rlApply(data) {
     renderWatchlist();
   }
 }
+/* The plugin asking this tab to show an item, because a chart was clicked
+   in game. It hands the request over instead of launching a browser: "open a
+   link" is not "open a new tab" on every desktop — on some it navigates
+   whatever tab has focus, so a chart click could take over something else
+   entirely. If a PocketGE tab is already polling, it can just navigate
+   itself.
+
+   Deduped on the monotonic seq, not on presence: polling is at-least-once
+   and the same request stays in the payload until a newer one replaces it. */
+function rlHandleNavRequest(nav) {
+  if (!nav || typeof nav.seq !== 'number') return;
+  if (rlLastNavSeq === null) { rlLastNavSeq = nav.seq; return; } // see rlLastNavSeq
+  if (nav.seq <= rlLastNavSeq) return;
+  rlLastNavSeq = nav.seq;
+  if (!mapping.length) return; // item list still loading; the next tick retries nothing, but neither does it misfire
+  /* Match on id when the plugin knew one — names drift between the game and
+     the wiki mapping (capitalisation, "(uncharged)" suffixes), ids don't. */
+  let item = nav.itemId ? mapping.find(x => String(x.id) === String(nav.itemId)) : null;
+  if (!item && nav.query) {
+    const q = String(nav.query).trim().toLowerCase();
+    item = mapping.find(x => x.name && x.name.toLowerCase() === q);
+  }
+  if (!item) return;
+  closePortfolio();
+  setItem(item);
+}
+
+/* Push the watchlist's order to the plugin so a drag here lands in game too.
+   Sends the FULL order being displayed; the plugin resequences and never
+   changes membership, so a list that is a poll out of date can't delete a
+   favorite starred in game a second ago. Best-effort like every other write
+   here — a dropped post just means the orders differ until the next drag. */
+function rlPostOrder() {
+  if (!rlWanted || !rlConnected) return;
+  const matched = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
+  const body = { action: 'reorder', itemIds: (favorites || []).map(Number).filter(n => n > 0) };
+  if (!body.itemIds.length) return;
+  if (matched) body.listId = matched.id;
+  fetch(RL_BRIDGE_URL + '/favoriteLists', {
+    method: 'POST',
+    mode: 'cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).catch(() => {});
+}
+
 /* Favorites built on the website BEFORE the plugin was ever connected never
    reach the plugin on their own — rlPostFavorite() only fires for NEW star
    clicks going forward, so a pre-existing list just silently never merges
