@@ -100,6 +100,43 @@ def mapping_items(path):
     return {it["name"] for it in snap.get("mapping") or [] if it.get("name")}
 
 
+# How often each standalone page changes, and how much it matters. Anything
+# not named here still gets listed, at the default below -- the list decides
+# WEIGHT, never membership.
+PAGE_WEIGHTS = {
+    "high-vol-margins.html": ("daily", "0.8"),
+    "low-vol-margins.html": ("daily", "0.8"),
+    "biggest-losers-24h.html": ("daily", "0.8"),
+    "high-alch-calculator.html": ("daily", "0.8"),
+    "flipping-guide.html": ("monthly", "0.8"),
+    "cannonball-profit-calculator.html": ("daily", "0.7"),
+    "reliable-14d-margins.html": ("weekly", "0.7"),
+    "at-5d-highs.html": ("weekly", "0.7"),
+    "at-5d-lows.html": ("weekly", "0.7"),
+    "runelite-plugin.html": ("monthly", "0.7"),
+    "burnt-food-collectors.html": ("monthly", "0.6"),
+}
+# index.html is the "/" row, added separately. og-image.source.html is the
+# artwork the link-preview PNG is screenshotted from -- no canonical, nothing
+# links to it, not a page.
+NOT_PAGES = {"index.html", "og-image.source.html"}
+
+
+def static_pages(today):
+    """Every standalone page on disk, rather than a list somebody remembers to
+    update. The list was hand-kept and had silently dropped
+    runelite-plugin.html -- a real page, with its own canonical, that Google
+    was therefore never told about. Deriving from the filesystem means adding
+    a page is enough to get it indexed."""
+    out = []
+    for f in sorted(Path(".").glob("*.html")):
+        if f.name in NOT_PAGES:
+            continue
+        freq, prio = PAGE_WEIGHTS.get(f.name, ("weekly", "0.6"))
+        out.append(f"{SITE}/{f.name}|{today}|{freq}|{prio}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--snapshot", help="price snapshot JSON; its mapping, when "
@@ -108,19 +145,7 @@ def main():
     live = mapping_items(args.snapshot) if args.snapshot else set()
     items = ge_items()
     today = date.today().isoformat()
-    rows = [
-        f"{SITE}/|{today}|daily|1.0",
-        f"{SITE}/flipping-guide.html|{today}|monthly|0.8",
-        f"{SITE}/high-vol-margins.html|{today}|daily|0.8",
-        f"{SITE}/low-vol-margins.html|{today}|daily|0.8",
-        f"{SITE}/reliable-14d-margins.html|{today}|weekly|0.7",
-        f"{SITE}/biggest-losers-24h.html|{today}|daily|0.8",
-        f"{SITE}/at-5d-highs.html|{today}|weekly|0.7",
-        f"{SITE}/at-5d-lows.html|{today}|weekly|0.7",
-        f"{SITE}/burnt-food-collectors.html|{today}|monthly|0.6",
-        f"{SITE}/high-alch-calculator.html|{today}|daily|0.8",
-        f"{SITE}/cannonball-profit-calculator.html|{today}|daily|0.7",
-    ]
+    rows = [f"{SITE}/|{today}|daily|1.0"] + static_pages(today)
     names = live or {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)
     # Items with a prerendered page get their PATH url — that is the one they
