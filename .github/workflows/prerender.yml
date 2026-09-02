@@ -57,16 +57,24 @@ jobs:
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
             -A "pocketge.com prerender (github actions)" \
             https://prices.runescape.wiki/api/v1/osrs/mapping -o /tmp/mapping.json
+          # One bulk call for every item, NOT /timeseries per item: that would
+          # be ~1,700 requests a run against a volunteer-run API for a range
+          # the app already fetches on demand for real visitors.
+          curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
+            -A "pocketge.com prerender (github actions)" \
+            https://prices.runescape.wiki/api/v1/osrs/24h -o /tmp/24h.json
           python3 - <<'PY'
           import json, datetime
           snap = {"latest": json.load(open('/tmp/latest.json'))["data"],
                   "volumes": json.load(open('/tmp/volumes.json'))["data"],
                   "mapping": json.load(open('/tmp/mapping.json')),
+                  "day": json.load(open('/tmp/24h.json'))["data"],
                   "fetched": datetime.date.today().isoformat()}
           assert len(snap["mapping"]) > 3000, f"mapping looks truncated: {len(snap['mapping'])}"
           json.dump(snap, open('/tmp/snapshot.json', 'w'))
           print(f"{len(snap['latest']):,} priced items, {len(snap['volumes']):,} with volume, "
-                f"{len(snap['mapping']):,} in the mapping")
+                f"{len(snap['mapping']):,} in the mapping, "
+                f"{len(snap['day']):,} with 24h averages")
           PY
 
       - name: Generate pages and sitemap

@@ -9,10 +9,12 @@ the only shape that can carry per-item HTML on this host.
 
 What each generated page contains before a line of JS runs: the item's title,
 description, canonical, OG/Twitter tags, JSON-LD, an itemised <h1>, a summary
-paragraph with live-at-build-time prices, and real links to related items.
+paragraph with live-at-build-time prices, its members/F2P status, its move
+against the 24-hour average, its buy limit, its high-alch value and the real
+alch margin after a nature rune, and links to related items.
 
 What it deliberately does NOT contain: the 30-day range and the after-tax
-margin sentence. The range needs a timeseries request per item (800 of them
+margin sentence. The range needs a timeseries request per item (~1,700 of them
 against a free community API for something the client fills in a second later)
 and the margin comes from the target-price engine in app.js, which is not
 worth reimplementing in Python where it could silently disagree. Both appear
@@ -189,6 +191,11 @@ def price_snapshot(path=None):
         return json.loads(Path(path).read_text())
     snap = {"latest": fetch(f"{API}/latest")["data"],
             "volumes": fetch(f"{API}/volumes")["data"],
+            # One bulk call for every item, not one per item. Deliberately NOT
+            # /timeseries: that is a request per item -- 1,691 a run against a
+            # volunteer-run API -- for a 30-day range the app already fetches
+            # on demand for real visitors.
+            "day": fetch(f"{API}/24h")["data"],
             # the item universe, so the set can never lag what the app can see
             "mapping": fetch(f"{API}/mapping"),
             "fetched": date.today().isoformat()}
@@ -228,7 +235,7 @@ def abbrev(n):
     return str(n)
 
 
-def summary_html(it, buy, sell, vol):
+def summary_html(it, buy, sell, vol, avg24=0, nature=0):
     """The short form renderItemSeo builds, minus the two clauses that need
     client-side computation (30-day range, after-tax margin). Kept in step
     with it by hand — if that template changes, this is the other half.
@@ -249,18 +256,43 @@ def summary_html(it, buy, sell, vol):
     out += '.'
     if sell and sell > buy:
         out += ' Both sides last traded at different times — no live spread to quote.'
-    if vol:
-        out += f' ~{abbrev(vol)}/day.'
+    # Facts that were already in hand and being discarded. Every clause below
+    # is a NEW fact, not a restatement: the brief that shortened this block was
+    # about repetition, and a page carrying forty unique words is its own
+    # problem. These cost no extra API call -- members and highalch ride along
+    # in the mapping, and the nature rune's price is already in the snapshot.
+    tail = [f'~{abbrev(vol)}/day'] if vol else []
+    tail.append('members' if it.get("members") else 'F2P')
+    out += ' ' + ' · '.join(tail) + '.'
+    if avg24 and buy:
+        pct = (buy - avg24) / avg24 * 100
+        if abs(pct) >= 1:
+            out += f' {"Up" if pct > 0 else "Down"} {abs(pct):.0f}% on its 24-hour average.'
     return out
 
 
-def qa_html(it):
-    """One line. The price question repeated what the sentence above just
-    said; the buy limit is the only fact the paragraph does not already
-    carry, since it names the limit only as "per 4h limit"."""
-    return ('<p><b>Buy limit:</b> ' +
-            (f'{it["limit"]:,} every 4 hours.</p>' if it.get("limit")
-             else 'none on this item.</p>'))
+def qa_html(it, buy=0, nature=0):
+    """Reference facts about the item, as opposed to the price sentence above.
+    The buy limit was the only one the paragraph did not already carry; high
+    alch is the second, and it belongs here rather than in the paragraph
+    because keeping that to one scannable line was the point of #357."""
+    out = ('<p><b>Buy limit:</b> ' +
+           (f'{it["limit"]:,} every 4 hours.</p>' if it.get("limit")
+            else 'none on this item.</p>'))
+    # People search "<item> high alch" by name, and the nature rune's own live
+    # price is already in the snapshot -- so the real margin is free to state
+    # rather than left as an exercise for the reader.
+    alch = int(it.get("highalch") or 0)
+    if alch > 0:
+        out += f'<p><b>High alch:</b> {gp(alch)} gp'
+        # The margin only when it is worth acting on. Stating the loss for
+        # everything produced "Twisted bow ... alching loses 1,398,288,996 gp"
+        # -- true, and the same broken-template reading that "a 0 gp spread"
+        # had. Nobody alches a 1.4B bow; the alch VALUE is the searched fact
+        # there, and the margin is noise.
+        net = (alch - buy - nature) if (buy and nature) else 0
+        out += f' — alching profits {gp(net)} gp after a nature rune.</p>' if net > 0 else '.</p>'
+    return out
 
 
 def related_html(it, by_name, vol_of, pages):
@@ -282,7 +314,7 @@ def related_html(it, by_name, vol_of, pages):
 
 
 # ── page assembly ─────────────────────────────────────────────────────────
-def build_page(tpl, it, slug, buy, sell, vol, related):
+def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0):
     name = esc(it["name"])
     url = f"{SITE}/item/{slug}/"
     title = f"{name} Price OSRS — {gp(buy)} gp · Live GE Chart & Flip Margin | PocketGE"
@@ -318,8 +350,8 @@ def build_page(tpl, it, slug, buy, sell, vol, related):
         raise SystemExit("index.html has no item-seo block to fill — markup changed?")
     s = (s[:block.start()]
          + '<section class="item-seo" id="itemSeo">\n'
-         + f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol)}</p>\n'
-         + f'  <div class="is-qa" id="isQa">{qa_html(it)}</div>\n'
+         + f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol, avg24, nature)}</p>\n'
+         + f'  <div class="is-qa" id="isQa">{qa_html(it, buy, nature)}</div>\n'
          + (f'  <p class="is-rel" id="isRelated">{related}</p>\n' if related
             else '  <p class="is-rel" id="isRelated" hidden></p>\n')
          + (guide.group(1) if guide else '')
@@ -394,6 +426,10 @@ def main():
     if args.save_snapshot:
         Path(args.save_snapshot).write_text(json.dumps(snap))
     latest, volumes = snap["latest"], snap["volumes"]
+    day = snap.get("day") or {}
+    # Nature rune's own live insta-buy, so the alch line quotes a real cost
+    # instead of a constant that goes stale. 561 is the nature rune.
+    nature_price = int((latest.get("561") or {}).get("high") or 0)
 
     items = ge_items(snap.get("mapping"))
     src = "live wiki mapping" if snap.get("mapping") else "items-json (STALE — no mapping in snapshot)"
@@ -491,7 +527,9 @@ def main():
         rel = related_html(it, by_name, volumes, pages)
         d = OUT_DIR / slug
         d.mkdir(parents=True, exist_ok=True)
-        (d / "index.html").write_text(build_page(tpl, it, slug, buy, sell, vol, rel))
+        avg24 = int((day.get(str(it["id"])) or {}).get("avgHighPrice") or 0)
+        (d / "index.html").write_text(
+            build_page(tpl, it, slug, buy, sell, vol, rel, avg24, nature_price))
         n += 1
 
     # the set the app reads, so it canonicalises and links to pages that exist
