@@ -2679,7 +2679,7 @@ const OWNER_RSN = 'pocketge';
    one detail someone would actually act on. */
 const OWNER_WORLDS = 'W301/302';
 const OWNER_NOTE = `Usually around the GE on ${OWNER_WORLDS} — add me to talk flips, bugs or ideas.`;
-const REPO_URL = 'https://github.com/lazyblob/pocketge.com';
+const REPO_URL = 'https://github.com/grant9008/pocketge.com';
 /* "Updated today" is a rounded label, which is exactly what a passer-by
    wants — but it can't answer "did my fix actually ship?". This card gives
    the precise answer behind it: the real timestamp, how long ago, the commit
@@ -2734,7 +2734,7 @@ function syncBuildInfo() {
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) {}
   if (cached && cached.info) apply(cached.info);
-  fetch('https://api.github.com/repos/lazyblob/pocketge.com/commits?per_page=1', { headers: { Accept: 'application/vnd.github+json' } })
+  fetch('https://api.github.com/repos/grant9008/pocketge.com/commits?per_page=1', { headers: { Accept: 'application/vnd.github+json' } })
     .then(r => r.ok ? r.json() : null)
     .then(arr => {
       const c = Array.isArray(arr) ? arr[0] : null;
@@ -6211,7 +6211,7 @@ function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(
 
 /* ── RuneLite bridge (PocketGE Flip Tracker plugin) ──────────────────────
    The plugin can serve this session on 127.0.0.1 (opt-in, loopback only —
-   see github.com/lazyblob/pocketge-flip-tracker). Once the user opts in (the Bank modal's Connect
+   see github.com/grant9008/pocketge-flip-tracker). Once the user opts in (the Bank modal's Connect
    toggle), this polls in the BACKGROUND — not gated on that modal being
    open — because the whole point is that the site's own sidebar (Favorites
    in particular) stays live-linked to the plugin, not just a panel buried
