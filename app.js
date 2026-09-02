@@ -3071,6 +3071,11 @@ function renderItemSeo(m) {
   const facts = [];
   if (r30) facts.push(`30-day range <b>${fmtGp(r30.lo)}–${fmtGp(r30.hi)} gp</b>`);
   if (vol) facts.push(`~${abbreviateNumber(vol)}/day`);
+  /* Mirrors summary_html() in prerender_items.py. It has to: hydration
+     REPLACES this block, so anything the generated HTML says and this does not
+     is deleted the moment the app boots — and Google renders JS, so a fact
+     only in the prerendered copy is a fact that mostly does not count. */
+  facts.push(m.members ? 'members' : 'F2P');
   if (facts.length) out += ' ' + facts.join(' · ') + '.';
   const tBuy = recommendedBuy, tSell = recommendedSell;
   if (tBuy > 0 && tSell > 0) {
@@ -3092,9 +3097,24 @@ function renderItemSeo(m) {
      answer the paragraph does not already carry, since it names the limit
      only as "per 4h limit". Visible text only — still no per-item FAQPage
      schema, which Google dropped for most sites. */
-  qaEl.innerHTML = m.limit > 0
+  let qa = m.limit > 0
     ? `<p><b>Buy limit:</b> ${m.limit.toLocaleString()} every 4 hours.</p>`
     : `<p><b>Buy limit:</b> none on this item.</p>`;
+  /* High alch, mirroring qa_html() in prerender_items.py. The nature rune's
+     own live price comes from the same /latest payload every row on this page
+     already reads, so the margin is real rather than a baked-in constant.
+     Stated only when alching PROFITS: printing the loss for everything gave
+     "Twisted bow … alching loses 1,398,288,996 gp", which is true and reads
+     like a broken template — the same failure "a 0 gp spread" had. */
+  const alch = Number(m.highalch || 0);
+  if (alch > 0) {
+    const natNode = latest && latest.data ? latest.data['561'] : null;
+    const nat = natNode ? Number(natNode.high || 0) : 0;
+    const net = (buyNow && nat) ? alch - buyNow - nat : 0;
+    qa += `<p><b>High alch:</b> ${fmtGp(alch)} gp` +
+      (net > 0 ? ` — alching profits ${fmtGp(net)} gp after a nature rune.</p>` : '.</p>');
+  }
+  qaEl.innerHTML = qa;
 
   const rel = relatedItems(m, 4);
   if (rel.length) {
