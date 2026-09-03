@@ -8911,6 +8911,17 @@ setItem._userPicked = false;
    handle. Same interaction contract as .wl-resize: drag to size, double-click
    to reset, choice persisted, and resizeCanvas() called on every frame so the
    bitmap tracks the box instead of being stretched to fit it afterwards. */
+/* Published by chartHeightResizer below, called by the watchlist splitter.
+   The sidebar's height is capped by the main column, so dragging the
+   favourites list taller used to stop dead at whatever the chart happened to
+   be — you had to grow the chart FIRST, then the list. Growing them together
+   needs the splitter to reach the chart, and routing that through the same
+   setH the drag uses means the two controls cannot leave the chart in a state
+   the other does not recognise. Null until that IIFE runs, and on layouts
+   where the chart is not resizable it stays a no-op. */
+let chartGrowBy = null;      // (px) -> px actually gained
+let chartCommitH = null;     // persist whatever height it is at now
+
 (function chartHeightResizer() {
   const handle = document.getElementById('chResize');
   const box = document.querySelector('.chart-container');
@@ -9049,6 +9060,27 @@ setItem._userPicked = false;
     else if (mq.addListener) mq.addListener(_onLayoutMQ);
   });
 
+  /* Grow only, and never past maxH(). Deliberately does NOT persist: the
+     watchlist drag calls this on every pointermove, and a localStorage write
+     per frame is a poor trade for a value that only matters once the gesture
+     ends. chartCommitH does that, once, on pointerup. */
+  chartGrowBy = (px) => {
+    if (!enabled() || !(px > 0)) return 0;
+    const cur = box.getBoundingClientRect().height;
+    const next = Math.min(maxH(), cur + px);
+    if (next - cur < 1) return 0;
+    setH(next);
+    if (typeof resizeCanvas === 'function') resizeCanvas();
+    syncTall();
+    return next - cur;
+  };
+  chartCommitH = () => {
+    if (!box.classList.contains('user-sized')) return;
+    const h = Math.round(box.getBoundingClientRect().height);
+    if (h) { try { localStorage.setItem(heightKey(), String(h)); } catch (e) {} }
+    syncTall();
+  };
+
   let startY = 0, startH = 0, dragging = false, raf = 0;
   const apply = (clientY) => {
     const h = Math.max(MIN, Math.min(maxH(), startH + (clientY - startY)));
@@ -9137,13 +9169,85 @@ setItem._userPicked = false;
     const colB = col.getBoundingClientRect().bottom;
     return Math.max(MIN_FAV_PX, colB - listT - bar.offsetHeight - MIN_OPPS_PX);
   };
-  const clampPx = px => Math.max(MIN_FAV_PX, Math.min(room(), px));
+  /* The list's own content is the ceiling, not the column. Two reasons it is
+     not simply "as far down as you can drag": an empty or four-row list
+     dragged to the bottom of a monitor leaves a column of nothing, and the
+     chart is grown to make this room — so an unbounded drag would grow the
+     chart to fit rows that do not exist. Twenty favourites drags to the
+     twentieth and stops. */
+  const contentH = () => {
+    const rows = list.querySelectorAll('.wl-item');
+    if (!rows.length) return MIN_FAV_PX;
+    /* Measured from the rows' own box, not rows x rowH and not scrollHeight.
+       Row heights are fractional and twenty of them accumulated a pixel of
+       error, so the list reached all twenty and still called itself scrolling.
+       scrollHeight is exact but is floored at clientHeight, so a list that is
+       NOT scrolling reports its own box back -- which made a three-row list
+       refuse to shrink. The distance from the top of the content to the bottom
+       of the last row is true in both states. */
+    const lr = list.getBoundingClientRect();
+    const lastB = rows[rows.length - 1].getBoundingClientRect().bottom;
+    const pad = parseFloat(getComputedStyle(list).paddingBottom) || 0;
+    const rect = Math.ceil(lastB - lr.top + list.scrollTop + pad);
+    /* Each measure is exact in one state and wrong in the other, so use the
+       one that applies: scrollHeight is the true content height WHILE
+       scrolling and is floored at clientHeight once it stops; the rect walk
+       is right when it is not scrolling but reads a pixel short of
+       scrollHeight (border box vs content box). Taking both when scrolling
+       avoids stopping one pixel before the list settles. */
+    const scrolling = list.scrollHeight > list.clientHeight + 1;
+    return Math.max(MIN_FAV_PX, scrolling ? Math.max(rect, list.scrollHeight) : rect);
+  };
+  const clampPx = px => Math.max(MIN_FAV_PX, Math.min(contentH(), px));
+  /* The whole point of the change: the sidebar's height is capped by the main
+     column, so without this the list stops at whatever the chart happens to
+     be and you have to go and grow the chart first. Asking for more list than
+     the column can hold now grows the chart by exactly the shortfall, so the
+     two move together. Grow only — shrinking the list must not take away a
+     chart height that was chosen deliberately, and since the ceiling is the
+     row count this settles after one pass rather than ratcheting. */
+  const pullChart = (wantPx) => {
+    if (typeof chartGrowBy !== 'function') return 0;
+    const deficit = Math.ceil(wantPx - room());
+    return deficit > 0 ? chartGrowBy(deficit) : 0;
+  };
+  /* One pull is not enough to finish the job. Growing the chart only widens
+     room() once sidebarCap has re-measured the main column and written
+     --main-h, which it does on a rAF — so mid-drag each pointermove picks up
+     the previous frame's growth and the LAST one has nobody to follow it.
+     Dragging twenty favourites to the bottom landed on eighteen for exactly
+     that reason. This finishes the convergence after the gesture, and stops
+     as soon as a pull gains nothing (the chart hit maxH, or there is no
+     deficit left). */
+  const settle = (wantPx, tries) => {
+    if (tries <= 0) return;
+    if (pullChart(wantPx) > 0) requestAnimationFrame(() => settle(wantPx, tries - 1));
+    else if (typeof chartCommitH === 'function') chartCommitH();
+  };
   const pctOf = px => (px / Math.max(1, colH())) * 100;
   const pxOf = pct => (pct / 100) * colH();
 
+  /* What the PANEL has to be for the list to be `listPx` tall: everything
+     above the list inside the panel, plus the list, plus the handle and Find
+     Opportunities' collapsed bar, plus the panel's own borders. */
+  const wantPanel = (listPx) => {
+    const frame = wrap.getBoundingClientRect().height - wrap.clientHeight;
+    const above = list.getBoundingClientRect().top - wrap.getBoundingClientRect().top;
+    /* +1 for the rounding: every term above is fractional, and landing a pixel
+       short left the list showing all its rows AND a scrollbar, which is the
+       phantom-scrollbar shape this codebase has been bitten by before. A spare
+       pixel of panel costs nothing. */
+    return Math.ceil(above + listPx + bar.offsetHeight + MIN_OPPS_PX + frame) + 1;
+  };
   const apply = pct => {
     const h = colH();
-    if (h > 0) wrap.style.setProperty('--fav-h', Math.round(clampPx(pxOf(pct))) + 'px');
+    if (h <= 0) return;
+    const px = Math.round(clampPx(pxOf(pct)));
+    wrap.style.setProperty('--fav-h', px + 'px');
+    /* Lets the panel past the viewport cap — see the note on --fav-want in
+       app.css. Sized to the rows actually present, so a short list still ends
+       where its content ends. */
+    wrap.style.setProperty('--fav-want', wantPanel(px) + 'px');
   };
   const stored = () => {
     try { const v = parseFloat(localStorage.getItem(KEY)); return isFinite(v) ? v : null; }
@@ -9159,7 +9263,11 @@ setItem._userPicked = false;
 
   /* Drag DOWN grows the favourites list, which is the direction the handle
      moves — the pointer's y IS the list's new bottom edge. */
-  const pctFromY = (y) => pctOf(clampPx(y - list.getBoundingClientRect().top));
+  const pctFromY = (y) => {
+    const want = clampPx(y - list.getBoundingClientRect().top);
+    pullChart(want);            // make the column tall enough BEFORE sizing the list
+    return pctOf(want);
+  };
 
   let dragging = false;
   const onMove = (e) => {
@@ -9174,6 +9282,10 @@ setItem._userPicked = false;
     bar.classList.remove('is-dragging');
     document.body.classList.remove('wl-resizing');
     if (cur != null) save(cur);
+    /* Finish the convergence and persist the chart height the drag pulled it
+       to — chartGrowBy deliberately does not write per pointermove. */
+    if (cur != null) settle(clampPx(pxOf(cur)), 8);
+    else if (typeof chartCommitH === 'function') chartCommitH();
   };
   bar.addEventListener('pointerdown', (e) => {
     if (e.button != null && e.button !== 0) return;
@@ -9198,6 +9310,7 @@ setItem._userPicked = false;
   bar.addEventListener('dblclick', () => {
     cur = null;
     wrap.style.removeProperty('--fav-h');
+    wrap.style.removeProperty('--fav-want');
     try { localStorage.removeItem(KEY); } catch (e) {}
   });
   bar.addEventListener('keydown', (e) => {
@@ -9205,12 +9318,20 @@ setItem._userPicked = false;
     let d = 0;
     if (e.key === 'ArrowUp') d = -stepPx;         // up = less list, more Find Opportunities
     else if (e.key === 'ArrowDown') d = stepPx;
-    else if (e.key === 'Home') { cur = pctOf(room()); apply(cur); save(cur); e.preventDefault(); return; }
+    else if (e.key === 'Home') {
+      // "all the way" now means every favourite visible, which is the same
+      // ceiling the pointer drag has.
+      const want = contentH();
+      cur = pctOf(want); apply(cur); save(cur); settle(want, 8);
+      e.preventDefault(); return;
+    }
     else if (e.key === 'End') { cur = pctOf(MIN_FAV_PX); apply(cur); save(cur); e.preventDefault(); return; }
     else return;
     const basePx = cur != null ? pxOf(cur) : list.getBoundingClientRect().height;
-    cur = pctOf(clampPx(basePx + d));
+    const want = clampPx(basePx + d);
+    cur = pctOf(want);
     apply(cur); save(cur);
+    settle(want, 8);                 // arrow-stepping down grows the chart too
     e.preventDefault();
   });
 })();

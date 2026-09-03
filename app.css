@@ -1060,8 +1060,20 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    still ends where its content ends and nothing re-opens the blank band the
    height rule exists to close. Desktop only; --fav-floor is unset elsewhere
    and max() then ignores it. */
+/* --fav-want is the third term, and the only one that can exceed the
+   viewport. Without it the splitter could not deliver what it promises:
+   min(100dvh - 16px, --main-h) caps the panel at the window even when the
+   chart has been grown, so dragging twenty favourites open stopped at
+   eighteen and no amount of extra chart helped. That cap is right for the
+   automatic terms — nothing should silently make the page taller than the
+   screen — and wrong for a height the user dragged to on purpose. The
+   splitter writes it, sized to exactly the rows present, and clears it on
+   double-click. */
 @media (min-width: 641px) {
-  .watchlist-container { height: max(min(calc(100dvh - 16px), var(--main-h, 100dvh)), var(--fav-floor, 0px)); }
+  .watchlist-container {
+    height: max(min(calc(100dvh - 16px), var(--main-h, 100dvh)),
+                var(--fav-floor, 0px), var(--fav-want, 0px));
+  }
 }
 /* Both touch layouts — portrait AND landscape phone. Landscape used to be
    the one band with no handle at all, on the reasoning that a ~390px-tall
