@@ -9230,6 +9230,26 @@ let chartCommitH = null;     // persist whatever height it is at now
   /* What the PANEL has to be for the list to be `listPx` tall: everything
      above the list inside the panel, plus the list, plus the handle and Find
      Opportunities' collapsed bar, plus the panel's own borders. */
+  /* What Find Opportunities needs, as it currently stands. Collapsed that is
+     its title bar and nothing else, so a collapsed scanner behaves exactly as
+     before; expanded it is the bar plus the content it would scroll.
+
+     Reserving MIN_OPPS_PX here regardless was the bug behind "I made the graph
+     long so I could expand Find Opportunities and still cannot". The panel was
+     sized to the watchlist's rows plus a 34px stub, which is always less than
+     the viewport, so --fav-want never won the max() and the panel stayed
+     pinned at 764px on a 780px window -- redistributing a fixed height between
+     the two lists instead of growing. Measured with a scanner open: the body
+     wanted 1,215px and was given 53. */
+  const foNeed = () => {
+    const host = document.getElementById('findOppsHost');
+    if (!host) return MIN_OPPS_PX;
+    const title = host.querySelector('.find-opps-title');
+    const body = host.querySelector('.find-opps-body');
+    const titleH = title ? title.getBoundingClientRect().height : MIN_OPPS_PX;
+    if (!body || body.classList.contains('collapsed')) return Math.ceil(titleH);
+    return Math.ceil(titleH + body.scrollHeight);
+  };
   const wantPanel = (listPx) => {
     const frame = wrap.getBoundingClientRect().height - wrap.clientHeight;
     const above = list.getBoundingClientRect().top - wrap.getBoundingClientRect().top;
@@ -9237,7 +9257,7 @@ let chartCommitH = null;     // persist whatever height it is at now
        short left the list showing all its rows AND a scrollbar, which is the
        phantom-scrollbar shape this codebase has been bitten by before. A spare
        pixel of panel costs nothing. */
-    return Math.ceil(above + listPx + bar.offsetHeight + MIN_OPPS_PX + frame) + 1;
+    return Math.ceil(above + listPx + bar.offsetHeight + foNeed() + frame) + 1;
   };
   const apply = pct => {
     const h = colH();
@@ -9305,6 +9325,17 @@ let chartCommitH = null;     // persist whatever height it is at now
      without a reload. */
   window.addEventListener('pointerup', stop);
   window.addEventListener('blur', stop);
+
+  /* Opening or closing a scanner changes foNeed(), so the panel has to be
+     re-sized for it. Only once cur is set: until the handle has been touched
+     the layout is the default one, and expanding a scanner must not make the
+     page taller on its own. Two frames because the body's own expand has to
+     land before its scrollHeight means anything. */
+  const foHost = document.getElementById('findOppsHost');
+  if (foHost) foHost.addEventListener('click', () => {
+    if (cur == null) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => apply(cur)));
+  }, true);
 
   /* Double-click clears the override entirely, back to "as tall as its rows". */
   bar.addEventListener('dblclick', () => {
