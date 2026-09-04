@@ -9175,8 +9175,15 @@ let chartCommitH = null;     // persist whatever height it is at now
      chart is grown to make this room — so an unbounded drag would grow the
      chart to fit rows that do not exist. Twenty favourites drags to the
      twentieth and stops. */
+  /* [data-id], not .wl-item on its own. The empty-state message ("No favorites
+     in ... yet") is rendered with the SAME class as a row, so any render that
+     cannot resolve entries -- the mapping not back yet, a switch to an empty
+     favorites list -- counted it as one row and collapsed the list to 41px.
+     It healed only if a real render happened to follow; when the placeholder
+     was the last render, the height stayed collapsed through every refresh. */
+  const ROW = '.wl-item[data-id]';
   const contentH = () => {
-    const rows = list.querySelectorAll('.wl-item');
+    const rows = list.querySelectorAll(ROW);
     if (!rows.length) return MIN_FAV_PX;
     /* Measured from the rows' own box, not rows x rowH and not scrollHeight.
        Row heights are fractional and twenty of them accumulated a pixel of
@@ -9266,8 +9273,10 @@ let chartCommitH = null;     // persist whatever height it is at now
        height is restored at script-evaluation time, which is BEFORE
        renderWatchlist() has put any rows in -- so contentH() saw an empty list,
        reported one row, and clamped every reload down to a 41px watchlist.
-       The observer below re-applies once the rows exist. */
-    if (!list.querySelector('.wl-item')) return;
+       The observer below re-applies once the rows exist. Leaving the height
+       alone (rather than writing a collapsed one) is also what keeps a
+       placeholder render from destroying a height the user chose. */
+    if (!list.querySelector(ROW)) return;
     const px = Math.round(clampPx(pxOf(pct)));
     wrap.style.setProperty('--fav-h', px + 'px');
     /* Lets the panel past the viewport cap — see the note on --fav-want in
