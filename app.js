@@ -9262,6 +9262,12 @@ let chartCommitH = null;     // persist whatever height it is at now
   const apply = pct => {
     const h = colH();
     if (h <= 0) return;
+    /* Nothing to measure against until the list has rendered. The stored
+       height is restored at script-evaluation time, which is BEFORE
+       renderWatchlist() has put any rows in -- so contentH() saw an empty list,
+       reported one row, and clamped every reload down to a 41px watchlist.
+       The observer below re-applies once the rows exist. */
+    if (!list.querySelector('.wl-item')) return;
     const px = Math.round(clampPx(pxOf(pct)));
     wrap.style.setProperty('--fav-h', px + 'px');
     /* Lets the panel past the viewport cap — see the note on --fav-want in
@@ -9280,6 +9286,14 @@ let chartCommitH = null;     // persist whatever height it is at now
   /* The stored value is a percentage, so the pixels have to be re-derived
      whenever the column changes height. */
   window.addEventListener('resize', () => { if (cur != null) apply(cur); });
+  /* And re-derived when the list itself changes: the restore above runs before
+     the first render, and favouriting or removing an item changes what the
+     content clamp allows. renderWatchlist empties and refills this element
+     rather than replacing it, so one observer holds for the session. */
+  if ('MutationObserver' in window) {
+    new MutationObserver(() => { if (cur != null) apply(cur); })
+      .observe(list, { childList: true });
+  }
 
   /* Drag DOWN grows the favourites list, which is the direction the handle
      moves — the pointer's y IS the list's new bottom edge. */
@@ -9332,8 +9346,13 @@ let chartCommitH = null;     // persist whatever height it is at now
      page taller on its own. Two frames because the body's own expand has to
      land before its scrollHeight means anything. */
   const foHost = document.getElementById('findOppsHost');
-  if (foHost) foHost.addEventListener('click', () => {
+  if (foHost) foHost.addEventListener('click', (e) => {
     if (cur == null) return;
+    /* isTrusted only. A REAL click on the scanner is someone asking for it, and
+       the panel grows to fit -- that is #378. The auto-fill below toggles it
+       synthetically to use room the panel ALREADY has, and must not turn that
+       into a demand for more, or filling a gap would make the page taller. */
+    if (!e.isTrusted) return;
     requestAnimationFrame(() => requestAnimationFrame(() => apply(cur)));
   }, true);
 
@@ -9365,6 +9384,71 @@ let chartCommitH = null;     // persist whatever height it is at now
     settle(want, 8);                 // arrow-stepping down grows the chart too
     e.preventDefault();
   });
+})();
+
+/* ── Find Opportunities fills the leftover room ──────────────────────────
+   Once the splitter has sized the favourites list to its rows, a tall chart
+   leaves the panel holding a stretch of nothing underneath the collapsed
+   scanner bar -- measured at 278px on a 900px window, which is a lot of empty
+   sidebar next to a chart someone deliberately made long. The scanner is the
+   one thing that would happily use it, so it opens into it, and closes again
+   when the chart comes back up and the room goes.
+
+   The decision is made on the region between the top of the scanner's bar and
+   the bottom of the panel, NOT on the leftover below it. That distinction is
+   what stops it flapping: leftover shrinks the moment the scanner expands into
+   it, so a rule written on leftover would immediately undo itself, while the
+   region is the same number whether the scanner is open or shut.
+
+   170px is the bar plus its four category rows, i.e. exactly the point where
+   expanding shows the whole menu rather than a clipped piece of it. Measured
+   against real layouts: a 500px chart leaves 155px and stays shut, a 564px one
+   leaves 219px and opens.
+
+   Only while --fav-h is set. Without it the list is flex:1 and swallows the
+   space itself -- measured, one pixel of leftover -- so there is nothing to
+   reclaim and nothing should move. */
+(function scannerFillsSpareRoom() {
+  const wrap = document.querySelector('.watchlist-container');
+  const host = document.getElementById('findOppsHost');
+  if (!wrap || !host) return;
+  const deskMQ = window.matchMedia('(min-width: 1024px)');
+  const AUTO_MIN = 170;
+  let autoOpened = false, userOwns = false, raf = 0;
+
+  /* A real click means the visitor has an opinion about the scanner, and it
+     outranks the room from then on -- we neither open nor close it again.
+     isTrusted is what separates that from our own toggle below. */
+  host.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    if (e.target && e.target.closest && e.target.closest('.find-opps-title')) {
+      userOwns = true; autoOpened = false;
+    }
+  }, true);
+
+  const measure = () => {
+    raf = 0;
+    if (userOwns || !deskMQ.matches) return;
+    if (!wrap.style.getPropertyValue('--fav-h')) return;
+    const title = host.querySelector('.find-opps-title');
+    const body = host.querySelector('.find-opps-body');
+    if (!title || !body) return;
+    const region = wrap.getBoundingClientRect().bottom - host.getBoundingClientRect().top;
+    const collapsed = body.classList.contains('collapsed');
+    if (collapsed && region >= AUTO_MIN) { title.click(); autoOpened = true; }
+    else if (!collapsed && autoOpened && region < AUTO_MIN) { title.click(); autoOpened = false; }
+  };
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
+
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(schedule);
+    ro.observe(wrap);
+    const chart = document.querySelector('.chart-container');
+    if (chart) ro.observe(chart);
+  }
+  window.addEventListener('resize', schedule);
+  document.addEventListener('click', schedule, true);
+  schedule();
 })();
 
 /* ── Sidebar height cap ──────────────────────────────────────────────────
