@@ -3583,7 +3583,20 @@ function renderWatchlist() {
        when the ACTIVE list's name actually matches one of the plugin's
        lists — with multiple lists, being connected doesn't mean every
        list merges. */
-    const rlBadge = (isFavTitle && rlConnected && rlMatchedFavIds().length) ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites (list name match)"><span class="rl-dot on"></span>Linked</span>` : '';
+    const rlIds = (isFavTitle && rlConnected) ? rlMatchedFavIds().map(String) : [];
+    const rlBadge = rlIds.length ? `<span class="rl-linked-badge" title="Live-linked to your RuneLite Favorites (list name match)"><span class="rl-dot on"></span>Linked</span>` : '';
+    /* "Match in-game" appears ONLY when the two lists actually differ, as
+       ordered sequences. That is the whole affordance: no button means the
+       lists are already identical, so there is never a control here that
+       does nothing when pressed. The in-game items are merged into this
+       view for display either way (see mergedFavIds) — this is what makes
+       the merge permanent, and what lets a removal in game reach the site,
+       which display-only merging can never do. */
+    const rlDiffers = rlIds.length && (rlIds.length !== favorites.length
+      || rlIds.some((id, i) => String(favorites[i]) !== id));
+    const rlAdopt = rlDiffers
+      ? `<button type="button" class="rl-adopt" title="Replace this list with your in-game Favorites, in the same order">Match in-game</button>`
+      : '';
     if (isFavTitle) {
       /* The list-switcher IS the title's name slot — a "[list] ⌄" button
          opening a dropdown of every list — and "+" replaces the collapse
@@ -3607,7 +3620,7 @@ function renderWatchlist() {
             <span class="fls-name">${escapeHtml(group.name)}</span>
             <span class="fls-caret">${uiIcon('chev')}</span>
           </button>
-          ${rlBadge}
+          ${rlBadge}${rlAdopt}
         </span>
         <button type="button" class="fls-add" title="New favorites list" aria-label="New favorites list">+</button>
         <div class="fls-menu${flsMenuOpen ? ' open' : ''}" id="flsMenu" role="menu">${listMenuHtml}</div>`;
@@ -3806,6 +3819,10 @@ function renderWatchlist() {
       if (l && confirm(`Delete the "${l.name}" list and its favorites?`)) deleteFavoriteListLocal(listId);
     };
   });
+  const adoptBtn = document.querySelector('.rl-adopt');
+  if (adoptBtn) {
+    adoptBtn.onclick = (ev) => { ev.stopPropagation(); adoptRuneLiteList(); };
+  }
   const addListBtn = document.querySelector('.fls-add');
   if (addListBtn) {
     addListBtn.onclick = (ev) => {
@@ -6459,6 +6476,34 @@ function rlReconcileFavorites() {
     });
   });
 }
+/* Copy the in-game list into this one, item for item and in the same order.
+   The nearest thing to it until now was the display-only merge in
+   renderWatchlist, which unions the plugin's items in without saving them:
+   they vanish if the link drops, and a REMOVAL in game can never reach the
+   site at all, because a union has no way to express "gone".
+
+   Destructive, so it asks first — the same confirm() the delete-list action
+   uses, rather than inventing a second idiom for the same weight of choice.
+   The count is spelled out because "match in-game" does not tell you how
+   many of your own entries are about to go.
+
+   Deliberately NOT automatic. Adopting on connect would mean plugging in
+   your client silently rewrote a watchlist you had curated in the browser. */
+function adoptRuneLiteList() {
+  const ids = rlMatchedFavIds().map(String);
+  if (!ids.length) return;
+  const l = activeFavList();
+  const losing = favorites.map(String).filter(id => !ids.includes(id)).length;
+  const msg = `Make "${l.name}" match your in-game Favorites?\n\n`
+    + `${ids.length} item${ids.length === 1 ? '' : 's'} in game, same order.`
+    + (losing ? `\n${losing} item${losing === 1 ? '' : 's'} here but not in game will be removed from this list.` : '');
+  if (!confirm(msg)) return;
+  favorites = ids.slice();
+  persistFavoriteLists();
+  renderWatchlist();
+  track('rl_adopt_favorites', { count: ids.length, removed: losing });
+}
+
 /* Push a favorite change TO the plugin so the link works both directions —
    star something here and it's added in-game too, not just the reverse.
    Best-effort: a dropped write just means it stays browser-only until the

@@ -492,6 +492,18 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    same green pulse means the same thing in both places. */
 .rl-linked-badge { display: inline-flex; align-items: center; margin-left: 6px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--rs-green-deep); }
 .rl-linked-badge .rl-dot { margin-right: 4px; }
+/* Sits beside the Linked badge and only exists while the two lists differ,
+   so it reads as "there is something to do" rather than as permanent
+   chrome. Quiet by default and only picks up the link colour on hover —
+   it rewrites a list, so it should not invite an idle click. */
+.rl-adopt {
+  margin-left: 6px; padding: 1px 6px; border-radius: 3px; cursor: pointer;
+  background: transparent; border: 1px solid var(--border-light);
+  color: var(--text-muted); font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.5;
+  transition: color .15s ease, border-color .15s ease;
+}
+.rl-adopt:hover { color: var(--rs-green-deep); border-color: var(--rs-green-deep); }
 /* Bank of Gielinor — shared form / stats / row scaffolding (the `bk-` prefix
    is used across this whole feature; CSS reused by the modal header etc.). */
 .bk-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
