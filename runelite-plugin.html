@@ -4,11 +4,11 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping</title>
-<meta name="description" content="A free RuneLite plugin that tracks your OSRS Grand Exchange flips as they fill, shows tax-aware profit, and links straight to PocketGE's live price charts from in-game chat.">
-<meta name="keywords" content="osrs runelite plugin, ge flip tracker plugin, runelite ge tracker, osrs flip tracker, runelite flipping plugin, osrs grand exchange plugin">
+<meta name="description" content="Free on the RuneLite Plugin Hub: tracks your OSRS Grand Exchange flips as they fill, shows profit after the 2% GE tax, and links straight to PocketGE's live price charts. Install it from inside RuneLite.">
+<meta name="keywords" content="osrs runelite plugin, runelite plugin hub, ge flip tracker plugin, runelite ge tracker, osrs flip tracker, runelite flipping plugin, osrs grand exchange plugin, runelite flip advisor">
 <link rel="canonical" href="https://pocketge.com/runelite-plugin.html">
 <meta property="og:title" content="PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping">
-<meta property="og:description" content="Tracks your Grand Exchange flips as they fill, with tax-aware profit and one-click PocketGE charts from in-game chat.">
+<meta property="og:description" content="Now on the RuneLite Plugin Hub. Tracks your Grand Exchange flips as they fill, with profit after the 2% tax and one-click PocketGE charts.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pocketge.com/runelite-plugin.html">
 <meta property="og:image" content="https://pocketge.com/og-image-v2.png">
@@ -17,7 +17,7 @@
 <meta property="og:site_name" content="PocketGE">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PocketGE Flip Tracker — RuneLite Plugin for OSRS GE Flipping">
-<meta name="twitter:description" content="Tracks your Grand Exchange flips as they fill, with tax-aware profit and one-click PocketGE charts from in-game chat.">
+<meta name="twitter:description" content="Now on the RuneLite Plugin Hub. Tracks your Grand Exchange flips as they fill, with profit after the 2% tax and one-click PocketGE charts.">
 <meta name="twitter:image" content="https://pocketge.com/og-image-v2.png">
 <script type="application/ld+json">
 {
@@ -26,9 +26,11 @@
   "name": "PocketGE Flip Tracker",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Windows, macOS, Linux (anywhere RuneLite runs)",
-  "description": "A RuneLite plugin that tracks Old School RuneScape Grand Exchange flips as they fill, computes profit after the 2% GE tax, and links in-game chat mentions of items straight to PocketGE's live price charts.",
+  "description": "A RuneLite plugin, available on the official RuneLite Plugin Hub, that tracks Old School RuneScape Grand Exchange flips as they fill, computes profit after the 2% GE tax, and links in-game chat mentions of items straight to PocketGE's live price charts.",
   "url": "https://pocketge.com/runelite-plugin.html",
   "downloadUrl": "https://github.com/grant9008/pocketge-flip-tracker",
+  "softwareVersion": "0.6.0",
+  "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "author": { "@type": "Organization", "name": "PocketGE" }
 }
@@ -51,7 +53,12 @@
     {
       "@type": "Question",
       "name": "Is the PocketGE RuneLite plugin safe to use?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It only reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never sends input, and never touches your account credentials. The optional website bridge only serves data to 127.0.0.1 (your own machine), so nothing leaves your computer unless you explicitly open pocketge.com yourself." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, and it is open source so you can check. It reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never touches your account credentials, and never places or confirms a trade for you. The only thing it ever writes is the price and quantity in a GE offer box, which you still confirm yourself. The optional website bridge serves data to 127.0.0.1 only (your own machine)." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I install the PocketGE Flip Tracker plugin?",
+      "acceptedAnswer": { "@type": "Answer", "text": "It is on the official RuneLite Plugin Hub, so it installs from inside the client. Open RuneLite's Configuration panel (the wrench icon), click Plugin Hub, search for PocketGE, and hit Install on PocketGE Flip Tracker. There is nothing to download and nothing to build." }
     },
     {
       "@type": "Question",
@@ -61,7 +68,7 @@
     {
       "@type": "Question",
       "name": "What does the PocketGE Flip Tracker plugin do?",
-      "acceptedAnswer": { "@type": "Answer", "text": "It watches your Grand Exchange offers as they fill (including partial fills), matches sells against earlier buys FIFO per item, and books completed flips with profit after the 2% GE tax. A sidebar panel shows session profit, recent flips, live buy/sell suggestions, and a favorites list with 5-day breakout alerts, all linking to PocketGE's live charts." }
+      "acceptedAnswer": { "@type": "Answer", "text": "It watches your Grand Exchange offers as they fill (including partial fills), matches sells against earlier buys FIFO per item, and books completed flips with profit after the 2% GE tax. A sidebar panel shows profit over a window you choose, unrealized profit on open lots, ROI, gp per hour and a portfolio total across cash, bank, inventory, worn gear and open offers. An optional advisor suggests buys sized to your cash and sells for stacks you already hold, priced against your own tracked buy price." }
     },
     {
       "@type": "Question",
@@ -108,7 +115,7 @@
   </div>
 
   <h1>PocketGE Flip Tracker — RuneLite Plugin</h1>
-  <p class="sub">A free, open-source RuneLite plugin that tracks your Grand Exchange flips as they actually fill, works out tax-aware profit automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
+  <p class="sub"><b>Now on the RuneLite Plugin Hub</b> — search "PocketGE" in RuneLite and hit install. A free, open-source plugin that tracks your Grand Exchange flips as they actually fill, works out profit after the 2% tax automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
 
   <h2>What it does</h2>
   <div class="feature-grid">
@@ -117,30 +124,45 @@
     <div class="feature-card"><strong>In-game price auto-fill</strong><span>When you open a buy or sell offer for a favorited item, the plugin's suggested price and quantity can fill straight into the GE prompt for you to confirm.</span></div>
     <div class="feature-card"><strong>Favorites &amp; breakout alerts</strong><span>A sidebar favorites list mirrors your PocketGE favorites, with a pulsing border when an item is testing its true 5-day high or low.</span></div>
     <div class="feature-card"><strong>Chat → chart, one right-click</strong><span>Right-click a chat message where someone mentions an item ("selling feathers", "buying whip") and jump straight to that item's live PocketGE chart.</span></div>
-    <div class="feature-card"><strong>Local-only website bridge</strong><span>Opt-in bridge on <code>127.0.0.1</code> lets pocketge.com, open in your own browser, mirror your live flips and favorites — nothing ever leaves your machine.</span></div>
+    <div class="feature-card"><strong>Flip advisor</strong><span>Opt-in, off by default. Suggests buys sized to the cash you actually have, sells for stacks already in your bank — priced against <em>your</em> tracked buy price, not just today's market — and nudges when a listed offer has drifted off the market.</span></div>
+    <div class="feature-card"><strong>Session stats &amp; portfolio</strong><span>Profit over a window you pick (session, 1h, 1d, all time), unrealized profit on open buy lots, ROI, gp/hour, and a portfolio total across cash, bank, inventory, worn gear and anything tied up in open offers.</span></div>
+    <div class="feature-card"><strong>History that survives logout</strong><span>Lifetime P/L, flip history and open buy lots are saved through RuneLite's own config, so a buy today still books the right profit when you sell it next week.</span></div>
+    <div class="feature-card"><strong>Bank &amp; inventory highlighting</strong><span>Items the advisor has a live call on get a coloured border and a profit badge drawn on the slot itself — gold for a buy candidate, teal for a sell — so you can dig through your bank without cross-referencing the panel.</span></div>
+    <div class="feature-card"><strong>Local-only website bridge</strong><span>Opt-in bridge on <code>127.0.0.1</code> lets pocketge.com, open in your own browser, mirror your live flips and favorites — that data never leaves your machine.</span></div>
   </div>
+
+  <!-- Stated plainly rather than left to the bridge card's "nothing ever
+       leaves your machine", which was written when the plugin was entirely
+       offline and is now only true OF THE BRIDGE. The advisor fetches prices,
+       so a blanket offline claim on this page would be a wrong one. -->
+  <p class="sub">One network call, and only if you turn the advisor on: live prices from the public OSRS Wiki price API, the same source this website uses. Every other feature runs entirely offline, and the plugin never sees your account.</p>
 
   <div class="callout">Every profit number the plugin shows uses the exact same tax rule as <a href="/">PocketGE</a>: 2% of the sale price, rounded down, capped at 5,000,000 gp per item, with under-50 gp sales and a few exempt items (like the bond) excluded. What you see is what you keep.</div>
 
-  <h2>Installation</h2>
-  <p>The plugin isn't on the official RuneLite Plugin Hub yet — until it is, you can build and run it from source:</p>
+  <h2>How to install it</h2>
+  <p><b>PocketGE Flip Tracker is live on the official RuneLite Plugin Hub.</b> It installs from inside the client — nothing to download, nothing to build:</p>
   <ol>
-    <li>Clone <a href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">github.com/grant9008/pocketge-flip-tracker</a>.</li>
-    <li>With JDK 11 installed, build it with Gradle — the repo's README has the exact command for its layout.</li>
-    <li>Load it into RuneLite via the client's plugin developer tools.</li>
+    <li>Open RuneLite and click the <b>wrench</b> icon to open the Configuration panel.</li>
+    <li>Click <b>Plugin Hub</b>.</li>
+    <li>Search for <b>PocketGE</b>, then hit <b>Install</b> on <b>PocketGE Flip Tracker</b>.</li>
   </ol>
-  <p>Once it's live on the Plugin Hub, this page will be updated with a direct "Add to RuneLite" link.</p>
+  <p>The plugin's panel appears in your RuneLite sidebar straight away, and updates arrive through the Plugin Hub like any other plugin. Everything is off by default except the flip tracking itself — the advisor, the overlay and the website bridge are each opt-in from the plugin's settings.</p>
+  <p>If you would rather build it yourself, or just read exactly what it does before installing, the full source is at <a href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">github.com/grant9008/pocketge-flip-tracker</a>.</p>
 
   <h2>Connecting it to pocketge.com</h2>
   <p>The website bridge is opt-in and off by default. Turn it on from the plugin's settings, then toggle "Connect" in PocketGE's <a href="/">Bank of Gielinor</a> modal — the sidebar Favorites list and your session's flips will start mirroring live, all without any account or login on either side.</p>
 
-  <a class="big-cta" href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">▶ View the plugin on GitHub</a>
+  <a class="big-cta" href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">▶ Read the source on GitHub</a>
 
   <h2>FAQ</h2>
+  <h3>How do I install the PocketGE Flip Tracker plugin?</h3>
+  <p>It is on the official RuneLite Plugin Hub, so it installs from inside the client: open RuneLite's Configuration panel (the wrench), click <b>Plugin Hub</b>, search for <b>PocketGE</b> and hit Install. There is nothing to download and nothing to build.</p>
   <h3>Is the PocketGE RuneLite plugin safe to use?</h3>
-  <p>Yes. It only reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never sends input on your behalf, and never touches your account credentials. The optional website bridge only serves data to <code>127.0.0.1</code> (your own machine).</p>
-  <h3>Does it cost anything?</h3>
+  <p>Yes, and it is open source so you can check. It reads your own Grand Exchange offer events inside the RuneLite client — it never reads your password, never touches your account credentials, and never places or confirms a trade for you. The only thing it ever writes is the price and quantity in a GE offer box, which you still confirm yourself. The optional website bridge serves data to <code>127.0.0.1</code> only (your own machine).</p>
+  <h3>Does the PocketGE plugin cost anything?</h3>
   <p>No — it's free and open source.</p>
+  <h3>What does the PocketGE Flip Tracker plugin do?</h3>
+  <p>It watches your Grand Exchange offers as they fill (including partial fills), matches sells against earlier buys FIFO per item, and books completed flips with profit after the 2% GE tax. A sidebar panel shows profit over a window you choose, unrealized profit on open lots, ROI, gp per hour and a portfolio total across cash, bank, inventory, worn gear and open offers. An optional advisor suggests buys sized to your cash and sells for stacks you already hold, priced against your own tracked buy price.</p>
   <h3>Can I search PocketGE from in-game chat?</h3>
   <p>Yes. Right-click a chat line mentioning an item and choose "Search PocketGE for &lt;item&gt;" to jump straight to that item's live chart.</p>
 
