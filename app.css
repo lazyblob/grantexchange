@@ -1781,17 +1781,43 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   border: 2px solid #EF5350;
   animation: rs-spike-down 2.6s linear infinite;
 }
+/* Rows sit flush — .wl-item has no margin and the list no gap — so a spike
+   row landing directly under another put its 2px top border against the
+   previous row's 2px bottom border and the shared edge rendered 4px thick,
+   twice the weight of the same border anywhere else. Pulling the lower row
+   up by exactly the border width makes the two overlap into one 2px line.
+   The lower row paints over (both are position:relative, later wins), so a
+   green row under a red one shows the lower row's colour on the shared edge
+   rather than a two-tone seam. Four selectors rather than :is(): nothing
+   else in this file uses it, and the combinations are enumerable. */
+.wl-item.at-spike-up + .wl-item.at-spike-up,
+.wl-item.at-spike-up + .wl-item.at-spike-down,
+.wl-item.at-spike-down + .wl-item.at-spike-up,
+.wl-item.at-spike-down + .wl-item.at-spike-down { margin-top: -2px; }
+/* Stacked spikes pulsed in unison, because they all start their animation on
+   the same render — four rows brightening together is most of why a run of
+   them read as a strobe rather than as four flagged rows. A negative delay
+   starts every other row mid-cycle, so the run shimmers instead of flashing.
+   Negative so it is already running at paint, not blank for a beat. */
+.wl-item.at-spike-up:nth-child(even),
+.wl-item.at-spike-down:nth-child(even) { animation-delay: -1.3s; }
+/* Glow at 12px/0.6 was a real light source on a single row and a flashbang on
+   a run of them: the blooms overlap in the gaps and the sum is what the eye
+   reads. Halved and tightened — the 2px border already carries the tier, the
+   glow only has to say it is live. The two brightest stops come down with it;
+   full-saturation neon on a 2px border stacked four deep is the same problem
+   in a different channel. */
 @keyframes rs-spike-up {
-  0%   { border-color: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
-  33%  { border-color: #4FFF8E; box-shadow: 0 0 12px rgba(79,255,142,0.6); }
-  66%  { border-color: #FFD24D; box-shadow: 0 0 12px rgba(255,210,77,0.6); }
-  100% { border-color: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.6); }
+  0%   { border-color: #10B981; box-shadow: 0 0 7px rgba(16,185,129,0.30); }
+  33%  { border-color: #45E489; box-shadow: 0 0 7px rgba(69,228,137,0.30); }
+  66%  { border-color: #EAC154; box-shadow: 0 0 7px rgba(234,193,84,0.30); }
+  100% { border-color: #10B981; box-shadow: 0 0 7px rgba(16,185,129,0.30); }
 }
 @keyframes rs-spike-down {
-  0%   { border-color: #EF5350; box-shadow: 0 0 12px rgba(239,83,80,0.6); }
-  33%  { border-color: #FF6B35; box-shadow: 0 0 12px rgba(255,107,53,0.6); }
-  66%  { border-color: #E04FC4; box-shadow: 0 0 12px rgba(224,79,196,0.6); }
-  100% { border-color: #EF5350; box-shadow: 0 0 12px rgba(239,83,80,0.6); }
+  0%   { border-color: #EF5350; box-shadow: 0 0 7px rgba(239,83,80,0.30); }
+  33%  { border-color: #E8663C; box-shadow: 0 0 7px rgba(232,102,60,0.30); }
+  66%  { border-color: #C94FB0; box-shadow: 0 0 7px rgba(201,79,176,0.30); }
+  100% { border-color: #EF5350; box-shadow: 0 0 7px rgba(239,83,80,0.30); }
 }
 @media (prefers-reduced-motion: reduce) {
   .wl-item.at-spike-up, .wl-item.at-spike-down { animation: none; }
