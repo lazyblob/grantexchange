@@ -11,7 +11,17 @@ What each generated page contains before a line of JS runs: the item's title,
 description, canonical, OG/Twitter tags, JSON-LD, an itemised <h1>, a summary
 paragraph with live-at-build-time prices, its members/F2P status, its move
 against the 24-hour average, its buy limit, its high-alch value and the real
-alch margin after a nature rune, and links to related items.
+alch margin after a nature rune, links to related items — and, from
+detail_html(), roughly 280 words of prose about that item specifically: its
+examine text, what its buy limit costs to fill, which of the three GE tax cases
+it falls in, its alch break-even price, how liquid it is, and a short FAQ.
+
+That last part is why the pages are worth having. Measured before it existed, a
+page carried 59 unique words against ~1,594 words of app shell repeated on all
+1,719 of them; seven sampled pages shared 741 words and differed by 11-23.
+Search Console's verdict on that was 1,849 URLs "Crawled - currently not
+indexed" and climbing. Google had fetched the pages and decided they were the
+same document.
 
 What it deliberately does NOT contain: the 30-day range and the after-tax
 margin sentence. The range needs a timeseries request per item (~1,700 of them
@@ -32,7 +42,7 @@ import re
 import shutil
 import sys
 import urllib.request
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 SITE = "https://pocketge.com"
@@ -295,6 +305,251 @@ def qa_html(it, buy=0, nature=0):
     return out
 
 
+# ── the long form ─────────────────────────────────────────────────────────
+# Measured before this existed: an item page carried 59 unique words against
+# ~1,594 words of app shell that is identical on all 1,719 of them. Seven pages
+# sampled shared 741 words and differed by 11-23. That ratio is what
+# "Crawled - currently not indexed" means -- Google fetched the page, found it
+# was substantially the same document as the last one, and kept neither.
+#
+# Everything below is derived from data already in the snapshot, and is written
+# to BRANCH on the item rather than to substitute numbers into one sentence: a
+# tax-exempt item, a sub-50gp item and a 250M item get three different
+# paragraphs, an item nobody alches gets no alch section at all. Templating is
+# unavoidable at 1,700 pages; sameness is not.
+
+# The Grand Exchange does not tax these. The 2% is otherwise universal, so
+# printing "you will pay 2%" on one of them would be a wrong fact on exactly
+# the page someone checks before buying in bulk.
+TAX_EXEMPT = {
+    "old school bond", "chisel", "gardening trowel", "glassblowing pipe",
+    "hammer", "needle", "pestle and mortar", "rake", "saw", "secateurs",
+    "seed dibber", "shears", "spade", "watering can",
+}
+TAX_RATE = 0.02
+TAX_CAP = 5_000_000          # a flat 5M above a 250M sale price
+TAX_FREE_UNDER = 50          # 2% of 49 rounds down to nothing
+
+
+def ge_tax(price):
+    """What the seller loses to the Grand Exchange on one item at this price.
+    Rounded down, which is the whole reason sub-50gp sales are untaxed."""
+    return min(TAX_CAP, int(price * TAX_RATE))
+
+
+def _liquidity(vol):
+    """How a daily volume reads to someone deciding whether to commit gold.
+    Bands rather than the raw number alone: 714,300 and 172 want different
+    advice, not the same sentence with a different figure in it."""
+    if vol >= 1_000_000:
+        return ("one of the busiest items on the Grand Exchange",
+                "orders at a fair price fill in minutes")
+    if vol >= 100_000:
+        return ("heavily traded",
+                "orders at a fair price usually fill quickly")
+    if vol >= 10_000:
+        return ("steadily traded",
+                "an order priced at the spread normally fills the same hour")
+    if vol >= 1_000:
+        return ("moderately traded",
+                "an order may take a while to fill, so price it toward the middle")
+    if vol >= 100:
+        return ("thinly traded",
+                "an order can sit for hours, and a large one can move the price")
+    return ("very thinly traded",
+            "there may be no buyer for hours at a time, and one sale can set the price")
+
+
+def _sentences(parts):
+    """Join clauses as SENTENCES. Built with ". ".join() first, which produced
+    "...every 4 hours. filling that once costs..." on every page that had a buy
+    limit -- a lowercase letter after a full stop, 1,719 times."""
+    out = []
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        out.append(p[0].upper() + p[1:] if p[0].islower() else p)
+    return " ".join(x if x.endswith((".", "!", "?", "”", "&rdquo;")) else x + "."
+                    for x in out)
+
+
+def detail_html(it, buy, sell, vol, nature, when):
+    """The per-item prose. Stable facts first (examine, limit, alch value,
+    members, base value), because those do not go stale between runs; the
+    price-dependent lines name the date they were taken, so a reader looking at
+    a figure the live terminal above them disagrees with can see why."""
+    name = esc(it["name"])
+    plural = is_plural(it["name"])
+    are, s_have = ("are", "have") if plural else ("is", "has")
+    it_them = "them" if plural else "it"
+    lower = it["name"].lower()
+    limit = int(it.get("limit") or 0)
+    alch = int(it.get("highalch") or 0)
+    base = int(it.get("value") or 0)
+    out = []
+
+    # ── what it is ────────────────────────────────────────────────────────
+    # The examine text is the one piece of genuinely human-written, genuinely
+    # per-item prose anywhere in the data, and it was going unused.
+    bits = []
+    ex = str(it.get("examine") or "").strip()
+    if ex:
+        # Its own period, not an added one: "examined as “This looks valuable.”."
+        bits.append(f'In game {"they are" if plural else "it is"} examined as '
+                    f'&ldquo;{esc(ex.rstrip("."))}.&rdquo;')
+    bits.append(f'{name} {are} '
+                + ("members-only, so a membership is needed to trade or use "
+                   + it_them if it.get("members")
+                   else "available to free-to-play accounts"))
+    if base > 0:
+        bits.append(f'the base game value is {gp(base)} gp, which is what shops '
+                    f'price from rather than what players pay')
+    out.append(f'<h2>About {name}</h2><p>{_sentences(bits)}</p>')
+
+    # ── buy limit ─────────────────────────────────────────────────────────
+    if limit > 0:
+        # Characterised, not just stated: an 8-per-4-hours limit and a
+        # 13,000-per-4-hours limit are different facts about how the item can
+        # be traded, and saying so is what stops this being one sentence with
+        # the number swapped out 1,719 times.
+        if limit >= 10_000:
+            shape = ("that is a generous limit, so the market rather than the "
+                     "limit is usually what caps a position here")
+        elif limit >= 1_000:
+            shape = "that is enough to build a real position inside a day"
+        elif limit >= 100:
+            shape = "that is a tight limit, so building size takes several cycles"
+        else:
+            shape = ("that is a very tight limit, so a position is built over days "
+                     "rather than hours")
+        cap = [f'the Grand Exchange lets one account buy <b>{limit:,}</b> every '
+               f'4 hours', shape]
+        if buy:
+            cap.append(f'filling it once costs about {gp(limit * buy)} gp at the '
+                       f'{gp(buy)} gp price recorded on {when}')
+        cap.append("the limit is per account and resets on a rolling 4-hour timer")
+        out.append(f'<h2>{name} buy limit</h2><p>{_sentences(cap)}</p>')
+    else:
+        out.append(f'<h2>{name} buy limit</h2><p>{name} {s_have} no Grand Exchange '
+                   f'buy limit, so the only cap on a position is the gold behind '
+                   f'{it_them}.</p>')
+
+    # ── tax ───────────────────────────────────────────────────────────────
+    if lower in TAX_EXEMPT:
+        tax_p = (f'{name} {are} one of the few items the Grand Exchange does not '
+                 f'tax at all, so a sale returns the full price and the whole '
+                 f'spread is yours.')
+    elif buy and buy < TAX_FREE_UNDER:
+        tax_p = (f'The 2% sale tax is rounded down, and at {gp(buy)} gp it rounds '
+                 f'to nothing — sales under {TAX_FREE_UNDER} gp are untaxed, so a '
+                 f'flip here keeps its whole margin.')
+    elif buy and ge_tax(buy) >= TAX_CAP:
+        tax_p = (f'2% of {gp(buy)} gp would be {gp(int(buy * TAX_RATE))} gp, but the '
+                 f'Grand Exchange caps its tax at {gp(TAX_CAP)} gp per item — so a '
+                 f'sale near this price pays a flat {gp(TAX_CAP)} gp, and the '
+                 f'effective rate falls the higher the price goes.')
+    elif buy:
+        tax_p = (f'Selling at {gp(buy)} gp costs {gp(ge_tax(buy))} gp in tax — 2%, '
+                 f'rounded down, taken from the seller. A flip has to clear that '
+                 f'before it makes anything, and it is the number most margin '
+                 f'calculators leave out.')
+    else:
+        tax_p = ('The Grand Exchange takes 2% of the sale price from the seller, '
+                 'rounded down, capped at 5,000,000 gp per item.')
+    out.append(f'<h2>GE tax on {name}</h2><p>{tax_p}</p>')
+
+    # ── high alch ─────────────────────────────────────────────────────────
+    # The break-even price is the durable, useful number: it moves with the
+    # nature rune rather than with the item, and it answers the question people
+    # search ("is alching this worth it?") instead of restating a constant.
+    #
+    # Every branch here is a case the first version got wrong: an item whose
+    # alch value is below a nature rune produced "only pays while Bucket of sand
+    # is under -95 gp", and a Twisted bow produced "loses 1,401,000,096 gp a
+    # cast" -- true, and the same broken-template reading that a 0 gp spread had.
+    if alch > 0:
+        breakeven = alch - nature if nature else 0
+        head = (f'High alchemy turns {name if plural else "one " + name} into '
+                f'<b>{gp(alch)} gp</b>')
+        if not nature:
+            a = [head]
+        elif alch <= nature:
+            a = [head, f'that is less than the {gp(nature)} gp nature rune the '
+                       f'cast costs, so alching {name} always loses money']
+        elif buy and buy < breakeven:
+            a = [head, f'with a nature rune at {gp(nature)} gp it profits '
+                       f'<b>{gp(alch - buy - nature)} gp</b> a cast at the '
+                       f'{gp(buy)} gp price recorded on {when}']
+        elif buy and buy < alch * 3:
+            a = [head, f'with a nature rune at {gp(nature)} gp that only pays below '
+                       f'<b>{gp(breakeven)} gp</b>, and {name} {are} {gp(buy)} gp '
+                       f'— so alching {it_them} loses {gp(buy + nature - alch)} gp '
+                       f'a cast right now']
+        else:
+            # Far above the alch value. Nobody alches a 1.4B bow; the alch VALUE
+            # is the searched fact there and the margin is noise.
+            a = [head, f'{name} {are} worth far more than that on the Grand '
+                       f'Exchange, so the figure matters for the alch calculator '
+                       f'rather than as anything to do']
+        # The nature rune's own page, otherwise: "with a nature rune at 96 gp,
+        # Nature rune only pays below 12 gp".
+        if lower == "nature rune":
+            a = [head, 'this is the rune every other alch is cast with, so its '
+                       'price sets the break-even on every alchable item in the game']
+        out.append(f'<h2>High alching {name}</h2><p>{_sentences(a)}</p>')
+
+    # ── liquidity ─────────────────────────────────────────────────────────
+    if vol:
+        band, advice = _liquidity(vol)
+        # "About 172 change hands a day" has no subject. "sees N trades" reads
+        # for a singular and a plural name alike, without pluralising the name.
+        liq = [f'{name} {"see" if plural else "sees"} about <b>{abbrev(vol)}</b> '
+               f'trades a day, which makes {it_them} {band} — {advice}']
+        if limit > 0:
+            share = vol / limit
+            liq.append(f'that is roughly {share:,.0f} times the {limit:,} buy limit'
+                       if share >= 2 else
+                       f'that is less than twice the {limit:,} buy limit, so a '
+                       f'handful of buyers can take a whole day of supply')
+        out.append(f'<h2>How much {name} {"trade" if plural else "trades"}</h2>'
+                   f'<p>{_sentences(liq)}</p>')
+
+    # ── FAQ ───────────────────────────────────────────────────────────────
+    # Plain prose, not FAQPage structured data. Google restricted FAQ rich
+    # results to government and health sites in 2023, so the markup would buy
+    # nothing -- and marking up invisible content is exactly what had 1,694
+    # pages shipping a fourteen-question FAQPage for a FAQ they did not contain.
+    faq = []
+    if buy:
+        faq.append((f'How much {are} {name} in OSRS?',
+                    f'{name} {are} {gp(buy)} gp on the Grand Exchange as of {when}'
+                    + (f', with an insta-sell of {gp(sell)} gp' if sell and sell <= buy else '')
+                    + '. The chart above is live.'))
+    faq.append((f'What is the buy limit for {name}?',
+                f'{limit:,} every 4 hours.' if limit else
+                f'{name} {s_have} no buy limit.'))
+    if alch > 0 and nature:
+        if alch <= nature:
+            ans = (f'No — the alch value is {gp(alch)} gp and the nature rune alone '
+                   f'costs {gp(nature)} gp.')
+        elif buy and buy < alch - nature:
+            ans = (f'Yes — {gp(alch)} gp alch value against a {gp(buy)} gp price and '
+                   f'a {gp(nature)} gp nature rune, so {gp(alch - buy - nature)} gp '
+                   f'a cast.')
+        else:
+            ans = (f'Not at the moment — the alch value is {gp(alch)} gp and a nature '
+                   f'rune costs {gp(nature)} gp, so it only pays below '
+                   f'{gp(alch - nature)} gp.')
+        faq.append((f'Can you high alch {name} for profit?', ans))
+    faq.append((f'Do you need members for {name}?',
+                f'Yes, {name} {are} members-only.' if it.get("members")
+                else 'No, free-to-play accounts can buy and sell ' + it_them + '.'))
+    out.append(f'<h3>{name} FAQ</h3>'
+               + ''.join(f'<p><b>{q}</b> {a}</p>' for q, a in faq))
+    return ''.join(out)
+
+
 def related_html(it, by_name, vol_of, pages):
     """Same matcher as relatedItems() in app.js: longest word first, falling
     back through the rest so compound names reach their family. Only links to
@@ -314,7 +569,7 @@ def related_html(it, by_name, vol_of, pages):
 
 
 # ── page assembly ─────────────────────────────────────────────────────────
-def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0):
+def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when=""):
     name = esc(it["name"])
     url = f"{SITE}/item/{slug}/"
     title = f"{name} Price OSRS — {gp(buy)} gp · Live GE Chart & Flip Margin | PocketGE"
@@ -352,6 +607,13 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0):
          + '<section class="item-seo" id="itemSeo">\n'
          + f'  <p class="is-sum" id="isSummary">{summary_html(it, buy, sell, vol, avg24, nature)}</p>\n'
          + f'  <div class="is-qa" id="isQa">{qa_html(it, buy, nature)}</div>\n'
+         # data-item-id so the app can drop this when the visitor searches a
+         # DIFFERENT item from an item page: the summary and Q&A above are
+         # re-rendered live, but this block is prerendered for one item only,
+         # and leaving it would print Emerald's buy limit under a Twisted bow.
+         # See renderItemSeo() in app.js.
+         + f'  <div class="is-detail" id="isDetail" data-item-id="{it["id"]}">'
+         + f'{detail_html(it, buy, sell, vol, nature, when)}</div>\n'
          + (f'  <p class="is-rel" id="isRelated">{related}</p>\n' if related
             else '  <p class="is-rel" id="isRelated" hidden></p>\n')
          + (guide.group(1) if guide else '')
@@ -430,6 +692,12 @@ def main():
     # Nature rune's own live insta-buy, so the alch line quotes a real cost
     # instead of a constant that goes stale. 561 is the nature rune.
     nature_price = int((latest.get("561") or {}).get("high") or 0)
+    # Written into the prose wherever a price is quoted, so a reader looking at
+    # a figure that no longer matches the live terminal above it can see why.
+    try:
+        when = datetime.strptime(snap.get("fetched") or "", "%Y-%m-%d").strftime("%-d %B %Y")
+    except Exception:
+        when = date.today().strftime("%-d %B %Y")
 
     items = ge_items(snap.get("mapping"))
     src = "live wiki mapping" if snap.get("mapping") else "items-json (STALE — no mapping in snapshot)"
@@ -529,7 +797,7 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
         avg24 = int((day.get(str(it["id"])) or {}).get("avgHighPrice") or 0)
         (d / "index.html").write_text(
-            build_page(tpl, it, slug, buy, sell, vol, rel, avg24, nature_price))
+            build_page(tpl, it, slug, buy, sell, vol, rel, avg24, nature_price, when))
         n += 1
 
     # the set the app reads, so it canonicalises and links to pages that exist

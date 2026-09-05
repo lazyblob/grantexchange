@@ -3040,6 +3040,13 @@ function renderItemSeo(m) {
   const relEl = document.getElementById('isRelated');
   const h1 = document.getElementById('seoH1');
   if (!host || !sumEl || !qaEl || !relEl) return;
+  /* The long-form block is PRERENDERED, for one item. Searching a different
+     item from an item page re-renders the summary and Q&A above it but cannot
+     re-render this — so it has to go, rather than print Emerald's examine text
+     and buy limit underneath a Twisted bow. Removed before the no-price return
+     below, or navigating to an unpriced item would leave it standing. */
+  const detail = document.getElementById('isDetail');
+  if (detail && m && String(detail.dataset.itemId) !== String(m.id)) detail.remove();
   const isSel = m && selected && String(selected.id) === String(m.id);
   const buyNow = isSel && liveSellRaw > 0 ? liveSellRaw : 0;   // insta-buy
   const sellNow = isSel && liveBuyRaw > 0 ? liveBuyRaw : 0;    // insta-sell
