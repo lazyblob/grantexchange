@@ -88,6 +88,7 @@
   <url><loc>https://pocketge.com/item/air-battlestaff/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/air-orb/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/air-rune/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/air-talisman/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/aldarium/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/amethyst/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/amethyst-arrow/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -446,6 +447,7 @@
   <url><loc>https://pocketge.com/item/cheese/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/chinchompa/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/chocolate-bar/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/chocolate-cake/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/chocolate-dust/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/chugging-barrel-disassembled/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/civitas-illa-fortis-teleport/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -456,6 +458,7 @@
   <url><loc>https://pocketge.com/item/coal/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/coconut/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/coconut-milk/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/cod/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/colossal-wyrm-teleport-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/combat-bracelet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/combat-mix-1/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -465,6 +468,7 @@
   <url><loc>https://pocketge.com/item/combat-potion-2/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/combat-potion-3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/combat-potion-4/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/compost/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/compost-potion-1/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/compost-potion-2/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/compost-potion-3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -490,9 +494,11 @@
   <url><loc>https://pocketge.com/item/crystal-armour-seed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/crystal-tool-seed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/cup-of-hot-water/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/cup-of-tea/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/cupronickel-bar/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/curry-leaf/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dagannoth-bones/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/dagon-hai-robes-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dareeyak-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dark-crab/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dark-fishing-bait/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -611,6 +617,7 @@
   <url><loc>https://pocketge.com/item/dragonfire-shield/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dragonfire-ward/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dragonfruit/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/dragonfruit-pie/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dragonstone/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dragonstone-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/dragonstone-bolt-tips/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -645,6 +652,7 @@
   <url><loc>https://pocketge.com/item/egg/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/elder-maul/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/eldritch-orb/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/elemental-amulet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/elidinis-ward/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/elkhorn-potion-unf/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/elven-signet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -739,6 +747,7 @@
   <url><loc>https://pocketge.com/item/garlic/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/ghorrock-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/ghrazi-rapier/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/giant-krill/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/giant-seaweed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/gilded-2h-sword/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/gilded-armour-set-lg/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -806,6 +815,8 @@
   <url><loc>https://pocketge.com/item/guardian-boots/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/guthix-rest-4/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/guthixian-temple-teleport/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/haddock/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/hair/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/halibut/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hallowfell/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/ham-joint/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -821,6 +832,7 @@
   <url><loc>https://pocketge.com/item/headless-arrow/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/headless-atlatl-dart/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hemp/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/herring/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hill-giant-club/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/holy-elixir/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/huasca/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -828,6 +840,7 @@
   <url><loc>https://pocketge.com/item/huasca-seed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hueycoatl-hide-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hueycoatl-hide-body/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/hueycoatl-hide-chaps/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hunter-potion-1/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hunter-potion-2/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/hunter-potion-3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -878,6 +891,7 @@
   <url><loc>https://pocketge.com/item/iron-dart-tip/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/iron-dart-p-plus/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/iron-dart-p-plus-plus/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/iron-felling-axe/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/iron-incendiary-cannonball/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/iron-knife/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/iron-nails/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -908,11 +922,13 @@
   <url><loc>https://pocketge.com/item/jute-fibre/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/jute-seed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/karil-s-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/kebab/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kebab-mix/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kebbit-bolts/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/key-master-teleport/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kharyrll-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/khazard-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/king-worm/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kodai-insignia/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kodai-wand/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/kourend-castle-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -967,6 +983,7 @@
   <url><loc>https://pocketge.com/item/magic-potion-2/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/magic-potion-3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/magic-potion-4/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/magic-roots/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/magic-shortbow/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/magic-shortbow-u/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/magpie-impling-jar/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1001,6 +1018,7 @@
   <url><loc>https://pocketge.com/item/masori-mask/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/masori-mask-f/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/master-wand/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/menaphite-remedy-3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/menaphite-remedy-4/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/merchant-s-paint/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/mind-altar-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1068,6 +1086,7 @@
   <url><loc>https://pocketge.com/item/nature-impling-jar/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/nature-rune/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/necklace-of-anguish/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/necklace-of-passage-5/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/necklace-of-rupture/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/needle/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/nickel-ore/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1170,6 +1189,7 @@
   <url><loc>https://pocketge.com/item/raging-echoes-cane/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raging-echoes-hat-t3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raging-echoes-nexus-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/raging-echoes-relic-hunter-t2-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raging-echoes-relic-hunter-t3-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raging-echoes-spirit-tree-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/rainbow-crab-paste/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1191,6 +1211,7 @@
   <url><loc>https://pocketge.com/item/raw-anglerfish/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raw-bass/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raw-beef/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/raw-bird-meat/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raw-bluefin/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raw-cave-eel/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/raw-chicken/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1231,6 +1252,7 @@
   <url><loc>https://pocketge.com/item/red-d-hide-body/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/red-dragon-leather/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/red-dragonhide/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/red-feather/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/red-firelighter/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/red-spiders-eggs/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/red-topaz/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1418,6 +1440,7 @@
   <url><loc>https://pocketge.com/item/spider-cave-teleport/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/spirit-shield/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/squid-beak/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/squid-paste/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/staff-of-balance/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/staff-of-light/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/staff-of-the-dead/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1568,6 +1591,7 @@
   <url><loc>https://pocketge.com/item/topaz-bolts-e/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/topaz-dragon-bolts/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/topaz-dragon-bolts-e/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/torag-s-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/tormented-bracelet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/tormented-synapse/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/torstol/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1595,6 +1619,8 @@
   <url><loc>https://pocketge.com/item/trailblazer-reloaded-rejuvenation-pool-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/trailblazer-reloaded-relic-hunter-t2-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/trailblazer-reloaded-relic-hunter-t3-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/trailblazer-reloaded-top-t3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/trailblazer-reloaded-trousers-t3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/trailblazer-reloaded-vengeance-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/trailblazer-rug/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/trailblazer-teleport-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1607,6 +1633,7 @@
   <url><loc>https://pocketge.com/item/twisted-bow/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/twisted-buckler/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/twisted-cane/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/twisted-coat-t3/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/twisted-horns/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/twisted-relic-hunter-t3-armour-set/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/twisted-teleport-scroll/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1653,6 +1680,7 @@
   <url><loc>https://pocketge.com/item/virtus-mask/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/virtus-robe-bottom/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/virtus-robe-top/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/vodka/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/voidwaker/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/voidwaker-blade/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/voidwaker-gem/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -1668,6 +1696,7 @@
   <url><loc>https://pocketge.com/item/waterbirth-teleport-tablet/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/watermelon/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/watermelon-seed/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pocketge.com/item/watermelon-slice/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/watson-teleport/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/weapon-poison-plus-plus/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pocketge.com/item/webweaver-bow-u/</loc><lastmod>2026-09-05</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
