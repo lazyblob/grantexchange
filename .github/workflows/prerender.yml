@@ -119,6 +119,26 @@ jobs:
               print("\n".join(bad[:20])); sys.exit(f"{len(bad)} bad pages")
           size = sum(f.stat().st_size for f in files)
           print(f"{len(files):,} pages, {size/1e6:.1f} MB, all with title/summary/canonical")
+
+          # The long form is the whole reason these pages can be indexed at all
+          # -- before it, a page carried 59 unique words against ~1,594 of app
+          # shell, which is what "Crawled - currently not indexed" is. If it
+          # ever silently renders empty (a mapping with no examine/limit/alch,
+          # a template edit that stops matching) the run must say so rather than
+          # commit 1,700 thin pages again.
+          #
+          # A floor of 60, not one calibrated to the ~280 words it writes today:
+          # a 60-character summary floor once failed four perfectly honest pages
+          # the moment the copy got shorter. This is here to catch EMPTY, not
+          # short.
+          lens = []
+          for f in files:
+              d = re.search(r'<div class="is-detail"[^>]*>(.*?)</div>\n', f.read_text(), re.S)
+              lens.append(len(re.sub(r"<[^>]+>", " ", d.group(1)).split()) if d else 0)
+          thin = [f.parent.name for f, n in zip(files, lens) if n < 60]
+          assert not thin, f"{len(thin)} pages with no usable long form: {sorted(thin)[:10]}"
+          print(f"long form on every page — {min(lens)} words at the shortest, "
+                f"{sum(lens)//len(lens)} on average")
           # every related link must point at a page that exists
           slugs = {f.parent.name for f in files}
           dangling = {h for f in files for h in re.findall(r'href="/item/([^/"]+)/"', f.read_text())} - slugs

@@ -161,6 +161,19 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Real anchors, not JS handlers: the point of this row is that a crawler can
    follow it. Nothing on the site linked one item page to another before, so
    the long tail was reachable only through the sitemap. */
+/* The prerendered long form. Set below the summary in weight and above it in
+   volume: the summary is the answer someone came for, this is the detail they
+   read if the answer was interesting. Headings are small and quiet rather than
+   document-sized — they exist so a crawler and a skimmer can both find the
+   buy limit, not to turn a trading terminal into an article. */
+.item-seo .is-detail { margin-top: 14px; border-top: 1px solid var(--border-subtle, rgba(217,211,199,0.12)); padding-top: 12px; }
+.item-seo .is-detail h2, .item-seo .is-detail h3 {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+  color: var(--text-main); margin: 14px 0 4px;
+}
+.item-seo .is-detail > :first-child { margin-top: 0; }
+.item-seo .is-detail p { font-size: 12.5px; line-height: 1.62; color: var(--text-muted); margin: 0 0 6px; }
+.item-seo .is-detail b { color: var(--text-main); font-weight: 700; }
 .item-seo .is-rel { margin-top: 10px; font-size: 12.5px; color: var(--text-muted); }
 .item-seo .is-rel a { color: var(--border-active); text-decoration: none; }
 .item-seo .is-rel a:hover { text-decoration: underline; color: #fff; }
