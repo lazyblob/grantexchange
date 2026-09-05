@@ -111,7 +111,10 @@ PAGE_WEIGHTS = {
     "reliable-14d-margins.html": ("weekly", "0.7"),
     "at-5d-highs.html": ("weekly", "0.7"),
     "at-5d-lows.html": ("weekly", "0.7"),
-    "runelite-plugin.html": ("monthly", "0.7"),
+    # Bumped on the Plugin Hub launch: it is a live product page now rather
+    # than a placeholder saying the plugin is not out yet, and it had no
+    # inbound links at all until the drawer got an entry.
+    "runelite-plugin.html": ("weekly", "0.8"),
     "burnt-food-collectors.html": ("monthly", "0.6"),
 }
 # index.html is the "/" row, added separately. og-image.source.html is the

@@ -381,6 +381,17 @@
                 <a class="drawer-link" href="/#how-it-works">How PocketGE works</a>
                 <a class="drawer-link" href="/burnt-food-collectors.html">Burnt Food &amp; Collectors</a>
 
+                <!-- The plugin page existed for months with ZERO inbound links
+                     from anywhere on the site — only its own footer pointed at
+                     it. An orphan page is one Google has little reason to crawl
+                     and none to rank. The drawer is inherited by every
+                     prerendered item page, so one entry here is ~1,750 internal
+                     links to it, and it is also simply where someone would look
+                     for "do they have a RuneLite plugin". -->
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">In game</div>
+                <a class="drawer-link" href="/runelite-plugin.html">RuneLite Plugin <b>· new</b></a>
+
                 <!-- The "add me in game" note already existed, but only in the
                      about section far below the app, where nobody looking for
                      the author would think to scroll. The drawer is where you
@@ -1014,6 +1025,15 @@
 
   <h2>No signup, nothing leaves your browser</h2>
   <p>PocketGE never asks for an account or your RuneScape login. Favorites, Bank stacks and settings live in your browser's localStorage — clear your cache and they're gone, which is the same reason none of it reaches a server. Prices come from the public <a href="https://prices.runescape.wiki/" rel="noopener">OSRS Wiki real-time prices API</a>, long-range history from <a href="https://api.weirdgloop.org/" rel="noopener">Weird Gloop</a>.</p>
+
+  <!-- The plugin has been live on the Plugin Hub with no mention of it
+       anywhere on the site it belongs to. Placed after "nothing leaves your
+       browser" on purpose: the honest caveat to that section is that there IS
+       now a way to see your real in-game trades here, and it is worth saying
+       in the same breath that it runs on your own machine. -->
+  <h2 id="runelite">In game: the RuneLite plugin</h2>
+  <p>Everything above works from a browser and knows nothing about your account. If you want the other half — your <em>actual</em> flips, tracked as they fill — <a href="/runelite-plugin.html"><strong>PocketGE Flip Tracker</strong></a> is now on the official RuneLite Plugin Hub. Open RuneLite's Configuration panel, click Plugin Hub, search <strong>PocketGE</strong>, install.</p>
+  <p>It books every completed flip with the same 2% tax math this site uses, keeps lifetime profit and open buy lots through logouts, and can show what your whole position is worth across cash, bank, inventory and open offers. There is an optional advisor that suggests buys sized to the cash you actually have and sells for stacks you already hold, priced against your own buy price rather than just today's market. It is free and open source, it never sees your login, and other than the advisor fetching prices it makes no network calls at all. <a href="/runelite-plugin.html">Full details and install steps →</a></p>
 
   <h2 id="faq">Frequently asked questions</h2>
   <p style="margin:-4px 0 12px;">New to merchanting? Read the <a href="/flipping-guide.html">full OSRS flipping guide</a> — GE tax, buy limits, picking items, and setting offers that actually fill.</p>
