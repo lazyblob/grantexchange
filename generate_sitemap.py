@@ -3,10 +3,14 @@
 
 Reads ./items-json (kept fresh by update_items.py), keeps only items that are
 actually tradeable on the Grand Exchange, folds duplicate names, and writes a
-single sitemap (well under the 50,000-URL / 50 MB limits) whose item URLs use
-exactly the /?q=<Name> encoding the app itself produces via
-encodeURIComponent — so the URL Google crawls is byte-identical to the
-canonical the page declares about itself.
+single sitemap (well under the 50,000-URL / 50 MB limits) listing the items
+that have a prerendered /item/<slug>/ page — the URLs whose served HTML is
+actually about that item, and which declare themselves canonical.
+
+Items without a page are deliberately absent: their /?q=<Name> URL is served
+index.html verbatim, so a sitemap entry would advertise the homepage under
+2,944 different addresses. They stay reachable through the app and through
+related-item links; they are just not claimed as pages.
 
 Run from the repo root after update_items.py:  python3 generate_sitemap.py
 """
@@ -15,16 +19,10 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote
 
 SITE = "https://pocketge.com"
 ITEMS_DIR = Path("./items-json")
 OUT = Path("./sitemap.xml")
-
-# encodeURIComponent leaves - _ . ! ~ * ' ( ) unescaped; match it exactly so
-# sitemap URL == the canonical the SPA sets (history.replaceState uses it).
-ENC_SAFE = "-_.!~*'()"
-
 
 def ge_items():
     seen = {}
@@ -148,16 +146,28 @@ def main():
     rows = [f"{SITE}/|{today}|daily|1.0"] + static_pages(today)
     names = live or {it["name"] for it in items}
     all_names = sorted(names | set(EXTRA_NAMES), key=str.lower)
-    # Items with a prerendered page get their PATH url — that is the one they
-    # declare as canonical, and listing ?q= for them would point Google at a
-    # URL whose raw HTML is the generic shell. Everything else keeps ?q=,
-    # which is still exactly what those pages canonicalise to.
+    # ONLY items with a prerendered page. The ?q= form was the item URL scheme
+    # before /item/<slug>/ pages existed, and it cannot work as one: GitHub
+    # Pages resolves by path, so every /?q=<Name> is served index.html
+    # byte-for-byte -- 2,944 URLs whose raw HTML is the same document, each
+    # declaring <link rel="canonical" href="https://pocketge.com/">. Only the
+    # app's own JS rewrites that canonical per item, and the indexing pass that
+    # decides "duplicate or not" reads the raw HTML.
+    #
+    # So listing them contradicted the pages themselves: the sitemap said "2,944
+    # distinct pages worth indexing", the HTML said "all of these are the
+    # homepage". Search Console resolved that the way it always does -- 1,849
+    # Crawled - currently not indexed, and rising, against 1,719 real item pages
+    # competing for the same crawl budget.
+    #
+    # The canonical -> "/" is CORRECT for these legacy URLs; the sitemap entry
+    # was the wrong half. Dropping it costs no reachable content: /?q= still
+    # works, is still what related-item links use for an item with no page of
+    # its own, and is still what the app puts in the address bar.
     prerendered = prerendered_names()
     for name in all_names:
         if name.lower() in prerendered:
             rows.append(f"{SITE}/item/{slugify(name)}/|{today}|daily|0.7")
-        else:
-            rows.append(f"{SITE}/?q={quote(name, safe=ENC_SAFE)}|{today}|daily|0.7")
 
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -169,8 +179,12 @@ def main():
     out.append("</urlset>")
     OUT.write_text("\n".join(out) + "\n")
     src = "live mapping" if live else "items-json (stale)"
-    print(f"Wrote {OUT} — {len(rows)} URLs ({len(all_names)} items from the {src}, "
-          f"{len(set(EXTRA_NAMES) - names)} still coming from the hand-kept extras).")
+    listed = sum(1 for n in all_names if n.lower() in prerendered)
+    print(f"Wrote {OUT} — {len(rows)} URLs: {listed} item pages listed, "
+          f"{len(all_names) - listed} items skipped for having no prerendered page "
+          f"(reachable at /?q=, not claimed as pages). "
+          f"{len(all_names)} items from the {src}, "
+          f"{len(set(EXTRA_NAMES) - names)} from the hand-kept extras.")
 
 
 if __name__ == "__main__":
