@@ -6321,38 +6321,59 @@ function rlRenderModal(data) {
   dot.classList.add('on');
   const flips = (data.flips || []).slice(-8).reverse();
   const profit = Number(data.sessionProfit || 0);
-  let html = `<div class="rl-profit" style="color:${profit >= 0 ? 'var(--rs-green-deep)' : 'var(--negative)'}">Session flip profit: ${profit >= 0 ? '+' : ''}${abbreviateNumber(profit)} gp</div>`;
+  /* Four numbers people connect the bridge FOR — session, lifetime, portfolio
+     and liquid cash — used to render as four .rl-hint lines: muted 12px text,
+     the same weight as the footnotes around them, each nudged into place with
+     an inline margin:-4px. Tiles instead, in the same visual language as the
+     Total Wealth stat block directly above, so the modal reads as one screen
+     rather than a headline followed by a paragraph of small print. */
+  const signed = n => (n >= 0 ? '+' : '') + abbreviateNumber(n) + ' gp';
+  const tile = (label, val, note, cls) =>
+    `<div class="rl-stat${cls ? ' ' + cls : ''}">` +
+    `<div class="bk-stat-label">${label}</div>` +
+    `<div class="rl-stat-val">${val}</div>` +
+    (note ? `<div class="rl-stat-note">${note}</div>` : '') +
+    `</div>`;
+  const tiles = [tile('Session', signed(profit), 'flips booked since you connected',
+                      profit >= 0 ? 'pos' : 'neg')];
   if (data.lifetimeProfit != null) {
     const lt = Number(data.lifetimeProfit);
-    html += `<div class="rl-hint" style="margin:-4px 0 8px">Lifetime: ${lt >= 0 ? '+' : ''}${abbreviateNumber(lt)} gp</div>`;
+    tiles.push(tile('Lifetime', signed(lt), 'every flip the plugin has ever booked',
+                    lt >= 0 ? 'pos' : 'neg'));
   }
   if (data.portfolioValue != null && Number(data.portfolioValue) > 0) {
-    html += `<div class="rl-hint" style="margin:-4px 0 8px">Portfolio value: <strong>${abbreviateNumber(Number(data.portfolioValue))} gp</strong> (cash + bank + inv + equipped + open offers)</div>`;
+    tiles.push(tile('Portfolio', abbreviateNumber(Number(data.portfolioValue)) + ' gp',
+                    'cash + bank + inventory + worn + open offers'));
   }
   /* Liquid gp, shown separately from portfolio value because they answer
      different questions: net worth vs what you could actually put into an
      offer right now. It's also the number the plugin's own advisor sizes
      every buy against, so showing it makes its suggestions legible. */
   if (data.cash != null && Number(data.cash) > 0) {
-    html += `<div class="rl-hint" style="margin:-4px 0 8px">Liquid cash: <strong>${abbreviateNumber(Number(data.cash))} gp</strong> (coins + platinum tokens, bank and inventory)</div>`;
+    tiles.push(tile('Liquid cash', abbreviateNumber(Number(data.cash)) + ' gp',
+                    'coins + platinum tokens, bank and inventory'));
   }
+  let html = `<div class="rl-stats">${tiles.join('')}</div>`;
+  /* A stale bank is not a footnote: portfolio value, the stack list below and
+     the plugin's own sell suggestions are all exactly as old as the last bank
+     read. Given its own notice style rather than muted hint text, which is
+     what it had. */
   if (data.bankSeen === false) {
-    html += `<div class="rl-hint" style="margin:-4px 0 8px">Open your bank once in-game this session so the plugin can include it in your portfolio value — it can't read bank contents until it's been opened.</div>`;
+    html += `<div class="rl-notice">Open your bank once in-game so the plugin can include it in your portfolio value — it cannot read bank contents until the bank has been opened.</div>`;
   } else if (data.bankSeenAt) {
-    /* "Seen" alone can't tell a bank read ten seconds ago from one read
-       three hours and forty trades back — and portfolio value, the bank
-       list below and the plugin's own sell suggestions are all exactly that
-       stale. Saying so beats presenting an old snapshot as current. */
+    /* "Seen" alone can't tell a bank read ten seconds ago from one read three
+       hours and forty trades back. Saying so beats presenting an old snapshot
+       as current. */
     const ageMin = Math.max(0, Math.round((Date.now() - Number(data.bankSeenAt)) / 60000));
     if (ageMin >= 5) {
-      html += `<div class="rl-hint" style="margin:-4px 0 8px">Bank last read <strong>${rlAgeText(ageMin)}</strong> ago — open your bank in-game to refresh it.</div>`;
+      html += `<div class="rl-notice">Bank last read <strong>${rlAgeText(ageMin)}</strong> ago — open your bank in-game to refresh the numbers above.</div>`;
     }
   }
   const stacks = Array.isArray(data.bankStacks) ? data.bankStacks : [];
   if (stacks.length) {
     const top = stacks.slice(0, 8);
     const rest = stacks.length - top.length;
-    html += `<div class="rl-hint" style="margin:8px 0 4px">Biggest bank stacks</div>`;
+    html += `<div class="bk-section-title">Biggest bank stacks</div>`;
     html += top.map(b => `
       <div class="rl-flip" data-rl-item="${String(b.name || '').replace(/"/g, '&quot;')}" title="Open the live chart">
         <span class="rl-name">${escapeHtml(String(b.name || ''))} ×${Number(b.quantity || 0).toLocaleString()}</span>
@@ -6362,11 +6383,10 @@ function rlRenderModal(data) {
       html += `<div class="rl-hint" style="margin:4px 0 0">+ ${rest.toLocaleString()} more ${rest === 1 ? 'stack' : 'stacks'}</div>`;
     }
   }
-  html += `<div class="rl-hint" style="margin:-4px 0 8px">★ Any local list whose name matches one of your in-game lists is live-linked in the sidebar</div>`;
   if (!flips.length) {
     html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
   } else {
-    html += `<div class="rl-hint" style="margin:8px 0 4px">Recent flips</div>`;
+    html += `<div class="bk-section-title">Recent flips</div>`;
     html += flips.map(f => `
       <div class="rl-flip" data-rl-item="${(f.itemName || '').replace(/"/g, '&quot;')}" title="Open the live chart">
         <span class="rl-name">${f.itemName} ×${Number(f.quantity).toLocaleString()}</span>
@@ -6374,6 +6394,10 @@ function rlRenderModal(data) {
           <span class="${f.profit >= 0 ? 'pos' : 'neg'}">${f.profit >= 0 ? '+' : ''}${abbreviateNumber(f.profit)}</span></span>
       </div>`).join('');
   }
+  /* Sat between the bank stacks and the flips, which put a sentence about
+     the SIDEBAR in the middle of two lists about money. It is a footnote, so
+     it goes where footnotes go. */
+  html += `<div class="rl-hint" style="margin-top:10px">★ Any local list whose name matches one of your in-game lists is live-linked in the sidebar</div>`;
   body.innerHTML = html;
   body.querySelectorAll('[data-rl-item]').forEach(el => {
     el.onclick = () => {
