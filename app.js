@@ -6418,8 +6418,14 @@ function rlHandleNavRequest(nav) {
   if (!nav || typeof nav.seq !== 'number') return;
   if (rlLastNavSeq === null) { rlLastNavSeq = nav.seq; return; } // see rlLastNavSeq
   if (nav.seq <= rlLastNavSeq) return;
-  rlLastNavSeq = nav.seq;
-  if (!mapping.length) return; // item list still loading; the next tick retries nothing, but neither does it misfire
+  /* The mapping check comes BEFORE the seq is banked, and that ordering is
+     the whole point. It used to be the other way round: the seq was recorded
+     and THEN we bailed if the item list had not loaded yet, which consumed
+     the request and lost the click permanently — no later poll could redeliver
+     it, because it was no longer newer than the seq we had banked. Leaving the
+     seq alone means the very next delivery (the long-poll reconnect, or the
+     5s payload) carries it again, by which time mapping is loaded. */
+  if (!mapping.length) return;
   /* Match on id when the plugin knew one — names drift between the game and
      the wiki mapping (capitalisation, "(uncharged)" suffixes), ids don't. */
   let item = nav.itemId ? mapping.find(x => String(x.id) === String(nav.itemId)) : null;
@@ -6427,9 +6433,48 @@ function rlHandleNavRequest(nav) {
     const q = String(nav.query).trim().toLowerCase();
     item = mapping.find(x => x.name && x.name.toLowerCase() === q);
   }
+  /* Same reasoning for an unknown item: banking the seq here would mean a
+     mapping that later gains the item can never act on this click. An item
+     the mapping genuinely never learns just gets re-checked cheaply. */
   if (!item) return;
+  rlLastNavSeq = nav.seq;
   closePortfolio();
   setItem(item);
+}
+
+/* Long-poll for chart clicks, alongside (not instead of) the 5s payload poll.
+ *
+ * The payload poll is a setInterval, and this tab spends its life behind the
+ * game: Chrome throttles a hidden tab's timers to 1 Hz, and to once a MINUTE
+ * once intensive throttling kicks in after ~5 minutes hidden. Shortening the
+ * interval cannot outrun something the browser is deliberately slowing down.
+ * A request that is already open is not a timer — its response arrives on the
+ * network task source — so the plugin can answer it the instant you click.
+ *
+ * The plugin parks the request for up to 25s and then answers empty; either
+ * way we reconnect immediately. Errors back off to the payload poll's cadence
+ * so a plugin that is off does not spin. */
+let rlNavPolling = false;
+async function rlNavLoop() {
+  if (rlNavPolling) return;
+  rlNavPolling = true;
+  while (rlWanted) {
+    try {
+      const since = rlLastNavSeq === null ? 0 : rlLastNavSeq;
+      const res = await fetch(RL_BRIDGE_URL + '/nav?since=' + since, { cache: 'no-store', mode: 'cors' });
+      if (!res.ok) throw new Error('bridge ' + res.status);
+      const data = await res.json();
+      if (!rlWanted) break;
+      rlHandleNavRequest(data && data.navRequest);
+    } catch (e) {
+      /* Plugin off, bridge disabled, or an older plugin with no /nav
+         endpoint. The payload poll still carries navRequest, so charts keep
+         working at the old speed — wait a tick and try again rather than
+         hammering a closed port. */
+      await new Promise(r => setTimeout(r, RL_POLL_MS));
+    }
+  }
+  rlNavPolling = false;
 }
 
 /* Push the watchlist's order to the plugin so a drag here lands in game too.
@@ -6543,6 +6588,7 @@ function rlSync() {
       rlRenderModal(null); // "waiting for RuneLite…" immediately; rlPoll() below fills in real data once the fetch settles
       rlPoll();
       rlTimer = setInterval(rlPoll, RL_POLL_MS);
+      rlNavLoop(); // deliberately not awaited — it runs for as long as we stay connected
     }
   } else if (rlTimer) {
     clearInterval(rlTimer); rlTimer = null;
