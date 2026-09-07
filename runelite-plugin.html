@@ -105,6 +105,13 @@
   .big-cta { display:block; text-align:center; background:linear-gradient(90deg,rgba(201,166,77,0.2),rgba(201,166,77,0.06)); border:1px solid rgba(201,166,77,0.5); border-radius:8px; padding:16px; margin:28px 0; color:var(--head); font-weight:700; font-size:16px; text-decoration:none; }
   .big-cta:hover { background:linear-gradient(90deg,rgba(201,166,77,0.3),rgba(201,166,77,0.1)); text-decoration:none; }
   code { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-size:13px; }
+  /* A definition list rather than more feature cards: these are the parts of
+     ONE panel in order down the screen, and a grid of equal tiles would say
+     they are four separate things. */
+  .panel-spec { margin:16px 0; }
+  .panel-spec dt { color:var(--head); font-weight:700; font-size:14px; margin-top:14px; }
+  .panel-spec dd { margin:3px 0 0; padding-left:14px; border-left:2px solid var(--border); color:var(--muted); font-size:13.5px; }
+  .plugin-mark { width:26px; height:23px; image-rendering:pixelated; vertical-align:-4px; margin-right:8px; }
 </style>
 </head>
 <body>
@@ -114,7 +121,7 @@
     <a class="cta" href="/">Open the trading terminal →</a>
   </div>
 
-  <h1>PocketGE Flip Tracker — RuneLite Plugin</h1>
+  <h1><img class="plugin-mark" src="/plugin-icon.png" alt="PocketGE Flip Tracker plugin icon" width="26" height="23">PocketGE Flip Tracker — RuneLite Plugin</h1>
   <p class="sub"><b>Now on the RuneLite Plugin Hub</b> — search "PocketGE" in RuneLite and hit install. A free, open-source plugin that tracks your Grand Exchange flips as they actually fill, works out profit after the 2% tax automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
 
   <h2>What it does</h2>
@@ -148,6 +155,23 @@
   </ol>
   <p>The plugin's panel appears in your RuneLite sidebar straight away, and updates arrive through the Plugin Hub like any other plugin. Everything is off by default except the flip tracking itself — the advisor, the overlay and the website bridge are each opt-in from the plugin's settings.</p>
   <p>If you would rather build it yourself, or just read exactly what it does before installing, the full source is at <a href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">github.com/grant9008/pocketge-flip-tracker</a>.</p>
+
+  <h2>What the panel shows you</h2>
+  <p>One tab in the RuneLite sidebar, not four. Top to bottom:</p>
+  <dl class="panel-spec">
+    <dt>Stats header</dt>
+    <dd>Profit over a window you pick — session, 1h, 4h, 12h, 1d, 1w, 1m or all time — next to <b>unrealized</b> profit on the buy lots you are still holding, ROI, gp per hour, and a portfolio total across cash, bank, inventory, worn gear and anything sitting in open offers.</dd>
+    <dt>Recommended flip</dt>
+    <dd>A single row: item icon, name, an Analyst Rating from Strong Buy to Strong Sell, and profit per unit. How often it re-checks and how thin a market it will suggest live behind a settings cog, so the panel leads with the number rather than the knobs.</dd>
+    <dt>Favorites</dt>
+    <dd>A local watchlist with live price and the move against today's typical price. Star anything from a suggestion or a history row.</dd>
+    <dt>Flip history</dt>
+    <dd>Paginated, every completed flip, profit already net of the 2% tax. Saved through RuneLite's own config, so a buy today still books the right profit when you sell it next week.</dd>
+  </dl>
+
+  <h2>Two halves of the same tool</h2>
+  <p>The website is where you decide: five years of history, volume profile, scanners, the levels worth placing an offer at. The plugin is where you find out whether you were right — it watches the offers actually fill and books the result with the same tax math, so the profit it reports is the profit you keep.</p>
+  <p>They work fine apart. Neither needs an account, and neither has one to give. Turn on the bridge and the pair line up: your in-game flips show up in <a href="/">the terminal's Bank of Gielinor panel</a>, and any favourites list whose name matches one in game is live-linked in the sidebar.</p>
 
   <h2>Connecting it to pocketge.com</h2>
   <p>The website bridge is opt-in and off by default. Turn it on from the plugin's settings, then toggle "Connect" in PocketGE's <a href="/">Bank of Gielinor</a> modal — the sidebar Favorites list and your session's flips will start mirroring live, all without any account or login on either side.</p>
