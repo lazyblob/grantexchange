@@ -481,6 +481,26 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .rl-hint { color: var(--text-muted); line-height: 1.5; }
 .rl-hint a { color: var(--border-active); }
 .rl-profit { font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+/* The connected bridge's headline numbers. Deliberately one step DOWN from
+   .bk-stat.headline ("Total Wealth"): that is the modal's own subject, and
+   two competing headlines in one card reads as neither being the point.
+   Fixed 2 columns rather than auto-fit — with four tiles auto-fit lands on a
+   3+1 row at some widths, and a lone tile on its own row looks like an
+   error. */
+.rl-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 2px 0 10px; }
+.rl-stat { background: var(--bg-input); border: 1px solid var(--border-main); border-radius: 4px; padding: 7px 9px; }
+.rl-stat-val { font-size: 15px; font-weight: 900; letter-spacing: -0.4px; margin-top: 1px; font-variant-numeric: tabular-nums; }
+.rl-stat.pos .rl-stat-val { color: var(--rs-green-deep); }
+.rl-stat.neg .rl-stat-val { color: var(--negative); }
+/* What the number is made of, attached to the number. These read as
+   parenthetical asides when they trail the value on one line, and as a
+   definition when they sit under it. */
+.rl-stat-note { font-size: 9.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
+/* Staleness is not a footnote — portfolio value, the stack list and the
+   plugin's sell suggestions are all exactly as old as the last bank read. */
+.rl-notice { margin: 8px 0; padding: 7px 10px; border-left: 3px solid var(--gold, #FFB300);
+             background: rgba(255,179,0,0.08); border-radius: 3px; color: var(--text-main);
+             font-size: 11.5px; line-height: 1.5; }
 .rl-flip { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 5px 6px; border-bottom: 1px solid rgba(60,53,43,0.4); cursor: pointer; border-radius: 3px; }
 .rl-flip:hover { background: var(--bg-input); }
 .rl-flip .rl-name { color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
