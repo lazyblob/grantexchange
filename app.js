@@ -6280,6 +6280,10 @@ const RL_POLL_MS = 5000;
 let rlTimer = null;
 let rlWanted = (() => { try { return localStorage.getItem('ge_rl_bridge') === '1'; } catch (e) { return false; } })();
 let rlConnected = false;
+/* Latched for the life of the tab: the bridge drops and reconnects on its own
+   whenever the client restarts or the long poll times out, and counting those
+   would report RuneLite's uptime rather than how many people use the plugin. */
+let rlBridgeTracked = false;
 /* Lowercased plugin list name -> { id, itemIds }. The plugin now serves
    ALL its favorite lists (see task #60's bridge protocol update), so
    merging happens per-list, matched by name against whichever local list
@@ -6420,6 +6424,22 @@ function rlApply(data) {
     });
   }
   rlFavoriteListsByName = newLists;
+  /* The one plugin metric this site can honestly measure. A visit that came
+     FROM the plugin is invisible to analytics — LinkBrowser hands the URL to
+     the desktop browser, so there is no referrer, and the URLs it opens carry
+     no marker, which lands every one of them in Direct alongside people typing
+     the address. What IS observable is the bridge going live in this tab: that
+     only happens when RuneLite is running on the same machine with the plugin
+     installed and its bridge switched on.
+     Once per tab, on the transition — the poll runs every few seconds and an
+     event per tick would be a metric about the timer, not about anybody. */
+  if (rlConnected && !wasConnected && !rlBridgeTracked) {
+    rlBridgeTracked = true;
+    track('rl_bridge_connected', {
+      lists: newLists.size,
+      flips: data && Array.isArray(data.flips) ? data.flips.length : 0,
+    });
+  }
   rlHandleNavRequest(data && data.navRequest);
   rlRenderModal(data);
   if (rlConnected) rlReconcileFavorites();
