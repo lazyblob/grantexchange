@@ -286,6 +286,35 @@
      (including deep links like /?q=Cake) reports the actual item title/path
      instead of collapsing into a single "home /" pageview. */
   gtag('config', GA_ID, { send_page_view: false });
+  /* Campaign attribution has to be captured HERE and set explicitly.
+     GA4 normally reads utm_* out of page_location by itself — but this site
+     never lets it see a real URL. send_page_view is off, and both of the
+     page_view events we fire by hand set page_location to a value we build
+     ourselves ('https://pocketge.com/' for the homepage, a virtual
+     /item/<slug> for an item), neither of which carries a query string. So a
+     visit to /?utm_source=runelite would be attributed to nothing at all.
+     Worse, setItem() calls history.replaceState early enough that by the time
+     anything else could look, the parameters are gone from the address bar.
+     Read once, at load, before any of that runs, and hand GA the campaign
+     fields directly so every event in the session carries them. */
+  (function () {
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var campaign = {};
+      var map = {
+        utm_source: 'campaign_source',
+        utm_medium: 'campaign_medium',
+        utm_campaign: 'campaign_name',
+        utm_content: 'campaign_content',
+        utm_term: 'campaign_term'
+      };
+      Object.keys(map).forEach(function (k) {
+        var v = q.get(k);
+        if (v) { campaign[map[k]] = v.slice(0, 100); }
+      });
+      if (Object.keys(campaign).length) { gtag('set', campaign); }
+    } catch (e) { /* no URLSearchParams, or a hostile URL — attribution is not worth throwing over */ }
+  })();
   /* Load the GA library OFF the critical path: it was the biggest chunk of
      "unused JS" on mobile and competes with first paint. gtag() calls made
      before it arrives just queue in dataLayer, so nothing is lost.
