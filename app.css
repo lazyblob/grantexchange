@@ -599,7 +599,14 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   .bk-row { grid-template-columns: 22px 1fr auto auto; }
   .bk-row .bk-val { display: none; }
 }
-.suggest { margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; max-height: 200px; overflow-y: auto; background: var(--bg-panel); position: absolute; z-index: 100; width: 260px; box-shadow: 0 8px 16px var(--shadow); }
+/* max-width is load-bearing, not decoration. This is absolutely positioned
+   inside .sbar with no left/right, so it starts at the search input's left
+   edge and ran a fixed 260px to the right of it. On a phone the input starts
+   ~147px in on a 393px viewport, so 260px reached 407 — 14px past the edge,
+   which made the whole PAGE scrollable sideways. 100% is 100% of .sbar, which
+   is inside the viewport by construction, so the dropdown can never leave it;
+   on desktop .sbar is wider than 260 and nothing changes. */
+.suggest { margin-top: 4px; border: 1px solid var(--border-light); border-radius: 4px; max-height: 200px; overflow-y: auto; background: var(--bg-panel); position: absolute; z-index: 100; width: 260px; max-width: 100%; box-shadow: 0 8px 16px var(--shadow); }
 .suggest div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-main); cursor: pointer; font-size: 13px; }
 .suggest div:last-child { border-bottom: none; }
 .suggest div:hover { background: var(--bg-input); color: #fff; }
@@ -2544,6 +2551,16 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      its full content height instead of scrolling inside it. Same trap as the
      desktop cap and the splitter's. */
   .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: calc(100dvh - 6px); }
+  /* 234px is BELOW the 264px at which the container query drops the VOL
+     column, so in landscape VOL could never appear no matter what the column
+     menu said — the checkbox was checked, the cell rendered, and CSS hid it.
+     Reported as "I uncheck and re-check it and it's not appearing".
+     Only widened for people who asked for VOL: everyone else keeps the
+     narrower column and the wider chart, which is the trade this layout was
+     tuned for in the first place. 268 clears 264 with a little to spare.
+     The class is set on the container in renderWatchlist, next to the
+     existing has-vol toggle on the content element. */
+  .watchlist-container.wants-vol { width: 268px; }
   /* Favorites is the reason this column exists, but it sat behind ~320px of
      modules in a viewport only ~390-515px tall, so it opened essentially
      below the fold. The container is a flex column, so `order` re-stacks it

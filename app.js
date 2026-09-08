@@ -3866,6 +3866,13 @@ function renderWatchlist() {
   /* Tell CSS whether the VOL column is present, so the fav-delete fallback
      knows when the in-cell trash exists (see .wl-fav-remove-row rules). */
   container.classList.toggle('has-vol', !!columnPrefs.volume);
+  /* The same fact one level up. The landscape-phone sidebar is a fixed 234px,
+     which is under the 264px at which the container query drops VOL — so
+     asking for VOL there changed nothing at all. The container needs to know,
+     because it is the element whose width has to grow. Set here rather than
+     with :has() so it does not depend on selector support on an old phone. */
+  const wlWrap = document.querySelector('.watchlist-container');
+  if (wlWrap) wlWrap.classList.toggle('wants-vol', !!columnPrefs.volume);
 
   /* Rows live in TWO hosts. The favorites groups are appended to
      #watchlistContent, but Find Opportunities is moved into its own
