@@ -6488,9 +6488,83 @@ function rlHandleNavRequest(nav) {
      mapping that later gains the item can never act on this click. An item
      the mapping genuinely never learns just gets re-checked cheaply. */
   if (!item) return;
+
+  /* ONE tab takes it, not every tab.
+     Every open pocketge.com tab polls the bridge independently, so a single
+     chart click is delivered to all of them — and before this, all of them
+     navigated: four tabs open meant four jumps to Sapphire necklace. Tabs
+     settle it between themselves through localStorage, which is shared across
+     same-origin tabs and synchronous, so the first writer wins and the others
+     stand down. */
+  if (rlTakeNav(nav.seq))
+  {
+    rlLastNavSeq = nav.seq;
+    closePortfolio();
+    setItem(item);
+    return;
+  }
+  /* Not ours to act on. Bank the seq either way: whoever won has it, or the
+     deferred timer below owns it now, and in both cases this tab must stop
+     being offered it on every poll. */
   rlLastNavSeq = nav.seq;
-  closePortfolio();
-  setItem(item);
+  if (rlNavDeferred.has(nav.seq))
+  {
+    /* We yielded to the tab you were last looking at. Give it a moment, then
+       take the request ourselves if it never did — otherwise closing that tab
+       would mean chart clicks silently going nowhere. */
+    setTimeout(() => {
+      rlNavDeferred.delete(nav.seq);
+      if (rlClaimNav(nav.seq)) { closePortfolio(); setItem(item); }
+    }, RL_NAV_YIELD_MS);
+  }
+}
+
+/* Which tab was looked at most recently. Recorded on focus, because at the
+   moment a chart click arrives the GAME has focus and no tab does — so the
+   useful question is not "who is focused" but "who were you last using".
+   Without it the winner is just whichever tab's poll happened to return
+   first, which is as likely to be one buried behind the others. */
+const RL_NAV_CLAIM_KEY = 'ge_nav_claim';
+const RL_TAB_FOCUS_KEY = 'ge_tab_focus';
+const RL_TAB_ID = String(Math.random()).slice(2) + '-' + Date.now();
+const RL_NAV_YIELD_MS = 400;
+const rlNavDeferred = new Set();
+
+function rlMarkFocused() {
+  try { localStorage.setItem(RL_TAB_FOCUS_KEY, JSON.stringify({ id: RL_TAB_ID, at: Date.now() })); } catch (e) {}
+}
+window.addEventListener('focus', rlMarkFocused);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { rlMarkFocused(); } });
+if (!document.hidden) { rlMarkFocused(); }
+
+/* Write the claim if nobody has taken this seq yet. localStorage is
+   same-origin and synchronous, so two tabs racing here is a window of
+   microseconds — and the loser's own claim check catches it. */
+function rlClaimNav(seq) {
+  try {
+    if ((Number(localStorage.getItem(RL_NAV_CLAIM_KEY)) || 0) >= seq) return false;
+    localStorage.setItem(RL_NAV_CLAIM_KEY, String(seq));
+    return true;
+  } catch (e) {
+    /* No localStorage (private mode, storage blocked). Fall back to acting:
+       one tab navigating when it should not is a smaller failure than a chart
+       click that does nothing at all. */
+    return true;
+  }
+}
+
+/* True if this tab should act on `seq` right now. The most-recently-focused
+   tab acts immediately; any other records a deferral and lets the caller
+   retry after RL_NAV_YIELD_MS. */
+function rlTakeNav(seq) {
+  let lastFocused = null;
+  try { lastFocused = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null'); } catch (e) {}
+  const preferred = !lastFocused || lastFocused.id === RL_TAB_ID;
+  if (!preferred) {
+    rlNavDeferred.add(seq);
+    return false;
+  }
+  return rlClaimNav(seq);
 }
 
 /* Long-poll for chart clicks, alongside (not instead of) the 5s payload poll.
